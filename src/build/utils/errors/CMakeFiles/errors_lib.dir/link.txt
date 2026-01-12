@@ -1,0 +1,2 @@
+/usr/bin/ar qc liberrors_lib.a CMakeFiles/errors_lib.dir/errors.cpp.o
+/usr/bin/ranlib liberrors_lib.a

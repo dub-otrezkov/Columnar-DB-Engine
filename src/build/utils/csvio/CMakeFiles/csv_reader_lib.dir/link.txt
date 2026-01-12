@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcsv_reader_lib.a CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o
+/usr/bin/ranlib libcsv_reader_lib.a

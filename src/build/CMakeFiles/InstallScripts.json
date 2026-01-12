@@ -1,0 +1,14 @@
+{
+	"InstallScripts" : 
+	[
+		"/root/coursework/src/build/cmake_install.cmake",
+		"/root/coursework/src/build/utils/cmake_install.cmake",
+		"/root/coursework/src/build/utils/cint/cmake_install.cmake",
+		"/root/coursework/src/build/utils/errors/cmake_install.cmake",
+		"/root/coursework/src/build/utils/csvio/cmake_install.cmake",
+		"/root/coursework/src/build/debug/cmake_install.cmake",
+		"/root/coursework/src/build/table_node/cmake_install.cmake",
+		"/root/coursework/src/build/engine/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
