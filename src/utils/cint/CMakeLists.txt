@@ -1,0 +1,1 @@
+add_library(cint_lib INTERFACE int.h)

@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 4.1)
+
+project(columnar_eng)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set(CMAKE_CXX_STANDARD 23)
+
+add_subdirectory(utils)
+
+link_libraries(cint_lib)
+
+add_subdirectory(debug)
+add_subdirectory(table_node)
+add_subdirectory(engine)
+
