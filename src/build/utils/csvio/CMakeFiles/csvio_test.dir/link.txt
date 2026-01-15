@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/csvio_test.dir/test.cpp.o -o csvio_test  libcsv_reader_lib.a libcsv_writer_lib.a ../errors/liberrors_lib.a /usr/lib/x86_64-linux-gnu/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest_main.a /usr/lib/x86_64-linux-gnu/libgtest.a

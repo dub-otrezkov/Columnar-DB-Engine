@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/root/coursework/src/debug/main.cpp" "debug/CMakeFiles/debug.dir/main.cpp.o" "gcc" "debug/CMakeFiles/debug.dir/main.cpp.o.d"
+  "/root/coursework/Columnar-DB-Engine/src/debug/main.cpp" "debug/CMakeFiles/debug.dir/main.cpp.o" "gcc" "debug/CMakeFiles/debug.dir/main.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

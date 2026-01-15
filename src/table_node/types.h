@@ -1,9 +1,9 @@
-#include "utils/errors/errors.h"
+#pragma once
 
+#include "utils/errors/errors.h"
 #include "utils/cint/int.h"
 
 #include <stdexcept>
-
 #include <string>
 
 class ITableNode {
@@ -19,7 +19,6 @@ public:
         return "NotAnIntErr";
     }
 };
-
 
 class IntOverflowErr : public IError {
 public:

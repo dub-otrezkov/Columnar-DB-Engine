@@ -57,10 +57,10 @@ RM = /usr/local/lib/python3.10/dist-packages/cmake/data/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/coursework/src
+CMAKE_SOURCE_DIR = /root/coursework/Columnar-DB-Engine/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/coursework/src/build
+CMAKE_BINARY_DIR = /root/coursework/Columnar-DB-Engine/src/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,21 +87,21 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build/debug//CMakeFiles/progress.marks
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build/debug//CMakeFiles/progress.marks
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : all
 
 # The main codegen target
 codegen: cmake_check_build_system
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build/debug//CMakeFiles/progress.marks
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/codegen
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build/debug//CMakeFiles/progress.marks
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/codegen
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : codegen
 
 # The main clean target
 clean:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/clean
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/clean
 .PHONY : clean
 
 # The main clean target
@@ -110,22 +110,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/preinstall
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/preinstall
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 debug/CMakeFiles/debug.dir/rule:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/CMakeFiles/debug.dir/rule
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug/CMakeFiles/debug.dir/rule
 .PHONY : debug/CMakeFiles/debug.dir/rule
 
 # Convenience name for target.
@@ -134,7 +134,7 @@ debug: debug/CMakeFiles/debug.dir/rule
 
 # fast build rule for target.
 debug/fast:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/build
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/build
 .PHONY : debug/fast
 
 main.o: main.cpp.o
@@ -142,7 +142,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/main.cpp.o
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -150,7 +150,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/main.cpp.i
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -158,7 +158,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/main.cpp.s
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target
@@ -185,6 +185,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

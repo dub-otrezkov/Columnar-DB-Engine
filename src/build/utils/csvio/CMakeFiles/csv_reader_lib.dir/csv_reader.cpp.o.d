@@ -1,8 +1,10 @@
 utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: \
- /root/coursework/src/utils/csvio/csv_reader.cpp \
- /usr/include/stdc-predef.h /root/coursework/src/utils/csvio/csv_reader.h \
- /root/coursework/src/utils/errors/errors.h \
- /root/coursework/src/utils/cint/int.h /usr/include/c++/11/string \
+ /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.cpp \
+ /usr/include/stdc-predef.h \
+ /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h \
+ /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h \
+ /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h \
+ /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \

@@ -53,10 +53,10 @@ RM = /usr/local/lib/python3.10/dist-packages/cmake/data/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/coursework/src
+CMAKE_SOURCE_DIR = /root/coursework/Columnar-DB-Engine/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/coursework/src/build
+CMAKE_BINARY_DIR = /root/coursework/Columnar-DB-Engine/src/build
 
 # Utility rule file for cint_lib.
 
@@ -77,10 +77,10 @@ utils/cint/CMakeFiles/cint_lib.dir/build: cint_lib
 .PHONY : utils/cint/CMakeFiles/cint_lib.dir/build
 
 utils/cint/CMakeFiles/cint_lib.dir/clean:
-	cd /root/coursework/src/build/utils/cint && $(CMAKE_COMMAND) -P CMakeFiles/cint_lib.dir/cmake_clean.cmake
+	cd /root/coursework/Columnar-DB-Engine/src/build/utils/cint && $(CMAKE_COMMAND) -P CMakeFiles/cint_lib.dir/cmake_clean.cmake
 .PHONY : utils/cint/CMakeFiles/cint_lib.dir/clean
 
 utils/cint/CMakeFiles/cint_lib.dir/depend:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/coursework/src /root/coursework/src/utils/cint /root/coursework/src/build /root/coursework/src/build/utils/cint /root/coursework/src/build/utils/cint/CMakeFiles/cint_lib.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/coursework/Columnar-DB-Engine/src /root/coursework/Columnar-DB-Engine/src/utils/cint /root/coursework/Columnar-DB-Engine/src/build /root/coursework/Columnar-DB-Engine/src/build/utils/cint /root/coursework/Columnar-DB-Engine/src/build/utils/cint/CMakeFiles/cint_lib.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : utils/cint/CMakeFiles/cint_lib.dir/depend
 

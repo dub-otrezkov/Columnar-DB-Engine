@@ -53,10 +53,10 @@ RM = /usr/local/lib/python3.10/dist-packages/cmake/data/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/coursework/src
+CMAKE_SOURCE_DIR = /root/coursework/Columnar-DB-Engine/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/coursework/src/build
+CMAKE_BINARY_DIR = /root/coursework/Columnar-DB-Engine/src/build
 
 # Include any dependencies generated for this target.
 include table_node/CMakeFiles/nodes_lib.dir/depend.make
@@ -72,59 +72,43 @@ include table_node/CMakeFiles/nodes_lib.dir/flags.make
 table_node/CMakeFiles/nodes_lib.dir/codegen:
 .PHONY : table_node/CMakeFiles/nodes_lib.dir/codegen
 
-table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o: table_node/CMakeFiles/nodes_lib.dir/flags.make
-table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o: /root/coursework/src/table_node/nodes_factory.cpp
-table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o: table_node/CMakeFiles/nodes_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/root/coursework/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o"
-	cd /root/coursework/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o -MF CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o.d -o CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o -c /root/coursework/src/table_node/nodes_factory.cpp
-
-table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nodes_lib.dir/nodes_factory.cpp.i"
-	cd /root/coursework/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/coursework/src/table_node/nodes_factory.cpp > CMakeFiles/nodes_lib.dir/nodes_factory.cpp.i
-
-table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nodes_lib.dir/nodes_factory.cpp.s"
-	cd /root/coursework/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/coursework/src/table_node/nodes_factory.cpp -o CMakeFiles/nodes_lib.dir/nodes_factory.cpp.s
-
 table_node/CMakeFiles/nodes_lib.dir/types.cpp.o: table_node/CMakeFiles/nodes_lib.dir/flags.make
-table_node/CMakeFiles/nodes_lib.dir/types.cpp.o: /root/coursework/src/table_node/types.cpp
+table_node/CMakeFiles/nodes_lib.dir/types.cpp.o: /root/coursework/Columnar-DB-Engine/src/table_node/types.cpp
 table_node/CMakeFiles/nodes_lib.dir/types.cpp.o: table_node/CMakeFiles/nodes_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/root/coursework/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object table_node/CMakeFiles/nodes_lib.dir/types.cpp.o"
-	cd /root/coursework/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT table_node/CMakeFiles/nodes_lib.dir/types.cpp.o -MF CMakeFiles/nodes_lib.dir/types.cpp.o.d -o CMakeFiles/nodes_lib.dir/types.cpp.o -c /root/coursework/src/table_node/types.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object table_node/CMakeFiles/nodes_lib.dir/types.cpp.o"
+	cd /root/coursework/Columnar-DB-Engine/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT table_node/CMakeFiles/nodes_lib.dir/types.cpp.o -MF CMakeFiles/nodes_lib.dir/types.cpp.o.d -o CMakeFiles/nodes_lib.dir/types.cpp.o -c /root/coursework/Columnar-DB-Engine/src/table_node/types.cpp
 
 table_node/CMakeFiles/nodes_lib.dir/types.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nodes_lib.dir/types.cpp.i"
-	cd /root/coursework/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/coursework/src/table_node/types.cpp > CMakeFiles/nodes_lib.dir/types.cpp.i
+	cd /root/coursework/Columnar-DB-Engine/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/coursework/Columnar-DB-Engine/src/table_node/types.cpp > CMakeFiles/nodes_lib.dir/types.cpp.i
 
 table_node/CMakeFiles/nodes_lib.dir/types.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nodes_lib.dir/types.cpp.s"
-	cd /root/coursework/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/coursework/src/table_node/types.cpp -o CMakeFiles/nodes_lib.dir/types.cpp.s
+	cd /root/coursework/Columnar-DB-Engine/src/build/table_node && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/coursework/Columnar-DB-Engine/src/table_node/types.cpp -o CMakeFiles/nodes_lib.dir/types.cpp.s
 
 # Object files for target nodes_lib
 nodes_lib_OBJECTS = \
-"CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o" \
 "CMakeFiles/nodes_lib.dir/types.cpp.o"
 
 # External object files for target nodes_lib
 nodes_lib_EXTERNAL_OBJECTS =
 
-table_node/libnodes_lib.a: table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o
 table_node/libnodes_lib.a: table_node/CMakeFiles/nodes_lib.dir/types.cpp.o
 table_node/libnodes_lib.a: table_node/CMakeFiles/nodes_lib.dir/build.make
 table_node/libnodes_lib.a: table_node/CMakeFiles/nodes_lib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/root/coursework/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libnodes_lib.a"
-	cd /root/coursework/src/build/table_node && $(CMAKE_COMMAND) -P CMakeFiles/nodes_lib.dir/cmake_clean_target.cmake
-	cd /root/coursework/src/build/table_node && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/nodes_lib.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libnodes_lib.a"
+	cd /root/coursework/Columnar-DB-Engine/src/build/table_node && $(CMAKE_COMMAND) -P CMakeFiles/nodes_lib.dir/cmake_clean_target.cmake
+	cd /root/coursework/Columnar-DB-Engine/src/build/table_node && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/nodes_lib.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 table_node/CMakeFiles/nodes_lib.dir/build: table_node/libnodes_lib.a
 .PHONY : table_node/CMakeFiles/nodes_lib.dir/build
 
 table_node/CMakeFiles/nodes_lib.dir/clean:
-	cd /root/coursework/src/build/table_node && $(CMAKE_COMMAND) -P CMakeFiles/nodes_lib.dir/cmake_clean.cmake
+	cd /root/coursework/Columnar-DB-Engine/src/build/table_node && $(CMAKE_COMMAND) -P CMakeFiles/nodes_lib.dir/cmake_clean.cmake
 .PHONY : table_node/CMakeFiles/nodes_lib.dir/clean
 
 table_node/CMakeFiles/nodes_lib.dir/depend:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/coursework/src /root/coursework/src/table_node /root/coursework/src/build /root/coursework/src/build/table_node /root/coursework/src/build/table_node/CMakeFiles/nodes_lib.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/coursework/Columnar-DB-Engine/src /root/coursework/Columnar-DB-Engine/src/table_node /root/coursework/Columnar-DB-Engine/src/build /root/coursework/Columnar-DB-Engine/src/build/table_node /root/coursework/Columnar-DB-Engine/src/build/table_node/CMakeFiles/nodes_lib.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : table_node/CMakeFiles/nodes_lib.dir/depend
 

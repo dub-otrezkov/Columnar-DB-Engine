@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/root/coursework/src
+CXX_INCLUDES = -I/root/coursework/Columnar-DB-Engine/src
 
 CXX_FLAGS = -std=gnu++23
 

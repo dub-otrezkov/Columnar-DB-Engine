@@ -57,10 +57,10 @@ RM = /usr/local/lib/python3.10/dist-packages/cmake/data/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/coursework/src
+CMAKE_SOURCE_DIR = /root/coursework/Columnar-DB-Engine/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/coursework/src/build
+CMAKE_BINARY_DIR = /root/coursework/Columnar-DB-Engine/src/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,16 +87,16 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : all
 
 # The main codegen target
 codegen: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 codegen
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : codegen
 
 # The main clean target
@@ -176,6 +176,19 @@ csv_writer_lib/fast:
 .PHONY : csv_writer_lib/fast
 
 #=============================================================================
+# Target rules for targets named csvio_test
+
+# Build rule for target.
+csvio_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 csvio_test
+.PHONY : csvio_test
+
+# fast build rule for target.
+csvio_test/fast:
+	$(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csvio_test.dir/build.make utils/csvio/CMakeFiles/csvio_test.dir/build
+.PHONY : csvio_test/fast
+
+#=============================================================================
 # Target rules for targets named debug
 
 # Build rule for target.
@@ -201,6 +214,32 @@ nodes_lib/fast:
 	$(MAKE) $(MAKESILENT) -f table_node/CMakeFiles/nodes_lib.dir/build.make table_node/CMakeFiles/nodes_lib.dir/build
 .PHONY : nodes_lib/fast
 
+#=============================================================================
+# Target rules for targets named engine_lib
+
+# Build rule for target.
+engine_lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine_lib
+.PHONY : engine_lib
+
+# fast build rule for target.
+engine_lib/fast:
+	$(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/build
+.PHONY : engine_lib/fast
+
+#=============================================================================
+# Target rules for targets named engine_test
+
+# Build rule for target.
+engine_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine_test
+.PHONY : engine_test
+
+# fast build rule for target.
+engine_test/fast:
+	$(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_test.dir/build.make engine/CMakeFiles/engine_test.dir/build
+.PHONY : engine_test/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -213,7 +252,10 @@ help:
 	@echo "... cint_lib"
 	@echo "... csv_reader_lib"
 	@echo "... csv_writer_lib"
+	@echo "... csvio_test"
 	@echo "... debug"
+	@echo "... engine_lib"
+	@echo "... engine_test"
 	@echo "... errors_lib"
 	@echo "... nodes_lib"
 .PHONY : help

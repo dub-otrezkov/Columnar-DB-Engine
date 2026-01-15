@@ -4,6 +4,9 @@ project(columnar_eng)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIR})
+
 set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(utils)

@@ -1,4 +1,4 @@
-# Install script for directory: /root/coursework/src/utils
+# Install script for directory: /root/coursework/Columnar-DB-Engine/src/utils
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,22 +44,22 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/root/coursework/src/build/utils/cint/cmake_install.cmake")
+  include("/root/coursework/Columnar-DB-Engine/src/build/utils/cint/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/root/coursework/src/build/utils/errors/cmake_install.cmake")
+  include("/root/coursework/Columnar-DB-Engine/src/build/utils/errors/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/root/coursework/src/build/utils/csvio/cmake_install.cmake")
+  include("/root/coursework/Columnar-DB-Engine/src/build/utils/csvio/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/root/coursework/src/build/utils/install_local_manifest.txt"
+  file(WRITE "/root/coursework/Columnar-DB-Engine/src/build/utils/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

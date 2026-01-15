@@ -57,10 +57,10 @@ RM = /usr/local/lib/python3.10/dist-packages/cmake/data/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/coursework/src
+CMAKE_SOURCE_DIR = /root/coursework/Columnar-DB-Engine/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/coursework/src/build
+CMAKE_BINARY_DIR = /root/coursework/Columnar-DB-Engine/src/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,21 +87,21 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build/engine//CMakeFiles/progress.marks
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build/engine//CMakeFiles/progress.marks
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : all
 
 # The main codegen target
 codegen: cmake_check_build_system
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build/engine//CMakeFiles/progress.marks
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/codegen
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build/engine//CMakeFiles/progress.marks
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/codegen
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : codegen
 
 # The main clean target
 clean:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/clean
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/clean
 .PHONY : clean
 
 # The main clean target
@@ -110,18 +110,142 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/preinstall
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/preinstall
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
+
+# Convenience name for target.
+engine/CMakeFiles/engine_lib.dir/rule:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/CMakeFiles/engine_lib.dir/rule
+.PHONY : engine/CMakeFiles/engine_lib.dir/rule
+
+# Convenience name for target.
+engine_lib: engine/CMakeFiles/engine_lib.dir/rule
+.PHONY : engine_lib
+
+# fast build rule for target.
+engine_lib/fast:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/build
+.PHONY : engine_lib/fast
+
+# Convenience name for target.
+engine/CMakeFiles/engine_test.dir/rule:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 engine/CMakeFiles/engine_test.dir/rule
+.PHONY : engine/CMakeFiles/engine_test.dir/rule
+
+# Convenience name for target.
+engine_test: engine/CMakeFiles/engine_test.dir/rule
+.PHONY : engine_test
+
+# fast build rule for target.
+engine_test/fast:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_test.dir/build.make engine/CMakeFiles/engine_test.dir/build
+.PHONY : engine_test/fast
+
+engine.o: engine.cpp.o
+.PHONY : engine.o
+
+# target to build an object file
+engine.cpp.o:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/engine.cpp.o
+.PHONY : engine.cpp.o
+
+engine.i: engine.cpp.i
+.PHONY : engine.i
+
+# target to preprocess a source file
+engine.cpp.i:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/engine.cpp.i
+.PHONY : engine.cpp.i
+
+engine.s: engine.cpp.s
+.PHONY : engine.s
+
+# target to generate assembly for a file
+engine.cpp.s:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/engine.cpp.s
+.PHONY : engine.cpp.s
+
+nodes_factory.o: nodes_factory.cpp.o
+.PHONY : nodes_factory.o
+
+# target to build an object file
+nodes_factory.cpp.o:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o
+.PHONY : nodes_factory.cpp.o
+
+nodes_factory.i: nodes_factory.cpp.i
+.PHONY : nodes_factory.i
+
+# target to preprocess a source file
+nodes_factory.cpp.i:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.i
+.PHONY : nodes_factory.cpp.i
+
+nodes_factory.s: nodes_factory.cpp.s
+.PHONY : nodes_factory.s
+
+# target to generate assembly for a file
+nodes_factory.cpp.s:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.s
+.PHONY : nodes_factory.cpp.s
+
+table_input.o: table_input.cpp.o
+.PHONY : table_input.o
+
+# target to build an object file
+table_input.cpp.o:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/table_input.cpp.o
+.PHONY : table_input.cpp.o
+
+table_input.i: table_input.cpp.i
+.PHONY : table_input.i
+
+# target to preprocess a source file
+table_input.cpp.i:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/table_input.cpp.i
+.PHONY : table_input.cpp.i
+
+table_input.s: table_input.cpp.s
+.PHONY : table_input.s
+
+# target to generate assembly for a file
+table_input.cpp.s:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/table_input.cpp.s
+.PHONY : table_input.cpp.s
+
+test.o: test.cpp.o
+.PHONY : test.o
+
+# target to build an object file
+test.cpp.o:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_test.dir/build.make engine/CMakeFiles/engine_test.dir/test.cpp.o
+.PHONY : test.cpp.o
+
+test.i: test.cpp.i
+.PHONY : test.i
+
+# target to preprocess a source file
+test.cpp.i:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_test.dir/build.make engine/CMakeFiles/engine_test.dir/test.cpp.i
+.PHONY : test.cpp.i
+
+test.s: test.cpp.s
+.PHONY : test.s
+
+# target to generate assembly for a file
+test.cpp.s:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_test.dir/build.make engine/CMakeFiles/engine_test.dir/test.cpp.s
+.PHONY : test.cpp.s
 
 # Help Target
 help:
@@ -132,6 +256,20 @@ help:
 	@echo "... codegen"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... engine_lib"
+	@echo "... engine_test"
+	@echo "... engine.o"
+	@echo "... engine.i"
+	@echo "... engine.s"
+	@echo "... nodes_factory.o"
+	@echo "... nodes_factory.i"
+	@echo "... nodes_factory.s"
+	@echo "... table_input.o"
+	@echo "... table_input.i"
+	@echo "... table_input.s"
+	@echo "... test.o"
+	@echo "... test.i"
+	@echo "... test.s"
 .PHONY : help
 
 
@@ -143,6 +281,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

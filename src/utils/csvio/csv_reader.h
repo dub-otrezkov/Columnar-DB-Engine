@@ -16,11 +16,16 @@ public:
 
 class TCSVReader {
 public:
-    TCSVReader(const std::string& filename, const std::string& sep);
+    TCSVReader(std::istream& in, i64 buf_size_ = -2, char sep = ',');
 
     std::pair<std::vector<std::string>, IError*> ReadRow();
+    void RestartRead();
 
 private:
-    std::ifstream in_;
-    std::string sep_;
+    std::istream& in_;
+    char sep_;
+
+    i64 buf_size_;
+
+    std::streampos init_pos_;
 };

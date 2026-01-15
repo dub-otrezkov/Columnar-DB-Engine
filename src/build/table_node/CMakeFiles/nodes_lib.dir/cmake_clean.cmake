@@ -1,6 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o"
-  "CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o.d"
   "CMakeFiles/nodes_lib.dir/types.cpp.o"
   "CMakeFiles/nodes_lib.dir/types.cpp.o.d"
   "libnodes_lib.a"

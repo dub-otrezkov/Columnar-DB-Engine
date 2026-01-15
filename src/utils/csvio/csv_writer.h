@@ -10,13 +10,16 @@
 
 class TCSVWriter {
 public:
-    TCSVWriter(const std::string& filename, const std::string& sep);
+    TCSVWriter(std::ostream& out, char sep = ',');
 
     void WriteRow(const std::vector<std::shared_ptr<ITableNode>>& row);
+    void WriteRow(const std::vector<std::string>& row);
 
     ~TCSVWriter();
 
 private:
-    std::ofstream out_;
-    std::string sep_;
+    std::string PrepareString(const std::string& str);
+
+    std::ostream& out_;
+    char sep_;
 };

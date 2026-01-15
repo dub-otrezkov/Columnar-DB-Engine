@@ -8,8 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/root/coursework/src/table_node/nodes_factory.cpp" "table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o" "gcc" "table_node/CMakeFiles/nodes_lib.dir/nodes_factory.cpp.o.d"
-  "/root/coursework/src/table_node/types.cpp" "table_node/CMakeFiles/nodes_lib.dir/types.cpp.o" "gcc" "table_node/CMakeFiles/nodes_lib.dir/types.cpp.o.d"
+  "/root/coursework/Columnar-DB-Engine/src/table_node/types.cpp" "table_node/CMakeFiles/nodes_lib.dir/types.cpp.o" "gcc" "table_node/CMakeFiles/nodes_lib.dir/types.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

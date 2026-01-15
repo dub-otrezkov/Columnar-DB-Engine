@@ -57,10 +57,10 @@ RM = /usr/local/lib/python3.10/dist-packages/cmake/data/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/coursework/src
+CMAKE_SOURCE_DIR = /root/coursework/Columnar-DB-Engine/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/coursework/src/build
+CMAKE_BINARY_DIR = /root/coursework/Columnar-DB-Engine/src/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,21 +87,21 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build/utils/csvio//CMakeFiles/progress.marks
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build/utils/csvio//CMakeFiles/progress.marks
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : all
 
 # The main codegen target
 codegen: cmake_check_build_system
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles /root/coursework/src/build/utils/csvio//CMakeFiles/progress.marks
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/codegen
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/src/build/CMakeFiles 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles /root/coursework/Columnar-DB-Engine/src/build/utils/csvio//CMakeFiles/progress.marks
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/codegen
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/coursework/Columnar-DB-Engine/src/build/CMakeFiles 0
 .PHONY : codegen
 
 # The main clean target
 clean:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/clean
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/clean
 .PHONY : clean
 
 # The main clean target
@@ -110,22 +110,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/preinstall
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/preinstall
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 utils/csvio/CMakeFiles/csv_reader_lib.dir/rule:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/CMakeFiles/csv_reader_lib.dir/rule
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/CMakeFiles/csv_reader_lib.dir/rule
 .PHONY : utils/csvio/CMakeFiles/csv_reader_lib.dir/rule
 
 # Convenience name for target.
@@ -134,12 +134,12 @@ csv_reader_lib: utils/csvio/CMakeFiles/csv_reader_lib.dir/rule
 
 # fast build rule for target.
 csv_reader_lib/fast:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/build
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/build
 .PHONY : csv_reader_lib/fast
 
 # Convenience name for target.
 utils/csvio/CMakeFiles/csv_writer_lib.dir/rule:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/CMakeFiles/csv_writer_lib.dir/rule
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/CMakeFiles/csv_writer_lib.dir/rule
 .PHONY : utils/csvio/CMakeFiles/csv_writer_lib.dir/rule
 
 # Convenience name for target.
@@ -148,15 +148,29 @@ csv_writer_lib: utils/csvio/CMakeFiles/csv_writer_lib.dir/rule
 
 # fast build rule for target.
 csv_writer_lib/fast:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/build
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/build
 .PHONY : csv_writer_lib/fast
+
+# Convenience name for target.
+utils/csvio/CMakeFiles/csvio_test.dir/rule:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/csvio/CMakeFiles/csvio_test.dir/rule
+.PHONY : utils/csvio/CMakeFiles/csvio_test.dir/rule
+
+# Convenience name for target.
+csvio_test: utils/csvio/CMakeFiles/csvio_test.dir/rule
+.PHONY : csvio_test
+
+# fast build rule for target.
+csvio_test/fast:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csvio_test.dir/build.make utils/csvio/CMakeFiles/csvio_test.dir/build
+.PHONY : csvio_test/fast
 
 csv_reader.o: csv_reader.cpp.o
 .PHONY : csv_reader.o
 
 # target to build an object file
 csv_reader.cpp.o:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o
 .PHONY : csv_reader.cpp.o
 
 csv_reader.i: csv_reader.cpp.i
@@ -164,7 +178,7 @@ csv_reader.i: csv_reader.cpp.i
 
 # target to preprocess a source file
 csv_reader.cpp.i:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.i
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.i
 .PHONY : csv_reader.cpp.i
 
 csv_reader.s: csv_reader.cpp.s
@@ -172,7 +186,7 @@ csv_reader.s: csv_reader.cpp.s
 
 # target to generate assembly for a file
 csv_reader.cpp.s:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.s
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_reader_lib.dir/build.make utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.s
 .PHONY : csv_reader.cpp.s
 
 csv_writer.o: csv_writer.cpp.o
@@ -180,7 +194,7 @@ csv_writer.o: csv_writer.cpp.o
 
 # target to build an object file
 csv_writer.cpp.o:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.o
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.o
 .PHONY : csv_writer.cpp.o
 
 csv_writer.i: csv_writer.cpp.i
@@ -188,7 +202,7 @@ csv_writer.i: csv_writer.cpp.i
 
 # target to preprocess a source file
 csv_writer.cpp.i:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.i
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.i
 .PHONY : csv_writer.cpp.i
 
 csv_writer.s: csv_writer.cpp.s
@@ -196,8 +210,32 @@ csv_writer.s: csv_writer.cpp.s
 
 # target to generate assembly for a file
 csv_writer.cpp.s:
-	cd /root/coursework/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.s
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csv_writer_lib.dir/build.make utils/csvio/CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.s
 .PHONY : csv_writer.cpp.s
+
+test.o: test.cpp.o
+.PHONY : test.o
+
+# target to build an object file
+test.cpp.o:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csvio_test.dir/build.make utils/csvio/CMakeFiles/csvio_test.dir/test.cpp.o
+.PHONY : test.cpp.o
+
+test.i: test.cpp.i
+.PHONY : test.i
+
+# target to preprocess a source file
+test.cpp.i:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csvio_test.dir/build.make utils/csvio/CMakeFiles/csvio_test.dir/test.cpp.i
+.PHONY : test.cpp.i
+
+test.s: test.cpp.s
+.PHONY : test.s
+
+# target to generate assembly for a file
+test.cpp.s:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/csvio/CMakeFiles/csvio_test.dir/build.make utils/csvio/CMakeFiles/csvio_test.dir/test.cpp.s
+.PHONY : test.cpp.s
 
 # Help Target
 help:
@@ -210,12 +248,16 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... csv_reader_lib"
 	@echo "... csv_writer_lib"
+	@echo "... csvio_test"
 	@echo "... csv_reader.o"
 	@echo "... csv_reader.i"
 	@echo "... csv_reader.s"
 	@echo "... csv_writer.o"
 	@echo "... csv_writer.i"
 	@echo "... csv_writer.s"
+	@echo "... test.o"
+	@echo "... test.i"
+	@echo "... test.s"
 .PHONY : help
 
 
@@ -227,6 +269,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /root/coursework/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
