@@ -24,13 +24,23 @@ private:
     std::string message_;
 };
 
+class UnimplementedErr : public IError {
+public:
+
+    std::string Print() const override {
+        return "unimplemented";
+    }
+};
+
 class ITableInput {
 public:
     ITableInput(ui64 row_group_len = 1000);
 
     virtual IError* GetColumnsScheme(std::vector<TRowScheme>& out) = 0;
     virtual IError* ReadRowGroup(std::vector<std::vector<std::string>>& out) = 0;
+    virtual IError* ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) = 0;
     virtual void RestartDataRead() = 0;
+
 
 protected:
     ui64 row_group_len_;
@@ -42,6 +52,7 @@ public:
 
     IError* GetColumnsScheme(std::vector<TRowScheme>& out) override;
     IError* ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
+    IError* ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
 
 private:
@@ -55,10 +66,12 @@ public:
 
     IError* GetColumnsScheme(std::vector<TRowScheme>& out) override;
     IError* ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
+    IError* ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
 
 private:
     std::istream& jf_in_;
+    std::vector<ui64> blocks_pos;
 };
 
 class TEngine {

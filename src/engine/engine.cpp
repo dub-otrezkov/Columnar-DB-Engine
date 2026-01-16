@@ -78,12 +78,11 @@ IError* TEngine::WriteTableToJF(std::ostream& out) {
     std::stringstream scheme_str;
     auto err = WriteSchemeToCSV(scheme_str);
 
-    auto s = scheme_str.str();
+    std::vector<std::string> blocks;
 
-    PutI64(out, s.size());
-    out << s;
+    ui64 sms = 0;
 
-    auto f = [&out](std::vector<std::vector<std::shared_ptr<ITableNode>>> block) -> IError* {
+    auto f = [&blocks, &sms](std::vector<std::vector<std::shared_ptr<ITableNode>>> block) -> IError* {
         std::stringstream ss;
         TCSVWriter w(ss);
         for (ui64 i = 0; i < block[0].size(); i++) {
@@ -95,14 +94,34 @@ IError* TEngine::WriteTableToJF(std::ostream& out) {
         }
 
         auto s = ss.str();
+        blocks.push_back(ss.str());
 
-        PutI64(out, s.size());
-        out << s;
+        sms += s.size();
 
         return nullptr;
     };
 
     RunCommand(f);
+    
+    auto s = scheme_str.str();
+
+    auto len = s.size();
+
+    PutI64(out, len);
+    out << s;
+
+    PutI64(out, blocks.size());
+
+    auto cur = sms;
+    for (ui64 i = 0; i < blocks.size(); i++) {
+        PutI64(out, sms - cur);
+        cur -= blocks[i].size();
+    }
+
+    for (const auto& block : blocks) {
+        PutI64(out, block.size());
+        out << block;
+    }
 
     return nullptr;
 }

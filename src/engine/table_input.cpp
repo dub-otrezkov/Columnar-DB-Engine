@@ -66,6 +66,10 @@ void TCSVTableInput::RestartDataRead() {
     data_in_.RestartRead();
 }
 
+IError* TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
+    return new UnimplementedErr;
+}
+
 
 TJFTableInput::TJFTableInput(std::istream& jf_in) : jf_in_(jf_in) {
 }
@@ -101,6 +105,15 @@ IError* TJFTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
         out.emplace_back(data[0], data[1]);
     }
 
+
+    i64 blocks_cnt = ReadI64(jf_in_);
+    
+    meta_sz += 8 * (blocks_cnt + 1);
+    for (ui64 i = 0; i < blocks_cnt; i++) {
+        auto c = ReadI64(jf_in_);
+        blocks_pos.push_back(c + meta_sz);
+    }
+
     return nullptr;
 }
 
@@ -133,7 +146,13 @@ IError* TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) 
 }
 
 void TJFTableInput::RestartDataRead() {
-    jf_in_.seekg(0);
-    auto meta_sz = ReadI64(jf_in_);
-    jf_in_.seekg(meta_sz);
+    if (blocks_pos.empty()) {
+        return;
+    }
+    jf_in_.seekg(blocks_pos[0]);
+}
+
+
+IError* TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) {
+    return new UnimplementedErr;
 }
