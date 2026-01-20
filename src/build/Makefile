@@ -240,6 +240,19 @@ engine_test/fast:
 	$(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_test.dir/build.make engine/CMakeFiles/engine_test.dir/build
 .PHONY : engine_test/fast
 
+#=============================================================================
+# Target rules for targets named debug_engine
+
+# Build rule for target.
+debug_engine: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug_engine
+.PHONY : debug_engine
+
+# fast build rule for target.
+debug_engine/fast:
+	$(MAKE) $(MAKESILENT) -f engine/debug/CMakeFiles/debug_engine.dir/build.make engine/debug/CMakeFiles/debug_engine.dir/build
+.PHONY : debug_engine/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -254,6 +267,7 @@ help:
 	@echo "... csv_writer_lib"
 	@echo "... csvio_test"
 	@echo "... debug"
+	@echo "... debug_engine"
 	@echo "... engine_lib"
 	@echo "... engine_test"
 	@echo "... errors_lib"

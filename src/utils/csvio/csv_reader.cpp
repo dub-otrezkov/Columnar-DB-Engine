@@ -11,10 +11,10 @@ TCSVReader::TCSVReader(std::istream& in, i64 buf_size, char sep) :
 {
 }
 
-std::pair<std::vector<std::string>, IError*> TCSVReader::ReadRow() {
+Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     // std::cout << buf_size_ << std::endl;
     if (in_.eof() || buf_size_ == 0) {
-        return {std::vector<std::string>(), new EofErr};
+        return {std::vector<std::string>(), MakeError<EofErr>()};
     }
 
     // std::cout << buf_size_ << std::endl;
@@ -35,7 +35,7 @@ std::pair<std::vector<std::string>, IError*> TCSVReader::ReadRow() {
         }
 
         if (in_quotes && c == EOF) {
-            return {std::vector<std::string>(), new EofErr};
+            return {std::vector<std::string>(), MakeError<EofErr>()};
         }
         if ((!in_quotes && c == '\n') || c == EOF) {
             break;
@@ -53,7 +53,7 @@ std::pair<std::vector<std::string>, IError*> TCSVReader::ReadRow() {
                         buf_size_--;
                     }
                 } else if (in_.peek() != sep_ && in_.peek() != '\n') {
-                    return {std::vector<std::string>(), new EofErr};
+                    return {std::vector<std::string>(), MakeError<EofErr>()};
                 } else {
                     in_quotes = false;
                 }
@@ -69,7 +69,7 @@ std::pair<std::vector<std::string>, IError*> TCSVReader::ReadRow() {
     }
 
     if (!read_smth) {
-        return {std::move(ans), new EofErr};
+        return {std::move(ans), MakeError<EofErr>()};
     }
 
     return {std::move(ans), nullptr};

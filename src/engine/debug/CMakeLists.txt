@@ -1,0 +1,3 @@
+add_executable(debug_engine main.cpp)
+
+target_link_libraries(debug_engine engine_lib csv_reader_lib csv_writer_lib errors_lib nodes_lib)

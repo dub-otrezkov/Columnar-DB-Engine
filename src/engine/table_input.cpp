@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+namespace JFEngine {
+
 ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
 }
 
@@ -20,19 +22,23 @@ TCSVTableInput::TCSVTableInput(
 {
 }
 
-IError* TCSVTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
+Expected<void> TCSVTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
     while (1) {
-        auto [data, err] = scheme_in_.ReadRow();
+        auto err = scheme_in_.ReadRow();
+        
+        // std::cout << err.HasError() << std::endl;
 
-        if (err) {
-            if (Is<EofErr>(err)) {
+        if (err.HasError()) {
+            if (Is<EofErr>(err.GetError())) {
                 break;
             }
-            return err;
+            return err.GetError();
         }
 
+        auto data = **err;
+
         if (data.size() != 2) {
-            return new IncorrrectFileErr;
+            return MakeError<IncorrrectFileErr>();
         }
 
         out.emplace_back(data[0], data[1]);
@@ -41,19 +47,21 @@ IError* TCSVTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
     return nullptr;
 }
 
-IError* TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) {
+Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) {
     for (ui64 i = 0; i < row_group_len_; i++) {
-        auto [d, err] = data_in_.ReadRow();
-        if (err) {
-            return err;
+        auto res = data_in_.ReadRow();
+        if (!res) {
+            return res.GetError();
         }
+        auto d = **res;
         if (i == 0) {
             out.resize(d.size());
         } else {
             if (d.size() != out.size()) {
-                return new IncorrrectFileErr("diff size");
+                return MakeError<IncorrrectFileErr>("diff size");
             }
         }
+
         for (ui64 j = 0; j < d.size(); j++) {
             out[j].push_back(d[j]);
         }
@@ -66,8 +74,8 @@ void TCSVTableInput::RestartDataRead() {
     data_in_.RestartRead();
 }
 
-IError* TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
-    return new UnimplementedErr;
+Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
+    return MakeError<UnimplementedErr>();
 }
 
 
@@ -83,23 +91,25 @@ i64 ReadI64(std::istream& in) {
     return ans;
 }
 
-IError* TJFTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
+Expected<void> TJFTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
     jf_in_.seekg(0);
     auto meta_sz = ReadI64(jf_in_);
 
     TCSVReader scheme_in(jf_in_, meta_sz);
     while (1) {
-        auto [data, err] = scheme_in.ReadRow();
+        auto res = scheme_in.ReadRow();
 
-        if (err) {
-            if (Is<EofErr>(err)) {
+        if (!res) {
+            if (Is<EofErr>(res.GetError())) {
                 break;
             }
-            return err;
+            return res.GetError();
         }
 
+        auto data = **res;
+
         if (data.size() != 2) {
-            return new IncorrrectFileErr;
+            return MakeError<IncorrrectFileErr>();
         }
 
         out.emplace_back(data[0], data[1]);
@@ -117,25 +127,28 @@ IError* TJFTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
     return nullptr;
 }
 
-IError* TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) {
+Expected<void> TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) {
     if (jf_in_.eof()) {
-        return new EofErr;
+        return MakeError<EofErr>();
     }
     auto meta_sz = ReadI64(jf_in_);
 
     TCSVReader data_in(jf_in_, meta_sz);
 
     for (ui64 i = 0; i < row_group_len_; i++) {
-        auto [d, err] = data_in.ReadRow();
+        auto res = data_in.ReadRow();
 
-        if (err) {
-            return err;
+        if (!res) {
+            return res.GetError();
         }
+
+        auto d = **res;
+
         if (i == 0) {
             out.resize(d.size());
         } else {
             if (d.size() != out.size()) {
-                return new IncorrrectFileErr("diff size");
+                return MakeError<IncorrrectFileErr>("diff size");
             }
         }
         for (ui64 j = 0; j < d.size(); j++) {
@@ -153,6 +166,8 @@ void TJFTableInput::RestartDataRead() {
 }
 
 
-IError* TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) {
-    return new UnimplementedErr;
+Expected<void> TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) {
+    return MakeError<UnimplementedErr>();
 }
+
+} // namespace JFEngine

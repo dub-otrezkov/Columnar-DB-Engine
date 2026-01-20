@@ -278,6 +278,7 @@ engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h
+ /usr/include/assert.h
  /usr/include/c++/11/array
  /usr/include/c++/11/backward/auto_ptr.h
  /usr/include/c++/11/backward/binders.h
@@ -360,6 +361,7 @@ engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o
  /usr/include/c++/11/bits/uses_allocator.h
  /usr/include/c++/11/bits/uses_allocator_args.h
  /usr/include/c++/11/bits/vector.tcc
+ /usr/include/c++/11/cassert
  /usr/include/c++/11/cctype
  /usr/include/c++/11/cerrno
  /usr/include/c++/11/climits

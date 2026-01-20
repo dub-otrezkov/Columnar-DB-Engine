@@ -2,21 +2,31 @@
 
 #include <iostream>
 
+namespace JFEngine {
+
 TNodesFactory::TNodesFactory(std::vector<TRowScheme>& scheme) : scheme_(scheme) {}
 
-std::pair<std::shared_ptr<ITableNode>, IError*> TNodesFactory::Make(
+Expected<IColumn> TNodesFactory::Make(
     ui64 ind,
     const std::string& value
 ) {
     auto type = scheme_[ind].type_;
     if (type == "string") {
-        auto res = std::make_shared<TStringNode>();
-        auto err = res->Set(value);
-        return {res, err};
+        auto res = std::make_shared<TStringColumn>();
+        // auto err = res->Set(value);
+        // if (err.HasError()) {
+        //     return err.GetError();
+        // }
+        return res;
     } else if (type == "int64") {
-        auto res = std::make_shared<Ti64Node>();
-        auto err = res->Set(value);
-        return {res, err};
+        auto res = std::make_shared<Ti64Column>();
+        // auto err = res->Set(value);
+        // if (err.HasError()) {
+        //     return err.GetError();
+        // }
+        return res;
     }
-    return {nullptr, new UnsupportedErr};
+    return MakeError<UnsupportedErr>();
 }
+
+} // namespace JFEngine

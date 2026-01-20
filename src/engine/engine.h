@@ -10,6 +10,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <iostream>
+
+namespace JFEngine {
 
 class IncorrrectFileErr : public IError {
 public:
@@ -36,9 +39,9 @@ class ITableInput {
 public:
     ITableInput(ui64 row_group_len = 1000);
 
-    virtual IError* GetColumnsScheme(std::vector<TRowScheme>& out) = 0;
-    virtual IError* ReadRowGroup(std::vector<std::vector<std::string>>& out) = 0;
-    virtual IError* ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) = 0;
+    virtual Expected<void> GetColumnsScheme(std::vector<TRowScheme>& out) = 0;
+    virtual Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out) = 0;
+    virtual Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) = 0;
     virtual void RestartDataRead() = 0;
 
 
@@ -50,9 +53,9 @@ class TCSVTableInput : public ITableInput {
 public:
     TCSVTableInput(std::istream& scheme_in, std::istream& data_in, ui64 row_group_len = 1000);
 
-    IError* GetColumnsScheme(std::vector<TRowScheme>& out) override;
-    IError* ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
-    IError* ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
+    Expected<void> GetColumnsScheme(std::vector<TRowScheme>& out) override;
+    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
+    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
 
 private:
@@ -64,9 +67,9 @@ class TJFTableInput : public ITableInput {
 public:
     TJFTableInput(std::istream& jf_in);
 
-    IError* GetColumnsScheme(std::vector<TRowScheme>& out) override;
-    IError* ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
-    IError* ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
+    Expected<void> GetColumnsScheme(std::vector<TRowScheme>& out) override;
+    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
+    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
 
 private:
@@ -75,52 +78,55 @@ private:
 };
 
 class TEngine {
-    friend std::pair<std::shared_ptr<TEngine>, IError*> MakeEngineFromCSV(std::istream& scheme, std::istream& data);
-    friend std::pair<std::shared_ptr<TEngine>, IError*> MakeEngineFromJF(std::istream& jf);
+    friend Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data);
+    friend Expected<TEngine> MakeEngineFromJF(std::istream& jf);
 public:
-    IError* WriteSchemeToCSV(std::ostream& out);
-    IError* WriteDataToCSV(std::ostream& out);
-    IError* WriteTableToJF(std::ostream& out);
+    Expected<void> WriteSchemeToCSV(std::ostream& out);
+    Expected<void> WriteDataToCSV(std::ostream& out);
+    Expected<void> WriteTableToJF(std::ostream& out);
 
 private:
 
     template <typename F>
-    IError* RunCommand(F func) {
+    Expected<void> RunCommand(F func) {
         auto run = true;
 
         while (run) {
-            std::vector<std::vector<std::shared_ptr<ITableNode>>> block;
+            std::vector<std::shared_ptr<IColumn>> block;
+            {
+                auto res = ReadRowGroup(block);
 
-            auto err = ReadRowGroup(block);
-
-            if (err) {
-                if (Is<EofErr>(err)) {
-                    run = false;
-                    delete err;
-                } else {
-                    return err;
+                if (res.HasError()) {
+                    if (Is<EofErr>(res.GetError())) {
+                        run = false;
+                    } else {
+                        return res.GetError();
+                    }
+                }
+                if (block.empty()) {
+                    continue;
                 }
             }
-            if (block.empty()) {
-                continue;
-            }
-
-            err = func(std::move(block));
-            if (err) {
-                return err;
+            {
+                auto res = func(std::move(block));
+                if (!res) {
+                    return res.GetError();
+                }
             }
         }
         return nullptr;
     }
 
-    IError* Setup(std::unique_ptr<ITableInput>&& in);
+    Expected<void> Setup(std::unique_ptr<ITableInput>&& in);
 
-    IError* ReadRowGroup(std::vector<std::vector<std::shared_ptr<ITableNode>>>& out);
+    Expected<void> ReadRowGroup(std::vector<std::shared_ptr<IColumn>>& out);
 
     std::unique_ptr<ITableInput> in_;
     std::vector<TRowScheme> cols_;
 };
 
-std::pair<std::shared_ptr<TEngine>, IError*> MakeEngineFromCSV(std::istream& scheme, std::istream& data);
+Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data);
 
-std::pair<std::shared_ptr<TEngine>, IError*> MakeEngineFromJF(std::istream& jf);
+Expected<TEngine> MakeEngineFromJF(std::istream& jf);
+
+} // namespace JFEngine

@@ -28,15 +28,15 @@ std::string TCSVWriter::PrepareString(const std::string& str) {
     return ans;
 }
 
-void TCSVWriter::WriteRow(const std::vector<std::shared_ptr<ITableNode>>& row) {
-    if (row.empty()) {
-        return;
-    }
-    out_ << PrepareString(row[0]->Get());
-    for (size_t i = 1; i < row.size(); i++) {
-        out_ << sep_ << PrepareString(row[i]->Get());
-    }
-    out_ << '\n';
+void TCSVWriter::WriteRow(std::shared_ptr<JFEngine::IColumn> row) {
+    // if (row.empty()) {
+    //     return;
+    // }
+    // out_ << PrepareString(row[0]->Get());
+    // for (size_t i = 1; i < row.size(); i++) {
+    //     out_ << sep_ << PrepareString(row[i]->Get());
+    // }
+    // out_ << '\n';
 }
 
 void TCSVWriter::WriteRow(const std::vector<std::string>& row) {

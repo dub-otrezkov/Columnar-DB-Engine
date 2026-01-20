@@ -27,21 +27,20 @@ TEST_F(IOTests, BasicRead) {
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
-        ASSERT_EQ(d.size(), 2);
-        EXPECT_EQ(d[0], "john");
-        EXPECT_EQ(d[1], "frusciante");
+        ASSERT_EQ(d->size(), 2);
+        EXPECT_EQ(d->at(0), "john");
+        EXPECT_EQ(d->at(1), "frusciante");
     }
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
-        ASSERT_EQ(d.size(), 2);
-        EXPECT_EQ(d[0], "josh");
-        EXPECT_EQ(d[1], "klinghoffer");
+        ASSERT_EQ(d->size(), 2);
+        EXPECT_EQ(d->at(0), "josh");
+        EXPECT_EQ(d->at(1), "klinghoffer");
     }
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EofErr>(err));
-        delete err;
     }
 }
 
@@ -66,18 +65,18 @@ TEST_F(IOTests, AdvancedRead) {
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
-        ASSERT_EQ(d.size(), 3);
-        EXPECT_EQ(d[0], R"(Scar "Tissue")");
-        EXPECT_EQ(d[1], R"(Calif"ornica"tion)");
-        EXPECT_EQ(d[2], R"(the,"Zephyr song)");
+        ASSERT_EQ(d->size(), 3);
+        EXPECT_EQ(d->at(0), R"(Scar "Tissue")");
+        EXPECT_EQ(d->at(1), R"(Calif"ornica"tion)");
+        EXPECT_EQ(d->at(2), R"(the,"Zephyr song)");
     }
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
-        ASSERT_EQ(d.size(), 3);
-        EXPECT_EQ(d[0], R"(,)");
-        EXPECT_EQ(d[1], R"("by the way")");
-        EXPECT_EQ(d[2], R"(the,"adventures",of,"rain" dance maggie)");
+        ASSERT_EQ(d->size(), 3);
+        EXPECT_EQ(d->at(0), R"(,)");
+        EXPECT_EQ(d->at(1), R"("by the way")");
+        EXPECT_EQ(d->at(2), R"(the,"adventures",of,"rain" dance maggie)");
     }
 }
 
@@ -102,11 +101,11 @@ TEST_F(IOTests, EdgeCasesRead) {
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
-        ASSERT_EQ(d.size(), 4);
-        EXPECT_EQ(d[0], "");
-        EXPECT_EQ(d[1], "hey");
-        EXPECT_EQ(d[2], ",,");
-        EXPECT_EQ(d[3], "");
+        ASSERT_EQ(d->size(), 4);
+        EXPECT_EQ(d->at(0), "");
+        EXPECT_EQ(d->at(1), "hey");
+        EXPECT_EQ(d->at(2), ",,");
+        EXPECT_EQ(d->at(3), "");
     }
 }
 
@@ -119,8 +118,6 @@ TEST_F(IOTests, UnclosedQuoteRead) {
     auto [_, err] = rr.ReadRow();
 
     ASSERT_TRUE(Is<EofErr>(err));
-
-    delete err;
 }
 
 TEST_F(IOTests, BadQuoteRead) {
@@ -132,6 +129,4 @@ TEST_F(IOTests, BadQuoteRead) {
     auto [_, err] = rr.ReadRow();
 
     ASSERT_TRUE(Is<EofErr>(err));
-
-    delete err;
 }

@@ -6,6 +6,7 @@ add_library(engine_lib STATIC
     nodes_factory.cpp
 )
 
+add_subdirectory(debug)
 add_executable(engine_test test.cpp)
 
 target_link_libraries(engine_test engine_lib csv_reader_lib csv_writer_lib errors_lib nodes_lib)

@@ -19,7 +19,12 @@
 /root/coursework/Columnar-DB-Engine/src/build/table_node/CMakeFiles/nodes_lib.dir
 /root/coursework/Columnar-DB-Engine/src/build/table_node/CMakeFiles/edit_cache.dir
 /root/coursework/Columnar-DB-Engine/src/build/table_node/CMakeFiles/rebuild_cache.dir
+/root/coursework/Columnar-DB-Engine/src/build/table_node/tests/CMakeFiles/edit_cache.dir
+/root/coursework/Columnar-DB-Engine/src/build/table_node/tests/CMakeFiles/rebuild_cache.dir
 /root/coursework/Columnar-DB-Engine/src/build/engine/CMakeFiles/engine_lib.dir
 /root/coursework/Columnar-DB-Engine/src/build/engine/CMakeFiles/engine_test.dir
 /root/coursework/Columnar-DB-Engine/src/build/engine/CMakeFiles/edit_cache.dir
 /root/coursework/Columnar-DB-Engine/src/build/engine/CMakeFiles/rebuild_cache.dir
+/root/coursework/Columnar-DB-Engine/src/build/engine/debug/CMakeFiles/debug_engine.dir
+/root/coursework/Columnar-DB-Engine/src/build/engine/debug/CMakeFiles/edit_cache.dir
+/root/coursework/Columnar-DB-Engine/src/build/engine/debug/CMakeFiles/rebuild_cache.dir

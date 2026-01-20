@@ -13,7 +13,9 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/4.1.0/CMakeSystem.cmake"
   "/root/coursework/Columnar-DB-Engine/src/debug/CMakeLists.txt"
   "/root/coursework/Columnar-DB-Engine/src/engine/CMakeLists.txt"
+  "/root/coursework/Columnar-DB-Engine/src/engine/debug/CMakeLists.txt"
   "/root/coursework/Columnar-DB-Engine/src/table_node/CMakeLists.txt"
+  "/root/coursework/Columnar-DB-Engine/src/table_node/tests/CMakeLists.txt"
   "/root/coursework/Columnar-DB-Engine/src/utils/CMakeLists.txt"
   "/root/coursework/Columnar-DB-Engine/src/utils/cint/CMakeLists.txt"
   "/root/coursework/Columnar-DB-Engine/src/utils/csvio/CMakeLists.txt"
@@ -79,7 +81,9 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "utils/csvio/CMakeFiles/CMakeDirectoryInformation.cmake"
   "debug/CMakeFiles/CMakeDirectoryInformation.cmake"
   "table_node/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "table_node/tests/CMakeFiles/CMakeDirectoryInformation.cmake"
   "engine/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "engine/debug/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
@@ -93,4 +97,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "table_node/CMakeFiles/nodes_lib.dir/DependInfo.cmake"
   "engine/CMakeFiles/engine_lib.dir/DependInfo.cmake"
   "engine/CMakeFiles/engine_test.dir/DependInfo.cmake"
+  "engine/debug/CMakeFiles/debug_engine.dir/DependInfo.cmake"
   )

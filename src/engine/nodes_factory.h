@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+namespace JFEngine {
+
 struct TRowScheme {
     std::string name_;
     std::string type_;
@@ -25,7 +27,7 @@ public:
     TNodesFactory() = delete;
     TNodesFactory(std::vector<TRowScheme>& scheme);
 
-    std::pair<std::shared_ptr<ITableNode>, IError*> Make(
+    Expected<IColumn> Make(
         ui64 ind,
         const std::string& value
     );
@@ -33,3 +35,5 @@ public:
 private:
     std::vector<TRowScheme>& scheme_;
 };
+
+} // namespace JFEngine

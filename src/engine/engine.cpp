@@ -6,12 +6,14 @@
 #include <cassert>
 #include <iostream>
 
-IError* TEngine::Setup(std::unique_ptr<ITableInput>&& in) {
+namespace JFEngine {
+
+Expected<void> TEngine::Setup(std::unique_ptr<ITableInput>&& in) {
     in_ = std::move(in);
     return in_->GetColumnsScheme(cols_);
 }
 
-IError* TEngine::WriteSchemeToCSV(std::ostream& out) {
+Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
     TCSVWriter w(out);
     for (auto col : cols_) {
         w.WriteRow({col.name_, col.type_});
@@ -19,16 +21,16 @@ IError* TEngine::WriteSchemeToCSV(std::ostream& out) {
     return nullptr;
 }
 
-IError* TEngine::ReadRowGroup(std::vector<std::vector<std::shared_ptr<ITableNode>>>& out) {
+Expected<void> TEngine::ReadRowGroup(std::vector<std::shared_ptr<IColumn>>& out) {
     std::vector<std::vector<std::string>> vals;
     bool is_eof = false;
     {
-        auto err = in_->ReadRowGroup(vals);
-        if (err) {
-            if (Is<EofErr>(err)) {
+        auto res = in_->ReadRowGroup(vals);
+        if (res.HasError()) {
+            if (Is<EofErr>(res.GetError())) {
                 is_eof = true;
             } else {
-                return err;
+                return res;
             }
         }
     }
@@ -43,21 +45,21 @@ IError* TEngine::ReadRowGroup(std::vector<std::vector<std::shared_ptr<ITableNode
             if (err) {
                 return err;
             }
-            out[col_i].push_back(res);
+            out[col_i]->push_back(res);
         }
     }
 
-    return (is_eof ? new EofErr : nullptr);
+    return {is_eof ? MakeError<EofErr>() : nullptr};
 }
 
-IError* TEngine::WriteDataToCSV(std::ostream& out) {
+Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
     TCSVWriter w(out);
 
-    auto f = [&w](std::vector<std::vector<std::shared_ptr<ITableNode>>> block) -> IError* {
-        for (ui64 i = 0; i < block[0].size(); i++) {
+    auto f = [&w](std::vector<std::shared_ptr<IColumn>> block) -> Expected<void> {
+        for (ui64 i = 0; i < block[0]->size(); i++) {
             std::vector<std::string> row;
             for (ui64 j = 0; j < block.size(); j++) {
-                row.push_back(block[j][i]->Get());
+                row.push_back(block[j]->at(i)->Get());
             }
             w.WriteRow(row);
         }
@@ -74,74 +76,70 @@ void PutI64(std::ostream& out, i64 i) {
     }
 }
 
-IError* TEngine::WriteTableToJF(std::ostream& out) {
-    std::stringstream scheme_str;
-    auto err = WriteSchemeToCSV(scheme_str);
+Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
 
-    std::vector<std::string> blocks;
+    std::vector<i64> poses;
 
-    ui64 sms = 0;
+    ui64 cols_cnt = 0;
 
-    auto f = [&blocks, &sms](std::vector<std::vector<std::shared_ptr<ITableNode>>> block) -> IError* {
-        std::stringstream ss;
-        TCSVWriter w(ss);
-        for (ui64 i = 0; i < block[0].size(); i++) {
+    auto f = [&poses, &out, &cols_cnt](std::vector<std::shared_ptr<IColumn>> block) -> Expected<void> {
+        TCSVWriter w(out);
+
+        std::vector<i64> col_poses;
+        
+        for (ui64 i = 0; i < block[0]->size(); i++) {
             std::vector<std::string> row;
             for (ui64 j = 0; j < block.size(); j++) {
                 row.push_back(block[j][i]->Get());
             }
+            col_poses.push_back(out.tellp());
             w.WriteRow(row);
         }
 
-        auto s = ss.str();
-        blocks.push_back(ss.str());
+        assert(cols_cnt == 0 || cols_cnt == col_poses.size());
+        cols_cnt = col_poses.size();
 
-        sms += s.size();
+        for (auto pos : col_poses) {
+            PutI64(out, pos);
+        }
+        PutI64(out, cols_cnt);
+        poses.push_back(out.tellp());
 
         return nullptr;
     };
 
     RunCommand(f);
     
-    auto s = scheme_str.str();
-
-    auto len = s.size();
-
-    PutI64(out, len);
-    out << s;
-
-    PutI64(out, blocks.size());
-
-    auto cur = sms;
-    for (ui64 i = 0; i < blocks.size(); i++) {
-        PutI64(out, sms - cur);
-        cur -= blocks[i].size();
+    auto meta_start = out.tellp();
+    PutI64(out, cols_cnt);
+    PutI64(out, poses.size());
+    for (auto i : poses) {
+        PutI64(out, i);
     }
+    auto err = WriteSchemeToCSV(out);
 
-    for (const auto& block : blocks) {
-        PutI64(out, block.size());
-        out << block;
-    }
+    PutI64(out, meta_start);
 
-    return nullptr;
+    return err;
 }
 
-std::pair<std::shared_ptr<TEngine>, IError*> MakeEngineFromCSV(std::istream& scheme, std::istream& data) {
+Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data) {
     auto eng = std::make_shared<TEngine>();
     auto err = eng->Setup(std::make_unique<TCSVTableInput>(scheme, data));
-    if (err) {
-        // std::cout << err->Print() << std::endl;
-        return {nullptr, err};
+    if (!err) {
+        std::cout << err.GetError()->Print() << std::endl;
+        return err.GetError();
     }
-    return {eng, nullptr};
+    return eng;
 }
 
-std::pair<std::shared_ptr<TEngine>, IError*> MakeEngineFromJF(std::istream& jf) {
+Expected<TEngine> MakeEngineFromJF(std::istream& jf) {
     auto eng = std::make_shared<TEngine>();
     auto err = eng->Setup(std::make_unique<TJFTableInput>(jf));
     if (err) {
-        std::cout << err->Print() << std::endl;
-        return {nullptr, err};
+        return err.GetError();
     }
-    return {eng, nullptr};
+    return eng;
 }
+
+} // namespace JFEngine

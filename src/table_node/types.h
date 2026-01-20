@@ -3,13 +3,27 @@
 #include "utils/errors/errors.h"
 #include "utils/cint/int.h"
 
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
-class ITableNode {
+namespace JFEngine {
+
+template<typename T>
+class TStorage {
 public:
-    virtual ~ITableNode() = default;
-    virtual IError* Set(const std::string& data) = 0;
+    std::vector<T>& GetData() {
+        return col_;
+    }
+protected:
+    std::vector<T> col_;
+};
+
+class IColumn {
+public:
+    virtual ~IColumn() = default;
+    virtual Expected<void> Set(const std::string& data) = 0;
     virtual std::string Get() = 0;
 };
 
@@ -27,18 +41,32 @@ public:
     }
 };
 
-class Ti64Node : public ITableNode {
+class Ti64Column : public IColumn, public TStorage<i64> {
 public:
-    IError* Set(const std::string& data) override;
+    Expected<void> Set(const std::string& data) override;
     std::string Get() override;
 private:
     i64 value_;
 };
 
-class TStringNode : public ITableNode {
+class TStringColumn : public IColumn, public TStorage<std::string> {
 public:
-    IError* Set(const std::string& data) override;
+    Expected<void> Set(const std::string& data) override;
     std::string Get() override;
+
 private:
     std::string value_;
+};
+
+
+class DynamicCastErr : public IError {
+public:
+    std::string Print() const override {
+        return "NotAnIntErr";
+    }
+};
+
+class OPushBack {
+public:
+    
 };

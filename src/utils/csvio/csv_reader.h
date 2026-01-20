@@ -18,7 +18,7 @@ class TCSVReader {
 public:
     TCSVReader(std::istream& in, i64 buf_size_ = -2, char sep = ',');
 
-    std::pair<std::vector<std::string>, IError*> ReadRow();
+    Expected<std::vector<std::string>> ReadRow();
     void RestartRead();
 
 private:
