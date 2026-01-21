@@ -1,18 +1,11 @@
 #pragma once
 
+#include "errors.h"
 #include "utils/errors/errors.h"
 
 #include <string>
 #include <fstream>
 #include <vector>
-
-
-class EofErr : public IError {
-public:
-    std::string Print() const override {
-        return "EOF";
-    }
-};
 
 class TCSVReader {
 public:

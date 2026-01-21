@@ -2,6 +2,7 @@ add_library(engine_lib STATIC
     engine.h
     engine.cpp
     table_input.cpp
+    errors.h
 )
 
 add_subdirectory(debug)

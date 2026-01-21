@@ -207,4 +207,5 @@ table_node/CMakeFiles/nodes_lib.dir/types.cpp.o: \
  /usr/include/c++/11/pstl/execution_defs.h /usr/include/c++/11/vector \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc
+ /usr/include/c++/11/bits/vector.tcc \
+ /root/coursework/Columnar-DB-Engine/src/table_node/errors.h

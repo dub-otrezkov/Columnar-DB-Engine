@@ -6,6 +6,7 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
   /root/coursework/Columnar-DB-Engine/src/table_node/types.h \
   /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h \
   /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h \
+  /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h \
   /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/bitsperlong.h \
@@ -618,6 +619,10 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/c++/11/bits/uses_allocator.h:
 
+/usr/include/string.h:
+
+/usr/include/c++/11/bits/streambuf.tcc:
+
 /usr/include/c++/11/tr1/bessel_function.tcc:
 
 /usr/include/x86_64-linux-gnu/bits/struct_stat.h:
@@ -655,10 +660,6 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 /usr/include/c++/11/bit:
 
 /usr/include/c++/11/cstdlib:
-
-/usr/include/c++/11/bits/std_mutex.h:
-
-/usr/include/c++/11/tr1/poly_laguerre.tcc:
 
 /usr/include/c++/11/bits/stl_tempbuf.h:
 
@@ -702,16 +703,6 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/math.h:
 
-/usr/include/x86_64-linux-gnu/bits/sigstack.h:
-
-/usr/include/c++/11/clocale:
-
-/usr/include/c++/11/bits/ostream.tcc:
-
-/usr/include/c++/11/bits/stl_algo.h:
-
-/usr/include/asm-generic/int-ll64.h:
-
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
 
 /usr/include/c++/11/bits/ranges_algo.h:
@@ -752,6 +743,16 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/c++/11/bits/ostream_insert.h:
 
+/usr/include/c++/11/bits/ostream.tcc:
+
+/usr/include/c++/11/bits/stl_algo.h:
+
+/usr/include/asm-generic/int-ll64.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigstack.h:
+
+/usr/include/c++/11/clocale:
+
 /usr/include/c++/11/bits/stream_iterator.h:
 
 /usr/include/c++/11/bits/nested_exception.h:
@@ -779,8 +780,6 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
 
 /usr/include/c++/11/bits/locale_facets.tcc:
-
-/root/coursework/Columnar-DB-Engine/src/table_node/types.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h:
 
@@ -812,9 +811,17 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/c++/11/ext/numeric_traits.h:
 
-/usr/include/c++/11/bits/unique_ptr.h:
+/usr/include/x86_64-linux-gnu/sys/wait.h:
 
-/usr/include/c++/11/any:
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/c++/11/bits/char_traits.h:
+
+/usr/include/gmock/internal/gmock-internal-utils.h:
+
+/usr/include/c++/11/tr1/poly_hermite.tcc:
+
+/root/coursework/Columnar-DB-Engine/src/engine/engine.h:
 
 /usr/include/c++/11/bits/stl_map.h:
 
@@ -838,6 +845,8 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/c++/11/bits/hashtable_policy.h:
 
+/root/coursework/Columnar-DB-Engine/src/table_node/types.h:
+
 /usr/include/c++/11/bits/cxxabi_init_exception.h:
 
 /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h:
@@ -854,19 +863,23 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/c++/11/type_traits:
 
-/root/coursework/Columnar-DB-Engine/src/engine/engine.h:
-
-/usr/include/c++/11/tr1/poly_hermite.tcc:
-
 /usr/include/c++/11/bits/specfun.h:
 
-/usr/include/x86_64-linux-gnu/sys/wait.h:
+/usr/include/c++/11/bits/unique_ptr.h:
 
-/usr/include/asm-generic/errno-base.h:
+/usr/include/c++/11/any:
 
-/usr/include/c++/11/bits/char_traits.h:
+/usr/include/c++/11/tr1/poly_laguerre.tcc:
 
-/usr/include/gmock/internal/gmock-internal-utils.h:
+/usr/include/c++/11/bits/std_mutex.h:
+
+/root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h:
+
+/usr/include/c++/11/bits/functexcept.h:
+
+/usr/include/c++/11/streambuf:
 
 /usr/include/c++/11/bits/locale_facets_nonio.h:
 
@@ -969,12 +982,6 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr-default.h:
 
 /usr/include/gtest/gtest_prod.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h:
-
-/usr/include/c++/11/bits/functexcept.h:
-
-/usr/include/c++/11/streambuf:
 
 /usr/include/c++/11/bits/stl_multimap.h:
 
@@ -1120,9 +1127,9 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 
 /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
 
-/usr/include/asm-generic/bitsperlong.h:
-
 /usr/include/asm-generic/types.h:
+
+/usr/include/asm-generic/bitsperlong.h:
 
 /usr/include/c++/11/bits/concept_check.h:
 
@@ -1225,7 +1232,3 @@ engine/CMakeFiles/engine_test.dir/test.cpp.o: /root/coursework/Columnar-DB-Engin
 /usr/include/stdio.h:
 
 /usr/include/stdlib.h:
-
-/usr/include/c++/11/bits/streambuf.tcc:
-
-/usr/include/string.h:

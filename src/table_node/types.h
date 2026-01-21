@@ -51,20 +51,6 @@ protected:
     std::vector<T> cols_;
 };
 
-class NotAnIntErr : public IError {
-public:
-    std::string Print() const override {
-        return "NotAnIntErr";
-    }
-};
-
-class IntOverflowErr : public IError {
-public:
-    std::string Print() const override {
-        return "Overflow";
-    }
-};
-
 class Ti64Column : public TStorage<i64> {
 public:
     Ti64Column() {}

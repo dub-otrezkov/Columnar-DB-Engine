@@ -8,17 +8,20 @@
 using namespace JFEngine;
 
 struct EngineTest : testing::Test {
-    std::string scheme = R"(john,string
-anthony,string
-frusciante,string
+    std::string scheme = R"(col1,string
+col2,int64
+col3,string
+col4,int64
 )";
-    std::string data = R"(please,dont,remember
-me,for,what
-i,did,last
-night,please,dont
-remember,me,its
-only,19,80
-its,only,1983
+    std::string data = R"(josh,1,klinghoffer,2
+john,3,frusciante,4
+stadium,5,arcadium,6
+"i,could,have,lied",6,919,0
+cant,14,stop,52
+the,9,afterglow,9
+dot,19,hacker,10
+dot,19,hacker,10
+dot,19,hacker,-10
 )";
 
     std::stringstream scheme_ss;

@@ -8,6 +8,7 @@ engine/CMakeFiles/engine_lib.dir/engine.cpp.o: /root/coursework/Columnar-DB-Engi
   /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h \
   /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h \
   /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_writer.h \
+  /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h \
   /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -270,9 +271,11 @@ engine/CMakeFiles/engine_lib.dir/engine.cpp.o: /root/coursework/Columnar-DB-Engi
 
 engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB-Engine/src/engine/table_input.cpp \
   /root/coursework/Columnar-DB-Engine/src/engine/engine.h \
+  /root/coursework/Columnar-DB-Engine/src/engine/errors.h \
   /root/coursework/Columnar-DB-Engine/src/table_node/types.h \
   /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h \
   /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h \
+  /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h \
   /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -532,6 +535,8 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
   /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h
 
 
+/root/coursework/Columnar-DB-Engine/src/engine/errors.h:
+
 /root/coursework/Columnar-DB-Engine/src/engine/table_input.cpp:
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h:
@@ -542,9 +547,7 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/x86_64-linux-gnu/sys/select.h:
 
-/usr/include/c++/11/bits/unique_ptr.h:
-
-/usr/include/c++/11/ostream:
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
 /usr/include/c++/11/iostream:
 
@@ -620,8 +623,6 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/c++/11/compare:
 
-/usr/include/c++/11/bits/std_mutex.h:
-
 /usr/include/c++/11/bits/stl_iterator_base_types.h:
 
 /usr/include/c++/11/cstdlib:
@@ -660,13 +661,13 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/c++/11/new:
 
+/usr/include/c++/11/bits/atomic_wait.h:
+
 /usr/include/c++/11/bits/stl_raw_storage_iter.h:
 
 /usr/include/x86_64-linux-gnu/bits/endian.h:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
-
-/usr/include/c++/11/bits/atomic_wait.h:
 
 /usr/include/x86_64-linux-gnu/sys/types.h:
 
@@ -686,10 +687,6 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
-/usr/include/c++/11/bits/char_traits.h:
-
-/usr/include/asm-generic/errno-base.h:
-
 /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h:
 
 /usr/include/c++/11/bits/uses_allocator_args.h:
@@ -707,6 +704,20 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 /usr/include/c++/11/ext/numeric_traits.h:
 
 /usr/include/c++/11/bits/fstream.tcc:
+
+/usr/include/c++/11/bits/stl_iterator_base_funcs.h:
+
+/usr/include/c++/11/bits/cpp_type_traits.h:
+
+/usr/include/pthread.h:
+
+/usr/include/c++/11/bits/std_mutex.h:
+
+/root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h:
+
+/usr/include/c++/11/bits/functexcept.h:
+
+/usr/include/c++/11/streambuf:
 
 /usr/include/c++/11/bits/allocated_ptr.h:
 
@@ -744,11 +755,9 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /root/coursework/Columnar-DB-Engine/src/engine/engine.h:
 
-/usr/include/c++/11/bits/stl_iterator_base_funcs.h:
+/usr/include/asm-generic/errno-base.h:
 
-/usr/include/c++/11/bits/cpp_type_traits.h:
-
-/usr/include/pthread.h:
+/usr/include/c++/11/bits/char_traits.h:
 
 /usr/include/c++/11/bits/charconv.h:
 
@@ -772,6 +781,10 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/c++/11/ext/string_conversions.h:
 
+/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
+
+/usr/include/c++/11/bits/concept_check.h:
+
 /usr/include/c++/11/bits/std_abs.h:
 
 /usr/include/c++/11/bits/ranges_base.h:
@@ -792,17 +805,13 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/c++/11/bits/locale_facets.tcc:
 
-/usr/include/c++/11/bits/functexcept.h:
-
-/usr/include/c++/11/streambuf:
-
-/usr/include/c++/11/bits/concept_check.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
-
 /usr/include/c++/11/bits/invoke.h:
 
 /usr/include/c++/11/bits/ios_base.h:
+
+/usr/include/c++/11/bits/unique_ptr.h:
+
+/usr/include/c++/11/ostream:
 
 /usr/include/limits.h:
 
@@ -936,9 +945,9 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 
 /usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
 
-/usr/include/c++/11/iterator:
-
 /usr/include/c++/11/bits/range_access.h:
+
+/usr/include/c++/11/iterator:
 
 /usr/include/x86_64-linux-gnu/bits/floatn.h:
 
@@ -1063,5 +1072,3 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.o: /root/coursework/Columnar-DB
 /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
-
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:

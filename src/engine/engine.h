@@ -1,9 +1,9 @@
 #pragma once
 
+#include "table_node/types.h"
+
 #include "utils/errors/errors.h"
 #include "utils/csvio/csv_reader.h"
-
-#include "table_node/types.h"
 
 #include <memory>
 #include <string>
@@ -15,27 +15,6 @@ namespace JFEngine {
 struct TRowScheme {
     std::string name_;
     std::string type_;
-};
-
-class IncorrectFileErr : public IError {
-public:
-    IncorrectFileErr(std::string message = "bad input") : message_(std::move(message)) {
-    }
-
-    std::string Print() const override {
-        return message_;
-    }
-
-private:
-    std::string message_;
-};
-
-class UnimplementedErr : public IError {
-public:
-
-    std::string Print() const override {
-        return "unimplemented";
-    }
 };
 
 class ITableInput {

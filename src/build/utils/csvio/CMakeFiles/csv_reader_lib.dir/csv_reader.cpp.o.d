@@ -2,6 +2,7 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: \
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.cpp \
  /usr/include/stdc-predef.h \
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h \
+ /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h \
  /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h \
  /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h \
  /usr/include/c++/11/iostream \

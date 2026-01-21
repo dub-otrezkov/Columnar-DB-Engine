@@ -3,6 +3,7 @@
 
 table_node/CMakeFiles/nodes_lib.dir/types.cpp.o
  /root/coursework/Columnar-DB-Engine/src/table_node/types.cpp
+ /root/coursework/Columnar-DB-Engine/src/table_node/errors.h
  /root/coursework/Columnar-DB-Engine/src/table_node/types.h
  /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h
  /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h

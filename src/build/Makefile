@@ -189,19 +189,6 @@ csvio_test/fast:
 .PHONY : csvio_test/fast
 
 #=============================================================================
-# Target rules for targets named debug
-
-# Build rule for target.
-debug: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug
-.PHONY : debug
-
-# fast build rule for target.
-debug/fast:
-	$(MAKE) $(MAKESILENT) -f debug/CMakeFiles/debug.dir/build.make debug/CMakeFiles/debug.dir/build
-.PHONY : debug/fast
-
-#=============================================================================
 # Target rules for targets named nodes_lib
 
 # Build rule for target.
@@ -266,7 +253,6 @@ help:
 	@echo "... csv_reader_lib"
 	@echo "... csv_writer_lib"
 	@echo "... csvio_test"
-	@echo "... debug"
 	@echo "... debug_engine"
 	@echo "... engine_lib"
 	@echo "... engine_test"

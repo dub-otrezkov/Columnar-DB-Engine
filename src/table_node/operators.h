@@ -21,7 +21,8 @@ class OJFPrintIth {
 public:
     static std::string Exec(Ti64Column& col, ui64 i) {
         auto j = col.GetData()[i];
-        return I64ToJFStr(j);
+        // return I64ToJFStr(j);
+        return std::to_string(j);
     }
 
     static std::string Exec(TStringColumn& col, ui64 i) {

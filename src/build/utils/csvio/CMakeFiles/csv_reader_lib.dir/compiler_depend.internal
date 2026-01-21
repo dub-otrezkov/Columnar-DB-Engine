@@ -5,6 +5,7 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.cpp
  /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h
+ /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h
  /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h

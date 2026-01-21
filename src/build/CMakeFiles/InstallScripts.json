@@ -6,7 +6,6 @@
 		"/root/coursework/Columnar-DB-Engine/src/build/utils/cint/cmake_install.cmake",
 		"/root/coursework/Columnar-DB-Engine/src/build/utils/errors/cmake_install.cmake",
 		"/root/coursework/Columnar-DB-Engine/src/build/utils/csvio/cmake_install.cmake",
-		"/root/coursework/Columnar-DB-Engine/src/build/debug/cmake_install.cmake",
 		"/root/coursework/Columnar-DB-Engine/src/build/table_node/cmake_install.cmake",
 		"/root/coursework/Columnar-DB-Engine/src/build/table_node/tests/cmake_install.cmake",
 		"/root/coursework/Columnar-DB-Engine/src/build/engine/cmake_install.cmake",

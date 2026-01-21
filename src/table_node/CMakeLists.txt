@@ -6,4 +6,5 @@ add_library(nodes_lib STATIC
     types.cpp
     types.h
     operators.h
+    errors.h
 )

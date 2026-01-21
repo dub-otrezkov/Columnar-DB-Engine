@@ -9,6 +9,7 @@ engine/CMakeFiles/engine_lib.dir/engine.cpp.o
  /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_writer.h
+ /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h
  /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
@@ -272,9 +273,11 @@ engine/CMakeFiles/engine_lib.dir/engine.cpp.o
 engine/CMakeFiles/engine_lib.dir/table_input.cpp.o
  /root/coursework/Columnar-DB-Engine/src/engine/table_input.cpp
  /root/coursework/Columnar-DB-Engine/src/engine/engine.h
+ /root/coursework/Columnar-DB-Engine/src/engine/errors.h
  /root/coursework/Columnar-DB-Engine/src/table_node/types.h
  /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h
  /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h
+ /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h
  /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h

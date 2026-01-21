@@ -14,7 +14,6 @@ add_subdirectory(utils)
 
 link_libraries(cint_lib)
 
-add_subdirectory(debug)
 add_subdirectory(table_node)
 add_subdirectory(engine)
 

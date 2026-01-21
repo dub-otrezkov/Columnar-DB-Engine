@@ -4,6 +4,7 @@
 utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.cpp \
   /root/coursework/Columnar-DB-Engine/src/utils/cint/int.h \
   /root/coursework/Columnar-DB-Engine/src/utils/csvio/csv_reader.h \
+  /root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h \
   /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -294,6 +295,8 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr-default.h:
 
+/usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h:
+
 /usr/include/c++/11/ext/type_traits.h:
 
 /usr/include/c++/11/pstl/glue_memory_defs.h:
@@ -308,9 +311,9 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 
 /usr/include/c++/11/cstdio:
 
-/usr/include/c++/11/bits/cxxabi_forced.h:
-
 /usr/include/c++/11/fstream:
+
+/usr/include/c++/11/bits/cxxabi_forced.h:
 
 /usr/include/c++/11/array:
 
@@ -351,8 +354,6 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 /usr/include/c++/11/bits/stl_function.h:
 
 /usr/include/c++/11/compare:
-
-/usr/include/c++/11/bits/std_mutex.h:
 
 /usr/include/c++/11/bits/stl_iterator_base_types.h:
 
@@ -446,6 +447,10 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 
 /root/coursework/Columnar-DB-Engine/src/utils/errors/errors.h:
 
+/usr/include/c++/11/bits/char_traits.h:
+
+/usr/include/asm-generic/errno-base.h:
+
 /usr/include/c++/11/bits/allocated_ptr.h:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
@@ -488,17 +493,25 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 
 /usr/include/c++/11/bits/fstream.tcc:
 
-/usr/include/c++/11/bits/char_traits.h:
+/usr/include/c++/11/bits/std_mutex.h:
 
-/usr/include/asm-generic/errno-base.h:
+/root/coursework/Columnar-DB-Engine/src/utils/csvio/errors.h:
+
+/usr/include/c++/11/bits/functexcept.h:
+
+/usr/include/c++/11/streambuf:
+
+/usr/include/c++/11/bits/atomic_base.h:
+
+/usr/include/c++/11/ext/numeric_traits.h:
 
 /usr/include/c++/11/bits/shared_ptr_atomic.h:
 
 /usr/include/alloca.h:
 
-/usr/include/c++/11/bits/atomic_base.h:
+/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
 
-/usr/include/c++/11/ext/numeric_traits.h:
+/usr/include/c++/11/bits/concept_check.h:
 
 /usr/include/c++/11/bits/stl_iterator_base_funcs.h:
 
@@ -533,14 +546,6 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
 
 /usr/include/c++/11/bits/locale_facets.tcc:
-
-/usr/include/c++/11/bits/functexcept.h:
-
-/usr/include/c++/11/streambuf:
-
-/usr/include/c++/11/bits/concept_check.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
 
 /usr/include/c++/11/bits/hashtable.h:
 
@@ -819,5 +824,3 @@ utils/csvio/CMakeFiles/csv_reader_lib.dir/csv_reader.cpp.o: /root/coursework/Col
 /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h:
-
-/usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h:

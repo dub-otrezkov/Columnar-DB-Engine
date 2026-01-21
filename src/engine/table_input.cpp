@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "errors.h"
 
 #include "utils/csvio/csv_reader.h"
 
