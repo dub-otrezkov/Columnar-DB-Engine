@@ -17,9 +17,9 @@ struct TRowScheme {
     std::string type_;
 };
 
-class IncorrrectFileErr : public IError {
+class IncorrectFileErr : public IError {
 public:
-    IncorrrectFileErr(std::string message = "bad input") : message_(std::move(message)) {
+    IncorrectFileErr(std::string message = "bad input") : message_(std::move(message)) {
     }
 
     std::string Print() const override {
@@ -85,8 +85,13 @@ public:
 
 private:
     std::istream& jf_in_;
-    std::vector<ui64> blocks_pos;
+
+    ui64 cols_cnt_;
+    ui64 meta_start_;
+    std::vector<ui64> blocks_pos_;
     std::vector<TRowScheme> scheme_;
+
+    ui64 current_block_ = 0;
 };
 
 class TEngine {
@@ -112,6 +117,9 @@ private:
                 } else {
                     return err;
                 }
+            }
+            if (!block_ptr) {
+                continue;
             }
             auto block = *block_ptr;
             if (block.empty()) {

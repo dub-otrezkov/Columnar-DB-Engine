@@ -41,7 +41,7 @@ Expected<void> TCSVTableInput::GetColumnsScheme() {
         auto data = **err;
 
         if (data.size() != 2) {
-            return MakeError<IncorrrectFileErr>();
+            return MakeError<IncorrectFileErr>();
         }
 
         scheme_.emplace_back(data[0], data[1]);
@@ -70,7 +70,7 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TCSVTableInput::ReadRowGroup() {
             tmp.resize(d.size());
         } else {
             if (d.size() != tmp.size()) {
-                return MakeError<IncorrrectFileErr>("diff size");
+                return MakeError<IncorrectFileErr>("diff size");
             }
         }
 
@@ -107,9 +107,67 @@ TJFTableInput::TJFTableInput(std::istream& jf_in) : jf_in_(jf_in) {
 }
 
 Expected<void> TJFTableInput::GetColumnsScheme() {
+    jf_in_.seekg(-8, std::ios::end);
+    meta_start_ = ReadI64(jf_in_);
+
+    jf_in_.seekg(meta_start_, std::ios::beg);
+
+    row_group_len_ = ReadI64(jf_in_);
+    cols_cnt_ = ReadI64(jf_in_);
+    auto blocks_cnt = ReadI64(jf_in_);
+    blocks_pos_.resize(blocks_cnt);
+    for (ui64 i = 0; i < blocks_cnt; i++) {
+        blocks_pos_[i] = ReadI64(jf_in_);
+    }
+    scheme_.reserve(cols_cnt_);
+    TCSVReader r(jf_in_);
+    for (ui64 i = 0; i < cols_cnt_; i++) {
+        auto [d, err] = r.ReadRow();
+        if (err) {
+            return err;
+        }
+        if (d->size() != 2) {
+            return MakeError<IncorrectFileErr>("bad scheme");
+        }
+        scheme_.emplace_back(d->at(0), d->at(1));
+    }
 }
 
 Expected<std::vector<std::shared_ptr<IColumn>>> TJFTableInput::ReadRowGroup() {
+    
+    if (current_block_ == blocks_pos_.size()) {
+        return MakeError<EofErr>();
+    }
+
+    auto start = blocks_pos_[current_block_];
+    // current_block_ = (current_block_ + 1) % blocks_pos_.size();
+    current_block_++;
+
+
+    TCSVReader rr(jf_in_);
+
+    std::vector<std::shared_ptr<IColumn>> res;
+
+    for (ui64 i = 0; i < cols_cnt_; i++) {
+        jf_in_.seekg(start - 8 * (cols_cnt_ - i));
+        auto pos = ReadI64(jf_in_);
+        jf_in_.seekg(pos);
+
+        auto d = rr.ReadRow();
+        if (d.HasError()) {
+            return d.GetError();
+        }
+        // std::cout << scheme_[i].type_ << std::endl;
+        auto col = MakeColumnJF(d.GetRes(), scheme_[i].type_);
+
+        if (col.HasError()) {
+            return col.GetError();
+        }
+
+        res.push_back(col.GetShared());
+    }
+
+    return res;
 }
 
 void TJFTableInput::RestartDataRead() {

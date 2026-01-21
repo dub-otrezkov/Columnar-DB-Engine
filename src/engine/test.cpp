@@ -57,38 +57,38 @@ TEST_F(EngineTest, CSVToCSV) {
     }
 }
 
-// TEST_F(EngineTest, CSVToJF) {
-//     std::stringstream out;
-//     {
-//         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
+TEST_F(EngineTest, CSVToJF) {
+    std::stringstream out;
+    {
+        auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
 
-//         ASSERT_FALSE(err);
+        ASSERT_FALSE(err);
 
-//         {
-//             err = eng->WriteTableToJF(out).GetError();
+        {
+            err = eng->WriteTableToJF(out).GetError();
 
-//             ASSERT_FALSE(err);
-//         }
-//     }
-//     {
-//         auto [eng, err] = MakeEngineFromJF(out);
+            ASSERT_FALSE(err);
+        }
+    }
+    {
+        auto [eng, err] = MakeEngineFromJF(out);
 
-//         ASSERT_FALSE(err);
-//         {
-//             std::stringstream ans;
-//             err = eng->WriteSchemeToCSV(ans).GetError();
-//             ASSERT_FALSE(err);
-//             EXPECT_EQ(ans.str(), scheme);
-//         }
+        ASSERT_FALSE(err);
+        {
+            std::stringstream ans;
+            err = eng->WriteSchemeToCSV(ans).GetError();
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), scheme);
+        }
 
-//         {
-//             std::stringstream ans;
-//             err = eng->WriteDataToCSV(ans).GetError();
-//             if (err) {
-//                 std::cout << err->Print() << std::endl;
-//             }
-//             ASSERT_FALSE(err);
-//             EXPECT_EQ(ans.str(), data);
-//         }
-//     }
-// }
+        {
+            std::stringstream ans;
+            err = eng->WriteDataToCSV(ans).GetError();
+            if (err) {
+                std::cout << err->Print() << std::endl;
+            }
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), data);
+        }
+    }
+}

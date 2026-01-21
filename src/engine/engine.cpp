@@ -50,17 +50,16 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
 
         std::vector<i64> col_poses;
 
-        for (ui64 i = 0; i < block[0]->GetSize(); i++) {
+        for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row;
-            for (ui64 j = 0; j < block.size(); j++) {
+            for (ui64 i = 0; i < block[0]->GetSize(); i++) {
                 row.push_back(Do<OJFPrintIth>(block[j], i));
             }
             col_poses.push_back(out.tellp());
             w.WriteRow(row);
         }
 
-        assert(cols_cnt == 0 || cols_cnt == col_poses.size());
-        cols_cnt = col_poses.size();
+        cols_cnt = block.size();
 
         for (auto pos : col_poses) {
             PutI64(out, pos);

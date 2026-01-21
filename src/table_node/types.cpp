@@ -43,6 +43,9 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, std::string type) {
 Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type) {
     if (type == "int64") {
         auto res = std::make_shared<Ti64Column>();
+        for (ui64 i = 0; i < data.size(); i++) {
+            data[i] = std::to_string(StrToi64JF(data[i]));
+        }
         auto t = res->Setup(std::move(data));
         if (t.HasError()) {
             return t.GetError();
