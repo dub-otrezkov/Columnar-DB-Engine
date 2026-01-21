@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcsv_writer_lib.a CMakeFiles/csv_writer_lib.dir/csv_writer.cpp.o
-/usr/bin/ranlib libcsv_writer_lib.a

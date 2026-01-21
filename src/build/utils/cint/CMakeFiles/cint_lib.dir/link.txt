@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcint_lib.a CMakeFiles/cint_lib.dir/int.cpp.o
-/usr/bin/ranlib libcint_lib.a

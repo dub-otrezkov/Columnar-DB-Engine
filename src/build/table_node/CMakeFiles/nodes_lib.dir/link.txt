@@ -1,2 +1,0 @@
-/usr/bin/ar qc libnodes_lib.a CMakeFiles/nodes_lib.dir/types.cpp.o
-/usr/bin/ranlib libnodes_lib.a
