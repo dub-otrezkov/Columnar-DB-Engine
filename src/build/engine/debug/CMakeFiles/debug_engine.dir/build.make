@@ -95,11 +95,13 @@ debug_engine_EXTERNAL_OBJECTS =
 
 engine/debug/debug_engine: engine/debug/CMakeFiles/debug_engine.dir/main.cpp.o
 engine/debug/debug_engine: engine/debug/CMakeFiles/debug_engine.dir/build.make
+engine/debug/debug_engine: utils/cint/libcint_lib.a
 engine/debug/debug_engine: engine/libengine_lib.a
 engine/debug/debug_engine: utils/csvio/libcsv_reader_lib.a
 engine/debug/debug_engine: utils/csvio/libcsv_writer_lib.a
 engine/debug/debug_engine: utils/errors/liberrors_lib.a
 engine/debug/debug_engine: table_node/libnodes_lib.a
+engine/debug/debug_engine: utils/cint/libcint_lib.a
 engine/debug/debug_engine: utils/errors/liberrors_lib.a
 engine/debug/debug_engine: engine/debug/CMakeFiles/debug_engine.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable debug_engine"

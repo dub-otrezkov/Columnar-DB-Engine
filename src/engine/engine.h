@@ -1,7 +1,5 @@
 #pragma once
 
-#include "nodes_factory.h"
-
 #include "utils/errors/errors.h"
 #include "utils/csvio/csv_reader.h"
 
@@ -13,6 +11,11 @@
 #include <iostream>
 
 namespace JFEngine {
+
+struct TRowScheme {
+    std::string name_;
+    std::string type_;
+};
 
 class IncorrrectFileErr : public IError {
 public:
@@ -39,11 +42,14 @@ class ITableInput {
 public:
     ITableInput(ui64 row_group_len = 1000);
 
-    virtual Expected<void> GetColumnsScheme(std::vector<TRowScheme>& out) = 0;
-    virtual Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out) = 0;
-    virtual Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) = 0;
+    virtual Expected<void> GetColumnsScheme() = 0;
+    virtual Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() = 0;
+    // virtual Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) = 0;
     virtual void RestartDataRead() = 0;
 
+    virtual std::vector<TRowScheme>& GetScheme() = 0;
+
+    ui64 GetRowGroupLen() const;
 
 protected:
     ui64 row_group_len_;
@@ -53,28 +59,34 @@ class TCSVTableInput : public ITableInput {
 public:
     TCSVTableInput(std::istream& scheme_in, std::istream& data_in, ui64 row_group_len = 1000);
 
-    Expected<void> GetColumnsScheme(std::vector<TRowScheme>& out) override;
-    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
-    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
+    Expected<void> GetColumnsScheme() override;
+    Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() override;
+    // Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
+
+    std::vector<TRowScheme>& GetScheme() override;
 
 private:
     TCSVReader scheme_in_;
     TCSVReader data_in_;
+    std::vector<TRowScheme> scheme_;
 };
 
 class TJFTableInput : public ITableInput {
 public:
     TJFTableInput(std::istream& jf_in);
 
-    Expected<void> GetColumnsScheme(std::vector<TRowScheme>& out) override;
-    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out) override;
-    Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
+    Expected<void> GetColumnsScheme() override;
+    Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() override;
+    // Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
+
+    std::vector<TRowScheme>& GetScheme() override;
 
 private:
     std::istream& jf_in_;
     std::vector<ui64> blocks_pos;
+    std::vector<TRowScheme> scheme_;
 };
 
 class TEngine {
@@ -92,26 +104,22 @@ private:
         auto run = true;
 
         while (run) {
-            std::vector<std::shared_ptr<IColumn>> block;
-            {
-                auto res = ReadRowGroup(block);
+            auto [block_ptr, err] = in_->ReadRowGroup();
 
-                if (res.HasError()) {
-                    if (Is<EofErr>(res.GetError())) {
-                        run = false;
-                    } else {
-                        return res.GetError();
-                    }
-                }
-                if (block.empty()) {
-                    continue;
+            if (err) {
+                if (Is<EofErr>(err)) {
+                    run = false;
+                } else {
+                    return err;
                 }
             }
-            {
-                auto res = func(std::move(block));
-                if (!res) {
-                    return res.GetError();
-                }
+            auto block = *block_ptr;
+            if (block.empty()) {
+                continue;
+            }
+            auto res = func(std::move(block));
+            if (!res) {
+                return res.GetError();
             }
         }
         return nullptr;
@@ -119,10 +127,7 @@ private:
 
     Expected<void> Setup(std::unique_ptr<ITableInput>&& in);
 
-    Expected<void> ReadRowGroup(std::vector<std::shared_ptr<IColumn>>& out);
-
     std::unique_ptr<ITableInput> in_;
-    std::vector<TRowScheme> cols_;
 };
 
 Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data);

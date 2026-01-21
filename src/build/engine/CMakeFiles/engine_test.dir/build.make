@@ -95,6 +95,7 @@ engine_test_EXTERNAL_OBJECTS =
 
 engine/engine_test: engine/CMakeFiles/engine_test.dir/test.cpp.o
 engine/engine_test: engine/CMakeFiles/engine_test.dir/build.make
+engine/engine_test: utils/cint/libcint_lib.a
 engine/engine_test: engine/libengine_lib.a
 engine/engine_test: utils/csvio/libcsv_reader_lib.a
 engine/engine_test: utils/csvio/libcsv_writer_lib.a
@@ -102,6 +103,7 @@ engine/engine_test: utils/errors/liberrors_lib.a
 engine/engine_test: table_node/libnodes_lib.a
 engine/engine_test: /usr/lib/x86_64-linux-gnu/libgtest.a
 engine/engine_test: /usr/lib/x86_64-linux-gnu/libgtest_main.a
+engine/engine_test: utils/cint/libcint_lib.a
 engine/engine_test: utils/errors/liberrors_lib.a
 engine/engine_test: /usr/lib/x86_64-linux-gnu/libgtest.a
 engine/engine_test: engine/CMakeFiles/engine_test.dir/link.txt

@@ -123,6 +123,44 @@ depend:
 	cd /root/coursework/Columnar-DB-Engine/src/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
+# Convenience name for target.
+utils/cint/CMakeFiles/cint_lib.dir/rule:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 utils/cint/CMakeFiles/cint_lib.dir/rule
+.PHONY : utils/cint/CMakeFiles/cint_lib.dir/rule
+
+# Convenience name for target.
+cint_lib: utils/cint/CMakeFiles/cint_lib.dir/rule
+.PHONY : cint_lib
+
+# fast build rule for target.
+cint_lib/fast:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/cint/CMakeFiles/cint_lib.dir/build.make utils/cint/CMakeFiles/cint_lib.dir/build
+.PHONY : cint_lib/fast
+
+int.o: int.cpp.o
+.PHONY : int.o
+
+# target to build an object file
+int.cpp.o:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/cint/CMakeFiles/cint_lib.dir/build.make utils/cint/CMakeFiles/cint_lib.dir/int.cpp.o
+.PHONY : int.cpp.o
+
+int.i: int.cpp.i
+.PHONY : int.i
+
+# target to preprocess a source file
+int.cpp.i:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/cint/CMakeFiles/cint_lib.dir/build.make utils/cint/CMakeFiles/cint_lib.dir/int.cpp.i
+.PHONY : int.cpp.i
+
+int.s: int.cpp.s
+.PHONY : int.s
+
+# target to generate assembly for a file
+int.cpp.s:
+	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f utils/cint/CMakeFiles/cint_lib.dir/build.make utils/cint/CMakeFiles/cint_lib.dir/int.cpp.s
+.PHONY : int.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -133,6 +171,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... cint_lib"
+	@echo "... int.o"
+	@echo "... int.i"
+	@echo "... int.s"
 .PHONY : help
 
 

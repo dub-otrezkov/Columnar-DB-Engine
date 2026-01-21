@@ -12,12 +12,9 @@ TCSVReader::TCSVReader(std::istream& in, i64 buf_size, char sep) :
 }
 
 Expected<std::vector<std::string>> TCSVReader::ReadRow() {
-    // std::cout << buf_size_ << std::endl;
     if (in_.eof() || buf_size_ == 0) {
         return {std::vector<std::string>(), MakeError<EofErr>()};
     }
-
-    // std::cout << buf_size_ << std::endl;
 
     std::vector<std::string> ans;
 

@@ -1,1 +1,1 @@
-add_library(cint_lib INTERFACE int.h)
+add_library(cint_lib STATIC int.h int.cpp)

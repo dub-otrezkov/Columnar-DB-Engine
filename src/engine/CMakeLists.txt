@@ -2,8 +2,6 @@ add_library(engine_lib STATIC
     engine.h
     engine.cpp
     table_input.cpp
-    nodes_factory.h
-    nodes_factory.cpp
 )
 
 add_subdirectory(debug)

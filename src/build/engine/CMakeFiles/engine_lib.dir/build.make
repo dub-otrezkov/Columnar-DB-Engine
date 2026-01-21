@@ -100,35 +100,19 @@ engine/CMakeFiles/engine_lib.dir/table_input.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_lib.dir/table_input.cpp.s"
 	cd /root/coursework/Columnar-DB-Engine/src/build/engine && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/coursework/Columnar-DB-Engine/src/engine/table_input.cpp -o CMakeFiles/engine_lib.dir/table_input.cpp.s
 
-engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o: engine/CMakeFiles/engine_lib.dir/flags.make
-engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o: /root/coursework/Columnar-DB-Engine/src/engine/nodes_factory.cpp
-engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o: engine/CMakeFiles/engine_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o"
-	cd /root/coursework/Columnar-DB-Engine/src/build/engine && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o -MF CMakeFiles/engine_lib.dir/nodes_factory.cpp.o.d -o CMakeFiles/engine_lib.dir/nodes_factory.cpp.o -c /root/coursework/Columnar-DB-Engine/src/engine/nodes_factory.cpp
-
-engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_lib.dir/nodes_factory.cpp.i"
-	cd /root/coursework/Columnar-DB-Engine/src/build/engine && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/coursework/Columnar-DB-Engine/src/engine/nodes_factory.cpp > CMakeFiles/engine_lib.dir/nodes_factory.cpp.i
-
-engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_lib.dir/nodes_factory.cpp.s"
-	cd /root/coursework/Columnar-DB-Engine/src/build/engine && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/coursework/Columnar-DB-Engine/src/engine/nodes_factory.cpp -o CMakeFiles/engine_lib.dir/nodes_factory.cpp.s
-
 # Object files for target engine_lib
 engine_lib_OBJECTS = \
 "CMakeFiles/engine_lib.dir/engine.cpp.o" \
-"CMakeFiles/engine_lib.dir/table_input.cpp.o" \
-"CMakeFiles/engine_lib.dir/nodes_factory.cpp.o"
+"CMakeFiles/engine_lib.dir/table_input.cpp.o"
 
 # External object files for target engine_lib
 engine_lib_EXTERNAL_OBJECTS =
 
 engine/libengine_lib.a: engine/CMakeFiles/engine_lib.dir/engine.cpp.o
 engine/libengine_lib.a: engine/CMakeFiles/engine_lib.dir/table_input.cpp.o
-engine/libengine_lib.a: engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o
 engine/libengine_lib.a: engine/CMakeFiles/engine_lib.dir/build.make
 engine/libengine_lib.a: engine/CMakeFiles/engine_lib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX static library libengine_lib.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libengine_lib.a"
 	cd /root/coursework/Columnar-DB-Engine/src/build/engine && $(CMAKE_COMMAND) -P CMakeFiles/engine_lib.dir/cmake_clean_target.cmake
 	cd /root/coursework/Columnar-DB-Engine/src/build/engine && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/engine_lib.dir/link.txt --verbose=$(VERBOSE)
 

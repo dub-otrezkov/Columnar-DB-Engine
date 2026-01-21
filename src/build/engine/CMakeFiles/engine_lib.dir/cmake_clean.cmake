@@ -1,8 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/engine_lib.dir/engine.cpp.o"
   "CMakeFiles/engine_lib.dir/engine.cpp.o.d"
-  "CMakeFiles/engine_lib.dir/nodes_factory.cpp.o"
-  "CMakeFiles/engine_lib.dir/nodes_factory.cpp.o.d"
   "CMakeFiles/engine_lib.dir/table_input.cpp.o"
   "CMakeFiles/engine_lib.dir/table_input.cpp.o.d"
   "libengine_lib.a"

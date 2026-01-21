@@ -12,7 +12,6 @@ class TCSVWriter {
 public:
     TCSVWriter(std::ostream& out, char sep = ',');
 
-    void WriteRow(std::shared_ptr<JFEngine::IColumn> row);
     void WriteRow(const std::vector<std::string>& row);
 
     ~TCSVWriter();

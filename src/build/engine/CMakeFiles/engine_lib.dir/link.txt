@@ -1,2 +1,2 @@
-/usr/bin/ar qc libengine_lib.a CMakeFiles/engine_lib.dir/engine.cpp.o CMakeFiles/engine_lib.dir/table_input.cpp.o CMakeFiles/engine_lib.dir/nodes_factory.cpp.o
+/usr/bin/ar qc libengine_lib.a CMakeFiles/engine_lib.dir/engine.cpp.o CMakeFiles/engine_lib.dir/table_input.cpp.o
 /usr/bin/ranlib libengine_lib.a

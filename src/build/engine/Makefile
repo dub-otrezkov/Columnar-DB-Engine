@@ -175,30 +175,6 @@ engine.cpp.s:
 	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/engine.cpp.s
 .PHONY : engine.cpp.s
 
-nodes_factory.o: nodes_factory.cpp.o
-.PHONY : nodes_factory.o
-
-# target to build an object file
-nodes_factory.cpp.o:
-	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.o
-.PHONY : nodes_factory.cpp.o
-
-nodes_factory.i: nodes_factory.cpp.i
-.PHONY : nodes_factory.i
-
-# target to preprocess a source file
-nodes_factory.cpp.i:
-	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.i
-.PHONY : nodes_factory.cpp.i
-
-nodes_factory.s: nodes_factory.cpp.s
-.PHONY : nodes_factory.s
-
-# target to generate assembly for a file
-nodes_factory.cpp.s:
-	cd /root/coursework/Columnar-DB-Engine/src/build && $(MAKE) $(MAKESILENT) -f engine/CMakeFiles/engine_lib.dir/build.make engine/CMakeFiles/engine_lib.dir/nodes_factory.cpp.s
-.PHONY : nodes_factory.cpp.s
-
 table_input.o: table_input.cpp.o
 .PHONY : table_input.o
 
@@ -261,9 +237,6 @@ help:
 	@echo "... engine.o"
 	@echo "... engine.i"
 	@echo "... engine.s"
-	@echo "... nodes_factory.o"
-	@echo "... nodes_factory.i"
-	@echo "... nodes_factory.s"
 	@echo "... table_input.o"
 	@echo "... table_input.i"
 	@echo "... table_input.s"

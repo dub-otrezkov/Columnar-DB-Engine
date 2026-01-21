@@ -95,8 +95,10 @@ debug_EXTERNAL_OBJECTS =
 
 debug/debug: debug/CMakeFiles/debug.dir/main.cpp.o
 debug/debug: debug/CMakeFiles/debug.dir/build.make
+debug/debug: utils/cint/libcint_lib.a
 debug/debug: table_node/libnodes_lib.a
 debug/debug: utils/csvio/libcsv_reader_lib.a
+debug/debug: utils/cint/libcint_lib.a
 debug/debug: utils/errors/liberrors_lib.a
 debug/debug: debug/CMakeFiles/debug.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/root/coursework/Columnar-DB-Engine/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable debug"

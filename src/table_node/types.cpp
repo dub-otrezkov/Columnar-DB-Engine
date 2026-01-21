@@ -2,28 +2,60 @@
 
 namespace JFEngine {
 
-Expected<void> Ti64Column::Set(const std::string& data) {
-    try {
-        value_ = std::stoll(data);
-        return nullptr;
-    } catch (std::invalid_argument) {
-        return MakeError<NotAnIntErr>();
-    } catch (std::out_of_range) {
-        return MakeError<IntOverflowErr>();
+Expected<void> Ti64Column::Setup(std::vector<std::string> data) {
+    SetType(Ei64Column);
+    for (const auto& s : data) {
+        try {
+            cols_.push_back(std::stoll(s));
+        } catch (...) {
+            return MakeError<NotAnIntErr>();
+        }
     }
-}
-
-std::string Ti64Column::Get() {
-    return std::to_string(value_);
-}
-
-Expected<void> TStringColumn::Set(const std::string& data) {
-    value_ = data;
     return nullptr;
 }
 
-std::string TStringColumn::Get() {
-    return value_;
+Expected<void> TStringColumn::Setup(std::vector<std::string> data) {
+    SetType(EStringColumn);
+    for (ui64 i = 0; i < data.size(); i++) {
+        cols_.push_back(std::move(data[i]));
+    }
+    return nullptr;
+}
+
+Expected<IColumn> MakeColumn(std::vector<std::string> data, std::string type) {
+    if (type == "int64") {
+        auto res = std::make_shared<Ti64Column>();
+        auto t = res->Setup(std::move(data));
+        if (t.HasError()) {
+            return t.GetError();
+        }
+        return res;
+    } else if (type == "string") {
+        auto res = std::make_shared<TStringColumn>();
+        auto t = res->Setup(std::move(data));
+        if (t.HasError()) {
+            return t.GetError();
+        }
+        return res;
+    }
+}
+
+Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type) {
+    if (type == "int64") {
+        auto res = std::make_shared<Ti64Column>();
+        auto t = res->Setup(std::move(data));
+        if (t.HasError()) {
+            return t.GetError();
+        }
+        return res;
+    } else if (type == "string") {
+        auto res = std::make_shared<TStringColumn>();
+        auto t = res->Setup(std::move(data));
+        if (t.HasError()) {
+            return t.GetError();
+        }
+        return res;
+    }
 }
 
 } // namespace JFEngine

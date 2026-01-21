@@ -61,6 +61,10 @@ public:
         return *res_;
     }
 
+    auto GetShared() {
+        return res_;
+    }
+
     explicit operator bool() const {
         return !HasError();
     }

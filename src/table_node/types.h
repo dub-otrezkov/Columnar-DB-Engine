@@ -10,21 +10,45 @@
 
 namespace JFEngine {
 
-template<typename T>
-class TStorage {
-public:
-    std::vector<T>& GetData() {
-        return col_;
-    }
-protected:
-    std::vector<T> col_;
+enum TColumn {
+    EUnitialized,
+    Ei64Column,
+    EStringColumn
 };
 
 class IColumn {
 public:
     virtual ~IColumn() = default;
-    virtual Expected<void> Set(const std::string& data) = 0;
-    virtual std::string Get() = 0;
+
+    virtual ui64 GetSize() = 0;
+
+    void SetType(TColumn t) {
+        type_ = t;
+    }
+    TColumn GetType() {
+        return type_;
+    }
+
+private:
+    TColumn type_ = EUnitialized;
+};
+
+template <typename T>
+class TStorage : public IColumn {
+public:
+    
+    ui64 GetSize() override {
+        return cols_.size();
+    }
+
+    std::vector<T>& GetData() {
+        return cols_;
+    }
+
+    virtual Expected<void> Setup(std::vector<std::string> data) = 0;
+
+protected:
+    std::vector<T> cols_;
 };
 
 class NotAnIntErr : public IError {
@@ -41,32 +65,28 @@ public:
     }
 };
 
-class Ti64Column : public IColumn, public TStorage<i64> {
+class Ti64Column : public TStorage<i64> {
 public:
-    Expected<void> Set(const std::string& data) override;
-    std::string Get() override;
-private:
-    i64 value_;
+    Ti64Column() {}
+
+    Expected<void> Setup(std::vector<std::string> data) override;
 };
 
-class TStringColumn : public IColumn, public TStorage<std::string> {
+class TStringColumn : public TStorage<std::string> {
 public:
-    Expected<void> Set(const std::string& data) override;
-    std::string Get() override;
+    TStringColumn() {}
 
-private:
-    std::string value_;
+    Expected<void> Setup(std::vector<std::string> data) override;
 };
 
-
-class DynamicCastErr : public IError {
+class UnsupportedErr : public IError {
 public:
     std::string Print() const override {
         return "NotAnIntErr";
     }
 };
 
-class OPushBack {
-public:
-    
-};
+Expected<IColumn> MakeColumn(std::vector<std::string> data, std::string type);
+Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type);
+
+} // namespace JFEngine

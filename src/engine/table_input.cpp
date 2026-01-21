@@ -11,6 +11,10 @@ namespace JFEngine {
 ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
 }
 
+ui64 ITableInput::GetRowGroupLen() const {
+    return row_group_len_;
+}
+
 TCSVTableInput::TCSVTableInput(
     std::istream& scheme_in,
     std::istream& data_in,
@@ -22,11 +26,10 @@ TCSVTableInput::TCSVTableInput(
 {
 }
 
-Expected<void> TCSVTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
+Expected<void> TCSVTableInput::GetColumnsScheme() {
+    scheme_.clear();
     while (1) {
         auto err = scheme_in_.ReadRow();
-        
-        // std::cout << err.HasError() << std::endl;
 
         if (err.HasError()) {
             if (Is<EofErr>(err.GetError())) {
@@ -41,133 +44,79 @@ Expected<void> TCSVTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
             return MakeError<IncorrrectFileErr>();
         }
 
-        out.emplace_back(data[0], data[1]);
+        scheme_.emplace_back(data[0], data[1]);
     }
 
     return nullptr;
 }
 
-Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) {
+Expected<std::vector<std::shared_ptr<IColumn>>> TCSVTableInput::ReadRowGroup() {
+    auto is_eof = false;
+
+    std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
         auto res = data_in_.ReadRow();
         if (!res) {
-            return res.GetError();
+            if (Is<EofErr>(res.GetError())) {
+                is_eof = true;
+                break;
+            } else {
+                return res.GetError();
+            }
         }
-        auto d = **res;
+        auto d = res.GetRes();
+
         if (i == 0) {
-            out.resize(d.size());
+            tmp.resize(d.size());
         } else {
-            if (d.size() != out.size()) {
+            if (d.size() != tmp.size()) {
                 return MakeError<IncorrrectFileErr>("diff size");
             }
         }
 
         for (ui64 j = 0; j < d.size(); j++) {
-            out[j].push_back(d[j]);
+            tmp[j].push_back(d[j]);
         }
     }
-
-    return nullptr;
+    std::vector<std::shared_ptr<IColumn>> out;
+    for (ui64 i = 0; i < tmp.size(); i++) {
+        auto col = MakeColumn(std::move(tmp[i]), scheme_[i].type_);
+        if (col.HasError()) {
+            return col.GetError();
+        }
+        out.push_back(col.GetShared());
+    }
+    return {std::move(out), (is_eof ? MakeError<EofErr>() : nullptr)};
 }
 
 void TCSVTableInput::RestartDataRead() {
     data_in_.RestartRead();
 }
 
-Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
-    return MakeError<UnimplementedErr>();
+std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
+    return scheme_;
 }
 
+// Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
+//     return MakeError<UnimplementedErr>();
+// }
+
+// NEED TO FIX!!!
 
 TJFTableInput::TJFTableInput(std::istream& jf_in) : jf_in_(jf_in) {
 }
 
-i64 ReadI64(std::istream& in) {
-    i64 ans = 0;
-    for (ui64 i = 0; i < 8; i++) {
-        ui64 c = in.get();
-        ans = (ans | (c << i * 8));
-    }
-    return ans;
+Expected<void> TJFTableInput::GetColumnsScheme() {
 }
 
-Expected<void> TJFTableInput::GetColumnsScheme(std::vector<TRowScheme>& out) {
-    jf_in_.seekg(0);
-    auto meta_sz = ReadI64(jf_in_);
-
-    TCSVReader scheme_in(jf_in_, meta_sz);
-    while (1) {
-        auto res = scheme_in.ReadRow();
-
-        if (!res) {
-            if (Is<EofErr>(res.GetError())) {
-                break;
-            }
-            return res.GetError();
-        }
-
-        auto data = **res;
-
-        if (data.size() != 2) {
-            return MakeError<IncorrrectFileErr>();
-        }
-
-        out.emplace_back(data[0], data[1]);
-    }
-
-
-    i64 blocks_cnt = ReadI64(jf_in_);
-    
-    meta_sz += 8 * (blocks_cnt + 1);
-    for (ui64 i = 0; i < blocks_cnt; i++) {
-        auto c = ReadI64(jf_in_);
-        blocks_pos.push_back(c + meta_sz);
-    }
-
-    return nullptr;
-}
-
-Expected<void> TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out) {
-    if (jf_in_.eof()) {
-        return MakeError<EofErr>();
-    }
-    auto meta_sz = ReadI64(jf_in_);
-
-    TCSVReader data_in(jf_in_, meta_sz);
-
-    for (ui64 i = 0; i < row_group_len_; i++) {
-        auto res = data_in.ReadRow();
-
-        if (!res) {
-            return res.GetError();
-        }
-
-        auto d = **res;
-
-        if (i == 0) {
-            out.resize(d.size());
-        } else {
-            if (d.size() != out.size()) {
-                return MakeError<IncorrrectFileErr>("diff size");
-            }
-        }
-        for (ui64 j = 0; j < d.size(); j++) {
-            out[j].push_back(d[j]);
-        }
-    }
-    return nullptr;
+Expected<std::vector<std::shared_ptr<IColumn>>> TJFTableInput::ReadRowGroup() {
 }
 
 void TJFTableInput::RestartDataRead() {
-    if (blocks_pos.empty()) {
-        return;
-    }
-    jf_in_.seekg(blocks_pos[0]);
 }
 
-
-Expected<void> TJFTableInput::ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) {
-    return MakeError<UnimplementedErr>();
+std::vector<TRowScheme>& TJFTableInput::GetScheme() {
+    return scheme_;
 }
 
 } // namespace JFEngine
