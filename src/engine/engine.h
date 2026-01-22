@@ -17,9 +17,11 @@ struct TRowScheme {
     std::string type_;
 };
 
+const ui64 KRowGroupLen = 100;
+
 class ITableInput {
 public:
-    ITableInput(ui64 row_group_len = 1000);
+    ITableInput(ui64 row_group_len = KRowGroupLen);
 
     virtual Expected<void> GetColumnsScheme() = 0;
     virtual Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() = 0;
@@ -35,11 +37,10 @@ protected:
 
 class TCSVTableInput : public ITableInput {
 public:
-    TCSVTableInput(std::istream& scheme_in, std::istream& data_in, ui64 row_group_len = 1000);
+    TCSVTableInput(std::istream& scheme_in, std::istream& data_in, ui64 row_group_len = KRowGroupLen);
 
     Expected<void> GetColumnsScheme() override;
     Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() override;
-    // Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
 
     std::vector<TRowScheme>& GetScheme() override;
@@ -72,7 +73,7 @@ private:
 };
 
 class TEngine {
-    friend Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data);
+    friend Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui64 row_group_size);
     friend Expected<TEngine> MakeEngineFromJF(std::istream& jf);
 public:
     Expected<void> WriteSchemeToCSV(std::ostream& out);
@@ -115,7 +116,7 @@ private:
     std::unique_ptr<ITableInput> in_;
 };
 
-Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data);
+Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui64 row_group_size = KRowGroupLen);
 
 Expected<TEngine> MakeEngineFromJF(std::istream& jf);
 

@@ -85,9 +85,9 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
     return err;
 }
 
-Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data) {
+Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui64 row_group_size) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TCSVTableInput>(scheme, data));
+    auto err = eng->Setup(std::make_unique<TCSVTableInput>(scheme, data, row_group_size));
     if (!err) {
         return err.GetError();
     }

@@ -147,7 +147,7 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TJFTableInput::ReadRowGroup() {
     std::vector<std::shared_ptr<IColumn>> res;
 
     for (ui64 i = 0; i < cols_cnt_; i++) {
-        jf_in_.seekg(start - 8 * (cols_cnt_ - i));
+        jf_in_.seekg(start - sizeof(i64) * (cols_cnt_ - i));
         auto pos = ReadI64(jf_in_);
         jf_in_.seekg(pos);
 
@@ -155,7 +155,7 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TJFTableInput::ReadRowGroup() {
         if (d.HasError()) {
             return d.GetError();
         }
-        // std::cout << scheme_[i].type_ << std::endl;
+
         auto col = MakeColumnJF(d.GetRes(), scheme_[i].type_);
 
         if (col.HasError()) {
@@ -169,6 +169,7 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TJFTableInput::ReadRowGroup() {
 }
 
 void TJFTableInput::RestartDataRead() {
+    current_block_ = 0;
 }
 
 std::vector<TRowScheme>& TJFTableInput::GetScheme() {

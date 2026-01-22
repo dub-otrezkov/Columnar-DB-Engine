@@ -60,10 +60,44 @@ TEST_F(EngineTest, CSVToCSV) {
     }
 }
 
-TEST_F(EngineTest, CSVToJF) {
+TEST_F(EngineTest, JFBasic) {
     std::stringstream out;
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
+
+        ASSERT_FALSE(err);
+
+        {
+            err = eng->WriteTableToJF(out).GetError();
+
+            ASSERT_FALSE(err);
+        }
+    }
+    {
+        auto [eng, err] = MakeEngineFromJF(out);
+
+        ASSERT_FALSE(err);
+        {
+            std::stringstream ans;
+            err = eng->WriteSchemeToCSV(ans).GetError();
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), scheme);
+        }
+
+        {
+            std::stringstream ans;
+            err = eng->WriteDataToCSV(ans).GetError();
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), data);
+        }
+    }
+}
+
+
+TEST_F(EngineTest, JFSmallRowGroupSize) {
+    std::stringstream out;
+    {
+        auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss, /*row_group_size=*/1);
 
         ASSERT_FALSE(err);
 
