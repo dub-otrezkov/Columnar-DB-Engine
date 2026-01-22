@@ -1,5 +1,7 @@
 #include "engine/engine.h"
 
+#include "utils/logger/logger.h"
+
 #include <iostream>
 #include <sstream>
 
@@ -16,7 +18,6 @@ int main() {
 
         eng->WriteTableToJF(out);
     }
-
     {
         std::ifstream in("josh.jf", std::ios::binary);
         auto [eng, err] = JFEngine::MakeEngineFromJF(in);

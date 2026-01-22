@@ -9,7 +9,9 @@ TCSVWriter::TCSVWriter(std::ostream& out, char sep) :
 }
 
 std::string TCSVWriter::PrepareString(const std::string& str) {
-    if (std::count(str.begin(), str.end(), sep_) == 0 && std::count(str.begin(), str.end(), '"') == 0) {
+    if (std::count(str.begin(), str.end(), sep_) == 0 &&
+        std::count(str.begin(), str.end(), '\n') == 0 &&
+        std::count(str.begin(), str.end(), '"') == 0) {
         return str;
     }
 

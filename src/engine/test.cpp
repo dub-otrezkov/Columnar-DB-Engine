@@ -87,9 +87,6 @@ TEST_F(EngineTest, CSVToJF) {
         {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
-            if (err) {
-                std::cout << err->Print() << std::endl;
-            }
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), data);
         }

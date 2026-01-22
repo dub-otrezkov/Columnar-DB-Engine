@@ -23,7 +23,6 @@ public:
 
     virtual Expected<void> GetColumnsScheme() = 0;
     virtual Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() = 0;
-    // virtual Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) = 0;
     virtual void RestartDataRead() = 0;
 
     virtual std::vector<TRowScheme>& GetScheme() = 0;
@@ -57,7 +56,6 @@ public:
 
     Expected<void> GetColumnsScheme() override;
     Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() override;
-    // Expected<void> ReadRowGroup(std::vector<std::vector<std::string>>& out, ui64 index) override;
     void RestartDataRead() override;
 
     std::vector<TRowScheme>& GetScheme() override;

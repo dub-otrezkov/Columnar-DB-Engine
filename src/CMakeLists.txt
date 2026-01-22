@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(utils)
 
-link_libraries(cint_lib)
+link_libraries(cint_lib logger_lib)
 
 add_subdirectory(table_node)
 add_subdirectory(engine)

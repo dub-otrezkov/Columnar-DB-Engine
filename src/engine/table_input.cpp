@@ -24,8 +24,7 @@ TCSVTableInput::TCSVTableInput(
     ITableInput(row_group_len),
     scheme_in_(scheme_in),
     data_in_(data_in)
-{
-}
+{}
 
 Expected<void> TCSVTableInput::GetColumnsScheme() {
     scheme_.clear();
@@ -101,8 +100,6 @@ std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
 // Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
 //     return MakeError<UnimplementedErr>();
 // }
-
-// NEED TO FIX!!!
 
 TJFTableInput::TJFTableInput(std::istream& jf_in) : jf_in_(jf_in) {
 }
