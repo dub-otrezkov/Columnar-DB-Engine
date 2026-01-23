@@ -1,5 +1,7 @@
 #pragma once
 
+#include "workers/io/io.h"
+
 #include "table_node/types.h"
 
 #include "utils/errors/errors.h"
@@ -12,75 +14,20 @@
 
 namespace JFEngine {
 
-struct TRowScheme {
-    std::string name_;
-    std::string type_;
-};
-
-const ui64 KRowGroupLen = 100;
-
-class ITableInput {
-public:
-    ITableInput(ui64 row_group_len = KRowGroupLen);
-
-    virtual Expected<void> GetColumnsScheme() = 0;
-    virtual Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() = 0;
-    virtual void RestartDataRead() = 0;
-
-    virtual std::vector<TRowScheme>& GetScheme() = 0;
-
-    ui64 GetRowGroupLen() const;
-
-protected:
-    ui64 row_group_len_;
-};
-
-class TCSVTableInput : public ITableInput {
-public:
-    TCSVTableInput(std::istream& scheme_in, std::istream& data_in, ui64 row_group_len = KRowGroupLen);
-
-    Expected<void> GetColumnsScheme() override;
-    Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() override;
-    void RestartDataRead() override;
-
-    std::vector<TRowScheme>& GetScheme() override;
-
-private:
-    TCSVReader scheme_in_;
-    TCSVReader data_in_;
-    std::vector<TRowScheme> scheme_;
-};
-
-class TJFTableInput : public ITableInput {
-public:
-    TJFTableInput(std::istream& jf_in);
-
-    Expected<void> GetColumnsScheme() override;
-    Expected<std::vector<std::shared_ptr<IColumn>>> ReadRowGroup() override;
-    void RestartDataRead() override;
-
-    std::vector<TRowScheme>& GetScheme() override;
-
-private:
-    std::istream& jf_in_;
-
-    ui64 cols_cnt_;
-    ui64 meta_start_;
-    std::vector<ui64> blocks_pos_;
-    std::vector<TRowScheme> scheme_;
-
-    ui64 current_block_ = 0;
-};
-
 class TEngine {
-    friend Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui64 row_group_size);
+    friend Expected<TEngine> MakeEngineFromCSV(
+        std::istream& scheme,
+        std::istream& data,
+        ui64 row_group_size
+    );
     friend Expected<TEngine> MakeEngineFromJF(std::istream& jf);
 public:
+
     Expected<void> WriteSchemeToCSV(std::ostream& out);
     Expected<void> WriteDataToCSV(std::ostream& out);
     Expected<void> WriteTableToJF(std::ostream& out);
 
-private:
+public:
 
     template <typename F>
     Expected<void> RunCommand(F func) {
@@ -119,5 +66,9 @@ private:
 Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui64 row_group_size = KRowGroupLen);
 
 Expected<TEngine> MakeEngineFromJF(std::istream& jf);
+
+Expected<TEngine> MakeSelectEngine(std::istream& jf, const std::vector<std::string>& cols);
+
+Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker);
 
 } // namespace JFEngine

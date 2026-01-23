@@ -31,7 +31,7 @@ public:
 };
 
 template <typename TOperator, typename... Args>
-auto Do(std::shared_ptr<IColumn> col, Args&&... args) {
+auto Do(TColumnPtr col, Args&&... args) {
     switch (col->GetType()) {
         case Ei64Column: {
             return TOperator::Exec(*dynamic_cast<Ti64Column*>(col.get()), std::forward<Args>(args)...);

@@ -1,20 +1,12 @@
-#include "engine.h"
+#include "io.h"
 #include "errors.h"
 
 #include "utils/csvio/csv_reader.h"
 
 #include <cassert>
-
-#include <iostream>
+#include <unordered_map>
 
 namespace JFEngine {
-
-ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
-}
-
-ui64 ITableInput::GetRowGroupLen() const {
-    return row_group_len_;
-}
 
 TCSVTableInput::TCSVTableInput(
     std::istream& scheme_in,
@@ -26,7 +18,7 @@ TCSVTableInput::TCSVTableInput(
     data_in_(data_in)
 {}
 
-Expected<void> TCSVTableInput::GetColumnsScheme() {
+Expected<void> TCSVTableInput::SetupColumnsScheme() {
     scheme_.clear();
     while (1) {
         auto err = scheme_in_.ReadRow();
@@ -50,7 +42,7 @@ Expected<void> TCSVTableInput::GetColumnsScheme() {
     return nullptr;
 }
 
-Expected<std::vector<std::shared_ptr<IColumn>>> TCSVTableInput::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
 
     std::vector<std::vector<std::string>> tmp;
@@ -78,7 +70,7 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TCSVTableInput::ReadRowGroup() {
             tmp[j].push_back(d[j]);
         }
     }
-    std::vector<std::shared_ptr<IColumn>> out;
+    std::vector<TColumnPtr> out;
     for (ui64 i = 0; i < tmp.size(); i++) {
         auto col = MakeColumn(std::move(tmp[i]), scheme_[i].type_);
         if (col.HasError()) {
@@ -104,7 +96,7 @@ std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
 TJFTableInput::TJFTableInput(std::istream& jf_in) : jf_in_(jf_in) {
 }
 
-Expected<void> TJFTableInput::GetColumnsScheme() {
+Expected<void> TJFTableInput::SetupColumnsScheme() {
     jf_in_.seekg(-8, std::ios::end);
     meta_start_ = ReadI64(jf_in_);
 
@@ -129,41 +121,48 @@ Expected<void> TJFTableInput::GetColumnsScheme() {
         }
         scheme_.emplace_back(d->at(0), d->at(1));
     }
+    return nullptr;
 }
 
-Expected<std::vector<std::shared_ptr<IColumn>>> TJFTableInput::ReadRowGroup() {
-    
-    if (current_block_ == blocks_pos_.size()) {
+Expected<TColumnPtr> TJFTableInput::ReadIthColumn(ui64 i) {
+    auto start = blocks_pos_[current_block_];
+    jf_in_.seekg(start - sizeof(i64) * (cols_cnt_ - i));
+    auto pos = ReadI64(jf_in_);
+    jf_in_.seekg(pos);
+
+    TCSVReader rr(jf_in_);
+    auto d = rr.ReadRow();
+
+    if (d.HasError()) {
+        return d.GetError();
+    }
+
+    auto col = MakeColumnJF(d.GetRes(), scheme_[i].type_);
+
+    if (col.HasError()) {
+        return col.GetError();
+    }
+
+    return col.GetShared();
+}
+
+Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
+    if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EofErr>();
     }
 
-    auto start = blocks_pos_[current_block_];
-    // current_block_ = (current_block_ + 1) % blocks_pos_.size();
-    current_block_++;
 
-
-    TCSVReader rr(jf_in_);
-
-    std::vector<std::shared_ptr<IColumn>> res;
+    std::vector<TColumnPtr> res;
 
     for (ui64 i = 0; i < cols_cnt_; i++) {
-        jf_in_.seekg(start - sizeof(i64) * (cols_cnt_ - i));
-        auto pos = ReadI64(jf_in_);
-        jf_in_.seekg(pos);
-
-        auto d = rr.ReadRow();
-        if (d.HasError()) {
-            return d.GetError();
+        auto [col, err] = ReadIthColumn(i);
+        if (err) {
+            return err;
         }
-
-        auto col = MakeColumnJF(d.GetRes(), scheme_[i].type_);
-
-        if (col.HasError()) {
-            return col.GetError();
-        }
-
-        res.push_back(col.GetShared());
+        res.push_back(*col);
     }
+    
+    current_block_++;
 
     return res;
 }
@@ -174,6 +173,36 @@ void TJFTableInput::RestartDataRead() {
 
 std::vector<TRowScheme>& TJFTableInput::GetScheme() {
     return scheme_;
+}
+
+void TJFTableInput::MoveCursor(i64 delta) {
+    if (delta < 0 && current_block_ < -delta) {
+        current_block_ = 0;
+    } else {
+        current_block_ += delta;
+    }
+}
+
+Expected<TColumnPtr> TJFTableInput::ReadColumn(const std::string& name) {
+    if (current_block_ >= blocks_pos_.size()) {
+        return MakeError<EofErr>();
+    }
+
+    static auto name_to_index = [this]() -> auto {
+        std::unordered_map<std::string, ui64> poses;
+        for (size_t i = 0; i < scheme_.size(); i++) {
+            poses[scheme_[i].name_] = i;
+        }
+        return poses;
+    };
+
+    static auto inds = name_to_index();
+
+    if (inds.count(name) == 0) {
+        return MakeError<NoSuchColumnsErr>(name);
+    }
+
+    return ReadIthColumn(inds[name]);
 }
 
 } // namespace JFEngine

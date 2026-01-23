@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#include "workers/selector/selector.h"
 #include "utils/csvio/csv_writer.h"
 #include "table_node/operators.h"
 
@@ -11,7 +12,7 @@ namespace JFEngine {
 
 Expected<void> TEngine::Setup(std::unique_ptr<ITableInput>&& in) {
     in_ = std::move(in);
-    return in_->GetColumnsScheme();
+    return in_->SetupColumnsScheme();
 }
 
 Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
@@ -25,7 +26,7 @@ Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
 Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
     TCSVWriter w(out);
 
-    auto f = [&w](std::vector<std::shared_ptr<IColumn>> block) -> Expected<void> {
+    auto f = [&w](std::vector<TColumnPtr> block) -> Expected<void> {
         for (ui64 i = 0; i < block[0]->GetSize(); i++) {
             std::vector<std::string> row;
             for (ui64 j = 0; j < block.size(); j++) {
@@ -45,7 +46,7 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
 
     ui64 cols_cnt = 0;
 
-    auto f = [&poses, &out, &cols_cnt](std::vector<std::shared_ptr<IColumn>> block) -> Expected<void> {
+    auto f = [&poses, &out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         TCSVWriter w(out);
 
         std::vector<i64> col_poses;
@@ -97,7 +98,25 @@ Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui
 Expected<TEngine> MakeEngineFromJF(std::istream& jf) {
     auto eng = std::make_shared<TEngine>();
     auto err = eng->Setup(std::make_unique<TJFTableInput>(jf));
-    if (err) {
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    return eng;
+}
+
+Expected<TEngine> MakeSelectEngine(std::istream& jf, const std::vector<std::string>& cols) {
+    auto eng = std::make_shared<TEngine>();
+    auto err = eng->Setup(std::make_unique<TSelector>(jf, cols));
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    return eng;
+}
+
+Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker) {
+    auto eng = std::make_shared<TEngine>();
+    auto err = eng->Setup(std::move(worker));
+    if (err.HasError()) {
         return err.GetError();
     }
     return eng;

@@ -15,5 +15,6 @@ add_subdirectory(utils)
 link_libraries(cint_lib logger_lib)
 
 add_subdirectory(table_node)
+add_subdirectory(workers)
 add_subdirectory(engine)
 

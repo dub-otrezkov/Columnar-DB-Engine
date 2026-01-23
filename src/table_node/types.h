@@ -33,6 +33,8 @@ private:
     TColumn type_ = EUnitialized;
 };
 
+using TColumnPtr = std::shared_ptr<IColumn>;
+
 template <typename T>
 class TStorage : public IColumn {
 public:

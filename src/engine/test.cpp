@@ -8,10 +8,10 @@
 using namespace JFEngine;
 
 struct EngineTest : testing::Test {
-    std::string scheme = R"(col1,string
-col2,int64
-col3,string
-col4,int64
+    std::string scheme = R"(red,string
+hot,int64
+chili,string
+peppers,int64
 )";
     std::string data = R"(josh,1,klinghoffer,2
 john,3,frusciante,4
@@ -92,7 +92,6 @@ TEST_F(EngineTest, JFBasic) {
         }
     }
 }
-
 
 TEST_F(EngineTest, JFSmallRowGroupSize) {
     std::stringstream out;

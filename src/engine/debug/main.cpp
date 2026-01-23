@@ -1,5 +1,7 @@
 #include "engine/engine.h"
 
+#include "workers/selector/selector.h"
+
 #include "utils/logger/logger.h"
 
 #include <iostream>
@@ -22,8 +24,40 @@ int main() {
         std::ifstream in("josh.jf", std::ios::binary);
         auto [eng, err] = JFEngine::MakeEngineFromJF(in);
 
+        // std::cout << eng << " " << err << std::endl;
+
+        if (err) {
+            std::cout << err->Print() << std::endl;
+            return 0;
+        }
+
         std::stringstream ss;
         eng->WriteSchemeToCSV(ss);
+        auto t = eng->WriteDataToCSV(ss);
+
+        std::cout << ss.str() << std::endl;
+
+        if (t.HasError()) {
+            std::cout << t.GetError()->Print() << std::endl;
+            return 0;
+        }
+    }
+    {
+        std::ifstream in("josh.jf", std::ios::binary);
+        std::vector<std::string> cols{"hot", "red", "peppers"};
+        auto [eng, err] = JFEngine::MakeSelectEngine(in, cols);
+
+        if (err) {
+            std::cout << err->Print() << std::endl;
+            return 0;
+        }
+
+        std::stringstream ss;
+        auto e = eng->WriteSchemeToCSV(ss);
+        if (e.HasError()){
+            std::cout << e.GetError()->Print() << std::endl;
+            return 0;
+        }
         auto t = eng->WriteDataToCSV(ss);
 
         std::cout << ss.str() << std::endl;
