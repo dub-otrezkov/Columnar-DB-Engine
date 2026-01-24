@@ -1,6 +1,7 @@
 #pragma once
 
 #include "workers/io/io.h"
+#include "workers/selector/selector.h"
 
 #include "table_node/types.h"
 
@@ -67,7 +68,7 @@ Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui
 
 Expected<TEngine> MakeEngineFromJF(std::istream& jf);
 
-Expected<TEngine> MakeSelectEngine(std::istream& jf, const std::vector<std::string>& cols);
+Expected<TEngine> MakeSelectEngine(std::istream& jf, TSelectQuery query);
 
 Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker);
 

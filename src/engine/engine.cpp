@@ -1,6 +1,5 @@
 #include "engine.h"
 
-#include "workers/selector/selector.h"
 #include "utils/csvio/csv_writer.h"
 #include "table_node/operators.h"
 
@@ -104,9 +103,9 @@ Expected<TEngine> MakeEngineFromJF(std::istream& jf) {
     return eng;
 }
 
-Expected<TEngine> MakeSelectEngine(std::istream& jf, const std::vector<std::string>& cols) {
+Expected<TEngine> MakeSelectEngine(std::istream& jf, TSelectQuery query) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TSelector>(jf, cols));
+    auto err = eng->Setup(std::make_unique<TSelector>(jf, query));
     if (err.HasError()) {
         return err.GetError();
     }

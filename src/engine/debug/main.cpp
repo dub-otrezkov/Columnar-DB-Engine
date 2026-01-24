@@ -45,7 +45,8 @@ int main() {
     {
         std::ifstream in("josh.jf", std::ios::binary);
         std::vector<std::string> cols{"hot", "red", "peppers"};
-        auto [eng, err] = JFEngine::MakeSelectEngine(in, cols);
+        // std::unorde
+        auto [eng, err] = JFEngine::MakeSelectEngine(in, {cols});
 
         if (err) {
             std::cout << err->Print() << std::endl;

@@ -52,7 +52,7 @@ TEST_F(EngineTest, SelectColumnsTest) {
         }
     }
     std::vector<std::string> cols{"red", "hot"};
-    auto [eng, err] = MakeSelectEngine(jf_file, cols);
+    auto [eng, err] = MakeSelectEngine(jf_file, {cols});
 
     {
         std::stringstream data;
@@ -99,7 +99,7 @@ TEST_F(EngineTest, SelectColumnsOrderingTest) {
         }
     }
     std::vector<std::string> cols{"hot", "red", "peppers"};
-    auto [eng, err] = MakeSelectEngine(jf_file, cols);
+    auto [eng, err] = MakeSelectEngine(jf_file, {cols});
     
     {
         std::stringstream data;
@@ -129,6 +129,54 @@ peppers,int64
 19,dot,10
 19,dot,10
 19,dot,-10
+)");
+    }
+}
+
+TEST_F(EngineTest, SelectColumnsWithAliasesTest) {
+    std::stringstream jf_file;
+    {
+        auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
+
+        ASSERT_FALSE(err);
+
+        {
+            err = eng->WriteTableToJF(jf_file).GetError();
+
+            ASSERT_FALSE(err);
+        }
+    }
+    std::vector<std::string> cols{"red", "hot"};
+    std::unordered_map<std::string, std::string> aliases{{"red", "john"}};
+    auto [eng, err] = MakeSelectEngine(jf_file, TSelectQuery{cols, aliases});
+
+    {
+        std::stringstream data;
+
+        auto res = eng->WriteSchemeToCSV(data);
+        
+        ASSERT_FALSE(res.HasError());
+
+        ASSERT_EQ(data.str(), R"(john,string
+hot,int64
+)");
+    }
+    {
+        std::stringstream data;
+
+        auto res = eng->WriteDataToCSV(data);
+        
+        ASSERT_FALSE(res.HasError());
+
+        ASSERT_EQ(data.str(), R"(josh,1
+john,3
+stadium,5
+"i,could,have,lied",6
+cant,14
+the,9
+dot,19
+dot,19
+dot,19
 )");
     }
 }

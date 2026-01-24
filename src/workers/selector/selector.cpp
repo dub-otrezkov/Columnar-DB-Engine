@@ -1,29 +1,40 @@
 #include "selector.h"
 
-#include <unordered_map>
-
 namespace JFEngine {
 
-TSelector::TSelector(std::istream& jf_in, const std::vector<std::string>& rows) : 
+TSelector::TSelector(std::istream& jf_in, TSelectQuery query) : 
     jf_in_(std::make_unique<TJFTableInput>(jf_in))
 {
-    scheme_.resize(rows.size());
-    for (ui64 i = 0; i < rows.size(); i++) {
-        scheme_[i].name_ = rows[i];
+    aliases_ = std::move(query.aliases);
+    scheme_.resize(query.rows.size());
+    for (ui64 i = 0; i < scheme_.size(); i++) {
+        scheme_[i].name_ = query.rows[i];
+        if (aliases_.count(scheme_[i].name_)) {
+            scheme_[i].name_ = aliases_[scheme_[i].name_];
+        }
     }
+
+    for (const auto& [name, _] : scheme_) {
+        unaliases_[name] = name;
+    }
+
+    for (const auto& [name, alias] : aliases_) {
+        unaliases_[alias] = name;
+    }
+
 }
 
 Expected<void> TSelector::SetupColumnsScheme() {
     auto err = jf_in_->SetupColumnsScheme();
 
     if (err.HasError()) {
-        std::cout << err.GetError().get() << std::endl;
+        // std::cout << err.GetError().get() << std::endl;
         return err.GetError();
     }
 
     std::unordered_map<std::string, ui64> inds;
     for (ui64 i = 0; i < scheme_.size(); i++) {
-        inds[scheme_[i].name_] = i;
+        inds[unaliases_[scheme_[i].name_]] = i;
     }
 
     auto prev_scheme = jf_in_->GetScheme();
@@ -52,7 +63,7 @@ Expected<std::vector<TColumnPtr>> TSelector::ReadRowGroup() {
     std::vector<TColumnPtr> res;
 
     for (const auto& [name, _] : scheme_) {
-        auto [col, err] = jf_in_->ReadColumn(name);
+        auto [col, err] = jf_in_->ReadColumn(unaliases_.at(name));
         if (err) {
             return err;
         }
