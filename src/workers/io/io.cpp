@@ -8,20 +8,13 @@
 
 namespace JFEngine {
 
-TCSVTableInput::TCSVTableInput(
-    std::istream& scheme_in,
-    std::istream& data_in,
-    ui64 row_group_len
-) : 
-    ITableInput(row_group_len),
-    scheme_in_(scheme_in),
-    data_in_(data_in)
-{}
-
 Expected<void> TCSVTableInput::SetupColumnsScheme() {
     scheme_.clear();
+
+    TCSVReader csv_scheme(scheme_in_);
+
     while (1) {
-        auto err = scheme_in_.ReadRow();
+        auto err = csv_scheme.ReadRow();
 
         if (err.HasError()) {
             if (Is<EofErr>(err.GetError())) {
@@ -45,9 +38,11 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
 
+    TCSVReader csv_data(data_in_);
+
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
-        auto res = data_in_.ReadRow();
+        auto res = csv_data.ReadRow();
         if (!res) {
             if (Is<EofErr>(res.GetError())) {
                 is_eof = true;
@@ -82,7 +77,7 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 }
 
 void TCSVTableInput::RestartDataRead() {
-    data_in_.RestartRead();
+    data_in_.seekg(0);
 }
 
 std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
@@ -93,8 +88,8 @@ std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
 //     return MakeError<UnimplementedErr>();
 // }
 
-TJFTableInput::TJFTableInput(std::istream& jf_in) : jf_in_(jf_in) {
-}
+// TJFTableInput::TJFTableInput(std::istream&& jf_in) : jf_in_(std::move(jf_in)) {
+// }
 
 Expected<void> TJFTableInput::SetupColumnsScheme() {
     jf_in_.seekg(-8, std::ios::end);

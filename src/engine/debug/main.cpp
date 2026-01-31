@@ -16,13 +16,13 @@ int main() {
 
         std::ofstream out("josh.jf", std::ios::binary);
 
-        auto [eng, err] = JFEngine::MakeEngineFromCSV(scheme, data);
+        auto [eng, err] = JFEngine::MakeEngineFromCSV(std::move(scheme), std::move(data));
 
         eng->WriteTableToJF(out);
     }
     {
         std::ifstream in("josh.jf", std::ios::binary);
-        auto [eng, err] = JFEngine::MakeEngineFromJF(in);
+        auto [eng, err] = JFEngine::MakeEngineFromJF(std::move(in));
 
         // std::cout << eng << " " << err << std::endl;
 
@@ -46,7 +46,7 @@ int main() {
         std::ifstream in("josh.jf", std::ios::binary);
         std::vector<std::string> cols{"hot", "red", "peppers"};
         // std::unorde
-        auto [eng, err] = JFEngine::MakeSelectEngine(in, {cols});
+        auto [eng, err] = JFEngine::MakeSelectEngine(std::move(in), {cols});
 
         if (err) {
             std::cout << err->Print() << std::endl;

@@ -17,11 +17,11 @@ namespace JFEngine {
 
 class TEngine {
     friend Expected<TEngine> MakeEngineFromCSV(
-        std::istream& scheme,
-        std::istream& data,
+        std::istream&& scheme,
+        std::istream&& data,
         ui64 row_group_size
     );
-    friend Expected<TEngine> MakeEngineFromJF(std::istream& jf);
+    friend Expected<TEngine> MakeEngineFromJF(std::istream&& jf);
 public:
 
     Expected<void> WriteSchemeToCSV(std::ostream& out);
@@ -64,11 +64,11 @@ public:
     std::unique_ptr<ITableInput> in_;
 };
 
-Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data, ui64 row_group_size = KRowGroupLen);
+Expected<TEngine> MakeEngineFromCSV(std::istream&& scheme, std::istream&& data, ui64 row_group_size = KRowGroupLen);
 
-Expected<TEngine> MakeEngineFromJF(std::istream& jf);
+Expected<TEngine> MakeEngineFromJF(std::istream&& jf);
 
-Expected<TEngine> MakeSelectEngine(std::istream& jf, TSelectQuery query);
+Expected<TEngine> MakeSelectEngine(std::istream&& jf, TSelectQuery query);
 
 Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker);
 

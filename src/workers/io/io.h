@@ -9,9 +9,14 @@
 
 namespace JFEngine {
 
-class TCSVTableInput : public ITableInput {
+class TCSVTableInput : public ITableInput, private std::istream {
 public:
-    TCSVTableInput(std::istream& scheme_in, std::istream& data_in, ui64 row_group_len = KRowGroupLen);
+    template <typename T>
+    TCSVTableInput(T&& scheme_in, T&& data_in, ui64 row_group_len = KRowGroupLen) {
+        
+        scheme_in_ = std::move(scheme_in);
+        data_in_ = std::move(data_in);
+    }
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
@@ -19,14 +24,17 @@ public:
     std::vector<TRowScheme>& GetScheme() override;
 
 private:
-    TCSVReader scheme_in_;
-    TCSVReader data_in_;
+    std::istream scheme_in_;
+    std::istream data_in_;
     std::vector<TRowScheme> scheme_;
 };
 
-class TJFTableInput : public ITableInput {
+class TJFTableInput : public ITableInput, private std::istream {
 public:
-    TJFTableInput(std::istream& jf_in);
+    template <typename T>
+    TJFTableInput(T&& jf_in) {
+        jf_in_ = std::move(jf_in);
+    }
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
@@ -39,7 +47,7 @@ public:
 private:
     Expected<TColumnPtr> ReadIthColumn(ui64 i);
 
-    std::istream& jf_in_;
+    std::istream jf_in_;
 
     ui64 cols_cnt_;
     ui64 meta_start_;
