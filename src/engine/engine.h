@@ -17,11 +17,11 @@ namespace JFEngine {
 
 class TEngine {
     friend Expected<TEngine> MakeEngineFromCSV(
-        std::istream&& scheme,
-        std::istream&& data,
+        std::shared_ptr<std::istream> scheme,
+        std::shared_ptr<std::istream> data,
         ui64 row_group_size
     );
-    friend Expected<TEngine> MakeEngineFromJF(std::istream&& jf);
+    friend Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
 public:
 
     Expected<void> WriteSchemeToCSV(std::ostream& out);
@@ -59,16 +59,16 @@ public:
         return nullptr;
     }
 
-    Expected<void> Setup(std::unique_ptr<ITableInput>&& in);
+    Expected<void> Setup(std::shared_ptr<ITableInput> in);
 
-    std::unique_ptr<ITableInput> in_;
+    std::shared_ptr<ITableInput> in_;
 };
 
-Expected<TEngine> MakeEngineFromCSV(std::istream&& scheme, std::istream&& data, ui64 row_group_size = KRowGroupLen);
+Expected<TEngine> MakeEngineFromCSV(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = KRowGroupLen);
 
-Expected<TEngine> MakeEngineFromJF(std::istream&& jf);
+Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
 
-Expected<TEngine> MakeSelectEngine(std::istream&& jf, TSelectQuery query);
+Expected<TEngine> MakeSelectEngine(std::shared_ptr<std::istream> jf, TSelectQuery query);
 
 Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker);
 

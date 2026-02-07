@@ -10,7 +10,7 @@ add_library(csv_writer_lib STATIC
     errors.h
 )
 
-# add_executable(csvio_test test.cpp)
+add_executable(csvio_test test.cpp)
 
-# target_link_libraries(csvio_test csv_reader_lib csv_writer_lib errors_lib)
-# target_link_libraries (csvio_test GTest::gtest GTest::gtest_main)
+target_link_libraries(csvio_test csv_reader_lib csv_writer_lib errors_lib)
+target_link_libraries (csvio_test GTest::gtest GTest::gtest_main)

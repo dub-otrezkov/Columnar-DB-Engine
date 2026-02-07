@@ -1,5 +1,6 @@
 #include "executor.h"
 
+#include "ios_factory/ios_factory.h"
 #include "engine/engine.h"
 #include "executor/sql_parser/tokenizer.h"
 
@@ -7,48 +8,70 @@
 
 namespace JFEngine {
 
-Expected<void> TExecutor::ExecQuery(const std::string& query) {
-    auto el = ParseCommand(query);
+static const std::string kTmp1 = "tmp1";
+static const std::string kTmp2 = "tmp2";
 
-    if (el.HasError()) {
-        return el.GetError();
+Expected<void> TExecutor::ExecQuery(const std::string& query) {
+    auto [t, err1] = ParseCommand(query);
+    if (err1) {
+        return err1;
     }
 
-    auto tokens = el.GetRes();
+    auto tokens = *t;
 
-    std::vector<std::ifstream> s;
-
-    switch (tokens[0]->GetType()) {
-    case TTokens::ECreate: {
-        if (tokens.size() != 2 || tokens[1]->GetType() != TTokens::EFrom) {
-            return MakeError<BadCmdErr>();
+    TEngine eng;
+    {
+        auto [inp, err2] = tokens[1]->Exec();
+        if (err2) {
+            return err2;
         }
-        auto [eng, err] = ExecuteNode<TFromToken>(tokens[1]);
+        TIOFactory::RegisterTableInput(
+            kCurTableInput,
+            inp
+        );
+    }
+    {
+        TIOFactory::RegisterFileIO(
+            kTmp1,
+            TFileType::EJFFile
+        );
+        TIOFactory::RegisterFileIO(
+            kTmp2,
+            TFileType::EJFFile
+        );
+    }
 
+    auto cur_t1 = kTmp1;
+    auto cur_t2 = kTmp2;
+
+    for (ui64 i = 2; i < tokens.size(); i++) {
+        auto [inp, err] = tokens[i]->Exec();
+        if (err) {
+            return err;
+        }
+        err = eng.Setup(inp).GetError();
         if (err) {
             return err;
         }
 
-        // return tokens[0]->Execute(
-        //     [&eng](
-        //     TCommands cmd, 
-        //     const std::vector<std::shared_ptr<IToken>>& args) -> Expected<void> {
-        //         if (args.size() != 1 || args[0]->GetType() != TTokens::TNameToken) {
-        //             return MakeError<BadCmdErr>();
-        //         }
-        //         std::ofstream out(std::dynamic_pointer_cast<TNameToken>(args[0])->GetName() + ".jf");
-        //         return eng->WriteTableToJF(out);
-        //     }
-        // );
+        eng.WriteTableToJF(*TIOFactory::GetIO(cur_t1).GetShared());
 
-        return nullptr;
+        TIOFactory::RegisterTableInput(
+            kCurTableInput,
+            std::make_shared<TJFTableInput>(
+                TIOFactory::GetIO(cur_t1).GetShared()
+            )
+        );
+        std::swap(cur_t1, cur_t2);
+    }
 
-        break;
+    
+    auto [_, err3] = tokens[0]->Exec();
+    if (err3) {
+        return err3;
     }
-    default:
-        std::cout << "cant exec" << std::endl;
-        break;
-    }
+
+    return nullptr;
 }
 
 } // namespace JFEngine

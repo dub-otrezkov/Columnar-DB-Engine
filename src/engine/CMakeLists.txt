@@ -4,7 +4,7 @@ add_library(engine_lib STATIC
 )
 
 add_subdirectory(debug)
-# add_executable(engine_test test.cpp workers_test.cpp)
+add_executable(engine_test test.cpp workers_test.cpp)
 
 target_link_libraries(
     engine_lib
@@ -17,4 +17,4 @@ target_link_libraries(
     selector_worker_lib
 )
 
-# target_link_libraries (engine_test GTest::gtest GTest::gtest_main)
+target_link_libraries (engine_test GTest::gtest GTest::gtest_main)

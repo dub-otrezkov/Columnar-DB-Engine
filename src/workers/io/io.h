@@ -9,36 +9,31 @@
 
 namespace JFEngine {
 
-class TCSVTableInput : public ITableInput, private std::istream {
+class TCSVTableInput : public ITableInput {
 public:
-    template <typename T>
-    TCSVTableInput(T&& scheme_in, T&& data_in, ui64 row_group_len = KRowGroupLen) {
-        
+    TCSVTableInput(std::shared_ptr<std::istream> scheme_in, std::shared_ptr<std::istream> data_in, ui64 row_group_len = KRowGroupLen) {
         scheme_in_ = std::move(scheme_in);
         data_in_ = std::move(data_in);
     }
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
-    void RestartDataRead() override;
     std::vector<TRowScheme>& GetScheme() override;
 
 private:
-    std::istream scheme_in_;
-    std::istream data_in_;
+    std::shared_ptr<std::istream> scheme_in_;
+    std::shared_ptr<std::istream> data_in_;
     std::vector<TRowScheme> scheme_;
 };
 
-class TJFTableInput : public ITableInput, private std::istream {
+class TJFTableInput : public ITableInput {
 public:
-    template <typename T>
-    TJFTableInput(T&& jf_in) {
-        jf_in_ = std::move(jf_in);
+    TJFTableInput(std::shared_ptr<std::istream> jf_in) {
+        jf_in_ = jf_in;
     }
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
-    void RestartDataRead() override;
     Expected<TColumnPtr> ReadColumn(const std::string& name) override;
     std::vector<TRowScheme>& GetScheme() override;
 
@@ -47,7 +42,7 @@ public:
 private:
     Expected<TColumnPtr> ReadIthColumn(ui64 i);
 
-    std::istream jf_in_;
+    std::shared_ptr<std::istream> jf_in_;
 
     ui64 cols_cnt_;
     ui64 meta_start_;
