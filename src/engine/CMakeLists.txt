@@ -18,3 +18,4 @@ target_link_libraries(
 )
 
 target_link_libraries (engine_test GTest::gtest GTest::gtest_main)
+target_link_libraries (engine_test engine_lib)

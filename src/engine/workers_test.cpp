@@ -24,29 +24,29 @@ dot,19,hacker,10
 dot,19,hacker,-10
 )";
 
-    std::stringstream scheme_ss;
-    std::stringstream data_ss;
+    std::shared_ptr<std::stringstream> scheme_ss = std::make_shared<std::stringstream>();
+    std::shared_ptr<std::stringstream> data_ss = std::make_shared<std::stringstream>();
 
     void SetUp() override {
-        scheme_ss << scheme;
-        data_ss << data;
+        *scheme_ss << scheme;
+        *data_ss << data;
     }
 
     void TearDown() override {
-        scheme_ss.clear();
-        data_ss.clear();
+        scheme_ss->clear();
+        data_ss->clear();
     }
 };
 
 TEST_F(EngineTest, SelectColumnsTest) {
-    std::stringstream jf_file;
+    auto jf_file = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss, 2);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(jf_file).GetError();
+            err = eng->WriteTableToJF(*jf_file).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -86,14 +86,14 @@ dot,19
 }
 
 TEST_F(EngineTest, SelectColumnsOrderingTest) {
-    std::stringstream jf_file;
+    auto jf_file = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(jf_file).GetError();
+            err = eng->WriteTableToJF(*jf_file).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -134,14 +134,14 @@ peppers,int64
 }
 
 TEST_F(EngineTest, SelectColumnsWithAliasesTest) {
-    std::stringstream jf_file;
+    auto jf_file = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(jf_file).GetError();
+            err = eng->WriteTableToJF(*jf_file).GetError();
 
             ASSERT_FALSE(err);
         }
