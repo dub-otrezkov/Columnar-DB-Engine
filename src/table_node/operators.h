@@ -42,6 +42,7 @@ auto Do(TColumnPtr col, Args&&... args) {
             break;
         }
     }
+    throw std::runtime_error("unsupported op");
 }
 
 } // namespace JFEngine

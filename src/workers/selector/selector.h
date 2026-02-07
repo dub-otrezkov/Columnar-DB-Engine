@@ -18,14 +18,13 @@ struct TSelectQuery {
 
 class TSelector : public ITableInput {
 public:
-    TSelector(std::istream& jf_in, TSelectQuery query);
-    
+    TSelector(std::shared_ptr<TJFTableInput> jf_in, TSelectQuery query);
+
     Expected<void> SetupColumnsScheme() override;
     std::vector<TRowScheme>& GetScheme() override;
     Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
-    void RestartDataRead() override;
 private:
-    std::unique_ptr<TJFTableInput> jf_in_;
+    std::shared_ptr<TJFTableInput> jf_in_;
     std::vector<TRowScheme> scheme_;
     std::unordered_map<std::string, std::string> aliases_;
     std::unordered_map<std::string, std::string> unaliases_;

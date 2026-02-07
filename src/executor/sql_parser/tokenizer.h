@@ -14,14 +14,16 @@ namespace JFEngine {
 
 enum class TTokens {
     ENameToken,
-    ECreate,
     EFrom,
+    ECreate,
+    ESelect,
     EAs,
 };
 
 static const std::unordered_map<std::string, TTokens> cmds = {
     {"FROM", TTokens::EFrom},
-    {"AS", TTokens::EAs},
+    {"SELECT", TTokens::ESelect},
+    {"CREATE", TTokens::ECreate},
 };
 
 class IToken {
@@ -36,6 +38,8 @@ class ICommand : public IToken {
 public:
     virtual ~ICommand() = default;
 
+    virtual Expected<ITableInput> Exec() = 0;
+
     void AddArg(std::shared_ptr<IToken> arg) {
         args_.push_back(arg);
     }
@@ -43,33 +47,28 @@ protected:
     std::vector<std::shared_ptr<IToken>> args_;
 };
 
-template <typename T>
-class ICommandExec {
+class TSelectToken : public ICommand {
 public:
-    virtual ~ICommandExec() = default;
-
-    using TReturn = Expected<T>;
-
-    virtual TReturn Exec() = 0;
-
-};
-
-class TCreateToken : public ICommand, public ICommandExec<void> {
-public:
-    TReturn Exec();
 
     TTokens GetType() const override;
-
+    
+    Expected<ITableInput> Exec() override;
 };
 
-class TFromToken : public ICommand, public ICommandExec<TEngine> {
+class TCreateToken : public ICommand {
 public:
-    TReturn Exec();
 
     TTokens GetType() const override;
+    
+    Expected<ITableInput> Exec() override;
+};
 
-private:
-    std::vector<std::ifstream> s;
+class TFromToken : public ICommand {
+public:
+
+    TTokens GetType() const override;
+    
+    Expected<ITableInput> Exec() override;
 };
 
 class TNameToken : public IToken {
@@ -95,7 +94,7 @@ private:
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
 
 template<typename T>
-T::TReturn ExecuteNode(std::shared_ptr<ICommand> node) {
+Expected<TEngine> ExecuteNode(std::shared_ptr<ICommand> node) {
     auto d = std::dynamic_pointer_cast<T>(node);
 
     if (!d) {

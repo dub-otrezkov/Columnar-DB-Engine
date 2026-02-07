@@ -2,9 +2,7 @@
 
 namespace JFEngine {
 
-TSelector::TSelector(std::istream& jf_in, TSelectQuery query) : 
-    jf_in_(std::make_unique<TJFTableInput>(jf_in))
-{
+TSelector::TSelector(std::shared_ptr<TJFTableInput> jf_in, TSelectQuery query) : jf_in_(jf_in) {
     aliases_ = std::move(query.aliases);
     scheme_.resize(query.rows.size());
     for (ui64 i = 0; i < scheme_.size(); i++) {
@@ -21,7 +19,6 @@ TSelector::TSelector(std::istream& jf_in, TSelectQuery query) :
     for (const auto& [name, alias] : aliases_) {
         unaliases_[alias] = name;
     }
-
 }
 
 Expected<void> TSelector::SetupColumnsScheme() {
@@ -74,10 +71,6 @@ Expected<std::vector<TColumnPtr>> TSelector::ReadRowGroup() {
     jf_in_->MoveCursor(1);
 
     return std::move(res);
-}
-
-void TSelector::RestartDataRead() {
-    jf_in_->RestartDataRead();
 }
 
 } // namespace JFEngine
