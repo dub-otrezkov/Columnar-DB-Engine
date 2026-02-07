@@ -11,7 +11,7 @@ namespace JFEngine {
 Expected<void> TCSVTableInput::SetupColumnsScheme() {
     scheme_.clear();
 
-    TCSVReader csv_scheme(scheme_in_);
+    TCSVReader csv_scheme(*scheme_in_);
 
     while (1) {
         auto err = csv_scheme.ReadRow();
@@ -38,7 +38,7 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
 
-    TCSVReader csv_data(data_in_);
+    TCSVReader csv_data(*data_in_);
 
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
@@ -76,10 +76,6 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     return {std::move(out), (is_eof ? MakeError<EofErr>() : nullptr)};
 }
 
-void TCSVTableInput::RestartDataRead() {
-    data_in_.seekg(0);
-}
-
 std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
     return scheme_;
 }
@@ -92,20 +88,20 @@ std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
 // }
 
 Expected<void> TJFTableInput::SetupColumnsScheme() {
-    jf_in_.seekg(-8, std::ios::end);
-    meta_start_ = ReadI64(jf_in_);
+    jf_in_->seekg(-8, std::ios::end);
+    meta_start_ = ReadI64(*jf_in_);
 
-    jf_in_.seekg(meta_start_, std::ios::beg);
+    jf_in_->seekg(meta_start_, std::ios::beg);
 
-    row_group_len_ = ReadI64(jf_in_);
-    cols_cnt_ = ReadI64(jf_in_);
-    auto blocks_cnt = ReadI64(jf_in_);
+    row_group_len_ = ReadI64(*jf_in_);
+    cols_cnt_ = ReadI64(*jf_in_);
+    auto blocks_cnt = ReadI64(*jf_in_);
     blocks_pos_.resize(blocks_cnt);
     for (ui64 i = 0; i < blocks_cnt; i++) {
-        blocks_pos_[i] = ReadI64(jf_in_);
+        blocks_pos_[i] = ReadI64(*jf_in_);
     }
     scheme_.reserve(cols_cnt_);
-    TCSVReader r(jf_in_);
+    TCSVReader r(*jf_in_);
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [d, err] = r.ReadRow();
         if (err) {
@@ -121,11 +117,11 @@ Expected<void> TJFTableInput::SetupColumnsScheme() {
 
 Expected<TColumnPtr> TJFTableInput::ReadIthColumn(ui64 i) {
     auto start = blocks_pos_[current_block_];
-    jf_in_.seekg(start - sizeof(i64) * (cols_cnt_ - i));
-    auto pos = ReadI64(jf_in_);
-    jf_in_.seekg(pos);
+    jf_in_->seekg(start - sizeof(i64) * (cols_cnt_ - i));
+    auto pos = ReadI64(*jf_in_);
+    jf_in_->seekg(pos);
 
-    TCSVReader rr(jf_in_);
+    TCSVReader rr(*jf_in_);
     auto d = rr.ReadRow();
 
     if (d.HasError()) {
@@ -160,10 +156,6 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
     current_block_++;
 
     return res;
-}
-
-void TJFTableInput::RestartDataRead() {
-    current_block_ = 0;
 }
 
 std::vector<TRowScheme>& TJFTableInput::GetScheme() {

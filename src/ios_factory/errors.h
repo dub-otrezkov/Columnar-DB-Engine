@@ -4,13 +4,13 @@
 
 namespace JFEngine {
 
-class BadCmdErr : public IError {
+class IONotFoundErr : public IError {
 public:
-    BadCmdErr(std::string alias = "") : alias_(std::move(alias)) {
+    IONotFoundErr(const std::string& alias) : alias_(alias) {
     }
 
     std::string Print() const override {
-        return "bad command: " + alias_;
+        return "no io with alias: " + alias_;
     }
 private:
     std::string alias_;

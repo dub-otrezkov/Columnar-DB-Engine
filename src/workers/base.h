@@ -24,7 +24,6 @@ public:
     virtual std::vector<TRowScheme>& GetScheme() = 0;
     virtual Expected<std::vector<TColumnPtr>> ReadRowGroup() = 0;
     virtual Expected<TColumnPtr> ReadColumn(const std::string& name);
-    virtual void RestartDataRead() = 0;
 
     ui64 GetRowGroupLen() const;
 

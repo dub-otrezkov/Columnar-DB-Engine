@@ -9,7 +9,7 @@
 
 namespace JFEngine {
 
-Expected<void> TEngine::Setup(std::unique_ptr<ITableInput>&& in) {
+Expected<void> TEngine::Setup(std::shared_ptr<ITableInput> in) {
     in_ = std::move(in);
     return in_->SetupColumnsScheme();
 }
@@ -85,36 +85,43 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
     return err;
 }
 
-Expected<TEngine> MakeEngineFromCSV(std::istream&& scheme, std::istream&& data, ui64 row_group_size) {
+Expected<TEngine> MakeEngineFromCSV(
+    std::shared_ptr<std::istream> scheme,
+    std::shared_ptr<std::istream> data,
+    ui64 row_group_size
+) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TCSVTableInput>(std::move(scheme), std::move(data), row_group_size));
+    auto err = eng->Setup(std::make_shared<TCSVTableInput>(scheme, data, row_group_size));
     if (!err) {
         return err.GetError();
     }
     return eng;
 }
 
-Expected<TEngine> MakeEngineFromJF(std::istream&& jf) {
+Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TJFTableInput>(std::move(jf)));
+    auto err = eng->Setup(std::make_shared<TJFTableInput>(jf));
     if (err.HasError()) {
         return err.GetError();
     }
     return eng;
 }
 
-Expected<TEngine> MakeSelectEngine(std::istream&& jf, TSelectQuery query) {
+Expected<TEngine> MakeSelectEngine(
+    std::shared_ptr<std::istream> jf,
+    TSelectQuery query
+) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TSelector>(std::move(jf), query));
+    auto err = eng->Setup(std::make_shared<TSelector>(std::make_shared<TJFTableInput>(jf), query));
     if (err.HasError()) {
         return err.GetError();
     }
     return eng;
 }
 
-Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker) {
+Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput>&& worker) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::move(worker));
+    auto err = eng->Setup(worker);
     if (err.HasError()) {
         return err.GetError();
     }
