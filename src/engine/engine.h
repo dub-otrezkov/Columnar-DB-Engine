@@ -6,7 +6,7 @@
 #include "table_node/types.h"
 
 #include "utils/errors/errors.h"
-#include "utils/csvio/csv_reader.h"
+#include "csvio/csv_reader.h"
 
 #include <memory>
 #include <string>

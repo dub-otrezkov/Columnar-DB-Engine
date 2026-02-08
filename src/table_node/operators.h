@@ -34,15 +34,15 @@ template <typename TOperator, typename... Args>
 auto Do(TColumnPtr col, Args&&... args) {
     switch (col->GetType()) {
         case Ei64Column: {
-            return TOperator::Exec(*dynamic_cast<Ti64Column*>(col.get()), std::forward<Args>(args)...);
+            return TOperator::Exec(*static_cast<Ti64Column*>(col.get()), std::forward<Args>(args)...);
             break;
         }
         case EStringColumn: {
-            return TOperator::Exec(*dynamic_cast<TStringColumn*>(col.get()), std::forward<Args>(args)...);
+            return TOperator::Exec(*static_cast<TStringColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }
     }
-    throw std::runtime_error("unsupported op");
+    throw std::runtime_error("bad column type");
 }
 
 } // namespace JFEngine

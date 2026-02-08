@@ -5,7 +5,7 @@
 
 #include <string_view>
 
-using namespace JFEngine;
+namespace JFEngine::Testing {
 
 struct EngineTest : testing::Test {
     std::string scheme = R"(red,string
@@ -125,3 +125,5 @@ TEST_F(EngineTest, JFSmallRowGroupSize) {
         }
     }
 }
+
+} // namespace JFEngine::Testing

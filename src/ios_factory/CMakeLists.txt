@@ -1,5 +1,4 @@
-add_library(ios_factory_lib STATIC 
-    errors.h
+add_library(ios_factory_lib STATIC
     ios_factory.h
 )
 

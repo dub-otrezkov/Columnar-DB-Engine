@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+namespace JFEngine::Testing {
+
 struct IOTests : ::testing::Test {
     // correct
     std::string basic = R"(john;frusciante
@@ -23,7 +25,7 @@ TEST_F(IOTests, BasicRead) {
     std::stringstream in;
     in << basic;
 
-    TCSVReader rr(in, ';');
+    TCSVReader rr(in, kUnlimitedBuffer, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -97,7 +99,7 @@ TEST_F(IOTests, EdgeCasesRead) {
     std::stringstream in;
     in << extra;
 
-    TCSVReader rr(in, ';');
+    TCSVReader rr(in, kUnlimitedBuffer, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -130,3 +132,5 @@ TEST_F(IOTests, BadQuoteRead) {
 
     ASSERT_TRUE(Is<EofErr>(err));
 }
+
+} // namespace JFEngine::Testing
