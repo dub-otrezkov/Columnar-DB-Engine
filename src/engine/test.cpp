@@ -5,13 +5,13 @@
 
 #include <string_view>
 
-using namespace JFEngine;
+namespace JFEngine::Testing {
 
 struct EngineTest : testing::Test {
-    std::string scheme = R"(col1,string
-col2,int64
-col3,string
-col4,int64
+    std::string scheme = R"(red,string
+hot,int64
+chili,string
+peppers,int64
 )";
     std::string data = R"(josh,1,klinghoffer,2
 john,3,frusciante,4
@@ -24,17 +24,17 @@ dot,19,hacker,10
 dot,19,hacker,-10
 )";
 
-    std::stringstream scheme_ss;
-    std::stringstream data_ss;
+    std::shared_ptr<std::stringstream> scheme_ss = std::make_shared<std::stringstream>();
+    std::shared_ptr<std::stringstream> data_ss = std::make_shared<std::stringstream>();
 
     void SetUp() override {
-        scheme_ss << scheme;
-        data_ss << data;
+        *scheme_ss << scheme;
+        *data_ss << data;
     }
 
     void TearDown() override {
-        scheme_ss.clear();
-        data_ss.clear();
+        scheme_ss->clear();
+        data_ss->clear();
     }
 };
 
@@ -60,15 +60,15 @@ TEST_F(EngineTest, CSVToCSV) {
     }
 }
 
-TEST_F(EngineTest, CSVToJF) {
-    std::stringstream out;
+TEST_F(EngineTest, JFBasic) {
+    auto out = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(out).GetError();
+            err = eng->WriteTableToJF(*out).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -87,11 +87,43 @@ TEST_F(EngineTest, CSVToJF) {
         {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
-            if (err) {
-                std::cout << err->Print() << std::endl;
-            }
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), data);
         }
     }
 }
+
+TEST_F(EngineTest, JFSmallRowGroupSize) {
+    auto out = std::make_shared<std::stringstream>();
+    {
+        auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss, /*row_group_size=*/1);
+
+        ASSERT_FALSE(err);
+
+        {
+            err = eng->WriteTableToJF(*out).GetError();
+
+            ASSERT_FALSE(err);
+        }
+    }
+    {
+        auto [eng, err] = MakeEngineFromJF(out);
+
+        ASSERT_FALSE(err);
+        {
+            std::stringstream ans;
+            err = eng->WriteSchemeToCSV(ans).GetError();
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), scheme);
+        }
+
+        {
+            std::stringstream ans;
+            err = eng->WriteDataToCSV(ans).GetError();
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), data);
+        }
+    }
+}
+
+} // namespace JFEngine::Testing

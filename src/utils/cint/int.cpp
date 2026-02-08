@@ -29,9 +29,7 @@ i64 ReadI64(std::istream& in) {
     i64 ans = 0;
     for (ui64 i = 0; i < sizeof(i64) / sizeof(char); i++) {
         i64 c = in.get();
-        // std::cout << c << std::endl;
         ans = (ans | (c << i * 8));
     }
-    // std::cout << "----------" << std::endl;
     return ans;
 }

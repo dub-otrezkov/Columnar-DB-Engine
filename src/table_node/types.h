@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/errors/errors.h"
+#include "utils/errors/errors_templates.h"
 #include "utils/cint/int.h"
 
 #include <memory>
@@ -33,6 +33,8 @@ private:
     TColumn type_ = EUnitialized;
 };
 
+using TColumnPtr = std::shared_ptr<IColumn>;
+
 template <typename T>
 class TStorage : public IColumn {
 public:
@@ -63,13 +65,6 @@ public:
     TStringColumn() {}
 
     Expected<void> Setup(std::vector<std::string> data) override;
-};
-
-class UnsupportedErr : public IError {
-public:
-    std::string Print() const override {
-        return "NotAnIntErr";
-    }
 };
 
 Expected<IColumn> MakeColumn(std::vector<std::string> data, std::string type);
