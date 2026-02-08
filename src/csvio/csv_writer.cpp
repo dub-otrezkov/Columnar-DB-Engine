@@ -2,6 +2,9 @@
 
 #include <algorithm>
 
+
+namespace JFEngine {
+
 TCSVWriter::TCSVWriter(std::ostream& out, char sep) :
     out_(out),
     sep_(sep)
@@ -9,7 +12,9 @@ TCSVWriter::TCSVWriter(std::ostream& out, char sep) :
 }
 
 std::string TCSVWriter::PrepareString(const std::string& str) {
-    if (std::count(str.begin(), str.end(), sep_) == 0 && std::count(str.begin(), str.end(), '"') == 0) {
+    if (std::count(str.begin(), str.end(), sep_) == 0 &&
+        std::count(str.begin(), str.end(), '\n') == 0 &&
+        std::count(str.begin(), str.end(), '"') == 0) {
         return str;
     }
 
@@ -42,3 +47,5 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
 TCSVWriter::~TCSVWriter() {
     out_.flush();
 }
+
+} // namespace JFEngine

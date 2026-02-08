@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.1)
+cmake_minimum_required(VERSION 3.12)
 
 project(columnar_eng)
 
@@ -12,8 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(utils)
 
-link_libraries(cint_lib)
+link_libraries(cint_lib logger_lib)
 
+add_subdirectory(csvio)
 add_subdirectory(table_node)
+add_subdirectory(ios_factory)
+add_subdirectory(workers)
+add_subdirectory(executor)
 add_subdirectory(engine)
 

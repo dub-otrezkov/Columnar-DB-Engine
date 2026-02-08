@@ -1,6 +1,6 @@
 #include "engine.h"
 
-#include "utils/csvio/csv_writer.h"
+#include "csvio/csv_writer.h"
 #include "table_node/operators.h"
 
 #include <sstream>
@@ -9,9 +9,9 @@
 
 namespace JFEngine {
 
-Expected<void> TEngine::Setup(std::unique_ptr<ITableInput>&& in) {
+Expected<void> TEngine::Setup(std::shared_ptr<ITableInput> in) {
     in_ = std::move(in);
-    return in_->GetColumnsScheme();
+    return in_->SetupColumnsScheme();
 }
 
 Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
@@ -25,7 +25,7 @@ Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
 Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
     TCSVWriter w(out);
 
-    auto f = [&w](std::vector<std::shared_ptr<IColumn>> block) -> Expected<void> {
+    auto f = [&w](std::vector<TColumnPtr> block) -> Expected<void> {
         for (ui64 i = 0; i < block[0]->GetSize(); i++) {
             std::vector<std::string> row;
             for (ui64 j = 0; j < block.size(); j++) {
@@ -45,7 +45,7 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
 
     ui64 cols_cnt = 0;
 
-    auto f = [&poses, &out, &cols_cnt](std::vector<std::shared_ptr<IColumn>> block) -> Expected<void> {
+    auto f = [&poses, &out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         TCSVWriter w(out);
 
         std::vector<i64> col_poses;
@@ -85,19 +85,44 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
     return err;
 }
 
-Expected<TEngine> MakeEngineFromCSV(std::istream& scheme, std::istream& data) {
+Expected<TEngine> MakeEngineFromCSV(
+    std::shared_ptr<std::istream> scheme,
+    std::shared_ptr<std::istream> data,
+    ui64 row_group_size
+) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TCSVTableInput>(scheme, data));
+    auto err = eng->Setup(std::make_shared<TCSVTableInput>(scheme, data, row_group_size));
     if (!err) {
         return err.GetError();
     }
     return eng;
 }
 
-Expected<TEngine> MakeEngineFromJF(std::istream& jf) {
+Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_unique<TJFTableInput>(jf));
-    if (err) {
+    auto err = eng->Setup(std::make_shared<TJFTableInput>(jf));
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    return eng;
+}
+
+Expected<TEngine> MakeSelectEngine(
+    std::shared_ptr<std::istream> jf,
+    TSelectQuery query
+) {
+    auto eng = std::make_shared<TEngine>();
+    auto err = eng->Setup(std::make_shared<TSelector>(std::make_shared<TJFTableInput>(jf), query));
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    return eng;
+}
+
+Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput>&& worker) {
+    auto eng = std::make_shared<TEngine>();
+    auto err = eng->Setup(worker);
+    if (err.HasError()) {
         return err.GetError();
     }
     return eng;
