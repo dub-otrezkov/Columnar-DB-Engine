@@ -1,8 +1,6 @@
 #pragma once
 
-#include "errors.h"
-
-#include "utils/errors/errors.h"
+#include "utils/errors/errors_templates.h"
 
 #include <iostream>
 #include <memory>

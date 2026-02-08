@@ -2,6 +2,9 @@
 
 #include <algorithm>
 
+
+namespace JFEngine {
+
 TCSVWriter::TCSVWriter(std::ostream& out, char sep) :
     out_(out),
     sep_(sep)
@@ -44,3 +47,5 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
 TCSVWriter::~TCSVWriter() {
     out_.flush();
 }
+
+} // namespace JFEngine

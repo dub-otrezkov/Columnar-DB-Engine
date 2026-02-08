@@ -1,5 +1,4 @@
 #include "types.h"
-#include "errors.h"
 
 namespace JFEngine {
 
@@ -39,6 +38,7 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, std::string type) {
         }
         return res;
     }
+    return MakeError<UnsupportedErr>();
 }
 
 Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type) {
@@ -60,6 +60,7 @@ Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type) 
         }
         return res;
     }
+    return MakeError<UnsupportedErr>();
 }
 
 } // namespace JFEngine

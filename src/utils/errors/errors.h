@@ -34,6 +34,7 @@ Error MakeError(Args&&... args) {
 template <typename T>
 class Expected {
 public:
+    Expected(std::nullptr_t) {}
 
     Expected(T&& res, Error err = nullptr) : res_(std::make_shared<T>(res)), err_(err) {}
 

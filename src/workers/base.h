@@ -1,6 +1,6 @@
 #pragma once
 
-#include "errors.h"
+#include "utils/errors/errors_templates.h"
 
 #include <table_node/types.h>
 

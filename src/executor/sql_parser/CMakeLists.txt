@@ -1,7 +1,6 @@
 add_library(sql_parser_lib STATIC 
     tokenizer.h
     tokenizer.cpp
-    errors.h
     from_token.cpp
     name_token.cpp
     create_token.cpp

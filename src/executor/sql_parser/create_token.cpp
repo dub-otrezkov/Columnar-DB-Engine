@@ -21,6 +21,8 @@ Expected<ITableInput> TCreateToken::Exec() {
     }
     TIOFactory::RegisterFileIO(name, TFileType::EJFFile);
     eng.WriteTableToJF(*TIOFactory::GetIO(name).GetShared());
+
+    return nullptr;
 }
 
 } // namespace JFEngine
