@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <iostream>
 
+namespace JFEngine {
+
 TCSVReader::TCSVReader(std::istream& in, i64 buf_size, char sep) :
     in_(in),
     sep_(sep),
@@ -24,7 +26,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
 
     bool in_quotes = false;
 
-    while (!in_.eof() && (buf_size_ == -2 || buf_size_ > 0)) {
+    while (!in_.eof() && (buf_size_ == kUnlimitedBuffer || buf_size_ > 0)) {
         auto c = in_.get();
 
         if (buf_size_ > 0) {
@@ -75,3 +77,5 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
 void TCSVReader::RestartRead() {
     in_.seekg(init_pos_);
 }
+
+} // namespace JFEngine

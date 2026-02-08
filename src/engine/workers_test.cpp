@@ -5,7 +5,7 @@
 
 #include <string_view>
 
-using namespace JFEngine;
+namespace JFEngine::Testing {
 
 struct EngineTest : testing::Test {
     std::string scheme = R"(red,string
@@ -180,3 +180,5 @@ dot,19
 )");
     }
 }
+
+} // namespace JFEngine::Testing

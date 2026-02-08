@@ -1,13 +1,11 @@
 add_library(csv_reader_lib STATIC
     csv_reader.cpp
     csv_reader.h
-    errors.h
 )
 
 add_library(csv_writer_lib STATIC
     csv_writer.cpp
     csv_writer.h
-    errors.h
 )
 
 add_executable(csvio_test test.cpp)

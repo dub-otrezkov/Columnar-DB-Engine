@@ -1,8 +1,7 @@
 #pragma once
 
 #include "engine/engine.h"
-#include "utils/errors/errors.h"
-#include "errors.h"
+#include "utils/errors/errors_templates.h"
 
 #include <string>
 #include <sstream>

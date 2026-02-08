@@ -1,6 +1,6 @@
 #include "engine.h"
 
-#include "utils/csvio/csv_writer.h"
+#include "csvio/csv_writer.h"
 #include "table_node/operators.h"
 
 #include <sstream>
