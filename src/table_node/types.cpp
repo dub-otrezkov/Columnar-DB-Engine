@@ -1,5 +1,4 @@
 #include "types.h"
-#include "errors.h"
 
 namespace JFEngine {
 
@@ -39,14 +38,15 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, std::string type) {
         }
         return res;
     }
+    return MakeError<UnsupportedErr>();
 }
 
 Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type) {
     if (type == "int64") {
         auto res = std::make_shared<Ti64Column>();
-        // for (ui64 i = 0; i < data.size(); i++) {
-        //     data[i] = std::to_string(JFStrToI64(data[i]));
-        // }
+        for (ui64 i = 0; i < data.size(); i++) {
+            data[i] = std::to_string(JFStrToI64(data[i]));
+        }
         auto t = res->Setup(std::move(data));
         if (t.HasError()) {
             return t.GetError();
@@ -60,6 +60,7 @@ Expected<IColumn> MakeColumnJF(std::vector<std::string> data, std::string type) 
         }
         return res;
     }
+    return MakeError<UnsupportedErr>();
 }
 
 } // namespace JFEngine

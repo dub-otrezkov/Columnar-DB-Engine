@@ -8,6 +8,8 @@
 #include <vector>
 #include <memory>
 
+namespace JFEngine {
+
 class TCSVWriter {
 public:
     TCSVWriter(std::ostream& out, char sep = ',');
@@ -22,3 +24,5 @@ private:
     std::ostream& out_;
     char sep_;
 };
+
+} // namespace JFEngine
