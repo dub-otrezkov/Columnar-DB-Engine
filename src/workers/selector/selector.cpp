@@ -25,7 +25,6 @@ Expected<void> TSelector::SetupColumnsScheme() {
     auto err = jf_in_->SetupColumnsScheme();
 
     if (err.HasError()) {
-        // std::cout << err.GetError().get() << std::endl;
         return err.GetError();
     }
 
