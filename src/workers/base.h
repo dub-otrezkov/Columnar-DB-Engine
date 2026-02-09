@@ -2,7 +2,7 @@
 
 #include "utils/errors/errors_templates.h"
 
-#include <table_node/types.h>
+#include "columns/types/types.h"
 
 #include <vector>
 
@@ -10,7 +10,7 @@ namespace JFEngine {
 
 struct TRowScheme {
     std::string name_;
-    std::string type_;
+    TColumn type_;
 };
 
 const ui64 KRowGroupLen = 100;

@@ -3,7 +3,7 @@
 #include "workers/io/io.h"
 #include "workers/selector/selector.h"
 
-#include "table_node/types.h"
+#include "columns/types/types.h"
 
 #include "utils/errors/errors.h"
 #include "csvio/csv_reader.h"
