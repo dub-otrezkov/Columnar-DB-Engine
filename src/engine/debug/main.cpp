@@ -24,8 +24,6 @@ int main() {
         std::ifstream in("josh.jf", std::ios::binary);
         auto [eng, err] = JFEngine::MakeEngineFromJF(std::move(in));
 
-        // std::cout << eng << " " << err << std::endl;
-
         if (err) {
             std::cout << err->Print() << std::endl;
             return 0;

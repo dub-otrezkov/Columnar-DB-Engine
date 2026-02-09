@@ -7,7 +7,7 @@
 
 namespace JFEngine::Testing {
 
-struct EngineTest : testing::Test {
+struct EngineSelectorTest : testing::Test {
     std::string scheme = R"(red,string
 hot,int64
 chili,string
@@ -38,7 +38,7 @@ dot,19,hacker,-10
     }
 };
 
-TEST_F(EngineTest, SelectColumnsTest) {
+TEST_F(EngineSelectorTest, SelectColumnsTest) {
     auto jf_file = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss, 2);
@@ -85,7 +85,7 @@ dot,19
     }
 }
 
-TEST_F(EngineTest, SelectColumnsOrderingTest) {
+TEST_F(EngineSelectorTest, SelectColumnsOrderingTest) {
     auto jf_file = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
@@ -133,7 +133,7 @@ peppers,int64
     }
 }
 
-TEST_F(EngineTest, SelectColumnsWithAliasesTest) {
+TEST_F(EngineSelectorTest, SelectColumnsWithAliasesTest) {
     auto jf_file = std::make_shared<std::stringstream>();
     {
         auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);

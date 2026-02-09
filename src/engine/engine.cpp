@@ -1,7 +1,7 @@
 #include "engine.h"
 
 #include "csvio/csv_writer.h"
-#include "table_node/operators.h"
+#include "columns/operators/operators.h"
 
 #include <sstream>
 #include <cassert>
@@ -17,7 +17,7 @@ Expected<void> TEngine::Setup(std::shared_ptr<ITableInput> in) {
 Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
     TCSVWriter w(out);
     for (auto col : in_->GetScheme()) {
-        w.WriteRow({col.name_, col.type_});
+        w.WriteRow({col.name_, TColumnToStr(col.type_)});
     }
     return nullptr;
 }
