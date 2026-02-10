@@ -30,7 +30,7 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
             return MakeError<IncorrectFileErr>();
         }
 
-        scheme_.emplace_back(data[0], data[1]);
+        scheme_.emplace_back(data[0], StrToTColumn(data[1]));
     }
 
     return nullptr;
@@ -81,10 +81,6 @@ std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
     return scheme_;
 }
 
-// Expected<void> TCSVTableInput::ReadRowGroup(std::vector<std::vector<std::string>>&, ui64) {
-//     return MakeError<UnimplementedErr>();
-// }
-
 // TJFTableInput::TJFTableInput(std::istream&& jf_in) : jf_in_(std::move(jf_in)) {
 // }
 
@@ -111,7 +107,7 @@ Expected<void> TJFTableInput::SetupColumnsScheme() {
         if (d->size() != 2) {
             return MakeError<IncorrectFileErr>("bad scheme");
         }
-        scheme_.emplace_back(d->at(0), d->at(1));
+        scheme_.emplace_back(d->at(0), StrToTColumn(d->at(1)));
     }
     return nullptr;
 }

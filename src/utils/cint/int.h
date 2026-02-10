@@ -1,14 +1,76 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 
-using i64 = long long;
-using i32 = int;
+#include <cstring>
 
-using ui64 = unsigned long long;
-using ui32 = unsigned int;
+using i8 = int8_t;
+using ui8 = uint8_t;
 
-void PutI64(std::ostream& out, i64 i);
-std::string I64ToJFStr(i64 i);
-i64 JFStrToI64(const std::string& i);
-i64 ReadI64(std::istream& in);
+using i16 = int16_t;
+using ui16 = uint16_t;
+
+using i32 = int32_t;
+using ui32 = uint32_t;
+
+using i64 = int64_t;
+using ui64 = uint64_t;
+
+
+template <typename T>
+class TIntPrinter {
+public:
+    static void PutInt(std::ostream& out, T i) {
+        static char mas[sizeof(T)];
+        memcpy(mas, &i, sizeof(T));
+        for (ui8 i = 0; i < sizeof(T); i++) {
+            out << mas[i];
+        }
+    }
+
+    static std::string IntToJFStr(T i) {
+        std::stringstream ss;
+        PutInt(ss, i);
+        auto res = ss.str();
+
+        ss.clear();
+        return res;
+    }
+
+    static T JFStrToInt(const std::string& i) {
+        std::stringstream ss;
+        ss << i;
+        return ReadInt(ss);
+    }
+
+    static T ReadInt(std::istream& in) {
+        T ans = 0;
+        static char mas[sizeof(T)];
+        for (ui8 i = 0; i < sizeof(T); i++) {
+            mas[i] = in.get();
+        }
+        memcpy(&ans, mas, sizeof(T));
+        return ans;
+    }
+};
+
+static auto PutI8 = TIntPrinter<i8>::PutInt;
+static auto ReadI8 = TIntPrinter<i8>::ReadInt;
+static auto I8ToJFStr = TIntPrinter<i8>::IntToJFStr;
+static auto JFStrToI8 = TIntPrinter<i8>::JFStrToInt;
+
+static auto PutI16 = TIntPrinter<i16>::PutInt;
+static auto ReadI16 = TIntPrinter<i16>::ReadInt;
+static auto I16ToJFStr = TIntPrinter<i16>::IntToJFStr;
+static auto JFStrToI16 = TIntPrinter<i16>::JFStrToInt;
+
+static auto PutI32 = TIntPrinter<i32>::PutInt;
+static auto ReadI32 = TIntPrinter<i32>::ReadInt;
+static auto I32ToJFStr = TIntPrinter<i32>::IntToJFStr;
+static auto JFStrToI32 = TIntPrinter<i32>::JFStrToInt;
+
+static auto PutI64 = TIntPrinter<i64>::PutInt;
+static auto ReadI64 = TIntPrinter<i64>::ReadInt;
+static auto I64ToJFStr = TIntPrinter<i64>::IntToJFStr;
+static auto JFStrToI64 = TIntPrinter<i64>::JFStrToInt;

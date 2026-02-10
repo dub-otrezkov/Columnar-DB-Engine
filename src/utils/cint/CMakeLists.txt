@@ -1,1 +1,1 @@
-add_library(cint_lib STATIC int.h int.cpp)
+add_library(cint_lib STATIC int.h double.h double.cpp)
