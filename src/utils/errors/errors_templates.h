@@ -14,6 +14,21 @@ public:
     }
 };
 
+class NotAnDateErr : public IError {
+public:
+    std::string Print() const override {
+        return "NotADateErr";
+    }
+};
+
+
+class NotAnTimestampErr : public IError {
+public:
+    std::string Print() const override {
+        return "NotATimestampErr";
+    }
+};
+
 class IntOverflowErr : public IError {
 public:
     std::string Print() const override {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils/errors/errors.h"
-#include "table_node/types.h"
+#include "columns/types/types.h"
 
 #include <string>
 #include <fstream>
