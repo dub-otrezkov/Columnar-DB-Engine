@@ -2,6 +2,10 @@
 
 namespace JFEngine {
 
+Ti64Column::Ti64Column(std::vector<i64> data) {
+    cols_ = std::move(data);
+}
+
 TColumn Ti8Column::GetType() {
     return Ei8Column;
 }

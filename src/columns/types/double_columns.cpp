@@ -2,6 +2,10 @@
 
 namespace JFEngine {
 
+TDoubleColumn::TDoubleColumn(std::vector<ld> data) {
+    cols_ = std::move(data);
+}
+
 TColumn TDoubleColumn::GetType() {
     return EDoubleColumn;
 }
