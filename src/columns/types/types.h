@@ -97,6 +97,7 @@ public:
 class Ti64Column : public TStorage<i64> {
 public:
     Ti64Column() {}
+    Ti64Column(std::vector<i64> data);
 
     TColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
@@ -105,14 +106,16 @@ public:
 class TStringColumn : public TStorage<std::string> {
 public:
     TStringColumn() {}
+    TStringColumn(std::vector<std::string> data);
 
     TColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
-class TDoubleColumn : public TStorage<double> {
+class TDoubleColumn : public TStorage<ld> {
 public:
     TDoubleColumn() {}
+    TDoubleColumn(std::vector<ld> data);
 
     TColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
