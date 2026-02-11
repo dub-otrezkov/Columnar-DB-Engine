@@ -6,19 +6,19 @@ Ti64Column::Ti64Column(std::vector<i64> data) {
     cols_ = std::move(data);
 }
 
-TColumn Ti8Column::GetType() {
+EColumn Ti8Column::GetType() {
     return Ei8Column;
 }
 
-TColumn Ti16Column::GetType() {
+EColumn Ti16Column::GetType() {
     return Ei16Column;
 }
 
-TColumn Ti32Column::GetType() {
+EColumn Ti32Column::GetType() {
     return Ei32Column;
 }
 
-TColumn Ti64Column::GetType() {
+EColumn Ti64Column::GetType() {
     return Ei64Column;
 }
 

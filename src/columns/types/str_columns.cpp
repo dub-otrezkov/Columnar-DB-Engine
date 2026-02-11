@@ -6,7 +6,7 @@ TStringColumn::TStringColumn(std::vector<std::string> data) {
     cols_ = std::move(data);
 }
 
-TColumn TStringColumn::GetType() {
+EColumn TStringColumn::GetType() {
     return EStringColumn;
 }
 

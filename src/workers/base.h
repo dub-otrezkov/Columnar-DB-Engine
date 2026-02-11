@@ -10,7 +10,7 @@ namespace JFEngine {
 
 struct TRowScheme {
     std::string name_;
-    TColumn type_;
+    EColumn type_;
 };
 
 const ui64 KRowGroupLen = 100;
