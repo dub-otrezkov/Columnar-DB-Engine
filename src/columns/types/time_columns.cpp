@@ -3,11 +3,11 @@
 namespace JFEngine {
 
 EColumn TDateColumn::GetType() {
-    return EDateColumn;
+    return kDateColumn;
 }
 
 EColumn TTimestampColumn::GetType() {
-    return ETimestampColumn;
+    return kTimestampColumn;
 }
 
 Expected<void> TDateColumn::Setup(std::vector<std::string> data) {

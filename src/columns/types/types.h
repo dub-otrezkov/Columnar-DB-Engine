@@ -24,15 +24,15 @@ const std::string kTimestampSchemeAlias = "timestamp";
 const std::string kUnknownSchemeAlias = "unknown";
 
 enum EColumn {
-    EUnitialized,
-    Ei8Column,
-    Ei16Column,
-    Ei32Column,
-    Ei64Column,
-    EStringColumn,
-    EDoubleColumn,
-    EDateColumn,
-    ETimestampColumn,
+    kUnitialized,
+    ki8Column,
+    ki16Column,
+    ki32Column,
+    ki64Column,
+    kStringColumn,
+    kDoubleColumn,
+    kDateColumn,
+    kTimestampColumn,
 };
 
 EColumn StrToTColumn(const std::string& data);
@@ -45,7 +45,7 @@ public:
     virtual ui64 GetSize() = 0;
 
     virtual EColumn GetType() {
-        return EUnitialized;
+        return kUnitialized;
     }
 };
 

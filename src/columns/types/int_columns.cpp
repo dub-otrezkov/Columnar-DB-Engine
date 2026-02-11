@@ -7,19 +7,19 @@ Ti64Column::Ti64Column(std::vector<i64> data) {
 }
 
 EColumn Ti8Column::GetType() {
-    return Ei8Column;
+    return ki8Column;
 }
 
 EColumn Ti16Column::GetType() {
-    return Ei16Column;
+    return ki16Column;
 }
 
 EColumn Ti32Column::GetType() {
-    return Ei32Column;
+    return ki32Column;
 }
 
 EColumn Ti64Column::GetType() {
-    return Ei64Column;
+    return ki64Column;
 }
 
 Expected<void> Ti8Column::Setup(std::vector<std::string> data) {
