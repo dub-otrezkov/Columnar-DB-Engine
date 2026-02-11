@@ -23,7 +23,7 @@ const std::string kDateSchemeAlias = "date";
 const std::string kTimestampSchemeAlias = "timestamp";
 const std::string kUnknownSchemeAlias = "unknown";
 
-enum TColumn {
+enum EColumn {
     EUnitialized,
     Ei8Column,
     Ei16Column,
@@ -35,8 +35,8 @@ enum TColumn {
     ETimestampColumn,
 };
 
-TColumn StrToTColumn(const std::string& data);
-std::string TColumnToStr(TColumn data);
+EColumn StrToTColumn(const std::string& data);
+std::string TColumnToStr(EColumn data);
 
 class IColumn {
 public:
@@ -44,7 +44,7 @@ public:
 
     virtual ui64 GetSize() = 0;
 
-    virtual TColumn GetType() {
+    virtual EColumn GetType() {
         return EUnitialized;
     }
 };
@@ -74,7 +74,7 @@ class Ti8Column : public TStorage<i8> {
 public:
     Ti8Column() {}
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -82,7 +82,7 @@ class Ti16Column : public TStorage<i16> {
 public:
     Ti16Column() {}
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -90,7 +90,7 @@ class Ti32Column : public TStorage<i32> {
 public:
     Ti32Column() {}
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -99,7 +99,7 @@ public:
     Ti64Column() {}
     Ti64Column(std::vector<i64> data);
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -108,7 +108,7 @@ public:
     TStringColumn() {}
     TStringColumn(std::vector<std::string> data);
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -117,7 +117,7 @@ public:
     TDoubleColumn() {}
     TDoubleColumn(std::vector<ld> data);
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -131,7 +131,7 @@ class TDateColumn : public TStorage<TDate> {
 public:
     TDateColumn() {}
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
@@ -150,14 +150,14 @@ class TTimestampColumn : public TStorage<TTimestamp> {
 public:
     TTimestampColumn() {}
 
-    TColumn GetType() override;
+    EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string> data) override;
 };
 
 // helpers
 
-Expected<IColumn> MakeColumn(std::vector<std::string> data, TColumn type);
-Expected<IColumn> MakeColumnJF(std::vector<std::string> data, TColumn type);
+Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
+Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {

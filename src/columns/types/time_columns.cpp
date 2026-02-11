@@ -2,11 +2,11 @@
 
 namespace JFEngine {
 
-TColumn TDateColumn::GetType() {
+EColumn TDateColumn::GetType() {
     return EDateColumn;
 }
 
-TColumn TTimestampColumn::GetType() {
+EColumn TTimestampColumn::GetType() {
     return ETimestampColumn;
 }
 

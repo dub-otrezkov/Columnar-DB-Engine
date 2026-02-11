@@ -2,7 +2,7 @@
 
 namespace JFEngine {
 
-TColumn StrToTColumn(const std::string& data) {
+EColumn StrToTColumn(const std::string& data) {
     if (data == ki8SchemeAlias) {
         return Ei8Column;
     }
@@ -31,7 +31,7 @@ TColumn StrToTColumn(const std::string& data) {
     return EUnitialized;
 }
 
-std::string TColumnToStr(TColumn data) {
+std::string TColumnToStr(EColumn data) {
     switch (data) {
         case Ei8Column:
             return ki8SchemeAlias;
@@ -54,7 +54,7 @@ std::string TColumnToStr(TColumn data) {
     }
 }
 
-Expected<IColumn> MakeColumn(std::vector<std::string> data, TColumn type) {
+Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
     switch (type) {
         case Ei8Column: {
             return SetupColumn<Ti8Column>(std::move(data));
@@ -129,7 +129,7 @@ std::string PrintTimestamp(const TTimestamp& d) {
     return ans;
 }
 
-Expected<IColumn> MakeColumnJF(std::vector<std::string> data, TColumn type) {
+Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
     switch (type) {
         case EUnitialized: {
             return MakeError<UnimplementedErr>();
