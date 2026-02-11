@@ -7,7 +7,7 @@ TDoubleColumn::TDoubleColumn(std::vector<ld> data) {
 }
 
 EColumn TDoubleColumn::GetType() {
-    return EDoubleColumn;
+    return kDoubleColumn;
 }
 
 Expected<void> TDoubleColumn::Setup(std::vector<std::string> data) {

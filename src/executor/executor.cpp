@@ -33,11 +33,11 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
     {
         TIOFactory::RegisterFileIO(
             kTmp1,
-            ETypeFile::EJFFile
+            ETypeFile::kJFFile
         );
         TIOFactory::RegisterFileIO(
             kTmp2,
-            ETypeFile::EJFFile
+            ETypeFile::kJFFile
         );
     }
 

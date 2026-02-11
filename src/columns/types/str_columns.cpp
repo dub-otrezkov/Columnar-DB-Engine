@@ -7,7 +7,7 @@ TStringColumn::TStringColumn(std::vector<std::string> data) {
 }
 
 EColumn TStringColumn::GetType() {
-    return EStringColumn;
+    return kStringColumn;
 }
 
 Expected<void> TStringColumn::Setup(std::vector<std::string> data) {

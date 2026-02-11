@@ -56,10 +56,10 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
 
     while (auto cur = tkz.GetNext()) {
         switch (cur.GetShared()->GetType()) {
-        case ETokens::EFrom:
+        case ETokens::kFrom:
             st.push_back(std::dynamic_pointer_cast<TFromToken>(cur.GetShared()));
             break;
-        case ETokens::ECreate:
+        case ETokens::kCreate:
             st.push_back(std::dynamic_pointer_cast<TCreateToken>(cur.GetShared()));
             break;
         default:
