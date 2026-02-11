@@ -15,8 +15,8 @@ static const std::string kResultScheme = "RESULT_SCHEME";
 static const std::string kResultData = "RESULT_DATA";
 
 enum ETypeFile {
-    ECSVFile,
-    EJFFile
+    kCSVFile,
+    kJFFile
 };
 
 class TIOFactory {
@@ -36,7 +36,7 @@ public:
         if (i->ios_.contains(alias)) {
             return;
         }
-        i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == EJFFile ? ".jf" : ".csv"));
+        i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == kJFFile ? ".jf" : ".csv"));
     }
 
     static void RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp) {

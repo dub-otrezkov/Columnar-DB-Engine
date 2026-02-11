@@ -10,35 +10,35 @@ namespace JFEngine {
 template <typename TOperator, typename... Args>
 auto Do(TColumnPtr col, Args&&... args) {
     switch (col->GetType()) {
-        case Ei8Column: {
+        case ki8Column: {
             return TOperator::Exec(*static_cast<Ti8Column*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case Ei16Column: {
+        case ki16Column: {
             return TOperator::Exec(*static_cast<Ti16Column*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case Ei32Column: {
+        case ki32Column: {
             return TOperator::Exec(*static_cast<Ti32Column*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case Ei64Column: {
+        case ki64Column: {
             return TOperator::Exec(*static_cast<Ti64Column*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case EDoubleColumn: {
+        case kDoubleColumn: {
             return TOperator::Exec(*static_cast<TDoubleColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case EDateColumn: {
+        case kDateColumn: {
             return TOperator::Exec(*static_cast<TDateColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case ETimestampColumn: {
+        case kTimestampColumn: {
             return TOperator::Exec(*static_cast<TTimestampColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }
-        case EStringColumn: {
+        case kStringColumn: {
             return TOperator::Exec(*static_cast<TStringColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }

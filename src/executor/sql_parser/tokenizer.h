@@ -12,22 +12,22 @@
 namespace JFEngine {
 
 enum class ETokens {
-    ENameToken,
-    EFrom,
-    ECreate,
-    ESelect,
-    EAs,
-    ESum,
+    kNameToken,
+    kFrom,
+    kCreate,
+    kSelect,
+    kAs,
+    kSum,
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
-    {"FROM", ETokens::EFrom},
-    {"SELECT", ETokens::ESelect},
-    {"CREATE", ETokens::ECreate},
+    {"FROM", ETokens::kFrom},
+    {"SELECT", ETokens::kSelect},
+    {"CREATE", ETokens::kCreate},
 };
 
 static const std::unordered_map<std::string, ETokens> operators = {
-    {"SUM", ETokens::ESum},
+    {"SUM", ETokens::kSum},
 };
 
 class IToken {
