@@ -9,7 +9,7 @@
 
 namespace JFEngine {
 
-std::optional<TTokens> IsCommand(const std::string& cmd) {
+std::optional<ETokens> IsCommand(const std::string& cmd) {
     if (cmds.contains(cmd)) {
         return cmds.at(cmd);
     }
@@ -56,10 +56,10 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
 
     while (auto cur = tkz.GetNext()) {
         switch (cur.GetShared()->GetType()) {
-        case TTokens::EFrom:
+        case ETokens::EFrom:
             st.push_back(std::dynamic_pointer_cast<TFromToken>(cur.GetShared()));
             break;
-        case TTokens::ECreate:
+        case ETokens::ECreate:
             st.push_back(std::dynamic_pointer_cast<TCreateToken>(cur.GetShared()));
             break;
         default:

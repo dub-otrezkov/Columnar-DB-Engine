@@ -14,7 +14,7 @@ static const std::string kCurTableInput = "CURRENT_TABLE_INPUT";
 static const std::string kResultScheme = "RESULT_SCHEME";
 static const std::string kResultData = "RESULT_DATA";
 
-enum TFileType {
+enum ETypeFile {
     ECSVFile,
     EJFFile
 };
@@ -26,12 +26,12 @@ public:
         return factory;
     }
 
-    static void RegisterSStreamIO(const std::string& alias, TFileType t) { // FOR TESTS (and probably optimizations)
+    static void RegisterSStreamIO(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
         auto i = Instance();
         i->ios_[alias] = std::make_shared<std::stringstream>(alias);
     }
 
-    static void RegisterFileIO(const std::string& alias, TFileType t) {
+    static void RegisterFileIO(const std::string& alias, ETypeFile t) {
         auto i = Instance();
         if (i->ios_.contains(alias)) {
             return;

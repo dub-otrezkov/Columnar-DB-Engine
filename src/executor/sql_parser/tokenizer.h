@@ -11,25 +11,30 @@
 
 namespace JFEngine {
 
-enum class TTokens {
+enum class ETokens {
     ENameToken,
     EFrom,
     ECreate,
     ESelect,
     EAs,
+    ESum,
 };
 
-static const std::unordered_map<std::string, TTokens> cmds = {
-    {"FROM", TTokens::EFrom},
-    {"SELECT", TTokens::ESelect},
-    {"CREATE", TTokens::ECreate},
+static const std::unordered_map<std::string, ETokens> cmds = {
+    {"FROM", ETokens::EFrom},
+    {"SELECT", ETokens::ESelect},
+    {"CREATE", ETokens::ECreate},
+};
+
+static const std::unordered_map<std::string, ETokens> operators = {
+    {"SUM", ETokens::ESum},
 };
 
 class IToken {
 public:
     virtual ~IToken() = default;
 
-    virtual TTokens GetType() const = 0;
+    virtual ETokens GetType() const = 0;
 private:
 };
 
@@ -46,10 +51,15 @@ protected:
     std::vector<std::shared_ptr<IToken>> args_;
 };
 
+class IOperatorCommand : public ICommand {
+public:
+    virtual Expected<IColumn> Run() = 0;
+};
+
 class TSelectToken : public ICommand {
 public:
 
-    TTokens GetType() const override;
+    ETokens GetType() const override;
     
     Expected<ITableInput> Exec() override;
 };
@@ -57,7 +67,7 @@ public:
 class TCreateToken : public ICommand {
 public:
 
-    TTokens GetType() const override;
+    ETokens GetType() const override;
     
     Expected<ITableInput> Exec() override;
 };
@@ -65,7 +75,7 @@ public:
 class TFromToken : public ICommand {
 public:
 
-    TTokens GetType() const override;
+    ETokens GetType() const override;
     
     Expected<ITableInput> Exec() override;
 };
@@ -74,11 +84,17 @@ class TNameToken : public IToken {
 public:
     TNameToken(std::string name);
 
-    TTokens GetType() const override;
+    ETokens GetType() const override;
 
     std::string GetName() const;
 private:
     std::string name_;
+};
+
+class OpenBracketToken : public IToken {
+};
+
+class CloseBracketToken : public IToken {
 };
 
 class Tokenizer {
