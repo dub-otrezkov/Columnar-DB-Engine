@@ -2,12 +2,12 @@
 
 namespace JFEngine {
 
-TColumn TDateColumn::GetType() {
-    return EDateColumn;
+EColumn TDateColumn::GetType() {
+    return kDateColumn;
 }
 
-TColumn TTimestampColumn::GetType() {
-    return ETimestampColumn;
+EColumn TTimestampColumn::GetType() {
+    return kTimestampColumn;
 }
 
 Expected<void> TDateColumn::Setup(std::vector<std::string> data) {

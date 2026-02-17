@@ -12,8 +12,8 @@ std::string TNameToken::GetName() const {
     return name_;
 }
 
-TTokens TNameToken::GetType() const {
-    return TTokens::ENameToken;
+ETokens TNameToken::GetType() const {
+    return ETokens::kNameToken;
 }
 
 } // namespace JFEngine

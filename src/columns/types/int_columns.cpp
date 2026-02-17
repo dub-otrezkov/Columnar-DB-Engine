@@ -2,20 +2,24 @@
 
 namespace JFEngine {
 
-TColumn Ti8Column::GetType() {
-    return Ei8Column;
+Ti64Column::Ti64Column(std::vector<i64> data) {
+    cols_ = std::move(data);
 }
 
-TColumn Ti16Column::GetType() {
-    return Ei16Column;
+EColumn Ti8Column::GetType() {
+    return ki8Column;
 }
 
-TColumn Ti32Column::GetType() {
-    return Ei32Column;
+EColumn Ti16Column::GetType() {
+    return ki16Column;
 }
 
-TColumn Ti64Column::GetType() {
-    return Ei64Column;
+EColumn Ti32Column::GetType() {
+    return ki32Column;
+}
+
+EColumn Ti64Column::GetType() {
+    return ki64Column;
 }
 
 Expected<void> Ti8Column::Setup(std::vector<std::string> data) {
