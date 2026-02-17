@@ -60,6 +60,18 @@ private:
     std::string alias_;
 };
 
+class BadArgsErr : public IError {
+public:
+    BadArgsErr(std::string alias = "") : alias_(std::move(alias)) {
+    }
+
+    std::string Print() const override {
+        return "bad args: " + alias_;
+    }
+private:
+    std::string alias_;
+};
+
 class UnsupportedErr : public IError {
 public:
     std::string Print() const override {

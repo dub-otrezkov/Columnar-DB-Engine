@@ -119,7 +119,7 @@ Expected<TEngine> MakeSelectEngine(
     return eng;
 }
 
-Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput>&& worker) {
+Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker) {
     auto eng = std::make_shared<TEngine>();
     auto err = eng->Setup(worker);
     if (err.HasError()) {
