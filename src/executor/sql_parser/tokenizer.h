@@ -18,6 +18,9 @@ enum class ETokens {
     kSelect,
     kAs,
     kSum,
+    kOpenBracket,
+    kCloseBracket,
+    kComa,
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
@@ -53,7 +56,7 @@ protected:
 
 class IOperatorCommand : public ICommand {
 public:
-    virtual Expected<IColumn> Run() = 0;
+    Expected<ITableInput> Exec() override;
 };
 
 class TSelectToken : public ICommand {
@@ -80,6 +83,11 @@ public:
     Expected<ITableInput> Exec() override;
 };
 
+class TSumToken : public IOperatorCommand {
+public:
+    ETokens GetType() const override;
+};
+
 class TNameToken : public IToken {
 public:
     TNameToken(std::string name);
@@ -91,15 +99,24 @@ private:
     std::string name_;
 };
 
-class OpenBracketToken : public IToken {
-};
-
-class CloseBracketToken : public IToken {
-};
-
-class Tokenizer {
+class TOpenBracketToken : public IToken {
 public:
-    Tokenizer(const std::string& data);
+    ETokens GetType() const override;
+};
+
+class TComaToken : public IToken {
+public:
+    ETokens GetType() const override;
+};
+
+class TCloseBracketToken : public IToken {
+public:
+    ETokens GetType() const override;
+};
+
+class TTokenizer {
+public:
+    TTokenizer(const std::string& data);
 
     Expected<IToken> GetNext();
 private:
@@ -107,16 +124,5 @@ private:
 };
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
-
-template<typename T>
-Expected<TEngine> ExecuteNode(std::shared_ptr<ICommand> node) {
-    auto d = std::dynamic_pointer_cast<T>(node);
-
-    if (!d) {
-        return MakeError<BadCmdErr>();
-    }
-
-    return d->Exec();
-}
 
 } // namespace JFEngine

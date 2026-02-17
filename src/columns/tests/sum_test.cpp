@@ -1,13 +1,6 @@
-#include "../operators/operators.h"
-
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
-#include <string_view>
+#include "tests.h"
 
 namespace JFEngine::Testing {
-
-struct OperatorsTest : testing::Test {};
 
 TEST_F(OperatorsTest, i64SumTest) {
     {
