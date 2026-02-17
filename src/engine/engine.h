@@ -44,6 +44,7 @@ public:
                     return err;
                 }
             }
+
             if (!block_ptr) {
                 continue;
             }
@@ -70,6 +71,6 @@ Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
 
 Expected<TEngine> MakeSelectEngine(std::shared_ptr<std::istream> jf, TSelectQuery query);
 
-Expected<TEngine> MakeEngineFromWorker(std::unique_ptr<ITableInput>&& worker);
+Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker);
 
 } // namespace JFEngine

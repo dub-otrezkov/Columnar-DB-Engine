@@ -62,7 +62,7 @@ public:
         return *res_;
     }
 
-    auto GetShared() {
+    std::shared_ptr<T> GetShared() {
         return res_;
     }
 

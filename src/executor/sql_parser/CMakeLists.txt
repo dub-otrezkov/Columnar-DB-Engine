@@ -5,6 +5,7 @@ add_library(sql_parser_lib STATIC
     name_token.cpp
     create_token.cpp
     select_token.cpp
+    misc.cpp
 )
 
 target_link_libraries(
@@ -13,4 +14,5 @@ target_link_libraries(
     csv_reader_lib
     engine_lib
     ios_factory_lib
+    agregator_lib
 )

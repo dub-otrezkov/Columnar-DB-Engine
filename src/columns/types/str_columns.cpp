@@ -2,8 +2,12 @@
 
 namespace JFEngine {
 
-TColumn TStringColumn::GetType() {
-    return EStringColumn;
+TStringColumn::TStringColumn(std::vector<std::string> data) {
+    cols_ = std::move(data);
+}
+
+EColumn TStringColumn::GetType() {
+    return kStringColumn;
 }
 
 Expected<void> TStringColumn::Setup(std::vector<std::string> data) {

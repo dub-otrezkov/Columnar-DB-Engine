@@ -9,8 +9,14 @@ ui64 ITableInput::GetRowGroupLen() const {
     return row_group_len_;
 }
 
-Expected<TColumnPtr> ITableInput::ReadColumn(const std::string& name) {
+Expected<IColumn> ITableInput::ReadColumn(const std::string& name) {
     return MakeError<UnimplementedErr>();
+}
+
+void ITableInput::MoveCursor(i64) {
+}
+
+void ITableInput::Reset() {
 }
 
 } // namespace JFEngine

@@ -9,18 +9,18 @@
 
 namespace JFEngine {
 
-std::optional<TTokens> IsCommand(const std::string& cmd) {
+std::optional<ETokens> IsCommand(const std::string& cmd) {
     if (cmds.contains(cmd)) {
         return cmds.at(cmd);
     }
     return std::nullopt;
 }
 
-Tokenizer::Tokenizer(const std::string& data) {
+TTokenizer::TTokenizer(const std::string& data) {
     ss << data;
 }
 
-Expected<IToken> Tokenizer::GetNext() {
+Expected<IToken> TTokenizer::GetNext() {
     if (ss.eof()) {
         return MakeError<EofErr>();
     }
@@ -28,7 +28,11 @@ Expected<IToken> Tokenizer::GetNext() {
     std::string token;
 
     while (1) {
-        if (ss.peek() == EOF || std::isspace(ss.peek())) {
+        if (token.size() == 0 && (ss.peek() == '(' || ss.peek() == ')' || ss.peek() == ',')) {
+            token += ss.get();
+            break;
+        }
+        if (ss.peek() == EOF || std::isspace(ss.peek()) || ss.peek() == '(' || ss.peek() == ')' || ss.peek() == ',') {
             break;
         }
 
@@ -44,6 +48,16 @@ Expected<IToken> Tokenizer::GetNext() {
         return std::make_shared<TFromToken>();
     } else if (token == "CREATE") {
         return std::make_shared<TCreateToken>();
+    } else if (token == "SELECT") {
+        return std::make_shared<TSelectToken>();
+    } else if (token == "SUM") {
+        return std::make_shared<TSumToken>();
+    } else if (token == "(") {
+        return std::make_shared<TOpenBracketToken>();
+    } else if (token == ")") {
+        return std::make_shared<TCloseBracketToken>();
+    } else if (token == ",") {
+        return std::make_shared<TComaToken>();
     } else {
         return std::make_shared<TNameToken>(token);
     }
@@ -52,22 +66,30 @@ Expected<IToken> Tokenizer::GetNext() {
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd) {
     std::vector<std::shared_ptr<ICommand>> st;
 
-    Tokenizer tkz(cmd);
+    TTokenizer tkz(cmd);
 
     while (auto cur = tkz.GetNext()) {
         switch (cur.GetShared()->GetType()) {
-        case TTokens::EFrom:
+        case ETokens::kOpenBracket:
+        case ETokens::kComa:
+            break;
+        case ETokens::kFrom:
             st.push_back(std::dynamic_pointer_cast<TFromToken>(cur.GetShared()));
             break;
-        case TTokens::ECreate:
+        case ETokens::kCreate:
             st.push_back(std::dynamic_pointer_cast<TCreateToken>(cur.GetShared()));
             break;
-        default:
+        case ETokens::kSelect:
+            st.push_back(std::dynamic_pointer_cast<TSelectToken>(cur.GetShared()));
+            break;
+        case ETokens::kCloseBracket:
+        default: {
             if (st.empty() || !st.back()) {
                 return MakeError<BadCmdErr>("failed parse query");
             }
             st.back()->AddArg(cur.GetShared());
             break;
+        }
         }
     }
 

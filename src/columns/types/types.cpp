@@ -2,82 +2,82 @@
 
 namespace JFEngine {
 
-TColumn StrToTColumn(const std::string& data) {
+EColumn StrToTColumn(const std::string& data) {
     if (data == ki8SchemeAlias) {
-        return Ei8Column;
+        return ki8Column;
     }
     if (data == ki16SchemeAlias) {
-        return Ei16Column;
+        return ki16Column;
     }
     if (data == ki32SchemeAlias) {
-        return Ei32Column;
+        return ki32Column;
     }
     if (data == ki64SchemeAlias) {
-        return Ei64Column;
+        return ki64Column;
     }
     if (data == kDoubleSchemeAlias) {
-        return EDoubleColumn;
+        return kDoubleColumn;
     }
     if (data == kDateSchemeAlias) {
-        return EDateColumn;
+        return kDateColumn;
     }
     if (data == kTimestampSchemeAlias) {
-        return ETimestampColumn;
+        return kTimestampColumn;
     }
     if (data == kStringSchemeAlias) {
-        return EStringColumn;
+        return kStringColumn;
     }
 
-    return EUnitialized;
+    return kUnitialized;
 }
 
-std::string TColumnToStr(TColumn data) {
+std::string TColumnToStr(EColumn data) {
     switch (data) {
-        case Ei8Column:
+        case ki8Column:
             return ki8SchemeAlias;
-        case Ei16Column:
+        case ki16Column:
             return ki16SchemeAlias;
-        case Ei32Column:
+        case ki32Column:
             return ki32SchemeAlias;
-        case Ei64Column:
+        case ki64Column:
             return ki64SchemeAlias;
-        case EDoubleColumn:
+        case kDoubleColumn:
             return kDoubleSchemeAlias;
-        case EDateColumn:
+        case kDateColumn:
             return kDateSchemeAlias;
-        case ETimestampColumn:
+        case kTimestampColumn:
             return kTimestampSchemeAlias;
-        case EStringColumn:
+        case kStringColumn:
             return kStringSchemeAlias;
         default:
             return kUnknownSchemeAlias;
     }
 }
 
-Expected<IColumn> MakeColumn(std::vector<std::string> data, TColumn type) {
+Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
     switch (type) {
-        case Ei8Column: {
+        case ki8Column: {
             return SetupColumn<Ti8Column>(std::move(data));
         }
-        case Ei16Column: {
+        case ki16Column: {
             return SetupColumn<Ti16Column>(std::move(data));
         }
-        case Ei32Column: {
+        case ki32Column: {
             return SetupColumn<Ti32Column>(std::move(data));
         }
-        case Ei64Column: {
+        case ki64Column: {
             return SetupColumn<Ti64Column>(std::move(data));
         }
-        case EDoubleColumn: {
+        case kDoubleColumn: {
             return SetupColumn<TDoubleColumn>(std::move(data));
         }
-        case EDateColumn: {
+        case kDateColumn: {
             return SetupColumn<TDateColumn>(std::move(data));
         }
-        case ETimestampColumn: {
+        case kTimestampColumn: {
             return SetupColumn<TTimestampColumn>(std::move(data));
         }
-        case EStringColumn: {
+        case kStringColumn: {
             return SetupColumn<TStringColumn>(std::move(data));
         }
         default: {
@@ -129,47 +129,47 @@ std::string PrintTimestamp(const TTimestamp& d) {
     return ans;
 }
 
-Expected<IColumn> MakeColumnJF(std::vector<std::string> data, TColumn type) {
+Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
     switch (type) {
-        case EUnitialized: {
+        case kUnitialized: {
             return MakeError<UnimplementedErr>();
         }
-        case Ei8Column: {
+        case ki8Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
                 data[i] = std::to_string(JFStrToI8(data[i]));
             }
             break;
         }
-        case Ei16Column: {
+        case ki16Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
                 data[i] = std::to_string(JFStrToI16(data[i]));
             }
             break;
         }
-        case Ei32Column: {
+        case ki32Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
                 data[i] = std::to_string(JFStrToI32(data[i]));
             }
             break;
         }
-        case Ei64Column: {
+        case ki64Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
                 data[i] = std::to_string(JFStrToI64(data[i]));
             }
             break;
         }
-        case EDoubleColumn: {
+        case kDoubleColumn: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
                 data[i] = std::to_string(JFStrToDouble(data[i]));
             }
             break;
         }
-        case EDateColumn: {
+        case kDateColumn: {
             auto res = std::make_shared<TDateColumn>();
             for (ui64 i = 0; i < data.size(); i++) {
                 std::stringstream ss;
@@ -185,7 +185,7 @@ Expected<IColumn> MakeColumnJF(std::vector<std::string> data, TColumn type) {
             }
             break;
         }
-        case ETimestampColumn: {
+        case kTimestampColumn: {
             auto res = std::make_shared<TTimestampColumn>();
             for (ui64 i = 0; i < data.size(); i++) {
                 std::stringstream ss;

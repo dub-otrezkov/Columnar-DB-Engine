@@ -112,7 +112,7 @@ Expected<void> TJFTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<TColumnPtr> TJFTableInput::ReadIthColumn(ui64 i) {
+Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
     auto start = blocks_pos_[current_block_];
     jf_in_->seekg(start - sizeof(i64) * (cols_cnt_ - i));
     auto pos = ReadI64(*jf_in_);
@@ -131,14 +131,18 @@ Expected<TColumnPtr> TJFTableInput::ReadIthColumn(ui64 i) {
         return col.GetError();
     }
 
-    return col.GetShared();
+    Expected<IColumn> ans(
+        col.GetShared(),
+        current_block_ + 1 == blocks_pos_.size() ? MakeError<EofErr>() : nullptr
+    );
+
+    return ans;
 }
 
 Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EofErr>();
     }
-
 
     std::vector<TColumnPtr> res;
 
@@ -147,9 +151,9 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
         if (err) {
             return err;
         }
-        res.push_back(*col);
+        res.push_back(col);
     }
-    
+
     current_block_++;
 
     return res;
@@ -167,7 +171,11 @@ void TJFTableInput::MoveCursor(i64 delta) {
     }
 }
 
-Expected<TColumnPtr> TJFTableInput::ReadColumn(const std::string& name) {
+void TJFTableInput::Reset() {
+    current_block_ = 0;
+}
+
+Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EofErr>();
     }
@@ -185,6 +193,7 @@ Expected<TColumnPtr> TJFTableInput::ReadColumn(const std::string& name) {
     if (inds.count(name) == 0) {
         return MakeError<NoSuchColumnsErr>(name);
     }
+
 
     return ReadIthColumn(inds[name]);
 }

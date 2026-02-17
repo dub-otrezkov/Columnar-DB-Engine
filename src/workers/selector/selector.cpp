@@ -1,5 +1,7 @@
 #include "selector.h"
 
+#include <vector>
+
 namespace JFEngine {
 
 TSelector::TSelector(std::shared_ptr<TJFTableInput> jf_in, TSelectQuery query) : jf_in_(jf_in) {
@@ -64,7 +66,7 @@ Expected<std::vector<TColumnPtr>> TSelector::ReadRowGroup() {
             return err;
         }
         if (col) {
-            res.push_back(*col);
+            res.push_back(col);
         }
     }
     jf_in_->MoveCursor(1);
