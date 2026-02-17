@@ -2,6 +2,8 @@
 
 #include "utils/errors/errors_templates.h"
 
+#include "workers/base.h"
+
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -29,6 +31,11 @@ public:
     static void RegisterSStreamIO(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
         auto i = Instance();
         i->ios_[alias] = std::make_shared<std::stringstream>(alias);
+    }
+
+    static void UnregisterIO(const std::string& alias) { // FOR TESTS (and probably optimizations)
+        auto i = Instance();
+        i->ios_.erase(alias);
     }
 
     static void RegisterFileIO(const std::string& alias, ETypeFile t) {
