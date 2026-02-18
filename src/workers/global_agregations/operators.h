@@ -33,4 +33,20 @@ struct TSumAgr : IAgregation {
     void AddArg(std::shared_ptr<IAgregation>) override;
 };
 
+struct TCountAgr : IAgregation {
+    std::shared_ptr<IAgregation> arg;
+
+    Expected<IColumn> ReadRowGroup(ITableInput* inp) override;
+
+    void AddArg(std::shared_ptr<IAgregation>) override;
+};
+
+struct TAvgAgr : IAgregation {
+    std::shared_ptr<IAgregation> arg;
+
+    Expected<IColumn> ReadRowGroup(ITableInput* inp) override;
+
+    void AddArg(std::shared_ptr<IAgregation>) override;
+};
+
 } // namespace JFEngine

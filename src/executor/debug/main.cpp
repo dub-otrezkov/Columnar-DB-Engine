@@ -15,7 +15,7 @@ int main() {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT hot, red, peppers FROM josh");
+        auto err = exec.ExecQuery("SELECT red, hot FROM josh");
         if (err.HasError()) {
             std::cout << err.GetError()->Print() << std::endl;
         }
