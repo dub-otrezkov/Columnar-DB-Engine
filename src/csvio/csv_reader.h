@@ -15,6 +15,7 @@ public:
     TCSVReader(std::istream& in, i64 buf_size_ = kUnlimitedBuffer, char sep = ',');
 
     Expected<std::vector<std::string>> ReadRow();
+    Expected<std::vector<std::string>> ReadRowBufI();
     void RestartRead();
 
 private:

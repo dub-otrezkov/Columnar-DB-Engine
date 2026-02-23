@@ -19,7 +19,7 @@ public:
     ~TCSVWriter();
 
 private:
-    std::string PrepareString(const std::string& str);
+    void PrepareString(std::ostream& out, std::string_view str);
 
     std::ostream& out_;
     char sep_;

@@ -11,6 +11,7 @@ EColumn TTimestampColumn::GetType() {
 }
 
 Expected<void> TDateColumn::Setup(std::vector<std::string> data) {
+    cols_.reserve(data.size());
     for (const auto& s : data) {
         try {
             // YYYY-MM-DD
@@ -30,6 +31,7 @@ Expected<void> TDateColumn::Setup(std::vector<std::string> data) {
 }
 
 Expected<void> TTimestampColumn::Setup(std::vector<std::string> data) {
+    cols_.reserve(data.size());
     for (const auto& s : data) {
         try {
             // YYYY-MM-DD HH:MM:SS

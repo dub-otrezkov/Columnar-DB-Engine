@@ -43,7 +43,7 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
-        auto res = csv_data.ReadRow();
+        auto res = csv_data.ReadRowBufI();
         if (!res) {
             if (Is<EofErr>(res.GetError())) {
                 is_eof = true;

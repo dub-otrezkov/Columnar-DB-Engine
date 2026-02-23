@@ -13,7 +13,7 @@ struct TRowScheme {
     EColumn type_;
 };
 
-const ui64 KRowGroupLen = 100;
+const ui64 KRowGroupLen = 100000;
 
 class ITableInput {
 public:

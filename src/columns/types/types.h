@@ -35,7 +35,7 @@ enum EColumn {
     kTimestampColumn,
 };
 
-EColumn StrToTColumn(const std::string& data);
+EColumn StrToTColumn(std::string_view data);
 std::string TColumnToStr(EColumn data);
 
 class IColumn {

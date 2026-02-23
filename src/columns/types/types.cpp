@@ -2,7 +2,7 @@
 
 namespace JFEngine {
 
-EColumn StrToTColumn(const std::string& data) {
+EColumn StrToTColumn(std::string_view data) {
     if (data == ki8SchemeAlias) {
         return ki8Column;
     }
