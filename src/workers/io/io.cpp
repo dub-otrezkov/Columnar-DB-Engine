@@ -43,8 +43,9 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
+
         auto res = csv_data.ReadRowBufI();
-        if (!res) {
+        if (res.HasError()) {
             if (Is<EofErr>(res.GetError())) {
                 is_eof = true;
                 break;
@@ -61,7 +62,6 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
                 return MakeError<IncorrectFileErr>("diff size");
             }
         }
-
         for (ui64 j = 0; j < d.size(); j++) {
             tmp[j].push_back(d[j]);
         }
@@ -74,6 +74,7 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
         }
         out.push_back(col.GetShared());
     }
+
     return {std::move(out), (is_eof ? MakeError<EofErr>() : nullptr)};
 }
 
@@ -146,17 +147,22 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
 
     std::vector<TColumnPtr> res;
 
+    bool is_eof = false;
+
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [col, err] = ReadIthColumn(i);
-        if (err) {
+        // std::cout << col->GetSize() << " " << Is<EofErr>(err) << std::endl;
+        if (!Is<EofErr>(err)) {
             return err;
+        } else if (err) {
+            is_eof = true;
         }
         res.push_back(col);
     }
 
     current_block_++;
 
-    return res;
+    return {std::move(res), is_eof ? MakeError<EofErr>() : nullptr};
 }
 
 std::vector<TRowScheme>& TJFTableInput::GetScheme() {

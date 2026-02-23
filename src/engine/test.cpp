@@ -1,7 +1,6 @@
 #include "engine.h"
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
 #include <string_view>
 
@@ -27,17 +26,15 @@ dot,19,hacker,10,92,2,-1
 dot,19,hacker,-10,-10,-1,-1.125
 )";
 
-    std::shared_ptr<std::stringstream> scheme_ss = std::make_shared<std::stringstream>();
-    std::shared_ptr<std::stringstream> data_ss = std::make_shared<std::stringstream>();
+    std::shared_ptr<std::stringstream> scheme_ss;
+    std::shared_ptr<std::stringstream> data_ss;
 
     void SetUp() override {
-        *scheme_ss << scheme;
-        *data_ss << data;
+        scheme_ss = std::make_shared<std::stringstream>(scheme);
+        data_ss = std::make_shared<std::stringstream>(data);
     }
 
     void TearDown() override {
-        scheme_ss->clear();
-        data_ss->clear();
     }
 };
 

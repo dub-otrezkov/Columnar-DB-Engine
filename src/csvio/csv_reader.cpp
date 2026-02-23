@@ -22,14 +22,17 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
 
     bool in_quotes = false;
 
-    std::vector<ui64> szs;
-    szs.reserve(20);
+    // static std::vector<ui64> szs;
+    // szs.resize(0);
 
     i64 total = 0;
 
-    szs.push_back(0);
+    // szs.push_back(0);
 
-   auto start = in_.tellg();
+    // auto start = in_.tellg();
+    
+    std::vector<std::string> ans;
+    ans.push_back("");
 
     while (!in_.eof() && (buf_size_ == kUnlimitedBuffer || buf_size_ > 0)) {
         auto c = in_.get();
@@ -52,13 +55,14 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
         read_smth = true;
 
         if (!in_quotes && c == sep_) {
-            szs.push_back(0);
+            // szs.push_back(0);
+            ans.emplace_back();
         } else if (c == '"') {
             if (in_quotes) {
                 if (in_.peek() == '\"') {
-                    // ans.back() += in_.get();
-                    szs.back()++;
-                    in_.get();
+                    ans.back() += in_.get();
+                    // szs.back()++;
+                    // in_.get();
                     total++;
                     if (buf_size_ > 0) {
                         buf_size_--;
@@ -69,15 +73,15 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
                 } else {
                     in_quotes = false;
                 }
-            } else if (szs.back() == 0) {
+            } else if (ans.back().empty()) {
                 in_quotes = true;
             } else {
-                // ans.back() += c;
-                szs.back()++;
+                ans.back() += c;
+                // szs.back()++;
             }
         } else {
-            // ans.back() += c;
-            szs.back()++;
+            ans.back() += c;
+            // szs.back()++;
         }
     }
 
@@ -89,65 +93,64 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     
     // std::cout << ":::" << " " << total << " " << in_.eof() << " " << in_.tellg() << std::endl;
 
-    in_.clear();
-    in_.seekg(start);
+    // in_.clear();
+    // in_.seekg(start);
 
-    std::vector<std::string> ans(szs.size());
-    for (ui64 i = 0; i < szs.size(); i++) {
-        ans[i] = std::string(szs[i], ' ');
-        ui64 cur_i = 0;
-        in_quotes = false;
-        while (cur_i < szs[i]) {
-            // std::cout << i << " " << ans[i] << std::endl;
+    // for (ui64 i = 0; i < szs.size(); i++) {
+    //     ans[i].resize(szs[i]);
+    //     ui64 cur_i = 0;
+    //     in_quotes = false;
+    //     while (cur_i < szs[i]) {
+    //         // std::cout << i << " " << ans[i] << std::endl;
 
-            auto c = in_.get();
-            total++;
+    //         auto c = in_.get();
+    //         total++;
 
-            // std::cout << ":: " << c << std::endl;
+    //         // std::cout << ":: " << c << std::endl;
 
-            if (in_quotes && c == EOF) {
-                return MakeError<EofErr>();
-            }
-            if ((!in_quotes && c == '\n') || c == EOF) {
-                break;
-            }
+    //         if (in_quotes && c == EOF) {
+    //             return MakeError<EofErr>();
+    //         }
+    //         if ((!in_quotes && c == '\n') || c == EOF) {
+    //             break;
+    //         }
 
-            read_smth = true;
+    //         read_smth = true;
 
-            if (!in_quotes && c == sep_) {
-            } else if (c == '"') {
-                if (in_quotes) {
-                    auto nxt = in_.peek();
-                    if (nxt == '"') {
-                        // ans[i] += in_.get();
-                        ans[i][cur_i++] = in_.get();
-                        // szs.back()++;
-                    } else if (nxt != sep_ && nxt != '\n') {
-                        return {std::vector<std::string>(), MakeError<EofErr>()};
-                    } else {
-                        in_quotes = false;
-                    }
-                } else if (cur_i == 0) {
-                    in_quotes = true;
-                } else {
-                    // ans.back() += c;
-                    // ans[i] += c;
-                    ans[i][cur_i++] = c;
-                }
-            } else {
-                // ans.back() += c;
-                ans[i][cur_i++] = c;
-                // ans[i] += c;
-            }
-        }
-        // std::cout << ans[i] << "---" << (char) in_.peek() << std::endl;
-        in_.get();
-        if (in_quotes) {
-            in_.get();
-        }
+    //         if (!in_quotes && c == sep_) {
+    //         } else if (c == '"') {
+    //             if (in_quotes) {
+    //                 auto nxt = in_.peek();
+    //                 if (nxt == '"') {
+    //                     // ans[i] += in_.get();
+    //                     ans[i][cur_i++] = in_.get();
+    //                     // szs.back()++;
+    //                 } else if (nxt != sep_ && nxt != '\n') {
+    //                     return {std::vector<std::string>(), MakeError<EofErr>()};
+    //                 } else {
+    //                     in_quotes = false;
+    //                 }
+    //             } else if (cur_i == 0) {
+    //                 in_quotes = true;
+    //             } else {
+    //                 // ans.back() += c;
+    //                 // ans[i] += c;
+    //                 ans[i][cur_i++] = c;
+    //             }
+    //         } else {
+    //             // ans.back() += c;
+    //             ans[i][cur_i++] = c;
+    //             // ans[i] += c;
+    //         }
+    //     }
+    //     // std::cout << ans[i] << "---" << (char) in_.peek() << std::endl;
+    //     in_.get();
+    //     if (in_quotes) {
+    //         in_.get();
+    //     }
 
-        // std::cout << (char)in_.peek() << std::endl;
-    }
+    //     // std::cout << (char)in_.peek() << std::endl;
+    // }
 
     if (!read_smth) {
         return {std::move(ans), MakeError<EofErr>()};
@@ -158,50 +161,58 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
 
 
 Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
-    if (in_.eof() || buf_size_ == 0) {
-        return {std::vector<std::string>(), MakeError<EofErr>()};
-    }
-
-    static const ui64 kIBufSize = (1 << 18);
+    
     static char buf[kIBufSize];
     static i64 cpos = 0;
-    static auto st = in_.tellg();
-    static auto av = 0;
+    static ui64 av = 0;
+    static std::streampos st;
 
-    static auto read = [this]() -> char {
+    auto read = [this]() -> char {
         if (cpos < av) {
             return buf[cpos++];
         }
-        st = in_.tellg();
-        in_.read(buf, kIBufSize);
+        // std::cout << "::: " << av << " " << in_.tellg() << std::endl;
 
-        av = in_.gcount();
+
+        // std::cout << "sdvg!" << " " << st << std::endl;
+        st = in_.tellg();
+        
+        // std::cout << "sdvg!2" << " " << st << " " << in_.gcount() << " " << in_.tellg() << " | " << av << " " << cpos << " | " << (char) buf[0] << std::endl;
+
+        av = in_.read(buf, kIBufSize).gcount();
 
         cpos = 0;
         return buf[cpos++];
     };
-    static auto peek = [this]() -> char {
+    auto peek = [this]() -> char {
         if (cpos < kIBufSize) {
             return buf[cpos];
         }
         return in_.peek();
     };
-    static auto shift_left = [this](i64 delta) -> void {
+    auto shift_left = [this](i64 delta) -> void {
         if (cpos >= delta) {
             cpos -= delta;
         } else {
+            // std::cout << "!!!!!!" << std::endl;
             in_.clear();
             in_.seekg(st + cpos - delta);
+            st = st + cpos - delta;
+            // std::cout <<"LL " << st + cpos - delta << std::endl;
             cpos = 0;
-            in_.read(buf, kIBufSize);
+            av = in_.read(buf, kIBufSize).gcount();
         }
     };
-    read();
-    shift_left(1);
-
-    static auto eof_c = [this]() -> bool {
+    auto eof_c = [this]() -> bool {
         return cpos == av && in_.eof();
     };
+
+    if (eof_c() || buf_size_ == 0) {
+        return {std::vector<std::string>(), MakeError<EofErr>()};
+    }
+
+    read();
+    shift_left(1);
 
     bool read_smth = false;
 
@@ -211,7 +222,12 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
 
     i64 total = 0;
 
-    szs.push_back(0);
+    // szs.push_back(0);
+
+    Expected<std::vector<std::string>> ans_e(std::vector<std::string>(szs.size()));
+
+    auto& ans = *ans_e.GetShared();
+    ans.push_back("");
 
     while (!eof_c() && (buf_size_ == kUnlimitedBuffer || buf_size_ > 0)) {
         // auto c = in_.get();
@@ -233,14 +249,15 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
         read_smth = true;
 
         if (!in_quotes && c == sep_) {
-            szs.push_back(0);
+            // szs.push_back(0);
+            ans.emplace_back();
         } else if (c == '"') {
             if (in_quotes) {
                 if (peek() == '\"') {
-                    // ans.back() += read();
-                    szs.back()++;
+                    ans.back() += read();
+                    // szs.back()++;
                     // in_.get();
-                    read();
+                    // read();
                     total++;
                     if (buf_size_ > 0) {
                         buf_size_--;
@@ -252,21 +269,17 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
                 } else {
                     in_quotes = false;
                 }
-            } else if (szs.back() == 0) {
+            } else if (ans.back().empty()) {
                 in_quotes = true;
             } else {
-                // ans.back() += c;
-                szs.back()++;
+                ans.back() += c;
+                // szs.back()++;
             }
         } else {
-            // ans.back() += c;
-            szs.back()++;
+            ans.back() += c;
+            // szs.back()++;
         }
     }
-
-    Expected<std::vector<std::string>> ans_e(std::vector<std::string>(szs.size()));
-
-    auto& ans = *ans_e.GetShared();
 
     // std::cout << "!! " << szs.size() << std::endl;
     // for (auto el : szs) {
@@ -278,63 +291,63 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
 
     // in_.clear();
     // in_.seekg(start);
-    shift_left(total);
+    // shift_left(total);
 
-    // std::vector<std::string> ans(szs.size());
-    for (ui64 i = 0; i < szs.size(); i++) {
-        ans[i] = std::string(szs[i], ' ');
-        ui64 cur_i = 0;
-        in_quotes = false;
-        while (cur_i < szs[i]) {
-            // std::cout << i << " " << ans[i] << std::endl;
+    // // std::vector<std::string> ans(szs.size());
+    // for (ui64 i = 0; i < szs.size(); i++) {
+    //     ans[i] = std::string(szs[i], ' ');
+    //     ui64 cur_i = 0;
+    //     in_quotes = false;
+    //     while (cur_i < szs[i]) {
+    //         // std::cout << i << " " << ans[i] << std::endl;
 
-            auto c = read();
-            total++;
+    //         auto c = read();
+    //         total++;
 
-            // std::cout << ":: " << c << std::endl;
+    //         // std::cout << ":: " << c << std::endl;
 
-            if (in_quotes && c == EOF) {
-                return MakeError<EofErr>();
-            }
-            if ((!in_quotes && c == '\n') || c == EOF) {
-                break;
-            }
+    //         if (in_quotes && c == EOF) {
+    //             return MakeError<EofErr>();
+    //         }
+    //         if ((!in_quotes && c == '\n') || c == EOF) {
+    //             break;
+    //         }
 
-            read_smth = true;
+    //         read_smth = true;
 
-            if (!in_quotes && c == sep_) {
-            } else if (c == '"') {
-                if (in_quotes) {
-                    auto nxt = peek();
-                    if (nxt == '"') {
-                        // ans[i] += in_.get();
-                        ans[i][cur_i++] = read();
-                        // szs.back()++;
-                    } else if (nxt != sep_ && nxt != '\n') {
-                        return {std::vector<std::string>(), MakeError<EofErr>()};
-                    } else {
-                        in_quotes = false;
-                    }
-                } else if (cur_i == 0) {
-                    in_quotes = true;
-                } else {
-                    // ans.back() += c;
-                    // ans[i] += c;
-                    ans[i][cur_i++] = c;
-                }
-            } else {
-                // ans.back() += c;
-                ans[i][cur_i++] = c;
-                // ans[i] += c;
-            }
-        }
-        read();
-        if (in_quotes) {
-            read();
-        }
+    //         if (!in_quotes && c == sep_) {
+    //         } else if (c == '"') {
+    //             if (in_quotes) {
+    //                 auto nxt = peek();
+    //                 if (nxt == '"') {
+    //                     // ans[i] += in_.get();
+    //                     ans[i][cur_i++] = read();
+    //                     // szs.back()++;
+    //                 } else if (nxt != sep_ && nxt != '\n') {
+    //                     return {std::vector<std::string>(), MakeError<EofErr>()};
+    //                 } else {
+    //                     in_quotes = false;
+    //                 }
+    //             } else if (cur_i == 0) {
+    //                 in_quotes = true;
+    //             } else {
+    //                 // ans.back() += c;
+    //                 // ans[i] += c;
+    //                 ans[i][cur_i++] = c;
+    //             }
+    //         } else {
+    //             // ans.back() += c;
+    //             ans[i][cur_i++] = c;
+    //             // ans[i] += c;
+    //         }
+    //     }
+    //     read();
+    //     if (in_quotes) {
+    //         read();
+    //     }
 
-        // std::cout << (char)in_.peek() << std::endl;
-    }
+    //     // std::cout << (char)in_.peek() << std::endl;
+    // }
 
     if (!read_smth) {
         // return {std::move(ans), MakeError<EofErr>()};
