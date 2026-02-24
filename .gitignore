@@ -2,3 +2,5 @@
 /build
 /kt1
 /.vscode
+/src/executor/debug/dorothy.csv
+/src/executor/debug/josh.jf

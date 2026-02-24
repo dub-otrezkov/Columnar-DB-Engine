@@ -57,6 +57,9 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 
         if (i == 0) {
             tmp.resize(d.size());
+            for (auto& r : tmp) {
+                r.reserve(row_group_len_);
+            }
         } else {
             if (d.size() != tmp.size()) {
                 return MakeError<IncorrectFileErr>("diff size");
