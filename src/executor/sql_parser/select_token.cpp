@@ -45,7 +45,6 @@ Expected<ITableInput> TSelectToken::Exec() {
 
                 break;
             }
-<<<<<<< HEAD
             case ETokens::kCount: {
                 auto node = std::make_shared<TCountAgr>();
 
@@ -72,8 +71,6 @@ Expected<ITableInput> TSelectToken::Exec() {
 
                 break;
             }
-=======
->>>>>>> main
         }
     }
     TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
