@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include <cstring>
+#include <cstdint>
 
 using i8 = int8_t;
 using ui8 = uint8_t;
@@ -30,18 +31,24 @@ public:
     }
 
     static std::string IntToJFStr(T i) {
-        std::stringstream ss;
-        PutInt(ss, i);
-        auto res = ss.str();
+        std::string ans(sizeof(T), 'k');
+        static char mas[sizeof(T)];
+        memcpy(mas, &i, sizeof(T));
+        for (ui8 i = 0; i < sizeof(T); i++) {
+            ans[i] = mas[i];
+        }
 
-        ss.clear();
-        return res;
+        return std::move(ans);
     }
 
-    static T JFStrToInt(const std::string& i) {
-        std::stringstream ss;
-        ss << i;
-        return ReadInt(ss);
+    static T JFStrToInt(std::string_view in) {
+        T ans = 0;
+        static char mas[sizeof(T)];
+        for (ui8 i = 0; i < sizeof(T); i++) {
+            mas[i] = in[i];
+        }
+        memcpy(&ans, mas, sizeof(T));
+        return ans;
     }
 
     static T ReadInt(std::istream& in) {

@@ -22,7 +22,7 @@ TTokenizer::TTokenizer(const std::string& data) {
 
 Expected<IToken> TTokenizer::GetNext() {
     if (ss.eof()) {
-        return MakeError<EofErr>();
+        return MakeError<EError::EofErr>();
     }
 
     std::string token;
@@ -85,7 +85,7 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
         case ETokens::kCloseBracket:
         default: {
             if (st.empty() || !st.back()) {
-                return MakeError<BadCmdErr>("failed parse query");
+                return MakeError<EError::BadCmdErr>("failed parse query");
             }
             st.back()->AddArg(cur.GetShared());
             break;

@@ -2,7 +2,6 @@
 #include "csv_writer.h"
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
 namespace JFEngine::Testing {
 
@@ -25,7 +24,7 @@ TEST_F(IOTests, BasicRead) {
     std::stringstream in;
     in << basic;
 
-    TCSVReader rr(in, kUnlimitedBuffer, ';');
+    TCSVReader rr(in, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -42,7 +41,7 @@ TEST_F(IOTests, BasicRead) {
     }
     {
         auto [d, err] = rr.ReadRow();
-        ASSERT_TRUE(Is<EofErr>(err));
+        ASSERT_TRUE(Is<EError::EofErr>(err));
     }
 }
 
@@ -99,7 +98,7 @@ TEST_F(IOTests, EdgeCasesRead) {
     std::stringstream in;
     in << extra;
 
-    TCSVReader rr(in, kUnlimitedBuffer, ';');
+    TCSVReader rr(in, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -119,7 +118,7 @@ TEST_F(IOTests, UnclosedQuoteRead) {
 
     auto [_, err] = rr.ReadRow();
 
-    ASSERT_TRUE(Is<EofErr>(err));
+    ASSERT_TRUE(Is<EError::EofErr>(err));
 }
 
 TEST_F(IOTests, BadQuoteRead) {
@@ -130,7 +129,49 @@ TEST_F(IOTests, BadQuoteRead) {
 
     auto [_, err] = rr.ReadRow();
 
-    ASSERT_TRUE(Is<EofErr>(err));
+    ASSERT_TRUE(Is<EError::EofErr>(err));
+}
+
+TEST_F(IOTests, OptimizedRead) {
+    {
+        std::stringstream in;
+        in << advanced;
+
+        TCSVOptimizedReader rr(in);
+        auto [d, err] = rr.ReadRowBufI();
+        ASSERT_FALSE(err);
+        ASSERT_EQ(d->size(), 3);
+        EXPECT_EQ(d->at(0), R"(Scar "Tissue")");
+        EXPECT_EQ(d->at(1), R"(Calif"ornica"tion)");
+        EXPECT_EQ(d->at(2), R"(the,"Zephyr song)");
+    }
+    {
+        std::stringstream in;
+        in << advanced;
+
+        TCSVOptimizedReader rr(in);
+        auto [d, err] = rr.ReadRowBufI();
+        ASSERT_FALSE(err);
+        ASSERT_EQ(d->size(), 3);
+        EXPECT_EQ(d->at(0), R"(,)");
+        EXPECT_EQ(d->at(1), R"("by the way")");
+        EXPECT_EQ(d->at(2), R"(the,"adventures",of,"rain" dance maggie)");
+    }
+}
+
+TEST_F(IOTests, BufferedRead) {
+    {
+        std::stringstream in;
+        in << advanced;
+
+        TCSVBufferedReader rr(in, 39);
+        auto [d, err] = rr.ReadRow();
+        ASSERT_FALSE(err);
+        ASSERT_EQ(d->size(), 2);
+        EXPECT_EQ(d->at(0), R"(Scar "Tissue")");
+        // EXPECT_EQ(d->at(1), R"(Calif"ornica"tion)");
+        // EXPECT_EQ(d->at(2), R"(the,"Zephyr song)");
+    }
 }
 
 } // namespace JFEngine::Testing

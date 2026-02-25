@@ -45,7 +45,7 @@ Expected<void> TSelector::SetupColumnsScheme() {
     }
 
     if (!inds.empty()) {
-        return MakeError<NoSuchColumnsErr>(std::move(inds));
+        return MakeError<EError::NoSuchColumnsErr>(std::move(inds));
     }
 
     return nullptr;
@@ -62,7 +62,7 @@ Expected<std::vector<TColumnPtr>> TSelector::ReadRowGroup() {
 
     for (const auto& [name, _] : scheme_) {
         auto [col, err] = jf_in_->ReadColumn(unaliases_.at(name));
-        if (err) {
+        if (err != EError::NoError) {
             return err;
         }
         if (col) {

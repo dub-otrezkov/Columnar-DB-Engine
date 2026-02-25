@@ -18,16 +18,17 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
         auto err = csv_scheme.ReadRow();
 
         if (err.HasError()) {
-            if (Is<EofErr>(err.GetError())) {
+            if (Is<EError::EofErr>(err.GetError())) {
                 break;
             }
             return err.GetError();
         }
 
-        auto data = **err;
+        auto data = err.GetRes();
 
         if (data.size() != 2) {
-            return MakeError<IncorrectFileErr>();
+            std::cout << "" << " " << data.size() << std::endl;
+            return MakeError<EError::IncorrectFileErr>();
         }
 
         scheme_.emplace_back(data[0], StrToTColumn(data[1]));
@@ -39,13 +40,13 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
 
-    TCSVReader csv_data(*data_in_);
+    TCSVOptimizedReader csv_data(*data_in_);
 
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
         auto res = csv_data.ReadRow();
-        if (!res) {
-            if (Is<EofErr>(res.GetError())) {
+        if (res.HasError()) {
+            if (Is<EError::EofErr>(res.GetError())) {
                 is_eof = true;
                 break;
             } else {
@@ -56,12 +57,14 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 
         if (i == 0) {
             tmp.resize(d.size());
+            for (auto& r : tmp) {
+                r.reserve(row_group_len_);
+            }
         } else {
             if (d.size() != tmp.size()) {
-                return MakeError<IncorrectFileErr>("diff size");
+                return MakeError<EError::IncorrectFileErr>("diff size");
             }
         }
-
         for (ui64 j = 0; j < d.size(); j++) {
             tmp[j].push_back(d[j]);
         }
@@ -74,15 +77,13 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
         }
         out.push_back(col.GetShared());
     }
-    return {std::move(out), (is_eof ? MakeError<EofErr>() : nullptr)};
+
+    return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
 }
 
 std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
     return scheme_;
 }
-
-// TJFTableInput::TJFTableInput(std::istream&& jf_in) : jf_in_(std::move(jf_in)) {
-// }
 
 Expected<void> TJFTableInput::SetupColumnsScheme() {
     jf_in_->seekg(-8, std::ios::end);
@@ -101,11 +102,11 @@ Expected<void> TJFTableInput::SetupColumnsScheme() {
     TCSVReader r(*jf_in_);
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [d, err] = r.ReadRow();
-        if (err) {
+        if (err != EError::NoError) {
             return err;
         }
         if (d->size() != 2) {
-            return MakeError<IncorrectFileErr>("bad scheme");
+            return MakeError<EError::IncorrectFileErr>("bad scheme");
         }
         scheme_.emplace_back(d->at(0), StrToTColumn(d->at(1)));
     }
@@ -133,7 +134,7 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
 
     Expected<IColumn> ans(
         col.GetShared(),
-        current_block_ + 1 == blocks_pos_.size() ? MakeError<EofErr>() : nullptr
+        current_block_ + 1 == blocks_pos_.size() ? MakeError<EError::EofErr>() : EError::NoError
     );
 
     return ans;
@@ -141,22 +142,27 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
 
 Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
     if (current_block_ >= blocks_pos_.size()) {
-        return MakeError<EofErr>();
+        return MakeError<EError::EofErr>();
     }
 
     std::vector<TColumnPtr> res;
 
+    bool is_eof = false;
+
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [col, err] = ReadIthColumn(i);
-        if (err) {
+        // std::cout << col->GetSize() << " " << Is<EofErr>(err) << std::endl;
+        if (!Is<EError::EofErr>(err)) {
             return err;
+        } else if (err != EError::NoError) {
+            is_eof = true;
         }
         res.push_back(col);
     }
 
     current_block_++;
 
-    return res;
+    return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 
 std::vector<TRowScheme>& TJFTableInput::GetScheme() {
@@ -177,7 +183,7 @@ void TJFTableInput::Reset() {
 
 Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
     if (current_block_ >= blocks_pos_.size()) {
-        return MakeError<EofErr>();
+        return MakeError<EError::EofErr>();
     }
 
     static auto name_to_index = [this]() -> auto {
@@ -191,7 +197,7 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
     static auto inds = name_to_index();
 
     if (inds.count(name) == 0) {
-        return MakeError<NoSuchColumnsErr>(name);
+        return MakeError<EError::NoSuchColumnsErr>(name);
     }
 
 
