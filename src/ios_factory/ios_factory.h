@@ -56,7 +56,7 @@ public:
         if (i->ios_.contains(alias)) {
             return i->ios_.at(alias);
         }
-        return MakeError<IONotFoundErr>(alias);
+        return MakeError<EError::IONotFoundErr>(alias);
     }
 
     static Expected<ITableInput> GetTableIO(const std::string& alias) {
@@ -64,7 +64,7 @@ public:
         if (i->iotables_.contains(alias)) {
             return i->iotables_.at(alias);
         }
-        return MakeError<IONotFoundErr>(alias);
+        return MakeError<EError::IONotFoundErr>(alias);
     }
 
 private:

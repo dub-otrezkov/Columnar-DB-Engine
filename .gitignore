@@ -4,3 +4,5 @@
 /.vscode
 /src/executor/debug/dorothy.csv
 /src/executor/debug/josh.jf
+src/executor/debug/perf.data
+src/executor/debug/out.txt

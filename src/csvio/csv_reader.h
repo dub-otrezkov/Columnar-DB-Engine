@@ -26,7 +26,7 @@ private:
 
     std::streampos init_pos_;
 
-    static const ui64 kIBufSize = (1 << 25);
+    static const ui64 kIBufSize = (1 << 20);
 };
 
 } // namespace JFEngine

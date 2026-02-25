@@ -81,7 +81,7 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
             return SetupColumn<TStringColumn>(std::move(data));
         }
         default: {
-            return MakeError<UnsupportedErr>();
+            return MakeError<EError::UnsupportedErr>();
         }
     }
 }
@@ -132,7 +132,7 @@ std::string PrintTimestamp(const TTimestamp& d) {
 Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
     switch (type) {
         case kUnitialized: {
-            return MakeError<UnimplementedErr>();
+            return MakeError<EError::UnimplementedErr>();
         }
         case ki8Column: {
             auto res = std::make_shared<Ti64Column>();

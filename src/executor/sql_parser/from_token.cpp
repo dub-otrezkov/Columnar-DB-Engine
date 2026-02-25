@@ -7,7 +7,7 @@ namespace JFEngine {
 Expected<ITableInput> TFromToken::Exec() {
     for (const auto& t : args_) {
         if (t->GetType() != ETokens::kNameToken) {
-            return MakeError<BadCmdErr>("from token without files");
+            return MakeError<EError::BadCmdErr>("from token without files");
         }
     }
 
@@ -29,7 +29,7 @@ Expected<ITableInput> TFromToken::Exec() {
             TIOFactory::GetIO(data).GetShared()
         );
     } else {
-        return MakeError<BadCmdErr>("bad from command args cnt");
+        return MakeError<EError::BadCmdErr>("bad from command args cnt");
     }
 }
 

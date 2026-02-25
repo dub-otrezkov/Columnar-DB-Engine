@@ -10,7 +10,7 @@ EColumn TTimestampColumn::GetType() {
     return kTimestampColumn;
 }
 
-Expected<void> TDateColumn::Setup(std::vector<std::string> data) {
+Expected<void> TDateColumn::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
     for (const auto& s : data) {
         try {
@@ -24,13 +24,13 @@ Expected<void> TDateColumn::Setup(std::vector<std::string> data) {
                 std::stoi(s.substr(8, 2))
             );
         } catch (...) {
-            return MakeError<NotAnDateErr>();
+            return MakeError<EError::NotAnDateErr>();
         }
     }
     return nullptr;
 }
 
-Expected<void> TTimestampColumn::Setup(std::vector<std::string> data) {
+Expected<void> TTimestampColumn::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
     for (const auto& s : data) {
         try {
@@ -49,7 +49,7 @@ Expected<void> TTimestampColumn::Setup(std::vector<std::string> data) {
                 std::stoi(s.substr(17, 2))
             );
         } catch (...) {
-            return MakeError<NotAnTimestampErr>();
+            return MakeError<EError::NotAnTimestampErr>();
         }
     }
     return nullptr;

@@ -12,7 +12,7 @@ ETokens TCreateToken::GetType() const {
 Expected<ITableInput> TCreateToken::Exec() {
     TEngine eng;
     if (args_.size() != 1 || args_[0]->GetType() != ETokens::kNameToken) {
-        return MakeError<BadCmdErr>();
+        return MakeError<EError::BadCmdErr>();
     }
     auto name = std::dynamic_pointer_cast<TNameToken>(args_[0])->GetName();
     auto err = eng.Setup(TIOFactory::GetTableIO(kCurTableInput).GetShared());

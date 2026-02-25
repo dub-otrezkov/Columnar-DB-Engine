@@ -5,6 +5,8 @@
 
 namespace JFEngine {
 
+const ui64 kStrReserveSize = (1 << 5);
+
 TCSVReader::TCSVReader(std::istream& in, i64 buf_size, char sep) :
     in_(in),
     sep_(sep),
@@ -15,7 +17,7 @@ TCSVReader::TCSVReader(std::istream& in, i64 buf_size, char sep) :
 
 Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     if (in_.eof() || buf_size_ == 0) {
-        return {std::vector<std::string>(), MakeError<EofErr>()};
+        return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
 
     bool read_smth = false;
@@ -46,7 +48,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
 
         if (in_quotes && c == EOF) {
             // std::cout << "Dkdkdkdk " << std::endl;
-            return {std::vector<std::string>(), MakeError<EofErr>()};
+            return {std::vector<std::string>(), MakeError<EError::EofErr>()};
         }
         if ((!in_quotes && c == '\n') || c == EOF) {
             break;
@@ -57,6 +59,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
         if (!in_quotes && c == sep_) {
             // szs.push_back(0);
             ans.emplace_back();
+            // ans.back().reserve(kStrReserveSize);
         } else if (c == '"') {
             if (in_quotes) {
                 if (in_.peek() == '\"') {
@@ -69,7 +72,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
                     }
                 } else if (in_.peek() != sep_ && in_.peek() != '\n') {
                     // std::cout << "dkdkdkdkdkdkkd " << std::endl;
-                    return {std::vector<std::string>(), MakeError<EofErr>()};
+                    return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
                 }
@@ -109,7 +112,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     //         // std::cout << ":: " << c << std::endl;
 
     //         if (in_quotes && c == EOF) {
-    //             return MakeError<EofErr>();
+    //             return MakeError<EError::EofErr>();
     //         }
     //         if ((!in_quotes && c == '\n') || c == EOF) {
     //             break;
@@ -126,7 +129,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     //                     ans[i][cur_i++] = in_.get();
     //                     // szs.back()++;
     //                 } else if (nxt != sep_ && nxt != '\n') {
-    //                     return {std::vector<std::string>(), MakeError<EofErr>()};
+    //                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     //                 } else {
     //                     in_quotes = false;
     //                 }
@@ -153,10 +156,10 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     // }
 
     if (!read_smth) {
-        return {std::move(ans), MakeError<EofErr>()};
+        return {std::move(ans), MakeError<EError::EofErr>()};
     }
 
-    return {std::move(ans), nullptr};
+    return {std::move(ans)};
 }
 
 
@@ -208,7 +211,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
     };
 
     if (eof_c() || buf_size_ == 0) {
-        return {std::vector<std::string>(), MakeError<EofErr>()};
+        return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
 
     read();
@@ -226,7 +229,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
 
     Expected<std::vector<std::string>> ans_e(std::vector<std::string>(szs.size()));
 
-    auto& ans = *ans_e.GetShared();
+    auto& ans = ans_e.GetRes();
     ans.push_back("");
 
     while (!eof_c() && (buf_size_ == kUnlimitedBuffer || buf_size_ > 0)) {
@@ -240,7 +243,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
         }
 
         if (in_quotes && c == EOF) {
-            return {std::vector<std::string>(), MakeError<EofErr>()};
+            return {std::vector<std::string>(), MakeError<EError::EofErr>()};
         }
         if ((!in_quotes && c == '\n') || c == EOF) {
             break;
@@ -251,6 +254,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
         if (!in_quotes && c == sep_) {
             // szs.push_back(0);
             ans.emplace_back();
+            // ans.back().reserve(kStrReserveSize);
         } else if (c == '"') {
             if (in_quotes) {
                 if (peek() == '\"') {
@@ -265,7 +269,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
                 } else if (peek() != sep_ && peek() != '\n') {
                     // std::cout << peek() << std::endl;
                     // std::cout << "dkdkdkdkdkdkkd " << std::endl;
-                    return {std::vector<std::string>(), MakeError<EofErr>()};
+                    return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
                 }
@@ -307,7 +311,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
     //         // std::cout << ":: " << c << std::endl;
 
     //         if (in_quotes && c == EOF) {
-    //             return MakeError<EofErr>();
+    //             return MakeError<EError::EofErr>();
     //         }
     //         if ((!in_quotes && c == '\n') || c == EOF) {
     //             break;
@@ -324,7 +328,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
     //                     ans[i][cur_i++] = read();
     //                     // szs.back()++;
     //                 } else if (nxt != sep_ && nxt != '\n') {
-    //                     return {std::vector<std::string>(), MakeError<EofErr>()};
+    //                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     //                 } else {
     //                     in_quotes = false;
     //                 }
@@ -350,8 +354,8 @@ Expected<std::vector<std::string>> TCSVReader::ReadRowBufI() {
     // }
 
     if (!read_smth) {
-        // return {std::move(ans), MakeError<EofErr>()};
-        return MakeError<EofErr>();
+        // return {std::move(ans), MakeError<EError::EofErr>()};
+        return MakeError<EError::EofErr>();
     }
 
     return ans_e;
