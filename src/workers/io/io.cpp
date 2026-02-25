@@ -186,6 +186,10 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
         return MakeError<EError::EofErr>();
     }
 
+    if (name == "*") {
+        return ReadIthColumn(0);
+    }
+
     static auto name_to_index = [this]() -> auto {
         std::unordered_map<std::string, ui64> poses;
         for (size_t i = 0; i < scheme_.size(); i++) {

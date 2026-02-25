@@ -45,6 +45,35 @@ Expected<ITableInput> TSelectToken::Exec() {
 
                 break;
             }
+<<<<<<< HEAD
+            case ETokens::kCount: {
+                auto node = std::make_shared<TCountAgr>();
+
+                if (!st.empty()) {
+                    st.back()->AddArg(node);
+                } else {
+                    args.push_back(node);
+                }
+
+                st.push_back(node);
+
+                break;
+            }
+            case ETokens::kAvg: {
+                auto node = std::make_shared<TAvgAgr>();
+
+                if (!st.empty()) {
+                    st.back()->AddArg(node);
+                } else {
+                    args.push_back(node);
+                }
+
+                st.push_back(node);
+
+                break;
+            }
+=======
+>>>>>>> main
         }
     }
     TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
