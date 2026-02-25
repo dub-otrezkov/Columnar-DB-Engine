@@ -24,7 +24,7 @@ const std::string kTimestampSchemeAlias = "timestamp";
 const std::string kUnknownSchemeAlias = "unknown";
 
 enum EColumn {
-    kUnitialized,
+    kUnitialized = 0,
     ki8Column,
     ki16Column,
     ki32Column,

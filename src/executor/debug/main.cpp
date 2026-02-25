@@ -7,18 +7,18 @@
 // (cd ../../build/executor/debug; make debug_exec); ../../build/executor/debug/debug_exec
 
 int main() {
-    // std::cout << " jfjfj" << std::endl;
     JFEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, dorothy");
+        std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
-//             std::cout << err.GetError()->Print() << std::endl;
         }
     }
-    // {
-    //     auto err = exec.ExecQuery("SELECT red, hot FROM josh");
-    //     if (err.HasError()) {
-    //         std::cout << err.GetError()->Print() << std::endl;
-    //     }
-    // }
+    {
+        auto err = exec.ExecQuery("SELECT SUM(WatchID) FROM josh");
+        std::cout << err.HasError() << std::endl;
+        if (err.HasError()) {
+            // std::cout << err.GetError()->Print() << std::endl;
+        }
+    }
 }

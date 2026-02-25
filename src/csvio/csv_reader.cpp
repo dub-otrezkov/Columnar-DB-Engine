@@ -75,7 +75,6 @@ TCSVOptimizedReader::TCSVOptimizedReader(std::istream& in, char sep) :
 }
 
 Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
-    
     static char buf[kIBufSize];
     static i64 cpos = 0;
     static ui64 av = 0;
@@ -86,7 +85,7 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
             return buf[cpos++];
         }
 
-        st = in_.tellg();
+        // st = in_.tellg();
 
         av = in_.read(buf, kIBufSize).gcount();
 
@@ -99,17 +98,17 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
         }
         return in_.peek();
     };
-    static auto shift_left = [this](i64 delta) -> void {
-        if (cpos >= delta) {
-            cpos -= delta;
-        } else {
-            in_.clear();
-            in_.seekg(st + cpos - delta);
-            st = st + cpos - delta;
-            cpos = 0;
-            av = in_.read(buf, kIBufSize).gcount();
-        }
-    };
+    // static auto shift_left = [this](i64 delta) -> void {
+    //     if (cpos >= delta) {
+    //         cpos -= delta;
+    //     } else {
+    //         in_.clear();
+    //         in_.seekg(st + cpos - delta);
+    //         st = st + cpos - delta;
+    //         cpos = 0;
+    //         av = in_.read(buf, kIBufSize).gcount();
+    //     }
+    // };
     static auto eof_c = [this]() -> bool {
         return cpos == av && in_.eof();
     };

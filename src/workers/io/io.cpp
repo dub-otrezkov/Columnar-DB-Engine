@@ -27,7 +27,6 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
         auto data = err.GetRes();
 
         if (data.size() != 2) {
-            std::cout << "" << " " << data.size() << std::endl;
             return MakeError<EError::IncorrectFileErr>();
         }
 
@@ -39,6 +38,8 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 
 Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
+
+    // std::cout << "dkdkkd" << " " << data_in_->good() << std::endl;
 
     TCSVOptimizedReader csv_data(*data_in_);
 
@@ -62,6 +63,7 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
             }
         } else {
             if (d.size() != tmp.size()) {
+                std::cout << d.size() << " " << tmp.size() << std::endl;
                 return MakeError<EError::IncorrectFileErr>("diff size");
             }
         }

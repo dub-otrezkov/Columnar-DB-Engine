@@ -88,7 +88,7 @@ TEST_F(EngineTest, JFBasic) {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
             if (err) {
-                std::cout << err->Print() << std::endl;
+                // std::cout << err->Print() << std::endl;
             }
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), data);
@@ -168,7 +168,7 @@ TEST_F(EngineTest, JFTimeColumns) {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
             if (err) {
-                std::cout << err->Print() << std::endl;
+                // std::cout << err->Print() << std::endl;
             }
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), time_data);
