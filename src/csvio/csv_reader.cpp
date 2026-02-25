@@ -34,7 +34,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
         if (in_quotes && c == EOF) {
             return {std::vector<std::string>(), MakeError<EError::EofErr>()};
         }
-        if ((!in_quotes && c == '\n') || c == EOF) {
+        if ((!in_quotes && (c == '\n' || c == '\r')) || c == EOF) {
             break;
         }
 
@@ -46,7 +46,7 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
             if (in_quotes) {
                 if (in_.peek() == '\"') {
                     ans.back() += in_.get();
-                } else if (in_.peek() != sep_ && in_.peek() != '\n') {
+                } else if (in_.peek() != sep_ && in_.peek() != '\n' && in_.peek() != '\r') {
                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
@@ -131,7 +131,7 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
         if (in_quotes && c == EOF) {
             return {std::vector<std::string>(), MakeError<EError::EofErr>()};
         }
-        if ((!in_quotes && c == '\n') || c == EOF) {
+        if ((!in_quotes && (c == '\n' || c == '\r')) || c == EOF) {
             break;
         }
 
@@ -143,7 +143,7 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
             if (in_quotes) {
                 if (peek() == '\"') {
                     ans.back() += read();
-                } else if (peek() != sep_ && peek() != '\n') {
+                } else if (peek() != sep_ && peek() != '\n' && peek() != '\r') {
                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
@@ -202,7 +202,7 @@ Expected<std::vector<std::string>> TCSVBufferedReader::ReadRow() {
         if (in_quotes && c == EOF) {
             return {std::vector<std::string>(), MakeError<EError::EofErr>()};
         }
-        if ((!in_quotes && c == '\n') || c == EOF) {
+        if ((!in_quotes && (c == '\n' || c == '\r')) || c == EOF) {
             break;
         }
 
@@ -214,7 +214,7 @@ Expected<std::vector<std::string>> TCSVBufferedReader::ReadRow() {
             if (in_quotes) {
                 if (buf_[cur_pos_] == '\"') {
                     ans.back() += buf_[cur_pos_++];
-                } else if (buf_[cur_pos_] != sep_ && buf_[cur_pos_] != '\n' && buf_[cur_pos_] != EOF) {
+                } else if (buf_[cur_pos_] != sep_ && buf_[cur_pos_] != '\n' && buf_[cur_pos_] != '\r' && buf_[cur_pos_] != EOF) {
                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
