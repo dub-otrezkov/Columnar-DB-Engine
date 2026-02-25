@@ -48,6 +48,8 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
     auto f = [&poses, &out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         TCSVWriter w(out);
 
+        std::cout << "iter" << std::endl;
+
         std::vector<i64> col_poses;
 
         for (ui64 j = 0; j < block.size(); j++) {

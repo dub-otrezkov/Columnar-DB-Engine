@@ -14,10 +14,10 @@ int main() {
             std::cout << err.GetError()->Print() << std::endl;
         }
     }
-    {
-        auto err = exec.ExecQuery("SELECT red, hot FROM josh");
-        if (err.HasError()) {
-            std::cout << err.GetError()->Print() << std::endl;
-        }
-    }
+    // {
+    //     auto err = exec.ExecQuery("SELECT red, hot FROM josh");
+    //     if (err.HasError()) {
+    //         std::cout << err.GetError()->Print() << std::endl;
+    //     }
+    // }
 }
