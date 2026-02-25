@@ -18,8 +18,8 @@ Expected<IColumn> TSumAgr::ReadRowGroup(ITableInput* inp) {
 
     while (run) {
         auto [col, err] = arg->ReadRowGroup(inp);
-        if (err) {
-            if (Is<EofErr>(err)) {
+        if (err != EError::NoError) {
+            if (Is<EError::EofErr>(err)) {
                 run = 0;
             } else {
                 return err;
@@ -44,7 +44,7 @@ Expected<IColumn> TSumAgr::ReadRowGroup(ITableInput* inp) {
 
         inp->MoveCursor(1);
     }
-    Expected<IColumn> ret(std::move(ans), MakeError<EofErr>());
+    Expected<IColumn> ret(std::move(ans), MakeError<EError::EofErr>());
     return ret;
 }
 

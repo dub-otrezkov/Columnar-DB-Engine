@@ -30,7 +30,7 @@ ETokens TComaToken::GetType() const {
 }
 
 Expected<ITableInput> IOperatorCommand::Exec() {
-    return MakeError<UnsupportedErr>();
+    return MakeError<EError::UnsupportedErr>();
 }
 
 } // namespace JFEngine

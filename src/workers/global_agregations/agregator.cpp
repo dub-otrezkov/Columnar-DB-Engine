@@ -27,7 +27,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
     for (ui64 i = 0; i < query_.cols.size(); i++) {
         auto col = query_.cols[i]->ReadRowGroup(jf_in_.get());
         if (col.HasError()) {
-            if (!Is<EofErr>(col.GetError())) {
+            if (!Is<EError::EofErr>(col.GetError())) {
                 return col.GetError();
             } else {
                 is_eof = 1;
@@ -40,7 +40,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
 
     jf_in_->MoveCursor(1);
 
-    Expected<std::vector<TColumnPtr>> ret(std::move(ans), is_eof ? MakeError<EofErr>() : nullptr);
+    Expected<std::vector<TColumnPtr>> ret(std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError);
     return ret;
 }
 

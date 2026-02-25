@@ -10,7 +10,8 @@ EColumn TStringColumn::GetType() {
     return kStringColumn;
 }
 
-Expected<void> TStringColumn::Setup(std::vector<std::string> data) {
+Expected<void> TStringColumn::Setup(std::vector<std::string>&& data) {
+    cols_.reserve(data.size());
     for (ui64 i = 0; i < data.size(); i++) {
         cols_.push_back(std::move(data[i]));
     }

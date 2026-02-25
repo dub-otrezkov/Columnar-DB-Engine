@@ -7,6 +7,23 @@
 #include <string_view>
 #include <typeinfo>
 #include <memory>
+#include <optional>
+
+enum EError {
+    NoError = 0,
+    NotAnIntErr,
+    NotAnDateErr,
+    NotAnTimestampErr,
+    IntOverflowErr,
+    IONotFoundErr,
+    BadCmdErr,
+    BadArgsErr,
+    UnsupportedErr,
+    EofErr,
+    IncorrectFileErr,
+    UnimplementedErr,
+    NoSuchColumnsErr
+};
 
 class IError {
 public:
@@ -16,19 +33,21 @@ public:
     virtual i64 GetId() const;
 };
 
-using Error = std::shared_ptr<IError>;
+// using Error = std::shared_ptr<IError>;
 
-template <typename T>
-bool Is(Error in) {
-    if (!in) {
-        return false;
-    }
-    return in->GetId() == typeid(T).hash_code();
+template <EError T>
+bool Is(EError in) {
+    // if (!in) {
+    //     return false;
+    // }
+    // return in->GetId() == typeid(T).hash_code();
+    return T == in;
 }
 
-template <typename T, typename... Args>
-Error MakeError(Args&&... args) {
-    return std::make_shared<T>(std::forward<Args>(args)...);
+template <EError T, typename... Args>
+EError MakeError(Args&&... args) {
+    // return std::make_shared<T>(std::forward<Args>(args)...);
+    return T;
 }
 
 template <typename T>
@@ -36,25 +55,25 @@ class Expected {
 public:
     Expected(std::nullptr_t) {}
 
-    Expected(T&& res, Error err = nullptr) : res_(std::make_shared<T>(res)), err_(err) {}
+    Expected(T&& res, EError err = EError::NoError) : res_(std::make_shared<T>(std::forward<T>(res))), err_(err) {}
 
-    Expected(std::shared_ptr<T> res, Error err = nullptr) : res_(res), err_(err) {}
+    Expected(std::shared_ptr<T> res, EError err = EError::NoError) : res_(std::move(res)), err_(err) {}
 
     template<typename R>
-    Expected(std::shared_ptr<R> res, Error err = nullptr) : res_(res), err_(err) {}
+    Expected(std::shared_ptr<R> res, EError err = EError::NoError) : res_(std::move(res)), err_(err) {}
 
-    Expected(Error err) : err_(err) {}
+    Expected(EError err) : err_(err) {}
 
-    Expected(const Expected&) = default;
+    Expected(const Expected&) = delete;
     Expected(Expected&&) = default;
-    Expected& operator=(const Expected&) = default;
+    Expected& operator=(const Expected&) = delete;
     Expected& operator=(Expected&&) = default;
 
     bool HasError() const {
-        return (err_ ? true : false);
+        return (err_ != EError::NoError);
     }
 
-    Error GetError() {
+    EError GetError() {
         return err_;
     }
 
@@ -90,7 +109,7 @@ public:
     }
 private:
     std::shared_ptr<T> res_ = nullptr;
-    Error err_ = nullptr;
+    EError err_ = EError::NoError;
 };
 
 namespace std {
@@ -104,7 +123,7 @@ namespace std {
 
     template<typename T>
     struct tuple_element<1, Expected<T>> {
-        using type = Error;
+        using type = EError;
     };
 }
 
@@ -115,7 +134,7 @@ public:
 
     Expected(std::nullptr_t) {}
 
-    Expected(Error err) : err_(err) {}
+    Expected(EError err) : err_(err) {}
 
     Expected(const Expected&) = default;
     Expected(Expected&&) = default;
@@ -123,16 +142,16 @@ public:
     Expected& operator=(Expected&&) = default;
 
     bool HasError() const {
-        return (err_ ? true : false);
+        return (err_ != EError::NoError);
     }
 
     explicit operator bool() const {
         return !HasError();
     }
 
-    Error GetError() {
+    EError GetError() {
         return err_;
     }
 private:
-    Error err_ = nullptr;
+    EError err_ = EError::NoError;
 };

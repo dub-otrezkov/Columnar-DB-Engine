@@ -7,14 +7,14 @@ TEST_F(AgregationsTest, GetColumnsTest) {
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
-            std::cout << err.GetError()->Print() << std::endl;
+            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
     {
         auto err = exec.ExecQuery("SELECT hot, red, peppers FROM josh");
         if (err.HasError()) {
-            std::cout << err.GetError()->Print() << std::endl;
+            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
@@ -40,14 +40,14 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
-            std::cout << err.GetError()->Print() << std::endl;
+            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
     {
         auto err = exec.ExecQuery("SELECT SUM(hot), SUM(red) FROM josh");
         if (err.HasError()) {
-            std::cout << err.GetError()->Print() << std::endl;
+            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }

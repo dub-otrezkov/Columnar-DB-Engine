@@ -10,7 +10,7 @@ ui64 ITableInput::GetRowGroupLen() const {
 }
 
 Expected<IColumn> ITableInput::ReadColumn(const std::string& name) {
-    return MakeError<UnimplementedErr>();
+    return MakeError<EError::UnimplementedErr>();
 }
 
 void ITableInput::MoveCursor(i64) {

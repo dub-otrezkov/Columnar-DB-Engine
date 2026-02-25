@@ -37,8 +37,8 @@ public:
         while (run) {
             auto [block_ptr, err] = in_->ReadRowGroup();
 
-            if (err) {
-                if (Is<EofErr>(err)) {
+            if (err != EError::NoError) {
+                if (Is<EError::EofErr>(err)) {
                     run = false;
                 } else {
                     return err;

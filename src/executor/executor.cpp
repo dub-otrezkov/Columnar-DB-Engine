@@ -13,7 +13,7 @@ static const std::string kTmp2 = "tmp2";
 
 Expected<void> TExecutor::ExecQuery(const std::string& query) {
     auto [t, err1] = ParseCommand(query);
-    if (err1) {
+    if (err1 != EError::NoError) {
         return err1;
     }
 
@@ -22,7 +22,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
     TEngine eng;
     {
         auto [inp, err2] = tokens[1]->Exec();
-        if (err2) {
+        if (err2 != EError::NoError) {
             return err2;
         }
         TIOFactory::RegisterTableInput(
@@ -46,11 +46,11 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     for (ui64 i = 2; i < tokens.size(); i++) {
         auto [inp, err] = tokens[i]->Exec();
-        if (err) {
+        if (err != EError::NoError) {
             return err;
         }
         err = eng.Setup(inp).GetError();
-        if (err) {
+        if (err != EError::NoError) {
             return err;
         }
 
@@ -67,7 +67,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     
     auto [_, err3] = tokens[0]->Exec();
-    if (err3) {
+    if (err3 != EError::NoError) {
         return err3;
     }
 
