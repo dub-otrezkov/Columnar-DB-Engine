@@ -9,8 +9,8 @@
 #include <memory>
 #include <optional>
 
-enum class EError {
-    NoError,
+enum EError {
+    NoError = 0,
     NotAnIntErr,
     NotAnDateErr,
     NotAnTimestampErr,

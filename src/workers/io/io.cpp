@@ -40,12 +40,11 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
 
-    TCSVReader csv_data(*data_in_);
+    TCSVOptimizedReader csv_data(*data_in_);
 
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
-
-        auto res = csv_data.ReadRowBufI();
+        auto res = csv_data.ReadRow();
         if (res.HasError()) {
             if (Is<EError::EofErr>(res.GetError())) {
                 is_eof = true;
@@ -85,9 +84,6 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
     return scheme_;
 }
-
-// TJFTableInput::TJFTableInput(std::istream&& jf_in) : jf_in_(std::move(jf_in)) {
-// }
 
 Expected<void> TJFTableInput::SetupColumnsScheme() {
     jf_in_->seekg(-8, std::ios::end);
