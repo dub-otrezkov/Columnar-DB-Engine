@@ -7,6 +7,10 @@ namespace JFEngine {
 void IAgregation::AddArg(std::shared_ptr<IAgregation>) {
 }
 
+Expected<IColumn> TColumnAgr::ReadRowGroup(ITableInput* inp) {
+    return inp->ReadColumn(name);
+}
+
 Expected<IColumn> TSumAgr::ReadRowGroup(ITableInput* inp) {
     bool run = 1;
     std::shared_ptr<IColumn> ans = nullptr;
@@ -125,5 +129,8 @@ Expected<IColumn> TAvgAgr::ReadRowGroup(ITableInput* inp) {
     return ret;
 }
 
+void TSumAgr::AddArg(std::shared_ptr<IAgregation> to_sum) {
+    arg = to_sum;
+}
 
 } // namespace JFEngine

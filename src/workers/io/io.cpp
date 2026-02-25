@@ -198,6 +198,7 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
         return MakeError<NoSuchColumnsErr>(name);
     }
 
+
     return ReadIthColumn(inds[name]);
 }
 

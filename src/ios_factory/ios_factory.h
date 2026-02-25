@@ -30,7 +30,7 @@ public:
 
     static void RegisterSStreamIO(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
         auto i = Instance();
-        i->ios_[alias] = std::make_shared<std::stringstream>();
+        i->ios_[alias] = std::make_shared<std::stringstream>(alias);
     }
 
     static void UnregisterIO(const std::string& alias) { // FOR TESTS (and probably optimizations)

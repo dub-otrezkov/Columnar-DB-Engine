@@ -14,6 +14,7 @@ ETokens TSumToken::GetType() const {
     return ETokens::kSum;
 }
 
+<<<<<<< HEAD
 ETokens TCountToken::GetType() const {
     return ETokens::kCount;
 }
@@ -22,6 +23,8 @@ ETokens TAvgToken::GetType() const {
     return ETokens::kAvg;
 }
 
+=======
+>>>>>>> main
 ETokens TComaToken::GetType() const {
     return ETokens::kComa;
 }

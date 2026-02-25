@@ -52,10 +52,13 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TSelectToken>();
     } else if (token == "SUM") {
         return std::make_shared<TSumToken>();
+<<<<<<< HEAD
     } else if (token == "COUNT") {
         return std::make_shared<TCountToken>();
     } else if (token == "AVG") {
         return std::make_shared<TAvgToken>();
+=======
+>>>>>>> main
     } else if (token == "(") {
         return std::make_shared<TOpenBracketToken>();
     } else if (token == ")") {
