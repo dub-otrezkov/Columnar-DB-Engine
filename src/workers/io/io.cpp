@@ -41,11 +41,9 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
 
     // std::cout << "dkdkkd" << " " << data_in_->good() << std::endl;
 
-    TCSVOptimizedReader csv_data(*data_in_);
-
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
-        auto res = csv_data.ReadRow();
+        auto res = csv_data_.ReadRow();
         if (res.HasError()) {
             if (Is<EError::EofErr>(res.GetError())) {
                 is_eof = true;

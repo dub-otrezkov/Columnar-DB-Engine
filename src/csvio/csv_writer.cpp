@@ -29,26 +29,6 @@ ui64 TCSVWriter::PrepareString(std::string_view str) {
     }
 
     return str.size() + 2 + cq;
-
-
-    // std::string ans;
-    // ans.reserve(str.size() + 2 + cq);
-    // ans += '"';
-    // out << '"';
-
-    // for (auto ch : str) {
-    //     if (ch == '"') {
-    //         // ans += "\"\"";
-    //         out << "\"\"";
-    //     } else {
-    //         // ans += ch;
-    //         out << static_cast<char>(ch);
-    //     }
-    // }
-
-    // // ans += '"';
-    // out << '"';
-    // return ans;
 }
 
 void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
@@ -85,13 +65,8 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
     }
     tot[cur] = '\n';
     out_.write(tot, total);
-    // out_ << PrepareString(row[0]);
-    // PrepareString(out_, row[0]);
-    // for (size_t i = 1; i < row.size(); i++) {
-    //     out_ << sep_;
-    //     PrepareString(out_, row[i]);
-    // }
-    // out_ << '\n';
+    
+    delete[] tot;
 
 }
 

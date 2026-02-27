@@ -23,49 +23,19 @@ enum ETypeFile {
 
 class TIOFactory {
 public:
-    static std::shared_ptr<TIOFactory> Instance() {
-        static auto factory = std::make_shared<TIOFactory>();
-        return factory;
-    }
+    static std::shared_ptr<TIOFactory> Instance();
 
-    static void RegisterSStreamIO(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
-        auto i = Instance();
-        i->ios_[alias] = std::make_shared<std::stringstream>();
-    }
+    static void RegisterSStreamIO(const std::string& alias, ETypeFile t); // FOR TESTS (and probably optimizations)
 
-    static void UnregisterIO(const std::string& alias) { // FOR TESTS (and probably optimizations)
-        auto i = Instance();
-        i->ios_.erase(alias);
-    }
+    static void UnregisterIO(const std::string& alias); // FOR TESTS (and probably optimizations)
 
-    static void RegisterFileIO(const std::string& alias, ETypeFile t) {
-        auto i = Instance();
-        if (i->ios_.contains(alias)) {
-            return;
-        }
-        i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == kJFFile ? ".jf" : ".csv"));
-    }
+    static void RegisterFileIO(const std::string& alias, ETypeFile t);
 
-    static void RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp) {
-        auto i = Instance();
-        i->iotables_[alias] = inp;
-    }
+    static void RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp);
 
-    static Expected<std::iostream> GetIO(const std::string& alias) {
-        auto i = Instance();
-        if (i->ios_.contains(alias)) {
-            return i->ios_.at(alias);
-        }
-        return MakeError<EError::IONotFoundErr>(alias);
-    }
+    static Expected<std::iostream> GetIO(const std::string& alias);
 
-    static Expected<ITableInput> GetTableIO(const std::string& alias) {
-        auto i = Instance();
-        if (i->iotables_.contains(alias)) {
-            return i->iotables_.at(alias);
-        }
-        return MakeError<EError::IONotFoundErr>(alias);
-    }
+    static Expected<ITableInput> GetTableIO(const std::string& alias);
 
 private:
     std::unordered_map<std::string, std::shared_ptr<std::iostream>> ios_;

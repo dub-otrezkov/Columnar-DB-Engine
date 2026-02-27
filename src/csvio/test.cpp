@@ -133,12 +133,12 @@ TEST_F(IOTests, BadQuoteRead) {
 }
 
 TEST_F(IOTests, OptimizedRead) {
-    {
-        std::stringstream in;
-        in << advanced;
+    std::stringstream in;
+    in << advanced;
 
-        TCSVOptimizedReader rr(in);
-        auto [d, err] = rr.ReadRowBufI();
+    TCSVOptimizedReader rr(in);
+    {
+        auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
         ASSERT_EQ(d->size(), 3);
         EXPECT_EQ(d->at(0), R"(Scar "Tissue")");
@@ -146,11 +146,7 @@ TEST_F(IOTests, OptimizedRead) {
         EXPECT_EQ(d->at(2), R"(the,"Zephyr song)");
     }
     {
-        std::stringstream in;
-        in << advanced;
-
-        TCSVOptimizedReader rr(in);
-        auto [d, err] = rr.ReadRowBufI();
+        auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
         ASSERT_EQ(d->size(), 3);
         EXPECT_EQ(d->at(0), R"(,)");

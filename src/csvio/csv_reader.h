@@ -25,14 +25,22 @@ private:
 class TCSVOptimizedReader { // DO NOT USE ANYWHERE EXCEPT BIG CSV FILE READING, IT DESTROY ISTREAM CORRECTNESS
 public:
     TCSVOptimizedReader(std::istream& in, char sep = ',');
-
     Expected<std::vector<std::string>> ReadRow();
 
 private:
+
+    char ReadSym();
+    bool EofC();
+    char Peek();
+
     std::istream& in_;
     char sep_;
 
     static const ui64 kIBufSize = (1 << 20);
+
+    char buf_[kIBufSize];
+    i64 cpos_ = 0;
+    ui64 av_ = 0;
 };
 
 class TCSVBufferedReader {

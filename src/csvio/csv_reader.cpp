@@ -74,46 +74,31 @@ TCSVOptimizedReader::TCSVOptimizedReader(std::istream& in, char sep) :
 {
 }
 
+char TCSVOptimizedReader::ReadSym() {
+    if (cpos_ < av_) {
+        return buf_[cpos_++];
+    }
+
+    av_ = in_.read(buf_, kIBufSize).gcount();
+
+    cpos_ = 0;
+    return buf_[cpos_++];
+}
+
+
+bool TCSVOptimizedReader::EofC() {
+    return cpos_ == av_ && in_.eof();
+}
+
+char TCSVOptimizedReader::Peek() {
+    if (cpos_ < kIBufSize) {
+        return buf_[cpos_];
+    }
+    return in_.peek();
+}
+
 Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
-    static char buf[kIBufSize];
-    static i64 cpos = 0;
-    static ui64 av = 0;
-    static std::streampos st;
-
-    static auto read = [this]() -> char {
-        if (cpos < av) {
-            return buf[cpos++];
-        }
-
-        // st = in_.tellg();
-
-        av = in_.read(buf, kIBufSize).gcount();
-
-        cpos = 0;
-        return buf[cpos++];
-    };
-    auto peek = [this]() -> char {
-        if (cpos < kIBufSize) {
-            return buf[cpos];
-        }
-        return in_.peek();
-    };
-    // static auto shift_left = [this](i64 delta) -> void {
-    //     if (cpos >= delta) {
-    //         cpos -= delta;
-    //     } else {
-    //         in_.clear();
-    //         in_.seekg(st + cpos - delta);
-    //         st = st + cpos - delta;
-    //         cpos = 0;
-    //         av = in_.read(buf, kIBufSize).gcount();
-    //     }
-    // };
-    static auto eof_c = [this]() -> bool {
-        return cpos == av && in_.eof();
-    };
-
-    if (eof_c()) {
+    if (EofC()) {
         return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
 
@@ -126,8 +111,8 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
     auto& ans = ans_e.GetRes();
     ans.push_back("");
 
-    while (!eof_c()) {
-        auto c = read();
+    while (!EofC()) {
+        auto c = ReadSym();
         if (in_quotes && c == EOF) {
             return {std::vector<std::string>(), MakeError<EError::EofErr>()};
         }
@@ -141,9 +126,9 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
             ans.emplace_back();
         } else if (c == '"') {
             if (in_quotes) {
-                if (peek() == '\"') {
-                    ans.back() += read();
-                } else if (peek() != sep_ && peek() != '\n' && peek() != '\r') {
+                if (Peek() == '\"') {
+                    ans.back() += ReadSym();
+                } else if (Peek() != sep_ && Peek() != '\n' && Peek() != '\r') {
                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
