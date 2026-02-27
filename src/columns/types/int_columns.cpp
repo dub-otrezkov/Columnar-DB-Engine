@@ -2,6 +2,18 @@
 
 namespace JFEngine {
 
+Ti8Column::Ti8Column(std::vector<i8> data) {
+    cols_ = std::move(data);
+}
+
+Ti16Column::Ti16Column(std::vector<i16> data) {
+    cols_ = std::move(data);
+}
+
+Ti32Column::Ti32Column(std::vector<i32> data) {
+    cols_ = std::move(data);
+}
+
 Ti64Column::Ti64Column(std::vector<i64> data) {
     cols_ = std::move(data);
 }

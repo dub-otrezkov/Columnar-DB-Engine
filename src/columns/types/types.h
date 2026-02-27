@@ -73,6 +73,7 @@ protected:
 class Ti8Column : public TStorage<i8> {
 public:
     Ti8Column() {}
+    Ti8Column(std::vector<i8> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -81,6 +82,7 @@ public:
 class Ti16Column : public TStorage<i16> {
 public:
     Ti16Column() {}
+    Ti16Column(std::vector<i16> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -89,6 +91,7 @@ public:
 class Ti32Column : public TStorage<i32> {
 public:
     Ti32Column() {}
+    Ti32Column(std::vector<i32> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -114,7 +117,7 @@ public:
 
 class TDoubleColumn : public TStorage<ld> {
 public:
-    TDoubleColumn() {}
+    TDoubleColumn() {};
     TDoubleColumn(std::vector<ld> data);
 
     EColumn GetType() override;
@@ -130,6 +133,7 @@ struct TDate {
 class TDateColumn : public TStorage<TDate> {
 public:
     TDateColumn() {}
+    TDateColumn(std::vector<TDate> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -149,6 +153,7 @@ std::string PrintTimestamp(const TTimestamp& d);
 class TTimestampColumn : public TStorage<TTimestamp> {
 public:
     TTimestampColumn() {}
+    TTimestampColumn(std::vector<TTimestamp> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;

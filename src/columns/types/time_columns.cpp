@@ -2,6 +2,14 @@
 
 namespace JFEngine {
 
+TDateColumn::TDateColumn(std::vector<TDate> data) {
+    cols_ = std::move(data);
+}
+
+TTimestampColumn::TTimestampColumn(std::vector<TTimestamp> data) {
+    cols_ = std::move(data);
+}
+
 EColumn TDateColumn::GetType() {
     return kDateColumn;
 }
