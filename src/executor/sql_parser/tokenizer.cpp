@@ -27,8 +27,23 @@ Expected<IToken> TTokenizer::GetNext() {
 
     std::string token;
 
+    if (ss.peek() == '\'') {
+        ss.get();
+        while (!ss.eof() && ss.peek() != '\'') {
+            token += ss.get();
+            if (ss.eof()) {
+                return MakeError<EError::EofErr>();
+            }
+        }
+        if (ss.eof()) {
+            return MakeError<EError::EofErr>();
+        }
+        ss.get();
+        return std::make_shared<TNameToken>(token);
+    }
+
     while (1) {
-        if (token.size() == 0 && (ss.peek() == '(' || ss.peek() == ')' || ss.peek() == ',')) {
+        if (token.empty() && (ss.peek() == '(' || ss.peek() == ')' || ss.peek() == ',')) {
             token += ss.get();
             break;
         }
@@ -62,6 +77,8 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TCloseBracketToken>();
     } else if (token == ",") {
         return std::make_shared<TComaToken>();
+    } else if (token == "WHERE") {
+        return std::make_shared<TWhereToken>();
     } else {
         return std::make_shared<TNameToken>(token);
     }
@@ -85,6 +102,9 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
             break;
         case ETokens::kSelect:
             st.push_back(std::dynamic_pointer_cast<TSelectToken>(cur.GetShared()));
+            break;
+        case ETokens::kWhere:
+            st.push_back(std::dynamic_pointer_cast<TWhereToken>(cur.GetShared()));
             break;
         case ETokens::kCloseBracket:
         default: {

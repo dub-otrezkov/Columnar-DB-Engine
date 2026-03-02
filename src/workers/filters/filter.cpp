@@ -52,7 +52,11 @@ Expected<std::vector<TColumnPtr>> TFilter::ReadRowGroup() {
     std::vector<TColumnPtr> ans(col.size());
 
     for (ui64 i = 0; i < ans.size(); i++) {
-        ans[i] = Do<OFilter>(col[i], keep).GetShared();
+        auto res = Do<OFilter>(col[i], keep);
+        if (res.HasError()) {
+            return res.GetError();
+        }
+        ans[i] = res.GetShared();
     }
 
     return {std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError};

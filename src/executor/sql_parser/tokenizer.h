@@ -23,10 +23,12 @@ enum class ETokens {
     kOpenBracket,
     kCloseBracket,
     kComa,
+    kWhere,
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
     {"FROM", ETokens::kFrom},
+    {"WHERE", ETokens::kWhere},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
 };
@@ -63,6 +65,8 @@ public:
     Expected<ITableInput> Exec() override;
 };
 
+// commands tokens
+
 class TSelectToken : public ICommand {
 public:
 
@@ -86,6 +90,16 @@ public:
     
     Expected<ITableInput> Exec() override;
 };
+
+class TWhereToken : public ICommand {
+public:
+
+    ETokens GetType() const override;
+    
+    Expected<ITableInput> Exec() override;
+};
+
+// operator cmds tokens
 
 class TSumToken : public IOperatorCommand {
 public:
@@ -112,6 +126,8 @@ public:
 private:
     std::string name_;
 };
+
+// misc
 
 class TOpenBracketToken : public IToken {
 public:

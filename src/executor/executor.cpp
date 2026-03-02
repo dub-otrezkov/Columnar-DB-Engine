@@ -64,7 +64,6 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         );
         std::swap(cur_t1, cur_t2);
     }
-
     
     auto [_, err3] = tokens[0]->Exec();
     if (err3 != EError::NoError) {

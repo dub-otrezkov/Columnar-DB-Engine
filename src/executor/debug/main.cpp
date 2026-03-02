@@ -9,13 +9,13 @@
 int main() {
     JFEngine::TExecutor exec;
     {
-        auto err = exec.ExecQuery("CREATE josh FROM scheme, dorothy");
+        auto err = exec.ExecQuery("CREATE josh FROM ssch, data");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT SUM(WatchID) FROM josh");
+        auto err = exec.ExecQuery("SELECT slane, castle FROM josh WHERE castle >= 2");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
             // std::cout << err.GetError()->Print() << std::endl;
