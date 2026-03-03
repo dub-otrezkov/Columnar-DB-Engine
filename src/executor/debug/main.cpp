@@ -15,10 +15,10 @@ int main() {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT slane, castle FROM josh WHERE castle >= 2");
+        auto err = exec.ExecQuery("SELECT slane, castle FROM josh WHERE castle >= 5 AND slane = 6");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
+            std::cout << err.GetError() << std::endl;
         }
     }
 }

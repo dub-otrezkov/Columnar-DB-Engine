@@ -42,20 +42,113 @@ struct OFilterCheck {
     }
 
     static Expected<std::vector<bool>> ExecInner(Ti8Column& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        i8 target = 0;
+        try {
+            target = static_cast<i8>(std::stoi(value));
+        } catch (...) {
+            std::cout << "not an int" << std::endl;
+            return MakeError<EError::NotAnIntErr>();
+        }
+        if (op == EFilterType::kLike) {
+            std::cout << "no like for ints" << std::endl;
+            return MakeError<EError::UnsupportedErr>();
+        }
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 
     static Expected<std::vector<bool>> ExecInner(Ti16Column& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        i16 target = 0;
+        try {
+            target = static_cast<i16>(std::stoi(value));
+        } catch (...) {
+            std::cout << "not an int" << std::endl;
+            return MakeError<EError::NotAnIntErr>();
+        }
+        if (op == EFilterType::kLike) {
+            std::cout << "no like for ints" << std::endl;
+            return MakeError<EError::UnsupportedErr>();
+        }
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 
     static Expected<std::vector<bool>> ExecInner(Ti32Column& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        i32 target = 0;
+        try {
+            target = std::stoi(value);
+        } catch (...) {
+            std::cout << "not an int" << std::endl;
+            return MakeError<EError::NotAnIntErr>();
+        }
+        if (op == EFilterType::kLike) {
+            std::cout << "no like for ints" << std::endl;
+            return MakeError<EError::UnsupportedErr>();
+        }
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 
     static Expected<std::vector<bool>> ExecInner(Ti64Column& col, EFilterType op, const std::string& value, bool inv = false) {
         std::vector<bool> ans(col.GetSize(), inv);
-        ui64 target = 0;
+        i64 target = 0;
         try {
             target = std::stoll(value);
         } catch (...) {
@@ -89,7 +182,38 @@ struct OFilterCheck {
     }
 
     static Expected<std::vector<bool>> ExecInner(TDoubleColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        ui64 target = 0;
+        try {
+            target = std::stold(value);
+        } catch (...) {
+            std::cout << "not an double" << std::endl;
+            return MakeError<EError::NotAnIntErr>();
+        }
+        if (op == EFilterType::kLike) {
+            std::cout << "no like for ints" << std::endl;
+            return MakeError<EError::UnsupportedErr>();
+        }
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 
     static Expected<std::vector<bool>> ExecInner(TDateColumn& col, EFilterType op, const std::string& value, bool inv = false) {
@@ -101,7 +225,27 @@ struct OFilterCheck {
     }
 
     static Expected<std::vector<bool>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] == value));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] < value));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i] <= value));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 };
 

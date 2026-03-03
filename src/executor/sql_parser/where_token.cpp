@@ -20,13 +20,17 @@ Expected<ITableInput> TWhereToken::Exec() {
         if (args_[i]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
+        auto a1 = static_cast<TNameToken*>(args_[i].get());
+        if (a1->GetName() == "AND") {
+            i++;
+            continue;
+        }
         if (args_[i + 1]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
         if (args_[i + 2]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a1 = static_cast<TNameToken*>(args_[i].get());
         auto a2 = static_cast<TNameToken*>(args_[i + 1].get());
         auto a3 = static_cast<TNameToken*>(args_[i + 2].get());
 
@@ -51,20 +55,19 @@ Expected<ITableInput> TWhereToken::Exec() {
             auto ops = a2->GetName();
             if (ops == "=") {
                 op = EFilterType::kEq;
-            } else 
-            if (ops == "<") {
+            } else if (ops == "<") {
                 op = EFilterType::kLess;
-            } else 
-            if (ops == ">") {
+            } else if (ops == "<=") {
+                op = EFilterType::kLeq;
+            } else if (ops == ">") {
                 op = EFilterType::kGreater;
-            } else 
-            if (ops == "<>") {
+            } else if (ops == ">=") {
+                op = EFilterType::kGeq;
+            } else if (ops == "<>") {
                 op = EFilterType::kNeq;
-            } else 
-            if (ops == "LIKE") {
+            } else if (ops == "LIKE") {
                 op = EFilterType::kLike;
-            } else 
-            if (ops == "IN") {
+            } else if (ops == "IN") {
                 op = EFilterType::kIn;
             } else {
                 return MakeError<EError::BadCmdErr>();
