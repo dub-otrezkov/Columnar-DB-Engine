@@ -28,11 +28,44 @@ Expected<ITableInput> TWhereToken::Exec() {
         if (args_[i + 1]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
+        auto a2 = static_cast<TNameToken*>(args_[i + 1].get());
+        if (a2->GetName() == "IN" || (a2->GetName() == "NOT" &&
+            args_[i + 2].get()->GetType() == ETokens::kNameToken && 
+            static_cast<TNameToken*>(args_[i + 2].get())->GetName() == "IN"))
+        {
+            bool rev = (a2->GetName() == "NOT");
+
+            i = i + 2 + rev;
+
+            if (args_.size() < i + 1) {
+                return MakeError<EError::BadCmdErr>();
+            }
+
+            std::vector<std::string> args_for_in;
+
+            while (i < args_.size() && args_[i]->GetType() != ETokens::kCloseBracket) {
+                if (args_[i]->GetType() == ETokens::kNameToken) {
+                    args_for_in.push_back(
+                        static_cast<TNameToken*>(args_[i].get())->GetName()
+                    );
+                }
+                i++;
+            }
+            i++;
+
+            config.emplace_back(
+                a1->GetName(),
+                (rev ? EFilterType::kNIn : EFilterType::kIn),
+                "",
+                args_for_in
+            );
+            continue;
+        }
         if (args_[i + 2]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a2 = static_cast<TNameToken*>(args_[i + 1].get());
         auto a3 = static_cast<TNameToken*>(args_[i + 2].get());
+
 
         if (a2->GetName() == "NOT") {
             if (i + 4 > args_.size()) {
@@ -41,13 +74,14 @@ Expected<ITableInput> TWhereToken::Exec() {
             if (args_[i + 3]->GetType() != ETokens::kNameToken) {
                 return MakeError<EError::BadCmdErr>();
             }
-            if (a2->GetName() != "LIKE") {
+            if (a3->GetName() != "LIKE") {
                 return MakeError<EError::BadCmdErr>();
             }
+            auto a4 = static_cast<TNameToken*>(args_[i + 3].get());
             config.emplace_back(
                 a1->GetName(),
                 EFilterType::kNLike,
-                a3->GetName()
+                a4->GetName()
             );
             i += 4;
         } else {

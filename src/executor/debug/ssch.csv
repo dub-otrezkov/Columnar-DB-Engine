@@ -1,2 +1,3 @@
-slane,int64
-castle,int64
+author,string
+song,string
+album,int64

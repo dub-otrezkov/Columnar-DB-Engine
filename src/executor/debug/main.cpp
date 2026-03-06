@@ -4,7 +4,8 @@
 
 #include <iostream>
 
-// (cd ../../build/executor/debug; make debug_exec); ../../build/executor/debug/debug_exec
+// (cd ../../build/executor/debug; make debug_exec)
+// >josh.jf; >tmp1.jf; >tmp2.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/executor/debug/debug_exec
 
 int main() {
     JFEngine::TExecutor exec;
@@ -15,7 +16,7 @@ int main() {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT slane, castle FROM josh WHERE castle >= 5 AND slane = 6");
+        auto err = exec.ExecQuery("SELECT author, song, album FROM josh WHERE song LIKE '%police%'");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;

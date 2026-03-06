@@ -34,6 +34,10 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
             }
         }
 
+        if (!col.GetShared()) {
+            continue;
+        }
+
         ans.push_back(col.GetShared());
         scheme_[i].type_ = col.GetShared()->GetType();
     }

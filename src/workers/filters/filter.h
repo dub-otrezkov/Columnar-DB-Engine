@@ -11,6 +11,8 @@ struct TFilterOp {
     std::string column_name;
     EFilterType op;
     std::string value;
+
+    std::optional<std::vector<std::string>> args_for_in = std::nullopt;
 };
 
 struct TFilterQuery {

@@ -52,6 +52,9 @@ public:
             if (block.empty()) {
                 continue;
             }
+            if (block[0]->GetSize() == 0) {
+                continue;
+            }
             auto res = func(std::move(block));
             if (!res) {
                 return res.GetError();

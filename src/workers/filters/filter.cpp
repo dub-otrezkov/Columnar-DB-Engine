@@ -37,15 +37,55 @@ Expected<std::vector<TColumnPtr>> TFilter::ReadRowGroup() {
     }
 
     std::vector<bool> keep(col[0]->GetSize(), 1);
-    for (const auto& [name, op, target] : query_.fils) {
-        auto [bl, err] = Do<OFilterCheck>(col[name_to_i_[name]], op, target);
+    for (const auto& [name, op, target, opt_args] : query_.fils) {
+        if (op == EFilterType::kIn || op == EFilterType::kNIn) {
+            std::vector<bool> al;
+            if (!opt_args) {
+                return EError::BadCmdErr;
+            }
 
-        if (err) {
-            return err;
-        }
+            for (const auto& item : *opt_args) {
+                auto [orr, err] = Do<OFilterCheck>(
+                    col[name_to_i_[name]],
+                    (op == EFilterType::kIn ? EFilterType::kEq : EFilterType::kNeq),
+                    item
+                );
 
-        for (ui64 i = 0; i < keep.size(); i++) {
-            keep[i] = (keep[i] & (*bl)[i]);
+                if (err) {
+                    return err;
+                }
+                
+                // for (ui64 i = 0; i < orr->size(); i++) {
+                //     std::cout << orr->at(i);
+                // }
+                // std::cout << std::endl;
+
+                if (al.empty()) {
+                    al = *orr;
+                } else {
+                    for (ui64 i = 0; i < orr->size(); i++) {
+                        if (op == EFilterType::kIn) {
+                            al[i] = (al[i] | orr->at(i));
+                        } else {
+                            al[i] = (al[i] & orr->at(i));
+                        }
+                    }
+                }
+            }
+
+            for (ui64 i = 0; i < keep.size(); i++) {
+                keep[i] = (keep[i] & al[i]);
+            }
+        } else {
+            auto [bl, err] = Do<OFilterCheck>(col[name_to_i_[name]], op, target);
+
+            if (err) {
+                return err;
+            }
+
+            for (ui64 i = 0; i < keep.size(); i++) {
+                keep[i] = (keep[i] & (*bl)[i]);
+            }
         }
     }
 

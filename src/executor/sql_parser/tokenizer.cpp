@@ -39,6 +39,9 @@ Expected<IToken> TTokenizer::GetNext() {
             return MakeError<EError::EofErr>();
         }
         ss.get();
+        while (ss.peek() != EOF && std::isspace(ss.peek())) {
+            ss.get();
+        }
         return std::make_shared<TNameToken>(token);
     }
 
