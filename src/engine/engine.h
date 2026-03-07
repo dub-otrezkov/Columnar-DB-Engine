@@ -52,6 +52,9 @@ public:
             if (block.empty()) {
                 continue;
             }
+            if (block[0]->GetSize() == 0) {
+                continue;
+            }
             auto res = func(std::move(block));
             if (!res) {
                 return res.GetError();
@@ -65,7 +68,7 @@ public:
     std::shared_ptr<ITableInput> in_;
 };
 
-Expected<TEngine> MakeEngineFromCSV(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = KRowGroupLen);
+Expected<TEngine> MakeEngineFromCSV(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
 
 Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
 

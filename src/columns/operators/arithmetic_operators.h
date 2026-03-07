@@ -3,8 +3,7 @@
 
 namespace JFEngine {
 
-class OSum {
-public:
+struct OSum {
     static Expected<IColumn> Exec(Ti8Column& col) {
         i64 res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
@@ -62,8 +61,7 @@ public:
     }
 };
 
-class OVerticalSum {
-public:
+struct OVerticalSum {
     static Expected<IColumn> Exec(Ti8Column& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");

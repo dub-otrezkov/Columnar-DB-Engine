@@ -63,16 +63,10 @@ TEST_F(AgregationsTest, GetCountTest) {
     JFEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
-        if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
-        }
         ASSERT_FALSE(err.HasError());
     }
     {
         auto err = exec.ExecQuery("SELECT COUNT(*) FROM josh");
-        if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
-        }
         ASSERT_FALSE(err.HasError());
     }
 

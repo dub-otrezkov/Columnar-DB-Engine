@@ -9,7 +9,7 @@ namespace JFEngine {
 
 class TCSVTableInput : public ITableInput {
 public:
-    TCSVTableInput(std::shared_ptr<std::istream> scheme_in, std::shared_ptr<std::istream> data_in, ui64 row_group_len = KRowGroupLen) :
+    TCSVTableInput(std::shared_ptr<std::istream> scheme_in, std::shared_ptr<std::istream> data_in, ui64 row_group_len = kRowGroupLen) :
         scheme_in_(std::move(scheme_in)),
         data_in_(std::move(data_in)),
         csv_data_(*data_in_)

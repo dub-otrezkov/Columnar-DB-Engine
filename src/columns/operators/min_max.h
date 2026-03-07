@@ -3,8 +3,7 @@
 
 namespace JFEngine {
 
-class OMin {
-public:
+struct OMin {
     static Expected<IColumn> Exec(Ti8Column& col) {
         i8 res = INT8_MAX;
         for (ui64 i = 0; i < col.GetSize(); i++) {
@@ -71,8 +70,7 @@ public:
     }
 };
 
-class OVerticalMin {
-public:
+struct OVerticalMin {
     static Expected<IColumn> Exec(Ti8Column& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<BadArgsErr>("wrong size");

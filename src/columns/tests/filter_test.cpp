@@ -1,0 +1,319 @@
+#include "tests.h"
+
+#include "../operators/filter.h"
+
+namespace JFEngine::Testing {
+
+TEST_F(OperatorsTest, FilterEqTest) {
+    auto test = [](EColumn t) -> void {
+        std::vector<std::string> data = {"-1", "10", "9", "9", "8"};
+        auto m = MakeColumn(data, t);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kEq, "9");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 2);
+    };
+
+    test(EColumn::ki8Column);
+    test(EColumn::ki16Column);
+    test(EColumn::ki32Column);
+    test(EColumn::ki64Column);
+}
+
+TEST_F(OperatorsTest, FilterLessTest) {
+    auto test = [](EColumn t) -> void {
+        std::vector<std::string> data = {"-1", "10", "9", "9", "8"};
+        auto m = MakeColumn(data, t);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLess, "9");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 1);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 2);
+    };
+
+    test(EColumn::ki8Column);
+    test(EColumn::ki16Column);
+    test(EColumn::ki32Column);
+    test(EColumn::ki64Column);
+}
+
+TEST_F(OperatorsTest, FilterLeqTest) {
+    auto test = [](EColumn t) -> void {
+        std::vector<std::string> data = {"-1", "10", "9", "9", "8"};
+        auto m = MakeColumn(data, t);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLeq, "9");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 1);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 4);
+    };
+
+    test(EColumn::ki8Column);
+    test(EColumn::ki16Column);
+    test(EColumn::ki32Column);
+    test(EColumn::ki64Column);
+}
+
+TEST_F(OperatorsTest, FilterGreaterTest) {
+    auto test = [](EColumn t) -> void {
+        std::vector<std::string> data = {"-1", "10", "9", "9", "8"};
+        auto m = MakeColumn(data, t);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGreater, "9");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 1);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 1);
+    };
+
+    test(EColumn::ki8Column);
+    test(EColumn::ki16Column);
+    test(EColumn::ki32Column);
+    test(EColumn::ki64Column);
+}
+
+TEST_F(OperatorsTest, FilterGeqTest) {
+    auto test = [](EColumn t) -> void {
+        std::vector<std::string> data = {"-1", "10", "9", "9", "8"};
+        auto m = MakeColumn(data, t);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGeq, "9");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 1);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 3);
+    };
+
+    test(EColumn::ki8Column);
+    test(EColumn::ki16Column);
+    test(EColumn::ki32Column);
+    test(EColumn::ki64Column);
+}
+
+void CheckVectorsEq(
+    const std::vector<std::string>& a,
+    const std::vector<std::string>& b
+) {
+    EXPECT_EQ(a.size(), b.size());
+    for (ui64 i = 0; i < a.size(); i++) {
+        EXPECT_EQ(a[i], b[i]);
+    }
+}
+
+TEST_F(OperatorsTest, FilterLikeTest) {
+    {
+        std::vector<std::string> data = {
+            "john",
+            "johnfrusciante",
+            "josh",
+            "9",
+            "8",
+            "joshklinghoffer",
+            "rhcp rhcp rhcp",
+            "the getaway",
+            "detroit",
+            "dark neccessities",
+            "encore",
+            "feasting on the flowers"
+        };
+        auto m = MakeColumn(data, EColumn::kStringColumn);
+        ASSERT_FALSE(m.HasError());
+
+        {
+            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLike, "9");
+
+            ASSERT_FALSE(r.HasError());
+
+            auto mask = r.GetShared();
+
+            ASSERT_TRUE(mask->size() == data.size());
+            
+            auto e = Do<OFilter>(m.GetShared(), *mask);
+            ASSERT_FALSE(e.HasError());
+            auto ans = e.GetShared();
+            ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
+            CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
+                "9"
+            });
+        }
+
+        
+        {
+            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLike, "%h%");
+
+            ASSERT_FALSE(r.HasError());
+
+            auto mask = r.GetShared();
+
+            ASSERT_TRUE(mask->size() == data.size());
+            
+            auto e = Do<OFilter>(m.GetShared(), *mask);
+            ASSERT_FALSE(e.HasError());
+            auto ans = e.GetShared();
+            ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
+            CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
+                "john",
+                "johnfrusciante",
+                "josh",
+                "joshklinghoffer",
+                "rhcp rhcp rhcp",
+                "the getaway",
+                "feasting on the flowers"
+            });
+        }
+    }
+}
+
+
+TEST_F(OperatorsTest, FilterNLikeTest) {
+    {
+        std::vector<std::string> data = {
+            "john",
+            "johnfrusciante",
+            "josh",
+            "9",
+            "8",
+            "joshklinghoffer",
+            "rhcp rhcp rhcp",
+            "the getaway",
+            "detroit",
+            "dark neccessities",
+            "encore",
+            "feasting on the flowers"
+        };
+        auto m = MakeColumn(data, EColumn::kStringColumn);
+        ASSERT_FALSE(m.HasError());
+
+        {
+            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kNLike, "9");
+
+            ASSERT_FALSE(r.HasError());
+
+            auto mask = r.GetShared();
+
+            ASSERT_TRUE(mask->size() == data.size());
+            
+            auto e = Do<OFilter>(m.GetShared(), *mask);
+            ASSERT_FALSE(e.HasError());
+            auto ans = e.GetShared();
+            ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
+            CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
+                "john",
+                "johnfrusciante",
+                "josh",
+                "8",
+                "joshklinghoffer",
+                "rhcp rhcp rhcp",
+                "the getaway",
+                "detroit",
+                "dark neccessities",
+                "encore",
+                "feasting on the flowers"
+            });
+        }
+
+        
+        {
+            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kNLike, "%h%");
+
+            ASSERT_FALSE(r.HasError());
+
+            auto mask = r.GetShared();
+
+            ASSERT_TRUE(mask->size() == data.size());
+            
+            auto e = Do<OFilter>(m.GetShared(), *mask);
+            ASSERT_FALSE(e.HasError());
+            auto ans = e.GetShared();
+            ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
+            CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
+                "9",
+                "8",
+                "detroit",
+                "dark neccessities",
+                "encore"
+            });
+        }
+    }
+}
+
+} // namespace JFEngine::Testing

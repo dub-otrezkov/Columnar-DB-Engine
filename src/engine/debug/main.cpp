@@ -6,64 +6,15 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 // (cd ../../build/engine/debug; make debug_engine); ../../build/engine/debug/debug_engine
 
+using namespace JFEngine;
+
 int main() {
-    {
-        std::ifstream scheme("scheme.csv");
-        std::ifstream data("data.csv");
-
-        std::ofstream out("josh.jf", std::ios::binary);
-
-        auto [eng, err] = JFEngine::MakeEngineFromCSV(std::move(scheme), std::move(data));
-
-        eng->WriteTableToJF(out);
-    }
-    {
-        std::ifstream in("josh.jf", std::ios::binary);
-        auto [eng, err] = JFEngine::MakeEngineFromJF(std::move(in));
-
-        if (err) {
-            std::cout << err->Print() << std::endl;
-            return 0;
-        }
-
-        std::stringstream ss;
-        eng->WriteSchemeToCSV(ss);
-        auto t = eng->WriteDataToCSV(ss);
-
-        std::cout << ss.str() << std::endl;
-
-        if (t.HasError()) {
-            std::cout << t.GetError()->Print() << std::endl;
-            return 0;
-        }
-    }
-    {
-        std::ifstream in("josh.jf", std::ios::binary);
-        std::vector<std::string> cols{"hot", "red", "peppers"};
-        // std::unorde
-        auto [eng, err] = JFEngine::MakeSelectEngine(std::move(in), {cols});
-
-        if (err) {
-            std::cout << err->Print() << std::endl;
-            return 0;
-        }
-
-        std::stringstream ss;
-        auto e = eng->WriteSchemeToCSV(ss);
-        if (e.HasError()){
-            std::cout << e.GetError()->Print() << std::endl;
-            return 0;
-        }
-        auto t = eng->WriteDataToCSV(ss);
-
-        std::cout << ss.str() << std::endl;
-
-        if (t.HasError()) {
-            std::cout << t.GetError()->Print() << std::endl;
-        }
-    }
+    auto scheme = std::make_shared<std::fstream>("scheme.csv");
+    auto data = std::make_shared<std::fstream>("data.csv");
+    auto [eng, err] = MakeEngineFromCSV(scheme, data);
 
 }

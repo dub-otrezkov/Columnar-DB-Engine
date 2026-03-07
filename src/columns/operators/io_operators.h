@@ -4,8 +4,7 @@
 
 namespace JFEngine {
 
-class OPrintIth {
-public:
+struct OPrintIth {
     static std::string Exec(Ti8Column& col, ui64 i) {
         auto res = col.GetData()[i];
         return std::to_string(res);
@@ -53,8 +52,7 @@ public:
     }
 };
 
-class OJFPrintIth {
-public:
+struct OJFPrintIth {
     static std::string Exec(Ti8Column& col, ui64 i) {
         auto j = col.GetData()[i];
         return I8ToJFStr(j);

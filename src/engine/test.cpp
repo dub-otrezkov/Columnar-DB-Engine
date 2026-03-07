@@ -60,6 +60,28 @@ TEST_F(EngineTest, CSVToCSV) {
     }
 }
 
+TEST_F(EngineTest, EmptyData) {
+    auto empty_data = std::make_shared<std::stringstream>("\n");
+    auto [eng, err] = MakeEngineFromCSV(scheme_ss, empty_data);
+
+    ASSERT_FALSE(err);
+
+    {
+        std::stringstream out;
+        err = eng->WriteSchemeToCSV(out).GetError();
+        
+        ASSERT_FALSE(err);
+        EXPECT_EQ(out.str(), scheme);
+    }
+    {
+        std::stringstream out;
+        err = eng->WriteDataToCSV(out).GetError();
+
+        ASSERT_FALSE(err);
+        EXPECT_EQ(out.str(), "");
+    }
+}
+
 TEST_F(EngineTest, JFBasic) {
     auto out = std::make_shared<std::stringstream>();
     {
@@ -92,6 +114,49 @@ TEST_F(EngineTest, JFBasic) {
             }
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), data);
+        }
+    }
+}
+
+TEST_F(EngineTest, JFEmpty) {
+    auto out = std::make_shared<std::stringstream>();
+    {
+        auto empty_data = std::make_shared<std::stringstream>("\n");
+        auto [eng, err] = MakeEngineFromCSV(scheme_ss, empty_data);
+
+        ASSERT_FALSE(err);
+
+        {
+            err = eng->WriteTableToJF(*out).GetError();
+
+            ASSERT_FALSE(err);
+        }
+    }
+
+    // std::cout << out->str().size() << std::endl;
+    for (auto el : out->str()) {
+        std::cout << (int) el << " " ;
+    }
+    std::cout << std::endl;
+    {
+        auto [eng, err] = MakeEngineFromJF(out);
+
+        ASSERT_FALSE(err);
+        {
+            std::stringstream ans;
+            err = eng->WriteSchemeToCSV(ans).GetError();
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), scheme);
+        }
+
+        {
+            std::stringstream ans;
+            err = eng->WriteDataToCSV(ans).GetError();
+            if (err) {
+                // std::cout << err->Print() << std::endl;
+            }
+            ASSERT_FALSE(err);
+            EXPECT_EQ(ans.str(), "");
         }
     }
 }

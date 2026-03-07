@@ -151,11 +151,12 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
 
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [col, err] = ReadIthColumn(i);
-        // std::cout << col->GetSize() << " " << Is<EofErr>(err) << std::endl;
-        if (!Is<EError::EofErr>(err)) {
-            return err;
-        } else if (err != EError::NoError) {
-            is_eof = true;
+        if (err) {
+            if (!Is<EError::EofErr>(err)) {
+                return err;
+            } else if (err != EError::NoError) {
+                is_eof = true;
+            }
         }
         res.push_back(col);
     }
