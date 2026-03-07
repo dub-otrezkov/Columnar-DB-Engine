@@ -21,6 +21,7 @@ Expected<ITableInput> TSelectToken::Exec() {
             }
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
+                // std::cout << "! " << d << std::endl;
 
                 auto node = std::make_shared<TColumnAgr>(d);
 
@@ -73,6 +74,7 @@ Expected<ITableInput> TSelectToken::Exec() {
             }
         }
     }
+
     TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
 
     auto agr = std::make_shared<TAgregator>(

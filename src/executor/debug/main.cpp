@@ -16,7 +16,7 @@ int main() {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT author, song, album FROM josh WHERE song LIKE '%police%'");
+        auto err = exec.ExecQuery("SELECT author, song FROM josh");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;

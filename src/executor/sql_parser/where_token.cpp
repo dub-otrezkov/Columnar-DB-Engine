@@ -101,8 +101,6 @@ Expected<ITableInput> TWhereToken::Exec() {
                 op = EFilterType::kNeq;
             } else if (ops == "LIKE") {
                 op = EFilterType::kLike;
-            } else if (ops == "IN") {
-                op = EFilterType::kIn;
             } else {
                 return MakeError<EError::BadCmdErr>();
             }

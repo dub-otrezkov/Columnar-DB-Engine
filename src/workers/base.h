@@ -13,11 +13,11 @@ struct TRowScheme {
     EColumn type_;
 };
 
-const ui64 KRowGroupLen = 10000;
+const ui64 kRowGroupLen = 10000;
 
 class ITableInput {
 public:
-    ITableInput(ui64 row_group_len = KRowGroupLen);
+    ITableInput(ui64 row_group_len = kRowGroupLen);
     virtual ~ITableInput() = default;
 
     virtual Expected<void> SetupColumnsScheme() = 0;
