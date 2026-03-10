@@ -35,9 +35,10 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
     if (row.empty()) {
         return;
     }
+    static std::vector<ui64> lns;
+    lns.assign(row.size(), 0);
 
     ui64 total = row.size();
-    std::vector<ui64> lns(row.size());
     for (ui64 i = 0; i < row.size(); i++) {
         lns[i] = PrepareString(row[i]);
         total += lns[i];
@@ -67,7 +68,48 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
     out_.write(tot, total);
     
     delete[] tot;
+}
 
+
+void TCSVWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
+    if (group.empty()) {
+        return;
+    }
+    ui64 total = 0;
+    static std::vector<ui64> lns;
+    lns.assign(group.size() * group[0].size(), 0);
+    for (ui64 i = 0; i < group.size(); i++) {
+        for (ui64 j = 0; j < group[i].size(); j++) {
+            lns[i * group[0].size() + j] = PrepareString(group[i][j]);
+            total += 1 + lns[i * group[0].size() + j];
+        }
+    }
+
+    auto tot = new char[total];
+
+    ui64 cur = 0;
+    for (ui64 j = 0; j < group[0].size(); j++) {
+        for (ui64 i = 0; i < group.size(); i++) {
+            if (lns[i * group[0].size() + j] == group[i][j].size()) {
+                memcpy(tot + cur, group[i][j].data(), lns[i * group[0].size() + j]);
+                cur += lns[i * group[0].size() + j];
+            } else {
+                tot[cur++] = '"';
+                for (const auto& c : group[i][j]) {
+                    tot[cur++] = c;
+                    if (c == '"') {
+                        tot[cur++] = c;
+                    }
+                }
+                tot[cur++] = '"';
+            }
+            tot[cur++] = sep_;
+        }
+        tot[cur - 1] = '\n';
+    }
+    out_.write(tot, total);
+    
+    delete[] tot;
 }
 
 TCSVWriter::~TCSVWriter() {

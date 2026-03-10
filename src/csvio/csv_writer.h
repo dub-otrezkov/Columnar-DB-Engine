@@ -15,6 +15,7 @@ public:
     TCSVWriter(std::ostream& out, char sep = ',');
 
     void WriteRow(const std::vector<std::string>& row);
+    void WriteRowGroup(std::vector<std::vector<std::string>> row);
 
     ~TCSVWriter();
 

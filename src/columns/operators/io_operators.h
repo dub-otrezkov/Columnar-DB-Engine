@@ -99,4 +99,84 @@ struct OJFPrintIth {
     }
 };
 
+struct OJFPrint {
+    static std::vector<std::string> Exec(Ti8Column& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = I8ToJFStr(col.GetData()[i]);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(Ti16Column& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = I16ToJFStr(col.GetData()[i]);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(Ti32Column& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = I32ToJFStr(col.GetData()[i]);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(Ti64Column& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = I64ToJFStr(col.GetData()[i]);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(TDoubleColumn& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = DoubleToJFStr(col.GetData()[i]);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(TDateColumn& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            auto j = col.GetData()[i];
+            ans[i] = I16ToJFStr(j.year) + I8ToJFStr(j.month) + I8ToJFStr(j.day);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(TTimestampColumn& col) {
+        std::vector<std::string> ans(col.GetSize());
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            auto j = col.GetData()[i];
+            ans[i] = I16ToJFStr(j.date.year) +
+                    I8ToJFStr(j.date.month) +
+                    I8ToJFStr(j.date.day) +
+                    I8ToJFStr(j.hour) +
+                    I8ToJFStr(j.minute) +
+                    I8ToJFStr(j.second);
+        }
+        return std::move(ans);
+    }
+
+    static std::vector<std::string> Exec(TStringColumn& col) {
+        std::vector<std::string> ans(col.GetSize());
+        // auto j = col.GetData()[i];
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = col.GetData()[i];
+        }
+        return std::move(ans);
+    }
+};
+
 } // namespace JFEngine

@@ -36,7 +36,7 @@ Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
             // for (auto el : row) {
             //     std::cout << el << std::endl;
             // }
-            w.WriteRow(std::move(row));
+            w.WriteRow(row);
         }
 
         return nullptr;
@@ -54,6 +54,8 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
         TCSVWriter w(out);
 
         std::vector<i64> col_poses;
+
+        std::vector<std::vector<std::string>> rg(block.size());
 
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
@@ -79,13 +81,9 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
     auto meta_start = out.tellp();
     PutI64(out, in_->GetRowGroupLen());
     PutI64(out, cols_cnt);
-    // std::cout << "cols cnt " << cols_cnt << std::endl;
     PutI64(out, poses.size());
-    // std::cout << "blocks sz " << poses.size() << std::endl;
     for (auto i : poses) {
         PutI64(out, i);
-        
-        // std::cout << "::: " << i << std::endl;
     }
     auto err = WriteSchemeToCSV(out);
 
