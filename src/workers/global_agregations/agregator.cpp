@@ -14,15 +14,15 @@ TAgregator::TAgregator(std::shared_ptr<ITableInput> jf_in, TGlobalAgregationQuer
     }
 }
 
-TAgregator(std::shared_ptr<ITableInput> jf_in) : jf_in_(std::move(jf_in)), {
-    TGlobalAgregationQuery q;
-    for (auto [name, _] : jf_in->GetScheme()) {
-        
-    }
+TAgregator::TAgregator(std::shared_ptr<ITableInput> jf_in) : jf_in_(std::move(jf_in)), is_all_(true) {
 }
 
 std::vector<TRowScheme>& TAgregator::GetScheme() {
-    return scheme_;
+    if (is_all_) {
+        return jf_in_->GetScheme();
+    } else {
+        return scheme_;
+    }
 }
 
 Expected<void> TAgregator::SetupColumnsScheme() {
@@ -33,37 +33,43 @@ Expected<void> TAgregator::SetupColumnsScheme() {
 }
 
 Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
-    bool is_eof = false;
-    std::vector<TColumnPtr> ans;
-    if (blocker_) {
-        jf_in_->Reset();
-        for (ui64 i = 0; i < jf_in_->GetGroupsCount(); i++) {
-            eng_.ConsumeRowGroup(jf_in_.get());
+    if (!is_all_) {
+        bool is_eof = false;
+        std::vector<TColumnPtr> ans;
+        if (blocker_) {
+            jf_in_->Reset();
+            for (ui64 i = 0; i < jf_in_->GetGroupsCount(); i++) {
+                eng_.ConsumeRowGroup(jf_in_.get());
 
+                jf_in_->MoveCursor(1);
+            }
+            auto [t, _] = eng_.ThrowRowGroup();
+            is_eof = true;
+            ans = *t;
+        } else {
+            auto err = eng_.ConsumeRowGroup(jf_in_.get());
+            if (err.HasError()) {
+                if (err.GetError() != EError::EofErr) {
+                    std::cout << "Ffjjfjf" << " " << err.GetError() << std::endl;
+                    return err.GetError();
+                } else {
+                    is_eof = true;
+                }
+            }
+            ans = std::move(*eng_.ThrowRowGroup().GetShared());
+            // }
             jf_in_->MoveCursor(1);
         }
-        auto [t, _] = eng_.ThrowRowGroup();
-        is_eof = true;
-        ans = *t;
-    } else {
-        auto err = eng_.ConsumeRowGroup(jf_in_.get());
-        if (err.HasError()) {
-            if (err.GetError() != EError::EofErr) {
-                return err.GetError();
-            } else {
-                is_eof = true;
-            }
-        }
-        ans = std::move(*eng_.ThrowRowGroup().GetShared());
-        // }
-        jf_in_->MoveCursor(1);
-    }
 
-    for (ui64 i = 0; i < ans.size(); i++) {
-        scheme_[i].type_ = ans[i]->GetType();
+        for (ui64 i = 0; i < ans.size(); i++) {
+            scheme_[i].type_ = ans[i]->GetType();
+        }
+        
+        return {std::move(ans), (is_eof ? EError::EofErr : EError::NoError)};
+    } else {
+        std::cout << "fjkfjkfk" << std::endl;
+        return jf_in_->ReadRowGroup();
     }
-    
-    return {std::move(ans), (is_eof ? EError::EofErr : EError::NoError)};
     // std::vector<TColumnPtr> ans;
     // auto is_eof = 0;
     // for (ui64 i = 0; i < query_.cols.size(); i++) {

@@ -45,6 +45,17 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
     auto cur_t2 = kTmp2;
 
     for (ui64 i = 2; i < tokens.size(); i++) {
+        if (tokens[i]->GetType() == ETokens::kGroup) {
+            auto gt = std::dynamic_pointer_cast<TGroupToken>(tokens[i]);
+            auto sl = std::dynamic_pointer_cast<TSelectToken>(tokens[0]);
+
+            if (!sl) {
+                return EError::BadCmdErr;
+            }
+
+            gt->SetSelects(sl->ParseArgs());
+            sl->SetIsId();
+        }
         auto [inp, err] = tokens[i]->Exec();
         if (err != EError::NoError) {
             return err;

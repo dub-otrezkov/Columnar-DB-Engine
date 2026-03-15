@@ -74,13 +74,13 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         std::sort(keys.begin(), keys.end());
         keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
 
-        // for (auto k : keys) {
-        //     std::cout << "|";
-        //     for (auto el : k) {
-        //         std::cout << el << " ";
-        //     }
-        //     std::cout << std::endl;
-        // }
+        for (auto k : keys) {
+            std::cout << "|";
+            for (auto el : k) {
+                std::cout << el << " ";
+            }
+            std::cout << std::endl;
+        }
 
         for (const auto& key : keys) {
             auto& t = groups_.at(key);
@@ -93,6 +93,9 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         if (!ans[0]) {
             auto [t, _] = value.eng.ThrowRowGroup();
             ans = *t;
+            for (ui64 i = 0; i < ans.size(); i++) {
+                scheme_[i].type_ = ans[i]->GetType();
+            }
         } else {
             auto [tgars, _] = value.eng.ThrowRowGroup();
             auto gars = *tgars;

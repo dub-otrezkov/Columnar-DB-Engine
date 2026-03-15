@@ -12,6 +12,7 @@ struct TGlobalAgregationQuery {
 
 class TAgregationsEngine {
 public:
+    TAgregationsEngine() = default;
     TAgregationsEngine(TGlobalAgregationQuery qry, bool groupby = false);
 
     Expected<void> ConsumeRowGroup(ITableInput* inp);

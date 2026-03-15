@@ -1,5 +1,6 @@
 #pragma once
 
+#include "workers/agregations_engine/engine.h"
 #include "engine/engine.h"
 #include "utils/errors/errors_templates.h"
 

@@ -82,6 +82,8 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TComaToken>();
     } else if (token == "WHERE") {
         return std::make_shared<TWhereToken>();
+    } else if (token == "GROUP") {
+        return std::make_shared<TGroupToken>();
     } else {
         return std::make_shared<TNameToken>(token);
     }
@@ -108,6 +110,9 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
             break;
         case ETokens::kWhere:
             st.push_back(std::dynamic_pointer_cast<TWhereToken>(cur.GetShared()));
+            break;
+        case ETokens::kGroup:
+            st.push_back(std::dynamic_pointer_cast<TGroupToken>(cur.GetShared()));
             break;
         case ETokens::kCloseBracket:
         default: {

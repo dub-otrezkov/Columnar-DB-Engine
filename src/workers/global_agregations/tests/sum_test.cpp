@@ -4,6 +4,50 @@
 
 namespace JFEngine::Testing {
 
+TEST_F(AgregationsTest, FullTableTest) {
+    auto jf_table = std::make_shared<std::stringstream>();
+    {
+        auto scheme_in = std::make_shared<std::stringstream>(scheme);
+        auto data_in = std::make_shared<std::stringstream>(data);
+
+        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+
+        if (err) {
+            std::cout << err << std::endl;
+        }
+        ASSERT_FALSE(err);
+
+        auto err2 = eng->WriteTableToJF(*jf_table);
+        
+        if (err2.HasError()) {
+            std::cout << err2.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err2.HasError());
+    }
+
+    {
+        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        {
+            auto err = jf_in->SetupColumnsScheme();
+            if (err.HasError()) {
+                std::cout << err.GetError() << std::endl;
+            }
+        }
+        auto agr = std::make_shared<TAgregator>(jf_in);
+
+        auto [engine, err] = MakeEngineFromWorker(agr);
+
+        ASSERT_FALSE(err);
+
+        std::stringstream data_;
+
+        auto res = engine->WriteDataToCSV(data_);
+    
+        // std::cout << data.str() << std::endl;
+        EXPECT_EQ(data_.str(), data);
+    }
+}
+
 TEST_F(AgregationsTest, SelectTest) {
     auto jf_table = std::make_shared<std::stringstream>();
     {

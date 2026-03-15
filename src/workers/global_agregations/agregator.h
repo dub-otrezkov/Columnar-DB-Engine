@@ -27,6 +27,7 @@ private:
 
     ui64 cols_cnt_ = 0;
     bool blocker_ = false;
+    bool is_all_ = false;
 };
 
 } // namespace JFEngine

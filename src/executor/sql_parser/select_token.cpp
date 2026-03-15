@@ -10,7 +10,7 @@ ETokens TSelectToken::GetType() const {
 }
 
 
-std::vector<std::shared_ptr<IAgregation>> ParseArgs() {
+std::vector<std::shared_ptr<IAgregation>> TSelectToken::ParseArgs() {
     std::vector<std::shared_ptr<IAgregation>> args;
     std::vector<std::shared_ptr<IAgregation>> st;
 
@@ -91,6 +91,26 @@ Expected<ITableInput> TSelectToken::Exec() {
         auto agr = std::make_shared<TAgregator>(
             TIOFactory::GetTableIO(kCurTableInput).GetShared(),
             TGlobalAgregationQuery{args}
+        );
+
+        TEngine eng;
+
+        TIOFactory::RegisterFileIO(kResultScheme, ETypeFile::kCSVFile);
+        TIOFactory::RegisterFileIO(kResultData, ETypeFile::kCSVFile);
+
+        eng.Setup(agr);
+
+        eng.WriteDataToCSV(TIOFactory::GetIO(kResultData).GetRes());
+        eng.WriteSchemeToCSV(TIOFactory::GetIO(kResultScheme).GetRes());
+
+        return nullptr;
+    } else {
+        TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
+
+        std::cout << "fkfkfkf" << std::endl;
+
+        auto agr = std::make_shared<TAgregator>(
+            TIOFactory::GetTableIO(kCurTableInput).GetShared()
         );
 
         TEngine eng;
