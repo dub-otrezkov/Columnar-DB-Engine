@@ -132,12 +132,6 @@ TEST_F(EngineTest, JFEmpty) {
             ASSERT_FALSE(err);
         }
     }
-
-    // std::cout << out->str().size() << std::endl;
-    for (auto el : out->str()) {
-        std::cout << (int) el << " " ;
-    }
-    std::cout << std::endl;
     {
         auto [eng, err] = MakeEngineFromJF(out);
 
@@ -153,7 +147,6 @@ TEST_F(EngineTest, JFEmpty) {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
             if (err) {
-                // std::cout << err->Print() << std::endl;
             }
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), "");

@@ -19,4 +19,8 @@ void ITableInput::MoveCursor(i64) {
 void ITableInput::Reset() {
 }
 
+ui64 ITableInput::GetGroupsCount() const {
+    return 0;
+}
+
 } // namespace JFEngine

@@ -1,4 +1,3 @@
-#include "../operators.h"
 #include "../agregator.h"
 
 #include <gtest/gtest.h>

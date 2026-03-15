@@ -24,6 +24,7 @@ public:
     virtual std::vector<TRowScheme>& GetScheme() = 0;
     virtual Expected<std::vector<TColumnPtr>> ReadRowGroup() = 0;
     virtual Expected<IColumn> ReadColumn(const std::string& name);
+    virtual ui64 GetGroupsCount() const;
     virtual void MoveCursor(i64 delta);
     virtual void Reset();
 
