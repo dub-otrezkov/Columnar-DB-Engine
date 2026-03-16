@@ -21,6 +21,8 @@ enum class ETokens {
     kSum,
     kCount,
     kAvg,
+    kMax,
+    kMin,
     kOpenBracket,
     kCloseBracket,
     kComa, // misc (
@@ -45,6 +47,8 @@ static const std::unordered_map<std::string, ETokens> operators = {
     {"SUM", ETokens::kSum},
     {"COUNT", ETokens::kCount},
     {"AVG", ETokens::kAvg},
+    {"MIN", ETokens::kMin},
+    {"MAX", ETokens::kMax},
 };
 
 class IToken {
@@ -151,6 +155,16 @@ private:
 // operator cmds tokens
 
 class TSumToken : public IOperatorCommand {
+public:
+    ETokens GetType() const override;
+};
+
+class TMinToken : public IOperatorCommand {
+public:
+    ETokens GetType() const override;
+};
+
+class TMaxToken : public IOperatorCommand {
 public:
     ETokens GetType() const override;
 };

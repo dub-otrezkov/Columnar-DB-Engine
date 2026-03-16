@@ -1,6 +1,7 @@
 #include "operators.h"
 
 #include "columns/operators/operators.h"
+#include "columns/operators/min_max.h"
 
 namespace JFEngine {
 
@@ -74,6 +75,14 @@ void TSumAgr::AddArg(std::shared_ptr<IAgregation> to_sum) {
 
 void TCountAgr::AddArg(std::shared_ptr<IAgregation> to_sum) {
     arg = to_sum;
+}
+
+void TMinAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
+}
+
+void TMaxAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
 }
 
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
@@ -162,6 +171,88 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
     return std::make_shared<TDoubleColumn>(std::vector<ld>{avg});
 }
 
+bool TMinAgr::IsBlocker() {
+    return true;
+}
+
+bool TMaxAgr::IsBlocker() {
+    return true;
+}
+
+Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
+    auto err = arg->ConsumeRowGroup(inp);
+    bool is_eof = false;
+    if (err.GetError() != EError::NoError) {
+        if (EError::EofErr == err.GetError()) {
+            is_eof = true;
+        } else {
+            return err;
+        }
+    }
+
+    auto [col, _] = arg->ThrowRowGroup();
+
+    auto sum = Do<OMin>(col);
+    if (sum.HasError()) {
+        return sum.GetError();
+    }
+
+    if (!ans) {
+        ans = sum.GetShared();
+    } else {
+        auto tmp = Do<OVerticalMin>(ans, sum.GetShared());
+
+        if (tmp.HasError()) {
+            return tmp.GetError();
+        }
+
+        ans = tmp.GetShared();
+    }
+
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
+Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
+    auto err = arg->ConsumeRowGroup(inp);
+    bool is_eof = false;
+    if (err.GetError() != EError::NoError) {
+        if (EError::EofErr == err.GetError()) {
+            is_eof = true;
+        } else {
+            return err;
+        }
+    }
+
+    auto [col, _] = arg->ThrowRowGroup();
+
+    auto sum = Do<OMax>(col);
+    if (sum.HasError()) {
+        return sum.GetError();
+    }
+
+    if (!ans) {
+        ans = sum.GetShared();
+    } else {
+        auto tmp = Do<OVerticalMax>(ans, sum.GetShared());
+
+        if (tmp.HasError()) {
+            return tmp.GetError();
+        }
+
+        ans = tmp.GetShared();
+    }
+
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
+Expected<IColumn> TMinAgr::ThrowRowGroup() {
+    return ans;
+}
+
+Expected<IColumn> TMaxAgr::ThrowRowGroup() {
+    return ans;
+}
+
 std::shared_ptr<IAgregation> TColumnAgr::Clone() {
     return std::make_shared<TColumnAgr>(name);
 }
@@ -184,12 +275,32 @@ std::shared_ptr<IAgregation> TAvgAgr::Clone() {
     return r;
 }
 
+std::shared_ptr<IAgregation> TMinAgr::Clone() {
+    auto r = std::make_shared<TMinAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
+std::shared_ptr<IAgregation> TMaxAgr::Clone() {
+    auto r = std::make_shared<TMaxAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
 std::string TColumnAgr::GetName() {
     return name;
 }
 
 std::string TSumAgr::GetName() {
     return "SUM(" + arg->GetName() + ")";
+}
+
+std::string TMinAgr::GetName() {
+    return "MIN(" + arg->GetName() + ")";
+}
+
+std::string TMaxAgr::GetName() {
+    return "MAX(" + arg->GetName() + ")";
 }
 
 std::string TCountAgr::GetName() {

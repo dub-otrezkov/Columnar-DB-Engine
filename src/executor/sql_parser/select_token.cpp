@@ -90,6 +90,32 @@ TGlobalAgregationQuery TSelectToken::ParseArgs() {
 
                 break;
             }
+            case ETokens::kMin: {
+                auto node = std::make_shared<TMinAgr>();
+
+                if (!st.empty()) {
+                    st.back()->AddArg(node);
+                } else {
+                    args.push_back(node);
+                }
+
+                st.push_back(node);
+
+                break;
+            }
+            case ETokens::kMax: {
+                auto node = std::make_shared<TMaxAgr>();
+
+                if (!st.empty()) {
+                    st.back()->AddArg(node);
+                } else {
+                    args.push_back(node);
+                }
+
+                st.push_back(node);
+
+                break;
+            }
         }
     }
     return TGlobalAgregationQuery{
