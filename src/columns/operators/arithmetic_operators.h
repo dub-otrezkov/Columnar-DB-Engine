@@ -1,6 +1,5 @@
 #include "../types/types.h"
 
-
 namespace JFEngine {
 
 struct OSum {

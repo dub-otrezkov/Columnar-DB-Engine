@@ -161,6 +161,7 @@ public:
 
 // helpers
 
+Expected<IColumn> MakeEmptyColumn(EColumn type);
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type);
 

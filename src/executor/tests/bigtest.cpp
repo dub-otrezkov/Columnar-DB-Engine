@@ -9,11 +9,12 @@ struct BigTest : testing::Test {
     std::string scheme = R"(what,int64
 once,int32
 was,string
+hers,string
 )";
-    std::string data = R"(1,2,josh
-3,4,john
-5,6,frusciante
-7,8,klinghoffer
+    std::string data = R"(1,2,josh,rip
+3,4,john,rip
+5,6,frusciante,rip
+7,8,klinghoffer,rip
 )";
 
     static constexpr ui64 iter = kRowGroupLen * 10;
@@ -146,6 +147,86 @@ TEST_F(BigTest, In) {
     EXPECT_EQ(out_scheme->str(), R"(column 0,int64
 )");
     EXPECT_EQ(out_data->str(), std::to_string(3 * iter) + "\n");
-}Ц
+}
+
+TEST_F(BigTest, GroupBySimple) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT hers, COUNT(*), SUM(what) FROM josh GROUP BY hers");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(column 0,string
+column 1,int64
+column 2,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(rip,400000,1600000
+)");
+}
+
+TEST_F(BigTest, GroupByWithWhere) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) FROM josh WHERE was IN ('josh','john') GROUP BY was");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(column 0,string
+column 1,int64
+column 2,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(john,100000,300000
+josh,100000,100000
+)");
+    // std::cout << out_data->str() << std::endl;
+}
+
+TEST_F(BigTest, GroupBySeveral) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT was, hers, COUNT(*) FROM josh GROUP BY hers, was");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(column 0,string
+column 1,string
+column 2,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,rip,100000
+john,rip,100000
+josh,rip,100000
+klinghoffer,rip,100000
+)");
+}
 
 } // namespace JFEngine::Testing

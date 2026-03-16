@@ -39,8 +39,6 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     auto is_eof = false;
 
-    // std::cout << "dkdkkd" << " " << data_in_->good() << std::endl;
-
     std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
         auto res = csv_data_.ReadRow();
@@ -207,6 +205,11 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
 
 
     return ReadIthColumn(inds[name]);
+}
+
+
+ui64 TJFTableInput::GetGroupsCount() const {
+    return blocks_pos_.size();
 }
 
 } // namespace JFEngine

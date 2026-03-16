@@ -10,16 +10,16 @@
 int main() {
     JFEngine::TExecutor exec;
     {
-        auto err = exec.ExecQuery("CREATE josh FROM scheme, dorothy");
+        auto err = exec.ExecQuery("CREATE josh FROM ssch, data");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
         }
     }
-    // {
-    //     auto err = exec.ExecQuery("SELECT author, song FROM josh");
-    //     std::cout << err.HasError() << std::endl;
-    //     if (err.HasError()) {
-    //         std::cout << err.GetError() << std::endl;
-    //     }
-    // }
+    {
+        auto err = exec.ExecQuery("SELECT author, COUNT(*) FROM josh WHERE song LIKE '%police%' GROUP BY author");
+        std::cout << err.HasError() << std::endl;
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+    }
 }

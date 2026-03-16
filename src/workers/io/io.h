@@ -40,6 +40,7 @@ public:
 
     void MoveCursor(i64 delta) override;
     void Reset() override;
+    ui64 GetGroupsCount() const override;
 
 private:
     Expected<IColumn> ReadIthColumn(ui64 i);

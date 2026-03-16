@@ -54,6 +54,39 @@ std::string TColumnToStr(EColumn data) {
     }
 }
 
+Expected<IColumn> MakeEmptyColumn(EColumn type) {
+    switch (type) {
+        case ki8Column: {
+            return std::make_shared<Ti8Column>();
+        }
+        case ki16Column: {
+            return std::make_shared<Ti16Column>();
+        }
+        case ki32Column: {
+            return std::make_shared<Ti32Column>();
+        }
+        case ki64Column: {
+            return std::make_shared<Ti64Column>();
+        }
+        case kDoubleColumn: {
+            return std::make_shared<TDoubleColumn>();
+        }
+        case kDateColumn: {
+            return std::make_shared<TDateColumn>();
+        }
+        case kTimestampColumn: {
+            return std::make_shared<TTimestampColumn>();
+        }
+        case kStringColumn: {
+            return std::make_shared<TStringColumn>();
+        }
+        default: {
+            return MakeError<EError::UnsupportedErr>();
+        }
+    }
+
+}
+
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
     switch (type) {
         case ki8Column: {

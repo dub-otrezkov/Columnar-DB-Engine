@@ -9,7 +9,8 @@ ETokens TSelectToken::GetType() const {
     return ETokens::kSelect;
 }
 
-Expected<ITableInput> TSelectToken::Exec() {
+
+std::vector<std::shared_ptr<IAgregation>> TSelectToken::ParseArgs() {
     std::vector<std::shared_ptr<IAgregation>> args;
     std::vector<std::shared_ptr<IAgregation>> st;
 
@@ -74,25 +75,54 @@ Expected<ITableInput> TSelectToken::Exec() {
             }
         }
     }
+    return std::move(args);
+}
 
-    TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
+void TSelectToken::SetIsId() {
+    is_id_ = true;
+}
 
-    auto agr = std::make_shared<TAgregator>(
-        TIOFactory::GetTableIO(kCurTableInput).GetShared(),
-        TGlobalAgregationQuery{args}
-    );
+Expected<ITableInput> TSelectToken::Exec() {
+    if (!is_id_) {
+        auto args = ParseArgs();
 
-    TEngine eng;
+        TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
 
-    TIOFactory::RegisterFileIO(kResultScheme, ETypeFile::kCSVFile);
-    TIOFactory::RegisterFileIO(kResultData, ETypeFile::kCSVFile);
+        auto agr = std::make_shared<TAgregator>(
+            TIOFactory::GetTableIO(kCurTableInput).GetShared(),
+            TGlobalAgregationQuery{args}
+        );
 
-    eng.Setup(agr);
+        TEngine eng;
 
-    eng.WriteDataToCSV(TIOFactory::GetIO(kResultData).GetRes());
-    eng.WriteSchemeToCSV(TIOFactory::GetIO(kResultScheme).GetRes());
+        TIOFactory::RegisterFileIO(kResultScheme, ETypeFile::kCSVFile);
+        TIOFactory::RegisterFileIO(kResultData, ETypeFile::kCSVFile);
 
-    return nullptr;
+        eng.Setup(agr);
+
+        eng.WriteDataToCSV(TIOFactory::GetIO(kResultData).GetRes());
+        eng.WriteSchemeToCSV(TIOFactory::GetIO(kResultScheme).GetRes());
+
+        return nullptr;
+    } else {
+        TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
+
+        auto agr = std::make_shared<TAgregator>(
+            TIOFactory::GetTableIO(kCurTableInput).GetShared()
+        );
+
+        TEngine eng;
+
+        TIOFactory::RegisterFileIO(kResultScheme, ETypeFile::kCSVFile);
+        TIOFactory::RegisterFileIO(kResultData, ETypeFile::kCSVFile);
+
+        eng.Setup(agr);
+
+        eng.WriteDataToCSV(TIOFactory::GetIO(kResultData).GetRes());
+        eng.WriteSchemeToCSV(TIOFactory::GetIO(kResultScheme).GetRes());
+
+        return nullptr;
+    }
 }
 
 } // namespace JFEngine

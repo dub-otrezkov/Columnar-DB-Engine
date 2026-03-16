@@ -1,5 +1,6 @@
 #pragma once
 
+#include "workers/agregations_engine/engine.h"
 #include "engine/engine.h"
 #include "utils/errors/errors_templates.h"
 
@@ -22,13 +23,16 @@ enum class ETokens {
     kAvg,
     kOpenBracket,
     kCloseBracket,
-    kComa,
+    kComa, // misc (
     kWhere,
+    kBy, // misc (
+    kGroup
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
     {"FROM", ETokens::kFrom},
     {"WHERE", ETokens::kWhere},
+    {"GROUP", ETokens::kGroup},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
 };
@@ -72,7 +76,13 @@ public:
 
     ETokens GetType() const override;
     
+    std::vector<std::shared_ptr<IAgregation>> ParseArgs();
     Expected<ITableInput> Exec() override;
+
+    void SetIsId();
+
+private:
+    bool is_id_ = false;
 };
 
 class TCreateToken : public ICommand {
@@ -97,6 +107,18 @@ public:
     ETokens GetType() const override;
     
     Expected<ITableInput> Exec() override;
+};
+
+class TGroupToken : public ICommand {
+public:
+
+    ETokens GetType() const override;
+    
+    Expected<ITableInput> Exec() override;
+    void SetSelects(std::vector<std::shared_ptr<IAgregation>> s);
+
+private:
+    std::vector<std::shared_ptr<IAgregation>> selects_;
 };
 
 // operator cmds tokens
