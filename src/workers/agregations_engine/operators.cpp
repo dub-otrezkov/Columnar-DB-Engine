@@ -2,6 +2,7 @@
 
 #include "columns/operators/operators.h"
 #include "columns/operators/min_max.h"
+#include "columns/operators/distinct.h"
 
 namespace JFEngine {
 
@@ -85,6 +86,10 @@ void TMaxAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
     arg = to_agr;
 }
 
+void TDistinctAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
+}
+
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
     auto err = arg->ConsumeRowGroup(inp);
     bool is_eof = false;
@@ -95,9 +100,11 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
             return err.GetError();
         }
     }
-    auto [t, _] = arg->ThrowRowGroup();
+    if (!arg->IsBlocker()) {
+        auto [t, _] = arg->ThrowRowGroup();
 
-    ans += t->GetSize();
+        ans += t->GetSize();
+    }
 
     return EError::NoError;
 }
@@ -107,15 +114,24 @@ bool TCountAgr::IsBlocker() {
 }
 
 Expected<IColumn> TCountAgr::ThrowRowGroup() {
-    return std::make_shared<Ti64Column>(std::vector<i64>{ans});
+    if (arg->IsBlocker()) {
+        auto [col, err] = arg->ThrowRowGroup();
+
+        return std::make_shared<Ti64Column>(std::vector<i64>{static_cast<i64>(col->GetSize())});
+    } else {
+        return std::make_shared<Ti64Column>(std::vector<i64>{ans});
+    }
 }
 
 void TAvgAgr::AddArg(std::shared_ptr<IAgregation> to_sum) {
     arg = to_sum;
 }
 
-
 bool TAvgAgr::IsBlocker() {
+    return true;
+}
+
+bool TDistinctAgr::IsBlocker() {
     return true;
 }
 
@@ -245,11 +261,42 @@ Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
     return (is_eof ? EError::EofErr : EError::NoError);
 }
 
+Expected<void> TDistinctAgr::ConsumeRowGroup(ITableInput* inp) {
+    auto err = arg->ConsumeRowGroup(inp);
+    bool is_eof = false;
+    if (err.GetError() != EError::NoError) {
+        if (EError::EofErr == err.GetError()) {
+            is_eof = true;
+        } else {
+            std::cout << "eof " << err.GetError() << std::endl;
+            return err;
+        }
+    }
+
+    auto [col, _] = arg->ThrowRowGroup();
+
+    if (!ans) {
+        ans = MakeEmptyColumn(col->GetType()).GetShared();
+    }
+
+    auto [ans_, err2] = Do<ODistinct>(ans, col);
+    if (err2) {
+        std::cout << ":::: " << err2 << std::endl;
+        return err2;
+    }
+    ans = ans_;
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
 Expected<IColumn> TMinAgr::ThrowRowGroup() {
     return ans;
 }
 
 Expected<IColumn> TMaxAgr::ThrowRowGroup() {
+    return ans;
+}
+
+Expected<IColumn> TDistinctAgr::ThrowRowGroup() {
     return ans;
 }
 
@@ -287,6 +334,12 @@ std::shared_ptr<IAgregation> TMaxAgr::Clone() {
     return r;
 }
 
+std::shared_ptr<IAgregation> TDistinctAgr::Clone() {
+    auto r = std::make_shared<TDistinctAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
 std::string TColumnAgr::GetName() {
     return name;
 }
@@ -309,6 +362,10 @@ std::string TCountAgr::GetName() {
 
 std::string TAvgAgr::GetName() {
     return "AVG(" + arg->GetName() + ")";
+}
+
+std::string TDistinctAgr::GetName() {
+    return "DISTINCT(" + arg->GetName() + ")";
 }
 
 } // namespace JFEngine

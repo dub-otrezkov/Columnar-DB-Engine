@@ -34,6 +34,10 @@ ETokens TComaToken::GetType() const {
     return ETokens::kComa;
 }
 
+ETokens TDistinctToken::GetType() const {
+    return ETokens::kDistinct;
+}
+
 Expected<ITableInput> IOperatorCommand::Exec() {
     return MakeError<EError::UnsupportedErr>();
 }

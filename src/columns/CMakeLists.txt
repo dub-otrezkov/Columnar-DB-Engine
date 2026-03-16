@@ -7,6 +7,7 @@ add_library(nodes_lib STATIC
     operators/io_operators.h
     operators/arithmetic_operators.h
     operators/min_max.h
+    operators/distinct.h
     operators/filter.h
     operators/vector_like.h
     operators/order.h

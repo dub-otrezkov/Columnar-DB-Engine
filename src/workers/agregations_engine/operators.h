@@ -108,6 +108,23 @@ struct TCountAgr : IAgregation {
     void AddArg(std::shared_ptr<IAgregation>) override;
 };
 
+struct TDistinctAgr : IAgregation {
+    TColumnPtr ans;
+
+    std::shared_ptr<IAgregation> arg;
+
+    std::string GetName() override;
+    
+    std::shared_ptr<IAgregation> Clone() override;
+
+    bool IsBlocker() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<IColumn> ThrowRowGroup() override;
+
+    void AddArg(std::shared_ptr<IAgregation>) override;
+};
+
 struct TAvgAgr : IAgregation {
     TSumAgr sum;
     TCountAgr cnt;

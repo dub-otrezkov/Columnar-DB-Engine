@@ -1,5 +1,6 @@
-#include "../types/types.h"
+#pragma once
 
+#include "../types/types.h"
 
 namespace JFEngine {
 

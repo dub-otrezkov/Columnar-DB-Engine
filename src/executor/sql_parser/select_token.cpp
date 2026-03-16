@@ -116,6 +116,19 @@ TGlobalAgregationQuery TSelectToken::ParseArgs() {
 
                 break;
             }
+            case ETokens::kDistinct: {
+                auto node = std::make_shared<TDistinctAgr>();
+
+                if (!st.empty()) {
+                    st.back()->AddArg(node);
+                } else {
+                    args.push_back(node);
+                }
+
+                st.push_back(node);
+
+                break;
+            }
         }
     }
     return TGlobalAgregationQuery{
