@@ -84,10 +84,12 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TCloseBracketToken>();
     } else if (token == ",") {
         return std::make_shared<TComaToken>();
-    } else if (token == "WHERE") {
+    } else if (token == "WHERE" || token == "HAVING") {
         return std::make_shared<TWhereToken>();
     } else if (token == "GROUP") {
         return std::make_shared<TGroupToken>();
+    } else if (token == "AS") {
+        return std::make_shared<TAsToken>();
     } else {
         return std::make_shared<TNameToken>(token);
     }

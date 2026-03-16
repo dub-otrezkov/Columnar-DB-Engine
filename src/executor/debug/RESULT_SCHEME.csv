@@ -1,3 +1,0 @@
-author,string
-COUNT(*),int64
-SUM(author),string

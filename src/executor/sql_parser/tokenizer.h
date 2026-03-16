@@ -80,7 +80,7 @@ public:
 
     ETokens GetType() const override;
     
-    std::vector<std::shared_ptr<IAgregation>> ParseArgs();
+    TGlobalAgregationQuery ParseArgs();
     Expected<ITableInput> Exec() override;
 
     void SetIsId();
@@ -140,12 +140,12 @@ public:
     ETokens GetType() const override;
     
     Expected<ITableInput> Exec() override;
-    void SetSelects(std::vector<std::shared_ptr<IAgregation>> s);
+    void SetSelects(TGlobalAgregationQuery s);
 
     std::shared_ptr<TLimitToken> limit_;
 
 private:
-    std::vector<std::shared_ptr<IAgregation>> selects_;
+    TGlobalAgregationQuery selects_;
 };
 
 // operator cmds tokens
@@ -177,6 +177,11 @@ private:
 };
 
 // misc
+
+class TAsToken : public IToken {
+public:
+    ETokens GetType() const override;
+};
 
 class TOpenBracketToken : public IToken {
 public:

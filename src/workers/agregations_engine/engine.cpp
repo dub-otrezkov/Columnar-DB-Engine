@@ -14,6 +14,7 @@ TGlobalAgregationQuery TGlobalAgregationQuery::Clone() {
 
 TAgregationsEngine::TAgregationsEngine(TGlobalAgregationQuery qry, bool groupby) :
     cols_(std::move(qry.cols)),
+    aliases_(std::move(qry.aliases)),
     is_groupby_(groupby)
 {}
 
@@ -51,6 +52,9 @@ std::vector<std::string> TAgregationsEngine::GetNames() {
     ans.reserve(cols_.size());
     for (auto& agr : cols_) {
         ans.push_back(agr->GetName());
+    }
+    for (auto [i, name] : aliases_) {
+        ans[i] = name;
     }
     return std::move(ans);
 }

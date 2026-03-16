@@ -16,7 +16,7 @@ int main() {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT author, COUNT(*), SUM(author) FROM josh GROUP BY author ORDER BY 'COUNT(*)'");
+        auto err = exec.ExecQuery("SELECT author, COUNT(*) AS c, SUM(author) FROM josh GROUP BY author HAVING c > 1 ORDER c");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;

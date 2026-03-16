@@ -22,6 +22,9 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
         scheme_[i].name_ = agr_q_.cols[i]->GetName();
         scheme_[i].type_ = EColumn::kUnitialized;
     }
+    for (auto& [i, name] : agr_q_.aliases) {
+        scheme_[i].name_ = name;
+    }
     return EError::NoError;
 }
 

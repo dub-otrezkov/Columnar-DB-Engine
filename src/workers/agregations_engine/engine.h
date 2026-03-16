@@ -6,6 +6,7 @@ namespace JFEngine {
 
 struct TGlobalAgregationQuery {
     std::vector<std::shared_ptr<IAgregation>> cols;
+    std::vector<std::pair<ui64, std::string>> aliases;
 
     TGlobalAgregationQuery Clone();
 };
@@ -22,6 +23,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<IAgregation>> cols_;
+    std::vector<std::pair<ui64, std::string>> aliases_;
     bool is_groupby_;
 };
 

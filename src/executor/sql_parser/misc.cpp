@@ -30,4 +30,8 @@ Expected<ITableInput> IOperatorCommand::Exec() {
     return MakeError<EError::UnsupportedErr>();
 }
 
+ETokens TAsToken::GetType() const {
+    return ETokens::kAs;
+}
+
 } // namespace JFEngine
