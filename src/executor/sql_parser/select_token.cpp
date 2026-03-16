@@ -107,8 +107,6 @@ Expected<ITableInput> TSelectToken::Exec() {
     } else {
         TIOFactory::GetTableIO(kCurTableInput).GetShared()->SetupColumnsScheme();
 
-        std::cout << "fkfkfkf" << std::endl;
-
         auto agr = std::make_shared<TAgregator>(
             TIOFactory::GetTableIO(kCurTableInput).GetShared()
         );

@@ -67,7 +67,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
         
         return {std::move(ans), (is_eof ? EError::EofErr : EError::NoError)};
     } else {
-        std::cout << "fjkfjkfk" << std::endl;
+        // std::cout << "fjkfjkfk" << std::endl;
         return jf_in_->ReadRowGroup();
     }
     // std::vector<TColumnPtr> ans;

@@ -18,7 +18,7 @@ TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TGlo
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
     for (ui64 i = 0; i < scheme_.size(); i++) {
-        scheme_[i].name_ = "column" + std::to_string(i);
+        scheme_[i].name_ = "column " + std::to_string(i);
         scheme_[i].type_ = EColumn::kUnitialized;
     }
     return EError::NoError;
@@ -74,13 +74,13 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         std::sort(keys.begin(), keys.end());
         keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
 
-        for (auto k : keys) {
-            std::cout << "|";
-            for (auto el : k) {
-                std::cout << el << " ";
-            }
-            std::cout << std::endl;
-        }
+        // for (auto k : keys) {
+        //     std::cout << "|";
+        //     for (auto el : k) {
+        //         std::cout << el << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
 
         for (const auto& key : keys) {
             auto& t = groups_.at(key);
