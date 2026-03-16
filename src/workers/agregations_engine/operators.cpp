@@ -184,4 +184,20 @@ std::shared_ptr<IAgregation> TAvgAgr::Clone() {
     return r;
 }
 
+std::string TColumnAgr::GetName() {
+    return name;
+}
+
+std::string TSumAgr::GetName() {
+    return "SUM(" + arg->GetName() + ")";
+}
+
+std::string TCountAgr::GetName() {
+    return "COUNT(" + arg->GetName() + ")";
+}
+
+std::string TAvgAgr::GetName() {
+    return "AVG(" + arg->GetName() + ")";
+}
+
 } // namespace JFEngine

@@ -16,6 +16,8 @@ struct IAgregation {
     virtual Expected<void> ConsumeRowGroup(ITableInput* inp) = 0;
     virtual Expected<IColumn> ThrowRowGroup() = 0;
 
+    virtual std::string GetName() = 0;
+
     virtual bool IsBlocker() = 0;
 
     virtual void AddArg(std::shared_ptr<IAgregation>);
@@ -25,6 +27,8 @@ struct TColumnAgr : IAgregation {
     std::string name;
 
     std::shared_ptr<IColumn> ans;
+
+    std::string GetName() override;
 
     std::shared_ptr<IAgregation> Clone() override;
 
@@ -41,6 +45,8 @@ struct TSumAgr : IAgregation {
 
     std::shared_ptr<IAgregation> arg;
 
+    std::string GetName() override;
+
     std::shared_ptr<IAgregation> Clone() override;
 
     bool IsBlocker() override;
@@ -55,6 +61,8 @@ struct TCountAgr : IAgregation {
     i64 ans = 0;
 
     std::shared_ptr<IAgregation> arg;
+
+    std::string GetName() override;
     
     std::shared_ptr<IAgregation> Clone() override;
 
@@ -71,6 +79,8 @@ struct TAvgAgr : IAgregation {
     TCountAgr cnt;
 
     bool inited = false;
+
+    std::string GetName() override;
 
     std::shared_ptr<IAgregation> arg;
     

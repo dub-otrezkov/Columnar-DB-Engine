@@ -26,8 +26,9 @@ std::vector<TRowScheme>& TAgregator::GetScheme() {
 }
 
 Expected<void> TAgregator::SetupColumnsScheme() {
+    auto names = eng_.GetNames();
     for (ui64 i = 0; i < cols_cnt_; i++) {
-        scheme_.emplace_back("column " + std::to_string(i), EColumn::kUnitialized);
+        scheme_.emplace_back(names[i], EColumn::kUnitialized);
     }
     return nullptr;
 }

@@ -1,2 +1,3 @@
-column 0,string
-column 1,string
+author,string
+COUNT(*),int64
+SUM(author),string

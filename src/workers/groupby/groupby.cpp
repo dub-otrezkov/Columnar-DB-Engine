@@ -17,8 +17,9 @@ TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TGlo
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
+    std::vector<std::string> names(agr_q_.cols.size());
     for (ui64 i = 0; i < scheme_.size(); i++) {
-        scheme_[i].name_ = "column " + std::to_string(i);
+        scheme_[i].name_ = agr_q_.cols[i]->GetName();
         scheme_[i].type_ = EColumn::kUnitialized;
     }
     return EError::NoError;

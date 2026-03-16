@@ -46,4 +46,13 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TAgregationsEngine::ThrowRowGrou
     return std::move(ans);
 }
 
+std::vector<std::string> TAgregationsEngine::GetNames() {
+    std::vector<std::string> ans;
+    ans.reserve(cols_.size());
+    for (auto& agr : cols_) {
+        ans.push_back(agr->GetName());
+    }
+    return std::move(ans);
+}
+
 } // namespace JFEngine
