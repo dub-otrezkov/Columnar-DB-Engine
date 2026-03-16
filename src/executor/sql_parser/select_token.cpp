@@ -10,19 +10,36 @@ ETokens TSelectToken::GetType() const {
 }
 
 
-std::vector<std::shared_ptr<IAgregation>> TSelectToken::ParseArgs() {
+TGlobalAgregationQuery TSelectToken::ParseArgs() {
     std::vector<std::shared_ptr<IAgregation>> args;
     std::vector<std::shared_ptr<IAgregation>> st;
 
+    std::vector<std::pair<ui64, std::string>> aliases;
+
+    bool next_alias = false;
+
     for (auto& token : args_) {
+        if (next_alias) {
+            next_alias = false;
+            if (token->GetType() == ETokens::kNameToken) {
+                aliases.emplace_back(
+                    args.size() - 1,
+                    static_cast<TNameToken*>(token.get())->GetName()
+                );
+                continue;
+            }
+        }
         switch (token->GetType()) {
             case ETokens::kCloseBracket: {
                 st.pop_back();
                 break;
             }
+            case ETokens::kAs: {
+                next_alias = true;
+                break;
+            }
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
-                // std::cout << "! " << d << std::endl;
 
                 auto node = std::make_shared<TColumnAgr>(d);
 
@@ -75,7 +92,10 @@ std::vector<std::shared_ptr<IAgregation>> TSelectToken::ParseArgs() {
             }
         }
     }
-    return std::move(args);
+    return TGlobalAgregationQuery{
+        std::move(args),
+        std::move(aliases)
+    };
 }
 
 void TSelectToken::SetIsId() {
@@ -90,7 +110,7 @@ Expected<ITableInput> TSelectToken::Exec() {
 
         auto agr = std::make_shared<TAgregator>(
             TIOFactory::GetTableIO(kCurTableInput).GetShared(),
-            TGlobalAgregationQuery{args}
+            args
         );
 
         TEngine eng;

@@ -19,11 +19,11 @@ Expected<ITableInput> TGroupToken::Exec() {
     return std::make_shared<TGroupBy>(
         TIOFactory::GetTableIO(kCurTableInput).GetShared(),
         cols,
-        TGlobalAgregationQuery{selects_}
+        selects_
     );
 }
 
-void TGroupToken::SetSelects(std::vector<std::shared_ptr<IAgregation>> s) {
+void TGroupToken::SetSelects(TGlobalAgregationQuery s) {
     selects_ = std::move(s);
 }
 

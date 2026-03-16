@@ -75,7 +75,7 @@ TEST_F(BigTest, SimpleColumnGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
 )");
     EXPECT_EQ(out_data->str().size(), iter * 8);
 }
@@ -98,7 +98,7 @@ TEST_F(BigTest, SumGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int64
 )");
     EXPECT_EQ(out_data->str(), std::to_string(16 * iter) + "\n");
 }
@@ -121,7 +121,7 @@ TEST_F(BigTest, LikeGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int64
 )");
     EXPECT_EQ(out_data->str(), std::to_string(4 * iter) + "\n");
 }
@@ -144,7 +144,7 @@ TEST_F(BigTest, In) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
 )");
     EXPECT_EQ(out_data->str(), std::to_string(3 * iter) + "\n");
 }
@@ -166,9 +166,9 @@ TEST_F(BigTest, GroupBySimple) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,string
-column 1,int64
-column 2,int64
+    EXPECT_EQ(out_scheme->str(), R"(hers,string
+COUNT(*),int64
+SUM(what),int64
 )");
     EXPECT_EQ(out_data->str(), R"(rip,400000,1600000
 )");
@@ -191,9 +191,9 @@ TEST_F(BigTest, GroupByWithWhere) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,string
-column 1,int64
-column 2,int64
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+COUNT(*),int64
+SUM(what),int64
 )");
     EXPECT_EQ(out_data->str(), R"(john,100000,300000
 josh,100000,100000
@@ -211,21 +211,157 @@ TEST_F(BigTest, GroupBySeveral) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT was, hers, COUNT(*) FROM josh GROUP BY hers, was");
+        auto err = exec.ExecQuery("SELECT was, hers, COUNT(*) AS cnt FROM josh GROUP BY hers, was");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,string
-column 1,string
-column 2,int64
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+hers,string
+cnt,int64
 )");
     EXPECT_EQ(out_data->str(), R"(frusciante,rip,100000
 john,rip,100000
 josh,rip,100000
 klinghoffer,rip,100000
+)");
+}
+
+TEST_F(BigTest, OrderBy) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT what, once, was FROM josh ORDER BY was LIMIT 3");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+once,int32
+was,string
+)");
+    EXPECT_EQ(out_data->str(), R"(5,6,frusciante
+5,6,frusciante
+5,6,frusciante
+)");
+}
+
+TEST_F(BigTest, OrderByStable) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT what, once, was FROM josh ORDER BY hers LIMIT 5");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+once,int32
+was,string
+)");
+    EXPECT_EQ(out_data->str(), R"(1,2,josh
+3,4,john
+5,6,frusciante
+7,8,klinghoffer
+1,2,josh
+)");
+}
+
+TEST_F(BigTest, WhereGroupOrder) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh WHERE was IN ('josh','john') GROUP BY was ORDER BY sum");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+COUNT(*),int64
+sum,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(josh,100000,100000
+john,100000,300000
+)");
+    // std::cout << out_data->str() << std::endl;
+}
+
+TEST_F(BigTest, GroupOrderWhere) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh GROUP BY was HAVING sum <> 300000 ORDER BY sum");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+COUNT(*),int64
+sum,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(josh,100000,100000
+frusciante,100000,500000
+klinghoffer,100000,700000
+)");
+}
+
+TEST_F(BigTest, GroupOrderLimit) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh GROUP BY was ORDER BY sum DESC LIMIT 2");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+COUNT(*),int64
+sum,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,100000,700000
+frusciante,100000,500000
 )");
 }
 

@@ -112,6 +112,23 @@ struct OPushBackFrom {
     }
 };
 
+// from, to
+struct OPushBackVector {
+    template<typename T>
+    static void Exec(T& from, TColumnPtr to) {
+        for (ui64 i = 0; i < from.GetSize(); i++) {
+            Do<OPushBack>(to, from.GetData()[i]);
+        }
+    }
+};
+
+struct OResize {
+    template <typename T>
+    static void Exec(T& col, i64 len) {
+        col.GetData().resize(len);
+    }
+};
+
 struct OClear {
     static Expected<void> Exec(Ti8Column& col) {
         col.GetData().clear();

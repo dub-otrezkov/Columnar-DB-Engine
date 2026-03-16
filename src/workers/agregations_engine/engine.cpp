@@ -14,6 +14,7 @@ TGlobalAgregationQuery TGlobalAgregationQuery::Clone() {
 
 TAgregationsEngine::TAgregationsEngine(TGlobalAgregationQuery qry, bool groupby) :
     cols_(std::move(qry.cols)),
+    aliases_(std::move(qry.aliases)),
     is_groupby_(groupby)
 {}
 
@@ -42,6 +43,18 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TAgregationsEngine::ThrowRowGrou
         } else {
             ans.push_back(std::move(res));
         }
+    }
+    return std::move(ans);
+}
+
+std::vector<std::string> TAgregationsEngine::GetNames() {
+    std::vector<std::string> ans;
+    ans.reserve(cols_.size());
+    for (auto& agr : cols_) {
+        ans.push_back(agr->GetName());
+    }
+    for (auto [i, name] : aliases_) {
+        ans[i] = name;
     }
     return std::move(ans);
 }

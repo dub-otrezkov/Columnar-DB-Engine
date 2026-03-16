@@ -7,6 +7,8 @@ add_library(sql_parser_lib STATIC
     select_token.cpp
     where_token.cpp
     group_token.cpp
+    order_token.cpp
+    limit_token.cpp
     misc.cpp
 )
 
@@ -19,5 +21,6 @@ target_link_libraries(
     agregator_lib
     agregator_engine_lib
     groupby_lib
+    orderby_lib
     filters_lib
 )

@@ -26,13 +26,17 @@ enum class ETokens {
     kComa, // misc (
     kWhere,
     kBy, // misc (
-    kGroup
+    kGroup,
+    kOrder,
+    kLimit
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
     {"FROM", ETokens::kFrom},
     {"WHERE", ETokens::kWhere},
     {"GROUP", ETokens::kGroup},
+    {"ORDER", ETokens::kOrder},
+    {"LIMIT", ETokens::kLimit},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
 };
@@ -76,7 +80,7 @@ public:
 
     ETokens GetType() const override;
     
-    std::vector<std::shared_ptr<IAgregation>> ParseArgs();
+    TGlobalAgregationQuery ParseArgs();
     Expected<ITableInput> Exec() override;
 
     void SetIsId();
@@ -101,6 +105,27 @@ public:
     Expected<ITableInput> Exec() override;
 };
 
+class TLimitToken : public ICommand {
+public:
+
+    ETokens GetType() const override;
+
+    ui64 GetLimit();
+    
+    Expected<ITableInput> Exec() override;
+};
+
+class TOrderToken : public ICommand {
+public:
+
+    ETokens GetType() const override;
+    
+    Expected<ITableInput> Exec() override;
+
+    std::shared_ptr<TLimitToken> limit_;
+
+};
+
 class TWhereToken : public ICommand {
 public:
 
@@ -115,10 +140,12 @@ public:
     ETokens GetType() const override;
     
     Expected<ITableInput> Exec() override;
-    void SetSelects(std::vector<std::shared_ptr<IAgregation>> s);
+    void SetSelects(TGlobalAgregationQuery s);
+
+    std::shared_ptr<TLimitToken> limit_;
 
 private:
-    std::vector<std::shared_ptr<IAgregation>> selects_;
+    TGlobalAgregationQuery selects_;
 };
 
 // operator cmds tokens
@@ -150,6 +177,11 @@ private:
 };
 
 // misc
+
+class TAsToken : public IToken {
+public:
+    ETokens GetType() const override;
+};
 
 class TOpenBracketToken : public IToken {
 public:

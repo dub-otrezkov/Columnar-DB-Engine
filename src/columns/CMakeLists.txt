@@ -9,6 +9,7 @@ add_library(nodes_lib STATIC
     operators/min_max.h
     operators/filter.h
     operators/vector_like.h
+    operators/order.h
     types/int_columns.cpp
     types/str_columns.cpp
     types/double_columns.cpp
