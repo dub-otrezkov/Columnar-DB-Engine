@@ -19,9 +19,9 @@ TEST_F(AgregationsTest, GetColumnsTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
-column 1,string
-column 2,int32
+    EXPECT_EQ(out_scheme->str(), R"(hot,int64
+red,string
+peppers,int32
 )");
     EXPECT_EQ(out_data->str(), R"(1,josh,2
 3,john,4
@@ -52,8 +52,8 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
-column 1,string
+    EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int64
+SUM(red),string
 )");
     EXPECT_EQ(out_data->str(), R"(95,"joshjohnstadiumi,could,have,liedcantthedotdotdot"
 )");
@@ -70,7 +70,7 @@ TEST_F(AgregationsTest, GetCountTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,int64
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
 )");
     EXPECT_EQ(out_data->str(), R"(9
 )");
@@ -86,17 +86,17 @@ TEST_F(AgregationsTest, GetAvgTest) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT AVG(what), AVG(once), AVG(was), AVG(hot) FROM josh");
+        auto err = exec.ExecQuery("SELECT AVG(what), AVG(once), AVG(was), AVG(hot) AS ddd FROM josh");
         if (err.HasError()) {
             // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(column 0,double
-column 1,double
-column 2,double
-column 3,double
+    EXPECT_EQ(out_scheme->str(), R"(AVG(what),double
+AVG(once),double
+AVG(was),double
+ddd,double
 )");
     EXPECT_EQ(out_data->str(), R"(21.777778,19,11.075,10.555556
 )");
