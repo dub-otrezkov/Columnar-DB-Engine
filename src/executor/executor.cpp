@@ -74,9 +74,18 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
             )
         );
 
-        TIOFactory::GetIO(cur_t2).GetShared()->clear();
-        TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
-        TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
+        if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+            d->clear();
+            d->seekg(0, std::ios::beg);
+            d->seekp(0, std::ios::beg);
+            d->str("");
+        } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+            d->close();
+            d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
+        }
+        // TIOFactory::GetIO(cur_t2).GetShared()->clear();
+        // TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
+        // TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
 
         std::swap(cur_t1, cur_t2);
     }
