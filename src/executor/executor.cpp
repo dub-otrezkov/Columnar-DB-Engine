@@ -73,6 +73,11 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
                 TIOFactory::GetIO(cur_t1).GetShared()
             )
         );
+
+        TIOFactory::GetIO(cur_t2).GetShared()->clear();
+        TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
+        TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
+
         std::swap(cur_t1, cur_t2);
     }
     

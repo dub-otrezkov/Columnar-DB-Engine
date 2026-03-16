@@ -74,6 +74,10 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TCountToken>();
     } else if (token == "AVG") {
         return std::make_shared<TAvgToken>();
+    } else if (token == "LIMIT") {
+        return std::make_shared<TLimitToken>();
+    } else if (token == "ORDER") {
+        return std::make_shared<TOrderToken>();
     } else if (token == "(") {
         return std::make_shared<TOpenBracketToken>();
     } else if (token == ")") {
@@ -113,6 +117,23 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
             break;
         case ETokens::kGroup:
             st.push_back(std::dynamic_pointer_cast<TGroupToken>(cur.GetShared()));
+            break;
+        case ETokens::kOrder:
+            st.push_back(std::dynamic_pointer_cast<TOrderToken>(cur.GetShared()));
+            break;
+        case ETokens::kLimit:
+            // st.push_back(std::dynamic_pointer_cast<TOrderToken>(cur.GetShared()));
+            if (!st.empty()) {
+                if (st.back()->GetType() == ETokens::kOrder) {
+                    static_cast<TOrderToken*>(st.back().get())->limit_ = std::dynamic_pointer_cast<TLimitToken>(cur.GetShared());
+                    break;
+                }
+                if (st.back()->GetType() == ETokens::kGroup) {
+                    static_cast<TGroupToken*>(st.back().get())->limit_ = std::dynamic_pointer_cast<TLimitToken>(cur.GetShared());
+                    break;
+                }
+            }
+            st.push_back(std::dynamic_pointer_cast<TLimitToken>(cur.GetShared()));
             break;
         case ETokens::kCloseBracket:
         default: {

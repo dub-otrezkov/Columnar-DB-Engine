@@ -16,7 +16,7 @@ int main() {
         }
     }
     {
-        auto err = exec.ExecQuery("SELECT author, COUNT(*) FROM josh WHERE song LIKE '%police%' GROUP BY author");
+        auto err = exec.ExecQuery("SELECT author, song FROM josh ORDER BY author DESC");
         std::cout << err.HasError() << std::endl;
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
