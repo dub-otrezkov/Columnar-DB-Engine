@@ -1,6 +1,8 @@
 #include "operators.h"
 
 #include "columns/operators/operators.h"
+#include "columns/operators/min_max.h"
+#include "columns/operators/distinct.h"
 
 namespace JFEngine {
 
@@ -76,6 +78,18 @@ void TCountAgr::AddArg(std::shared_ptr<IAgregation> to_sum) {
     arg = to_sum;
 }
 
+void TMinAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
+}
+
+void TMaxAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
+}
+
+void TDistinctAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
+}
+
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
     auto err = arg->ConsumeRowGroup(inp);
     bool is_eof = false;
@@ -86,9 +100,11 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
             return err.GetError();
         }
     }
-    auto [t, _] = arg->ThrowRowGroup();
+    if (!arg->IsBlocker()) {
+        auto [t, _] = arg->ThrowRowGroup();
 
-    ans += t->GetSize();
+        ans += t->GetSize();
+    }
 
     return EError::NoError;
 }
@@ -98,15 +114,24 @@ bool TCountAgr::IsBlocker() {
 }
 
 Expected<IColumn> TCountAgr::ThrowRowGroup() {
-    return std::make_shared<Ti64Column>(std::vector<i64>{ans});
+    if (arg->IsBlocker()) {
+        auto [col, err] = arg->ThrowRowGroup();
+
+        return std::make_shared<Ti64Column>(std::vector<i64>{static_cast<i64>(col->GetSize())});
+    } else {
+        return std::make_shared<Ti64Column>(std::vector<i64>{ans});
+    }
 }
 
 void TAvgAgr::AddArg(std::shared_ptr<IAgregation> to_sum) {
     arg = to_sum;
 }
 
-
 bool TAvgAgr::IsBlocker() {
+    return true;
+}
+
+bool TDistinctAgr::IsBlocker() {
     return true;
 }
 
@@ -162,6 +187,119 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
     return std::make_shared<TDoubleColumn>(std::vector<ld>{avg});
 }
 
+bool TMinAgr::IsBlocker() {
+    return true;
+}
+
+bool TMaxAgr::IsBlocker() {
+    return true;
+}
+
+Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
+    auto err = arg->ConsumeRowGroup(inp);
+    bool is_eof = false;
+    if (err.GetError() != EError::NoError) {
+        if (EError::EofErr == err.GetError()) {
+            is_eof = true;
+        } else {
+            return err;
+        }
+    }
+
+    auto [col, _] = arg->ThrowRowGroup();
+
+    auto sum = Do<OMin>(col);
+    if (sum.HasError()) {
+        return sum.GetError();
+    }
+
+    if (!ans) {
+        ans = sum.GetShared();
+    } else {
+        auto tmp = Do<OVerticalMin>(ans, sum.GetShared());
+
+        if (tmp.HasError()) {
+            return tmp.GetError();
+        }
+
+        ans = tmp.GetShared();
+    }
+
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
+Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
+    auto err = arg->ConsumeRowGroup(inp);
+    bool is_eof = false;
+    if (err.GetError() != EError::NoError) {
+        if (EError::EofErr == err.GetError()) {
+            is_eof = true;
+        } else {
+            return err;
+        }
+    }
+
+    auto [col, _] = arg->ThrowRowGroup();
+
+    auto sum = Do<OMax>(col);
+    if (sum.HasError()) {
+        return sum.GetError();
+    }
+
+    if (!ans) {
+        ans = sum.GetShared();
+    } else {
+        auto tmp = Do<OVerticalMax>(ans, sum.GetShared());
+
+        if (tmp.HasError()) {
+            return tmp.GetError();
+        }
+
+        ans = tmp.GetShared();
+    }
+
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
+Expected<void> TDistinctAgr::ConsumeRowGroup(ITableInput* inp) {
+    auto err = arg->ConsumeRowGroup(inp);
+    bool is_eof = false;
+    if (err.GetError() != EError::NoError) {
+        if (EError::EofErr == err.GetError()) {
+            is_eof = true;
+        } else {
+            std::cout << "eof " << err.GetError() << std::endl;
+            return err;
+        }
+    }
+
+    auto [col, _] = arg->ThrowRowGroup();
+
+    if (!ans) {
+        ans = MakeEmptyColumn(col->GetType()).GetShared();
+    }
+
+    auto [ans_, err2] = Do<ODistinct>(ans, col);
+    if (err2) {
+        std::cout << ":::: " << err2 << std::endl;
+        return err2;
+    }
+    ans = ans_;
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
+Expected<IColumn> TMinAgr::ThrowRowGroup() {
+    return ans;
+}
+
+Expected<IColumn> TMaxAgr::ThrowRowGroup() {
+    return ans;
+}
+
+Expected<IColumn> TDistinctAgr::ThrowRowGroup() {
+    return ans;
+}
+
 std::shared_ptr<IAgregation> TColumnAgr::Clone() {
     return std::make_shared<TColumnAgr>(name);
 }
@@ -184,6 +322,24 @@ std::shared_ptr<IAgregation> TAvgAgr::Clone() {
     return r;
 }
 
+std::shared_ptr<IAgregation> TMinAgr::Clone() {
+    auto r = std::make_shared<TMinAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
+std::shared_ptr<IAgregation> TMaxAgr::Clone() {
+    auto r = std::make_shared<TMaxAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
+std::shared_ptr<IAgregation> TDistinctAgr::Clone() {
+    auto r = std::make_shared<TDistinctAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
 std::string TColumnAgr::GetName() {
     return name;
 }
@@ -192,12 +348,24 @@ std::string TSumAgr::GetName() {
     return "SUM(" + arg->GetName() + ")";
 }
 
+std::string TMinAgr::GetName() {
+    return "MIN(" + arg->GetName() + ")";
+}
+
+std::string TMaxAgr::GetName() {
+    return "MAX(" + arg->GetName() + ")";
+}
+
 std::string TCountAgr::GetName() {
     return "COUNT(" + arg->GetName() + ")";
 }
 
 std::string TAvgAgr::GetName() {
     return "AVG(" + arg->GetName() + ")";
+}
+
+std::string TDistinctAgr::GetName() {
+    return "DISTINCT(" + arg->GetName() + ")";
 }
 
 } // namespace JFEngine

@@ -57,8 +57,59 @@ struct TSumAgr : IAgregation {
     void AddArg(std::shared_ptr<IAgregation>) override;
 };
 
+struct TMinAgr : IAgregation {
+    std::shared_ptr<IColumn> ans;
+
+    std::shared_ptr<IAgregation> arg;
+
+    std::string GetName() override;
+
+    std::shared_ptr<IAgregation> Clone() override;
+
+    bool IsBlocker() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<IColumn> ThrowRowGroup() override;
+
+    void AddArg(std::shared_ptr<IAgregation>) override;
+};
+
+struct TMaxAgr : IAgregation {
+    std::shared_ptr<IColumn> ans;
+
+    std::shared_ptr<IAgregation> arg;
+
+    std::string GetName() override;
+
+    std::shared_ptr<IAgregation> Clone() override;
+
+    bool IsBlocker() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<IColumn> ThrowRowGroup() override;
+
+    void AddArg(std::shared_ptr<IAgregation>) override;
+};
+
 struct TCountAgr : IAgregation {
     i64 ans = 0;
+
+    std::shared_ptr<IAgregation> arg;
+
+    std::string GetName() override;
+    
+    std::shared_ptr<IAgregation> Clone() override;
+
+    bool IsBlocker() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<IColumn> ThrowRowGroup() override;
+
+    void AddArg(std::shared_ptr<IAgregation>) override;
+};
+
+struct TDistinctAgr : IAgregation {
+    TColumnPtr ans;
 
     std::shared_ptr<IAgregation> arg;
 

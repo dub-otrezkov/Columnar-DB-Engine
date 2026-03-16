@@ -22,8 +22,20 @@ ETokens TAvgToken::GetType() const {
     return ETokens::kAvg;
 }
 
+ETokens TMinToken::GetType() const {
+    return ETokens::kMin;
+}
+
+ETokens TMaxToken::GetType() const {
+    return ETokens::kMax;
+}
+
 ETokens TComaToken::GetType() const {
     return ETokens::kComa;
+}
+
+ETokens TDistinctToken::GetType() const {
+    return ETokens::kDistinct;
 }
 
 Expected<ITableInput> IOperatorCommand::Exec() {

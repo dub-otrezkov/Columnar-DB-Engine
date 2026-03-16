@@ -74,6 +74,12 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TCountToken>();
     } else if (token == "AVG") {
         return std::make_shared<TAvgToken>();
+    } else if (token == "MIN") {
+        return std::make_shared<TMinToken>();
+    } else if (token == "MAX") {
+        return std::make_shared<TMaxToken>();
+    } else if (token == "DISTINCT") {
+        return std::make_shared<TDistinctToken>();
     } else if (token == "LIMIT") {
         return std::make_shared<TLimitToken>();
     } else if (token == "ORDER") {

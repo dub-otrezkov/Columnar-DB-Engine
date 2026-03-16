@@ -103,6 +103,83 @@ TEST_F(BigTest, SumGetter) {
     EXPECT_EQ(out_data->str(), std::to_string(16 * iter) + "\n");
 }
 
+TEST_F(BigTest, MinMaxGetter) {
+    
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT MIN(what), MAX(what), MAX(was), MIN(was) FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(MIN(what),int64
+MAX(what),int64
+MAX(was),string
+MIN(was),string
+)");
+    EXPECT_EQ(out_data->str(), "1,7,klinghoffer,frusciante\n");
+}
+
+TEST_F(BigTest, DistinctGetter) {
+    
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT DISTINCT(was) AS c FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(c,string
+)");
+    EXPECT_EQ(out_data->str(), R"(josh
+john
+frusciante
+klinghoffer
+)");
+}
+
+TEST_F(BigTest, CountDistinctGetter) {
+    
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(was)) AS c FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(4
+)");
+}
+
 TEST_F(BigTest, LikeGetter) {
     
     JFEngine::TExecutor exec;
