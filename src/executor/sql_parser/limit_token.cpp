@@ -10,7 +10,7 @@ Expected<ITableInput> TLimitToken::Exec() {
 
 ui64 TLimitToken::GetLimit() {
     if (args_.size() != 1) {
-        std::cout << "wtf???" << std::endl;
+        std::cout << "wtf???" << " " << args_.size() << std::endl;
         return 0;
     }
     if (args_[0]->GetType() != ETokens::kNameToken) {

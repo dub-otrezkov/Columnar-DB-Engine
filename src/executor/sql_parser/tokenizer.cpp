@@ -97,6 +97,7 @@ Expected<IToken> TTokenizer::GetNext() {
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd) {
     std::vector<std::shared_ptr<ICommand>> st;
+    std::vector<std::shared_ptr<ICommand>> ags_need;
 
     TTokenizer tkz(cmd);
 
@@ -107,42 +108,47 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
             break;
         case ETokens::kFrom:
             st.push_back(std::dynamic_pointer_cast<TFromToken>(cur.GetShared()));
+            ags_need.push_back(st.back());
             break;
         case ETokens::kCreate:
             st.push_back(std::dynamic_pointer_cast<TCreateToken>(cur.GetShared()));
+            ags_need.push_back(st.back());
             break;
         case ETokens::kSelect:
             st.push_back(std::dynamic_pointer_cast<TSelectToken>(cur.GetShared()));
+            ags_need.push_back(st.back());
             break;
         case ETokens::kWhere:
             st.push_back(std::dynamic_pointer_cast<TWhereToken>(cur.GetShared()));
+            ags_need.push_back(st.back());
             break;
         case ETokens::kGroup:
             st.push_back(std::dynamic_pointer_cast<TGroupToken>(cur.GetShared()));
+            ags_need.push_back(st.back());
             break;
         case ETokens::kOrder:
             st.push_back(std::dynamic_pointer_cast<TOrderToken>(cur.GetShared()));
+            ags_need.push_back(st.back());
             break;
         case ETokens::kLimit:
             // st.push_back(std::dynamic_pointer_cast<TOrderToken>(cur.GetShared()));
             if (!st.empty()) {
                 if (st.back()->GetType() == ETokens::kOrder) {
                     static_cast<TOrderToken*>(st.back().get())->limit_ = std::dynamic_pointer_cast<TLimitToken>(cur.GetShared());
-                    break;
-                }
-                if (st.back()->GetType() == ETokens::kGroup) {
+                } else if (st.back()->GetType() == ETokens::kGroup) {
                     static_cast<TGroupToken*>(st.back().get())->limit_ = std::dynamic_pointer_cast<TLimitToken>(cur.GetShared());
-                    break;
+                } else {
+                    st.push_back(std::dynamic_pointer_cast<TLimitToken>(cur.GetShared()));
                 }
             }
-            st.push_back(std::dynamic_pointer_cast<TLimitToken>(cur.GetShared()));
+            ags_need.push_back(std::dynamic_pointer_cast<TLimitToken>(cur.GetShared()));
             break;
         case ETokens::kCloseBracket:
         default: {
             if (st.empty() || !st.back()) {
                 return MakeError<EError::BadCmdErr>("failed parse query");
             }
-            st.back()->AddArg(cur.GetShared());
+            ags_need.back()->AddArg(cur.GetShared());
             break;
         }
         }
