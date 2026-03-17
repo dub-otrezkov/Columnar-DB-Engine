@@ -30,7 +30,9 @@ std::vector<TRowScheme>& TOrderBy::GetScheme() {
 
 void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, ui64 column) {
     auto order = Do<OSort>(rg[column], order_q_.reverse);
+    // std::cout << ": " << order.size() << " " << rg[column]->GetSize() << std::endl;
     for (auto& ptr : rg) {
+        // std::cout << ptr->GetSize() << std::endl;
         auto [col, err] = Do<OApplyOrder>(ptr, order);
         if (!err) {
             ptr = col;
@@ -49,6 +51,7 @@ void TOrderBy::MergeRowGroups(
     std::vector<TColumnPtr>& rg2
 ) {
     for (ui64 i = 0; i < rg1.size(); i++) {
+        // std::cout << "++:" << " " << rg2[i]->GetSize() << " " << rg1[i]->GetSize() << std::endl;
         Do<OPushBackVector>(rg2[i], rg1[i]);
     }
     SortRowGroup(rg1);
