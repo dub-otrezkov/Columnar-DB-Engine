@@ -60,8 +60,12 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
             for (ui64 i = 0; i < block[0]->GetSize(); i++) {
+                if (block[j]->GetSize() < 100) {
+                    // std::cout << "::::: " << block[j]->GetSize() << " " << (int)Do<OJFPrintIth>(block[j], i)[0] << std::endl;
+                }
                 row[i] = Do<OJFPrintIth>(block[j], i);
             }
+
             col_poses.push_back(out.tellp());
             w.WriteRow(row);
         }

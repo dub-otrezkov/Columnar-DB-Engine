@@ -40,7 +40,7 @@ struct OSort {
 struct OApplyOrder {
     static Expected<IColumn> Exec(Ti8Column& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<i8> ans(col.GetSize());
@@ -52,7 +52,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(Ti16Column& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<i16> ans(col.GetSize());
@@ -64,7 +64,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(Ti32Column& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<i32> ans(col.GetSize());
@@ -76,7 +76,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(Ti64Column& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<i64> ans(col.GetSize());
@@ -88,7 +88,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(TDateColumn& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<TDate> ans(col.GetSize());
@@ -100,7 +100,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(TTimestampColumn& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<TTimestamp> ans(col.GetSize());
@@ -112,7 +112,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(TDoubleColumn& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<ld> ans(col.GetSize());
@@ -124,7 +124,7 @@ struct OApplyOrder {
 
     static Expected<IColumn> Exec(TStringColumn& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << std::endl;
+            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<std::string> ans(col.GetSize());

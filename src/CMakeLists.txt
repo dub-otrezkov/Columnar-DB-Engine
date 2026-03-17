@@ -19,6 +19,7 @@ add_subdirectory(utils)
 link_libraries(cint_lib logger_lib)
 
 add_subdirectory(csvio)
+add_subdirectory(benchmark_tests)
 add_subdirectory(columns)
 add_subdirectory(ios_factory)
 add_subdirectory(workers)

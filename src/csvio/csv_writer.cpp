@@ -15,7 +15,7 @@ ui64 TCSVWriter::PrepareString(std::string_view str) {
     bool ret = 1;
     ui64 cq = 0;
     for (const auto& ch : str) {
-        if (ch == sep_ || ch == '\n' || ch == '\"') {
+        if (ch == sep_ || ch == '\n' || ch == '\r' || ch == '\"') {
             ret = 0;
         }
         if (ch == '\"') {
@@ -24,7 +24,6 @@ ui64 TCSVWriter::PrepareString(std::string_view str) {
     }
 
     if (ret) {
-        // return str;
         return str.size();
     }
 

@@ -1,0 +1,718 @@
+#include "workers/base.h"
+#include "executor/executor.h"
+
+#include "ios_factory/ios_factory.h"
+
+#include <gtest/gtest.h>
+
+#include <string_view>
+#include <memory>
+
+namespace JFEngine::Testing {
+
+struct BenchTest : testing::Test {
+
+    std::string scheme = R"(what,int64
+once,int32
+was,string
+hers,string
+ste,int16
+audun,string
+getaway,int8
+empty,string
+)"; // TODO add dates
+    std::string data = R"(1,2,josh,rip,4,laading,1,""
+3,4,john,rip,5,she needs him,1,dolores
+5,6,frusciante,forever,6,harvey,2,dolores
+7,8,klinghoffer,alive,6,"low,beam",2,""
+5,8,john,alive,8,dorothy,2,""
+1,4,klinghoffer,forever,1,if you know what's right,4,dolores2
+7,2,frusciante,forever,1,speed racer,2,dolores1
+3,7,josh,forever,1,cool with u,1,dolores1
+)";
+
+    static constexpr ui64 iter = 50000;
+
+    std::shared_ptr<std::stringstream> out_scheme;
+    std::shared_ptr<std::stringstream> out_data;
+
+    void SetUp() override {
+        TIOFactory::RegisterSStreamIO("scheme", ETypeFile::kCSVFile);
+        TIOFactory::RegisterSStreamIO("data", ETypeFile::kCSVFile);
+        TIOFactory::RegisterSStreamIO("josh", ETypeFile::kJFFile);
+        TIOFactory::RegisterSStreamIO("tmp1", ETypeFile::kJFFile);
+        TIOFactory::RegisterSStreamIO("tmp2", ETypeFile::kJFFile);
+
+        TIOFactory::GetIO("scheme").GetRes() << scheme;
+        for (ui64 i = 0; i < iter; i++) {
+            TIOFactory::GetIO("data").GetRes() << data;
+        }
+
+        TIOFactory::RegisterSStreamIO(kResultScheme, ETypeFile::kCSVFile);
+        TIOFactory::RegisterSStreamIO(kResultData, ETypeFile::kCSVFile);
+
+        out_scheme = std::dynamic_pointer_cast<std::stringstream>(
+            TIOFactory::GetIO(kResultScheme).GetShared()
+        );
+        out_data = std::dynamic_pointer_cast<std::stringstream>(
+            TIOFactory::GetIO(kResultData).GetShared()
+        );
+    }
+
+    void TearDown() override {
+        TIOFactory::UnregisterIO("scheme");
+        TIOFactory::UnregisterIO("data");
+        TIOFactory::UnregisterIO("josh");
+        TIOFactory::UnregisterIO("tmp1");
+        TIOFactory::UnregisterIO("tmp2");
+
+        TIOFactory::UnregisterIO(kResultData);
+        TIOFactory::UnregisterIO(kResultScheme);
+    }
+};
+
+void prolog(JFEngine::TExecutor& exec) {
+    auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+    if (err.HasError()) {
+        std::cout << err.GetError() << std::endl;
+    }
+    ASSERT_FALSE(err.HasError());
+}
+
+TEST_F(BenchTest, _1) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(*) FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), "400000\n");
+}
+
+TEST_F(BenchTest, _2) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(*) FROM josh WHERE what <> 1");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), "300000\n");
+}
+
+TEST_F(BenchTest, _3) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT SUM(what), COUNT(*), AVG(once) FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int64
+COUNT(*),int64
+AVG(once),double
+)");
+    EXPECT_EQ(out_data->str(), "1600000,400000,5.125\n");
+}
+
+TEST_F(BenchTest, _4) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT AVG(once) FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(AVG(once),double
+)");
+    EXPECT_EQ(out_data->str(), "5.125\n");
+}
+
+TEST_F(BenchTest, _5) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(once)) FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(DISTINCT(once)),int64
+)");
+    EXPECT_EQ(out_data->str(), "5\n");
+}
+
+TEST_F(BenchTest, _6) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(was)) FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(DISTINCT(was)),int64
+)");
+    EXPECT_EQ(out_data->str(), "4\n");
+}
+
+TEST_F(BenchTest, _8) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT once, COUNT(*) FROM josh WHERE once <> 2 GROUP BY once ORDER BY 'COUNT(*)' DESC");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(once,int32
+COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), R"(4,100000
+8,100000
+6,50000
+7,50000
+)");
+}
+
+TEST_F(BenchTest, _9) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(what)) AS u FROM josh GROUP BY hers ORDER BY u DESC LIMIT 2");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(hers,string
+u,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(forever,4
+alive,2
+)");
+}
+
+TEST_F(BenchTest, _10) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT hers, SUM(what), COUNT(*) AS c, AVG(once), COUNT(DISTINCT(was)) FROM josh GROUP BY hers ORDER BY c DESC LIMIT 2");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(hers,string
+SUM(what),int64
+c,int64
+AVG(once),double
+COUNT(DISTINCT(was)),int64
+)");
+    EXPECT_EQ(out_data->str(), R"(forever,800000,200000,4.75,3
+alive,600000,100000,8,2
+)");
+}
+
+TEST_F(BenchTest, _11) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(was)) AS u FROM josh WHERE hers <> 'rip' GROUP BY hers ORDER BY u DESC LIMIT 1");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(hers,string
+u,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(forever,3
+)");
+}
+
+TEST_F(BenchTest, _12) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, hers, COUNT(DISTINCT(what)) AS u FROM josh WHERE what <> 3 GROUP BY was, hers ORDER BY u DESC LIMIT 4");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+hers,string
+u,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,forever,2
+john,alive,1
+josh,rip,1
+klinghoffer,alive,1
+)");
+}
+
+TEST_F(BenchTest, _13) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS c FROM josh WHERE was <> '' GROUP BY was ORDER BY c DESC LIMIT 5");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,100000
+john,100000
+josh,100000
+klinghoffer,100000
+)");
+}
+
+TEST_F(BenchTest, _14) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, COUNT(DISTINCT(was)) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+u,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,1
+john,1
+klinghoffer,1
+)");
+}
+
+TEST_F(BenchTest, _15) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT getaway, was, COUNT(*) AS c FROM josh WHERE was <> 'josh' GROUP BY getaway, was ORDER BY c DESC LIMIT 3");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(getaway,int8
+was,string
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(2,frusciante,100000
+1,john,50000
+2,john,50000
+)");
+}
+
+TEST_F(BenchTest, _16) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT getaway, COUNT(*) FROM josh GROUP BY getaway ORDER BY 'COUNT(*)' DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(getaway,int8
+COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), R"(2,200000
+1,150000
+4,50000
+)");
+}
+
+TEST_F(BenchTest, _17) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) FROM josh GROUP BY was, getaway ORDER BY 'COUNT(*)' DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+getaway,int8
+COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,2,100000
+josh,1,100000
+john,1,50000
+john,2,50000
+klinghoffer,2,50000
+klinghoffer,4,50000
+)");
+}
+
+TEST_F(BenchTest, _20) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT getaway FROM josh WHERE getaway = 2");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(getaway,int8
+)");
+    EXPECT_EQ(out_data->str().size(), 400000);
+}
+
+TEST_F(BenchTest, _21) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(*) FROM josh WHERE was LIKE '%f%'");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), "200000\n");
+}
+
+TEST_F(BenchTest, _22) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, MIN(hers), COUNT(*) AS c FROM josh WHERE was LIKE '%f%' AND was <> '' GROUP BY was ORDER BY c DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+MIN(hers),string
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,forever,100000
+klinghoffer,alive,100000
+)");
+}
+
+TEST_F(BenchTest, _23) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, MIN(what), MIN(once), COUNT(*) AS c, COUNT(DISTINCT(what)) FROM josh WHERE was LIKE '%o%' AND was NOT LIKE 'k%' AND was <> '' GROUP BY was ORDER BY c DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+MIN(what),int64
+MIN(once),int64
+c,int64
+COUNT(DISTINCT(what)),int64
+)");
+    EXPECT_EQ(out_data->str(), R"(john,3,4,5000,2
+josh,1,2,5000,2
+)");
+}
+
+TEST_F(BenchTest, _26) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT empty FROM josh WHERE empty <> '' ORDER BY was LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(empty,string
+)");
+    EXPECT_EQ(out_data->str(), R"(dolores
+dolores1
+dolores
+dolores1
+dolores
+dolores1
+dolores
+dolores1
+dolores
+dolores1
+)");
+}
+
+TEST_F(BenchTest, _27) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT empty FROM josh WHERE empty <> '' ORDER BY empty LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(empty,string
+)");
+    EXPECT_EQ(out_data->str(), R"(dolores
+dolores
+dolores
+dolores
+dolores
+dolores
+dolores
+dolores
+dolores
+dolores
+)");
+}
+
+// TEST_F(BenchTest, _28) {
+    
+//     JFEngine::TExecutor exec;
+//     prolog(exec);
+//     {
+//         auto err = exec.ExecQuery("SELECT was FROM josh WHERE empty <> '' ORDER BY getaway LIMIT 10");
+//         if (err.HasError()) {
+//             std::cout << err.GetError() << std::endl;
+//         }
+//         ASSERT_FALSE(err.HasError());
+//     }
+
+//     // std::cout << out_scheme->str() << std::endl;
+//     // std::cout << out_data->str() << std::endl;
+
+//     EXPECT_EQ(out_scheme->str(), R"(was,string
+// )");
+//     EXPECT_EQ(out_data->str(), R"(john
+// josh
+// john
+// josh
+// john
+// josh
+// john
+// josh
+// john
+// josh
+// )");
+// }
+
+TEST_F(BenchTest, _31) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh WHERE was <> '' GROUP BY was, getaway ORDER BY 'AVG(once)' DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+getaway,int8
+c,int64
+SUM(what),int64
+AVG(once),double
+)");
+    EXPECT_EQ(out_data->str(), R"(john,2,50000,250000,8
+klinghoffer,2,50000,350000,8
+josh,1,100000,200000,4.5
+frusciante,2,100000,600000,4
+john,1,50000,150000,4
+klinghoffer,4,50000,50000,4
+)");
+}
+
+TEST_F(BenchTest, _32) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh WHERE empty <> '' GROUP BY was, getaway ORDER BY 'AVG(once)' DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+getaway,int8
+c,int64
+SUM(what),int64
+AVG(once),double
+)");
+    EXPECT_EQ(out_data->str(), R"(josh,1,50000,150000,7
+frusciante,2,100000,600000,4
+john,1,50000,150000,4
+klinghoffer,4,50000,50000,4
+)");
+}
+
+TEST_F(BenchTest, _33) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh GROUP BY was, getaway ORDER BY 'AVG(once)' DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+getaway,int8
+c,int64
+SUM(what),int64
+AVG(once),double
+)");
+    EXPECT_EQ(out_data->str(), R"(john,2,50000,250000,8
+klinghoffer,2,50000,350000,8
+josh,1,100000,200000,4.5
+frusciante,2,100000,600000,4
+john,1,50000,150000,4
+klinghoffer,4,50000,50000,4
+)");
+}
+
+TEST_F(BenchTest, _34) {
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT empty, COUNT(*) AS c FROM josh GROUP BY was ORDER BY c DESC LIMIT 10");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
+
+    EXPECT_EQ(out_scheme->str(), R"(empty,string
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(dolores,100000
+dolores,100000
+,100000
+,100000
+)");
+}
+
+} // namespace JFEngine::Testing
