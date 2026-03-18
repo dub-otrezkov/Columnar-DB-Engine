@@ -22,7 +22,7 @@ ok
 ok
 ok
 no * support
-no time
+ok
 ok
 ok
 no length
@@ -34,10 +34,10 @@ ok
 ok
 no const
 no columnar -
-no dates
-no dates
-no dates
-no dates
-no dates
-no dates
-no dates
+ok
+ok
+no offset
+no offset
+no offset
+no offset
+no offset

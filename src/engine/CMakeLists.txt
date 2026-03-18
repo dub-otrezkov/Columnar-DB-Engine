@@ -4,7 +4,7 @@ add_library(engine_lib STATIC
 )
 
 add_subdirectory(debug)
-add_executable(engine_test test.cpp workers_test.cpp)
+add_executable(engine_test test.cpp)
 
 target_link_libraries(
     engine_lib

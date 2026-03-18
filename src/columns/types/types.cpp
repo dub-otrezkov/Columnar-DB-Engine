@@ -140,6 +140,14 @@ std::string PrintDate(const TDate& d) {
     return ans;
 }
 
+TDate DateFromStr(const std::string& s) {
+    return TDate{
+        static_cast<i16>(std::stoi(s.substr(0, 4))),
+        static_cast<i8>(std::stoi(s.substr(5, 2))),
+        static_cast<i8>(std::stoi(s.substr(8, 2)))
+    };
+}
+
 std::string PrintTimestamp(const TTimestamp& d) {
     std::string ans = PrintDate(d.date);
 
@@ -160,6 +168,20 @@ std::string PrintTimestamp(const TTimestamp& d) {
     ans += std::to_string(d.second);
 
     return ans;
+}
+
+
+TTimestamp TimestampFromStr(const std::string& s) {
+    return TTimestamp{
+        TDate{
+            static_cast<i16>(std::stoi(s.substr(0, 4))),
+            static_cast<i8>(std::stoi(s.substr(5, 2))),
+            static_cast<i8>(std::stoi(s.substr(8, 2)))
+        },
+        static_cast<i8>(std::stoi(s.substr(11, 2))),
+        static_cast<i8>(std::stoi(s.substr(14, 2))),
+        static_cast<i8>(std::stoi(s.substr(17, 2)))
+    };
 }
 
 Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
