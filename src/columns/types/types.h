@@ -128,6 +128,12 @@ struct TDate {
     i16 year;
     i8 month;
     i8 day;
+
+    i64 IntDate() const {
+        return (static_cast<i64>(year) << 16) |
+               (static_cast<i64>(month) << 8) |
+               (static_cast<i64>(day));
+    }
 };
 
 class TDateColumn : public TStorage<TDate> {
@@ -140,15 +146,24 @@ public:
 };
 
 std::string PrintDate(const TDate& d);
+TDate DateFromStr(const std::string& s);
 
 struct TTimestamp {
     TDate date;
     i8 hour;
     i8 minute;
     i8 second;
+
+    i64 IntTime() const {
+        return (date.IntDate() << 24) |
+               (static_cast<i64>(hour) << 8) |
+               (static_cast<i64>(minute) << 8) |
+               (static_cast<i64>(second));
+    }
 };
 
 std::string PrintTimestamp(const TTimestamp& d);
+TTimestamp TimestampFromStr(const std::string& s);
 
 class TTimestampColumn : public TStorage<TTimestamp> {
 public:

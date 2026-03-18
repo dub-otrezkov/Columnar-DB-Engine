@@ -80,7 +80,10 @@ struct OJFPrintIth {
 
     static std::string Exec(TDateColumn& col, ui64 i) {
         auto j = col.GetData()[i];
+
+        // std::cout << "!!! " << j.year << " " << (int)j.month << " " << (int)j.day << std::endl;
         return I16ToJFStr(j.year) + I8ToJFStr(j.month) + I8ToJFStr(j.day);
+        // return I32ToJFStr((j.year << 16) | (j.month << 8) | (j.day));
     }
 
     static std::string Exec(TTimestampColumn& col, ui64 i) {

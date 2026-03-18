@@ -224,11 +224,73 @@ struct OFilterCheck {
     }
 
     static Expected<std::vector<bool>> ExecInner(TDateColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        i64 target = 0;
+        try {
+            target = DateFromStr(value).IntDate();
+        } catch (...) {
+            std::cout << "not an dates" << std::endl;
+            return MakeError<EError::NotAnIntErr>();
+        }
+        if (op == EFilterType::kLike) {
+            std::cout << "no like for dates" << std::endl;
+            return MakeError<EError::UnsupportedErr>();
+        }
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i].IntDate() == target));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i].IntDate() < target));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i].IntDate() <= target));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 
     static Expected<std::vector<bool>> ExecInner(TTimestampColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        return MakeError<EError::UnimplementedErr>();
+        std::vector<bool> ans(col.GetSize(), inv);
+        i64 target = 0;
+        try {
+            target = TimestampFromStr(value).IntTime();
+        } catch (...) {
+            std::cout << "not an dates" << std::endl;
+            return MakeError<EError::NotAnIntErr>();
+        }
+        if (op == EFilterType::kLike) {
+            std::cout << "no like for dates" << std::endl;
+            return MakeError<EError::UnsupportedErr>();
+        }
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            switch (op) {
+                case EFilterType::kEq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i].IntTime() == target));
+                    break;
+                }
+                case EFilterType::kLess: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i].IntTime() < target));
+                    break;
+                }
+                case EFilterType::kLeq: {
+                    ans[i] = (ans[i] ^ (col.GetData()[i].IntTime() <= target));
+                    break;
+                }
+                default:
+                    std::cout << "not supported op" << std::endl;
+                    return MakeError<EError::UnsupportedErr>();
+            }
+        }
+        return ans;
     }
 
     static Expected<std::vector<bool>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {

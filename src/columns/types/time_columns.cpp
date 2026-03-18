@@ -26,11 +26,7 @@ Expected<void> TDateColumn::Setup(std::vector<std::string>&& data) {
             if (s.size() != 10) {
                 throw std::runtime_error("");
             }
-            cols_.emplace_back(
-                std::stoi(s.substr(0, 4)),
-                std::stoi(s.substr(5, 2)),
-                std::stoi(s.substr(8, 2))
-            );
+            cols_.push_back(DateFromStr(s));
         } catch (...) {
             return MakeError<EError::NotAnDateErr>();
         }
@@ -46,16 +42,7 @@ Expected<void> TTimestampColumn::Setup(std::vector<std::string>&& data) {
             if (s.size() != 19) {
                 throw std::runtime_error("");
             }
-            cols_.emplace_back(
-                TDate{
-                    static_cast<i16>(std::stoi(s.substr(0, 4))),
-                    static_cast<i8>(std::stoi(s.substr(5, 2))),
-                    static_cast<i8>(std::stoi(s.substr(8, 2)))
-                },
-                std::stoi(s.substr(11, 2)),
-                std::stoi(s.substr(14, 2)),
-                std::stoi(s.substr(17, 2))
-            );
+            cols_.emplace_back(TimestampFromStr(s));
         } catch (...) {
             return MakeError<EError::NotAnTimestampErr>();
         }

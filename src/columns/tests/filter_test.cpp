@@ -35,6 +35,64 @@ TEST_F(OperatorsTest, FilterEqTest) {
     test(EColumn::ki16Column);
     test(EColumn::ki32Column);
     test(EColumn::ki64Column);
+
+    {
+        std::vector<std::string> data = {"2022-02-24", "2019-10-09", "2025-01-31", "1970-01-01", "2000-12-31"};
+        auto m = MakeColumn(data, EColumn::kDateColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kEq, "2022-02-24");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 1);
+    }
+
+    {
+        std::vector<std::string> data = {
+            "2022-02-24 04:04:04",
+            "2019-10-09 05:50:59",
+            "2025-01-31 10:00:00",
+            "1970-01-01 14:47:08",
+            "2022-02-24 04:04:06"
+        };
+        auto m = MakeColumn(data, EColumn::kTimestampColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kEq, "2022-02-24 04:04:04");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 1);
+    }
 }
 
 TEST_F(OperatorsTest, FilterLessTest) {
@@ -68,6 +126,64 @@ TEST_F(OperatorsTest, FilterLessTest) {
     test(EColumn::ki16Column);
     test(EColumn::ki32Column);
     test(EColumn::ki64Column);
+
+        {
+        std::vector<std::string> data = {"2022-02-24", "2019-10-09", "2025-01-31", "1970-01-01", "2000-12-31"};
+        auto m = MakeColumn(data, EColumn::kDateColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLess, "2022-02-24");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 1);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 1);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 3);
+    }
+
+    {
+        std::vector<std::string> data = {
+            "2022-02-24 04:04:04",
+            "2019-10-09 05:50:59",
+            "2025-01-31 10:00:00",
+            "1970-01-01 14:47:08",
+            "2022-02-24 04:04:06"
+        };
+        auto m = MakeColumn(data, EColumn::kTimestampColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLess, "2022-02-24 04:04:04");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 1);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 2);
+    }
 }
 
 TEST_F(OperatorsTest, FilterLeqTest) {
@@ -101,6 +217,64 @@ TEST_F(OperatorsTest, FilterLeqTest) {
     test(EColumn::ki16Column);
     test(EColumn::ki32Column);
     test(EColumn::ki64Column);
+
+    {
+        std::vector<std::string> data = {"2022-02-24", "2019-10-09", "2025-01-31", "1970-01-01", "2000-12-31"};
+        auto m = MakeColumn(data, EColumn::kDateColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLeq, "2022-02-24");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 1);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 1);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 4);
+    }
+
+    {
+        std::vector<std::string> data = {
+            "2022-02-24 04:04:04",
+            "2019-10-09 05:50:59",
+            "2025-01-31 10:00:00",
+            "1970-01-01 14:47:08",
+            "2022-02-24 04:04:06"
+        };
+        auto m = MakeColumn(data, EColumn::kTimestampColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLeq, "2022-02-24 04:04:04");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 1);
+        EXPECT_EQ(mask->at(2), 0);
+        EXPECT_EQ(mask->at(3), 1);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 3);
+    }
 }
 
 TEST_F(OperatorsTest, FilterGreaterTest) {
@@ -134,6 +308,64 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
     test(EColumn::ki16Column);
     test(EColumn::ki32Column);
     test(EColumn::ki64Column);
+
+    {
+        std::vector<std::string> data = {"2022-02-24", "2019-10-09", "2025-01-31", "1970-01-01", "2000-12-31"};
+        auto m = MakeColumn(data, EColumn::kDateColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGreater, "2022-02-24");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 1);
+    }
+
+    {
+        std::vector<std::string> data = {
+            "2022-02-24 04:04:04",
+            "2019-10-09 05:50:59",
+            "2025-01-31 10:00:00",
+            "1970-01-01 14:47:08",
+            "2022-02-24 04:04:06"
+        };
+        auto m = MakeColumn(data, EColumn::kTimestampColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGreater, "2022-02-24 04:04:04");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 0);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 1);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 2);
+    }
 }
 
 TEST_F(OperatorsTest, FilterGeqTest) {
@@ -167,6 +399,64 @@ TEST_F(OperatorsTest, FilterGeqTest) {
     test(EColumn::ki16Column);
     test(EColumn::ki32Column);
     test(EColumn::ki64Column);
+
+    {
+        std::vector<std::string> data = {"2022-02-24", "2019-10-09", "2025-01-31", "1970-01-01", "2000-12-31"};
+        auto m = MakeColumn(data, EColumn::kDateColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGeq, "2022-02-24");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 0);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 2);
+    }
+
+    {
+        std::vector<std::string> data = {
+            "2022-02-24 04:04:04",
+            "2019-10-09 05:50:59",
+            "2025-01-31 10:00:00",
+            "1970-01-01 14:47:08",
+            "2022-02-24 04:04:06"
+        };
+        auto m = MakeColumn(data, EColumn::kTimestampColumn);
+
+        ASSERT_FALSE(m.HasError());
+
+        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGeq, "2022-02-24 04:04:04");
+
+        ASSERT_FALSE(r.HasError());
+
+        auto mask = r.GetShared();
+
+        ASSERT_TRUE(mask->size() == 5);
+
+        EXPECT_EQ(mask->at(0), 1);
+        EXPECT_EQ(mask->at(1), 0);
+        EXPECT_EQ(mask->at(2), 1);
+        EXPECT_EQ(mask->at(3), 0);
+        EXPECT_EQ(mask->at(4), 1);
+
+        auto e = Do<OFilter>(m.GetShared(), *mask);
+        ASSERT_FALSE(e.HasError());
+        auto ans = e.GetShared();
+        ASSERT_EQ(ans->GetSize(), 3);
+    }
 }
 
 void CheckVectorsEq(
