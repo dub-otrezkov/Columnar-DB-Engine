@@ -10,6 +10,12 @@ struct OSort {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             ans[i] = i;
         }
+        std::stable_sort(ans.begin(), ans.end(), [&col, rev](ui64 i, ui64 j) -> bool {
+            if (rev) {
+                return (col.GetData()[i].IntDate() > col.GetData()[j].IntDate());
+            }
+            return (col.GetData()[i].IntDate() < col.GetData()[j].IntDate());
+        });
         return std::move(ans);
     }
 
@@ -18,6 +24,12 @@ struct OSort {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             ans[i] = i;
         }
+        std::stable_sort(ans.begin(), ans.end(), [&col, rev](ui64 i, ui64 j) -> bool {
+            if (rev) {
+                return (col.GetData()[i].IntTime() > col.GetData()[j].IntTime());
+            }
+            return (col.GetData()[i].IntTime() < col.GetData()[j].IntTime());
+        });
         return std::move(ans);
     }
 

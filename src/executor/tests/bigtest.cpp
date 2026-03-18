@@ -10,11 +10,13 @@ struct BigTest : testing::Test {
 once,int32
 was,string
 hers,string
+low,date
+beam,timestamp
 )";
-    std::string data = R"(1,2,josh,rip
-3,4,john,rip
-5,6,frusciante,rip
-7,8,klinghoffer,rip
+    std::string data = R"(1,2,josh,rip,"2022-02-24","2022-02-24 00:00:00"
+3,4,john,rip,"2022-02-24",2022-02-24 00:00:03
+5,6,frusciante,rip,2024-02-24,"2022-02-24 00:00:04"
+7,8,klinghoffer,rip,2025-02-24,"2022-02-24 00:00:00"
 )";
 
     static constexpr ui64 iter = kRowGroupLen * 10;
@@ -78,6 +80,30 @@ TEST_F(BigTest, SimpleColumnGetter) {
     EXPECT_EQ(out_scheme->str(), R"(what,int64
 )");
     EXPECT_EQ(out_data->str().size(), iter * 8);
+}
+
+TEST_F(BigTest, DatesFilter) {
+    
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT COUNT(*) AS d FROM josh WHERE low < '2023-02-28'");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(d,int64
+)");
+    EXPECT_EQ(out_data->str(), std::to_string(iter * 2) + "\n");
+    // std::cout << out_data->str() << std::endl;
 }
 
 TEST_F(BigTest, SumGetter) {
@@ -385,6 +411,33 @@ sum,int64
 )");
     EXPECT_EQ(out_data->str(), R"(josh,100000,100000
 john,100000,300000
+)");
+    // std::cout << out_data->str() << std::endl;
+}
+
+TEST_F(BigTest, GroupByTimestamp) {
+    JFEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT beam, COUNT(*) FROM josh GROUP BY beam ORDER BY beam DESC");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(beam,timestamp
+COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), R"(2022-02-24 00:00:04,100000
+2022-02-24 00:00:03,100000
+2022-02-24 00:00:00,200000
 )");
     // std::cout << out_data->str() << std::endl;
 }
