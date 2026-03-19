@@ -160,4 +160,19 @@ struct OVerticalSum {
     }
 };
 
+struct OLength {
+    static Expected<IColumn> Exec(TStringColumn& col) {
+        std::vector<i64> ans(col.GetSize());
+        for (ui64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = col.GetData()[i].size();
+        }
+        return std::make_shared<Ti64Column>(std::move(ans));
+    }
+
+    template<typename T>
+    static Expected<IColumn> Exec(T& col) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+};
+
 } // namespace JFEngine

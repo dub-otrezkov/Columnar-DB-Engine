@@ -38,6 +38,10 @@ ETokens TDistinctToken::GetType() const {
     return ETokens::kDistinct;
 }
 
+ETokens TLengthToken::GetType() const {
+    return ETokens::kLength;
+}
+
 Expected<ITableInput> IOperatorCommand::Exec() {
     return MakeError<EError::UnsupportedErr>();
 }

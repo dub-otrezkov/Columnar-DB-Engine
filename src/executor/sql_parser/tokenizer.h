@@ -24,6 +24,7 @@ enum class ETokens {
     kMax,
     kMin,
     kDistinct,
+    kLength,
     kOpenBracket,
     kCloseBracket,
     kComa, // misc (
@@ -182,6 +183,11 @@ public:
 };
 
 class TAvgToken : public IOperatorCommand {
+public:
+    ETokens GetType() const override;
+};
+
+class TLengthToken : public IOperatorCommand {
 public:
     ETokens GetType() const override;
 };

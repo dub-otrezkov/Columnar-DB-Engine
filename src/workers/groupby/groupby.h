@@ -13,8 +13,12 @@
 
 namespace JFEngine {
 
+constexpr ui64 kUnlimited = -1;
+
 struct TGroupByQuery {
     std::vector<std::string> cols;
+    ui64 limit = kUnlimited;
+    bool is_id = false;
 };
 
 class TGroupBy : public ITableInput {

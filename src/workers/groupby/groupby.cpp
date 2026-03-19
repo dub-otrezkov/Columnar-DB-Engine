@@ -68,6 +68,9 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
             }
 
             if (!groups_.contains(key)) {
+                if (group_q_.limit != kUnlimited && groups_.size() == group_q_.limit) {
+                    continue;
+                }
                 groups_.emplace(key, TGroup{jf_in_->GetScheme(), agr_q_.Clone()});
             }
             groups_.at(key).io.UploadRowGroup(rg, i);

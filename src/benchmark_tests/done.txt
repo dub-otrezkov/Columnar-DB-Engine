@@ -4,7 +4,6 @@ ok
 ok
 ok
 ok
-no dates yet(
 ok
 ok
 ok
@@ -15,17 +14,18 @@ ok
 ok
 ok
 ok
-no limits
+ok
+ok
 no dates
 ok
 ok
 ok
 ok
-no * support
+ok (no *!)
 ok
 ok
 ok
-no length
+ok
 no regexp
 no columnar +
 ok
