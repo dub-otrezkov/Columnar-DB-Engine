@@ -47,18 +47,22 @@ struct OMin {
     }
 
     static Expected<IColumn> Exec(TDateColumn& col) {
-        TDate res = col.GetData()[0];
-        // for (ui64 i = 1; i < col.GetSize(); i++) {
-        //     res = std::min(res, col.GetData()[i]);
-        // }
+        auto res = col.GetData()[0];
+        for (ui64 i = 1; i < col.GetSize(); i++) {
+            if (res.IntDate() > col.GetData()[i].IntDate()) {
+                res = col.GetData()[i];
+            }
+        }
         return std::make_shared<TDateColumn>(std::vector<TDate>{res});
     }
 
     static Expected<IColumn> Exec(TTimestampColumn& col) {
-        TTimestamp res = col.GetData()[0];
-        // for (ui64 i = 1; i < col.GetSize(); i++) {
-        //     res = std::min(res, col.GetData()[i]);
-        // }
+        auto res = col.GetData()[0];
+        for (ui64 i = 1; i < col.GetSize(); i++) {
+            if (res.IntTime() > col.GetData()[i].IntTime()) {
+                res = col.GetData()[i];
+            }
+        }
         return std::make_shared<TTimestampColumn>(std::vector<TTimestamp>{res});
     }
 
@@ -147,12 +151,44 @@ struct OVerticalMin {
         return std::make_shared<TDoubleColumn>(std::move(ans));
     }
 
-    static Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
-        return EError::UnsupportedErr;
+    static Expected<IColumn> Exec(TDateColumn& col1, TColumnPtr col2) {
+        if (col1.GetSize() != col2->GetSize()) {
+            return EError::BadArgsErr;
+        }
+        if (col2->GetType() != col1.GetType()) {
+            return EError::BadArgsErr;
+        }
+        auto col2_i = static_cast<TDateColumn*>(col2.get());
+        std::vector<TDate> ans;
+        for (ui64 i = 0; i < col1.GetSize(); i++) {
+            // ans.push_back(std::min(col1.GetData()[i], col2_i->GetData()[i]));
+            if (col1.GetData()[i].IntDate() < col2_i->GetData()[i].IntDate()) {
+                ans.push_back(col1.GetData()[i]);
+            } else {
+                ans.push_back(col2_i->GetData()[i]);
+            }
+        }
+        return std::make_shared<TDateColumn>(std::move(ans));
     }
 
     static Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
-        return EError::UnsupportedErr;
+        if (col1.GetSize() != col2->GetSize()) {
+            return EError::BadArgsErr;
+        }
+        if (col2->GetType() != col1.GetType()) {
+            return EError::BadArgsErr;
+        }
+        auto col2_i = static_cast<TTimestampColumn*>(col2.get());
+        std::vector<TTimestamp> ans;
+        for (ui64 i = 0; i < col1.GetSize(); i++) {
+            // ans.push_back(std::min(col1.GetData()[i], col2_i->GetData()[i]));
+            if (col1.GetData()[i].IntTime() < col2_i->GetData()[i].IntTime()) {
+                ans.push_back(col1.GetData()[i]);
+            } else {
+                ans.push_back(col2_i->GetData()[i]);
+            }
+        }
+        return std::make_shared<TTimestampColumn>(std::move(ans));
     }
 
     static Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
@@ -213,19 +249,24 @@ struct OMax {
         return std::make_shared<TDoubleColumn>(std::vector<ld>{res});
     }
 
+    
     static Expected<IColumn> Exec(TDateColumn& col) {
-        TDate res = col.GetData()[0];
-        // for (ui64 i = 1; i < col.GetSize(); i++) {
-        //     res = std::min(res, col.GetData()[i]);
-        // }
+        auto res = col.GetData()[0];
+        for (ui64 i = 1; i < col.GetSize(); i++) {
+            if (res.IntDate() < col.GetData()[i].IntDate()) {
+                res = col.GetData()[i];
+            }
+        }
         return std::make_shared<TDateColumn>(std::vector<TDate>{res});
     }
 
     static Expected<IColumn> Exec(TTimestampColumn& col) {
-        TTimestamp res = col.GetData()[0];
-        // for (ui64 i = 1; i < col.GetSize(); i++) {
-        //     res = std::min(res, col.GetData()[i]);
-        // }
+        auto res = col.GetData()[0];
+        for (ui64 i = 1; i < col.GetSize(); i++) {
+            if (res.IntTime() < col.GetData()[i].IntTime()) {
+                res = col.GetData()[i];
+            }
+        }
         return std::make_shared<TTimestampColumn>(std::vector<TTimestamp>{res});
     }
 
@@ -314,12 +355,44 @@ struct OVerticalMax {
         return std::make_shared<TDoubleColumn>(std::move(ans));
     }
 
-    static Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
-        return EError::UnsupportedErr;
+    static Expected<IColumn> Exec(TDateColumn& col1, TColumnPtr col2) {
+        if (col1.GetSize() != col2->GetSize()) {
+            return EError::BadArgsErr;
+        }
+        if (col2->GetType() != col1.GetType()) {
+            return EError::BadArgsErr;
+        }
+        auto col2_i = static_cast<TDateColumn*>(col2.get());
+        std::vector<TDate> ans;
+        for (ui64 i = 0; i < col1.GetSize(); i++) {
+            // ans.push_back(std::min(col1.GetData()[i], col2_i->GetData()[i]));
+            if (col1.GetData()[i].IntDate() > col2_i->GetData()[i].IntDate()) {
+                ans.push_back(col1.GetData()[i]);
+            } else {
+                ans.push_back(col2_i->GetData()[i]);
+            }
+        }
+        return std::make_shared<TDateColumn>(std::move(ans));
     }
 
     static Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
-        return EError::UnsupportedErr;
+        if (col1.GetSize() != col2->GetSize()) {
+            return EError::BadArgsErr;
+        }
+        if (col2->GetType() != col1.GetType()) {
+            return EError::BadArgsErr;
+        }
+        auto col2_i = static_cast<TTimestampColumn*>(col2.get());
+        std::vector<TTimestamp> ans;
+        for (ui64 i = 0; i < col1.GetSize(); i++) {
+            // ans.push_back(std::min(col1.GetData()[i], col2_i->GetData()[i]));
+            if (col1.GetData()[i].IntTime() > col2_i->GetData()[i].IntTime()) {
+                ans.push_back(col1.GetData()[i]);
+            } else {
+                ans.push_back(col2_i->GetData()[i]);
+            }
+        }
+        return std::make_shared<TTimestampColumn>(std::move(ans));
     }
 
     static Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {

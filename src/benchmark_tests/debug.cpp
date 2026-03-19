@@ -82,27 +82,25 @@ void prolog(JFEngine::TExecutor& exec) {
     ASSERT_FALSE(err.HasError());
 }
 
-TEST_F(BenchTest, _37) {
+TEST_F(BenchTest, _7) {
     
     JFEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT MIN(low), MAX(low) FROM josh");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    std::cout << out_scheme->str() << std::endl;
-    std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->str() << std::endl;
+    // std::cout << out_data->str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
-cnt,int64
+    EXPECT_EQ(out_scheme->str(), R"(MIN(low),date
+MAX(low),date
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,50000
-josh,50000
-klinghoffer,50000
+    EXPECT_EQ(out_data->str(), R"(2020-09-12,2024-01-30
 )");
 }
 

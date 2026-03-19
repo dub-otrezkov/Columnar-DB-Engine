@@ -80,6 +80,8 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TMaxToken>();
     } else if (token == "DISTINCT") {
         return std::make_shared<TDistinctToken>();
+    } else if (token == "LENGTH") {
+        return std::make_shared<TLengthToken>();
     } else if (token == "LIMIT") {
         return std::make_shared<TLimitToken>();
     } else if (token == "ORDER") {

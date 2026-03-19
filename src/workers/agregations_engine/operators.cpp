@@ -90,6 +90,10 @@ void TDistinctAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
     arg = to_agr;
 }
 
+void TLengthAgr::AddArg(std::shared_ptr<IAgregation> to_agr) {
+    arg = to_agr;
+}
+
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
     auto err = arg->ConsumeRowGroup(inp);
     bool is_eof = false;
@@ -106,11 +110,40 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
         ans += t->GetSize();
     }
 
-    return EError::NoError;
+    return (is_eof ? EError::EofErr : EError::NoError);
+}
+
+Expected<void> TLengthAgr::ConsumeRowGroup(ITableInput* inp) {
+    bool is_eof = false;
+    {
+        auto err = arg->ConsumeRowGroup(inp);
+        if (err.HasError()) {
+            if (err.GetError() == EError::EofErr) {
+                is_eof = true;
+            } else {
+                return err.GetError();
+            }
+        }
+    }
+    if (!arg->IsBlocker()) {
+        auto [t, _] = arg->ThrowRowGroup();
+
+        auto [ans_, err] = Do<OLength>(t);
+        if (err) {
+            return err;
+        }
+        ans = std::move(ans_);
+    }
+
+    return (is_eof ? EError::EofErr : EError::NoError);
 }
 
 bool TCountAgr::IsBlocker() {
     return true;
+}
+
+bool TLengthAgr::IsBlocker() {
+    return arg->IsBlocker();
 }
 
 Expected<IColumn> TCountAgr::ThrowRowGroup() {
@@ -300,6 +333,16 @@ Expected<IColumn> TDistinctAgr::ThrowRowGroup() {
     return ans;
 }
 
+Expected<IColumn> TLengthAgr::ThrowRowGroup() {
+    if (arg->IsBlocker()) {
+        auto [col, err] = arg->ThrowRowGroup();
+
+        return Do<OLength>(col);
+    } else {
+        return ans;
+    }
+}
+
 std::shared_ptr<IAgregation> TColumnAgr::Clone() {
     return std::make_shared<TColumnAgr>(name);
 }
@@ -340,6 +383,12 @@ std::shared_ptr<IAgregation> TDistinctAgr::Clone() {
     return r;
 }
 
+std::shared_ptr<IAgregation> TLengthAgr::Clone() {
+    auto r = std::make_shared<TLengthAgr>();
+    r->arg = arg->Clone();
+    return r;
+}
+
 std::string TColumnAgr::GetName() {
     return name;
 }
@@ -366,6 +415,10 @@ std::string TAvgAgr::GetName() {
 
 std::string TDistinctAgr::GetName() {
     return "DISTINCT(" + arg->GetName() + ")";
+}
+
+std::string TLengthAgr::GetName() {
+    return "LENGTH(" + arg->GetName() + ")";
 }
 
 } // namespace JFEngine

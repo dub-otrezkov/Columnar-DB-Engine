@@ -25,6 +25,7 @@ private:
     std::vector<std::shared_ptr<IAgregation>> cols_;
     std::vector<std::pair<ui64, std::string>> aliases_;
     bool is_groupby_;
+    bool total_ = false;
 };
 
 } // namespace JFEngine

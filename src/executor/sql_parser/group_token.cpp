@@ -11,14 +11,18 @@ Expected<ITableInput> TGroupToken::Exec() {
             return MakeError<EError::BadCmdErr>("from token without files");
         }
     }
-    TGroupByQuery cols;
+    TGroupByQuery query;
     for (ui64 i = 1; i < args_.size(); i++) {
-        cols.cols.push_back(static_cast<TNameToken*>(args_[i].get())->GetName());
+        query.cols.push_back(static_cast<TNameToken*>(args_[i].get())->GetName());
+    }
+
+    if (limit_) {
+        query.limit = limit_->GetLimit();
     }
     
     return std::make_shared<TGroupBy>(
         TIOFactory::GetTableIO(kCurTableInput).GetShared(),
-        cols,
+        query,
         selects_
     );
 }
