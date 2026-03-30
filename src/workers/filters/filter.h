@@ -24,11 +24,10 @@ public:
     TFilter(std::shared_ptr<ITableInput> jf_in, TFilterQuery query);
 
     Expected<void> SetupColumnsScheme() override;
-    std::vector<TRowScheme>& GetScheme() override;
-    Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    void MoveCursor(i64 delta);
 private:
     std::shared_ptr<ITableInput> jf_in_;
-    std::unordered_map<std::string, ui64> name_to_i_;
     TFilterQuery query_;
 };
 

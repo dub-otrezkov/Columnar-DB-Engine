@@ -62,7 +62,7 @@ TEST_F(GroupByTest, Basic) {
         aq.cols.push_back(group_name);
         aq.cols.push_back(cnt_agr);
         aq.cols.push_back(sum_agr);
-        
+
         auto agr = std::make_shared<TGroupBy>(jf_in, gq, aq);
 
         agr->SetupColumnsScheme();

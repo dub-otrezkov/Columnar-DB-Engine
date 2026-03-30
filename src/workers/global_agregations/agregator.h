@@ -18,10 +18,10 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
     std::vector<TRowScheme>& GetScheme() override;
-    Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    void MoveCursor(i64 delta);
 private:
     std::shared_ptr<ITableInput> jf_in_;
-    std::vector<TRowScheme> scheme_;
 
     TAgregationsEngine eng_;
 

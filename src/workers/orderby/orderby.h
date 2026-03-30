@@ -21,8 +21,7 @@ public:
     TOrderBy(std::shared_ptr<ITableInput> jf_in, TOrderByQuery query);
 
     Expected<void> SetupColumnsScheme() override;
-    std::vector<TRowScheme>& GetScheme() override;
-    Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
 
 private:
     void SortRowGroup(std::vector<TColumnPtr>& rg);
@@ -33,11 +32,8 @@ private:
     );
 
     TOrderByQuery order_q_;
-
-    std::unordered_map<std::string, ui64> name_to_i_;
     
     std::shared_ptr<ITableInput> jf_in_;
-    std::vector<TRowScheme> scheme_;
 };
 
 } // namespace JFEngine

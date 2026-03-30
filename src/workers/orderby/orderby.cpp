@@ -24,10 +24,6 @@ Expected<void> TOrderBy::SetupColumnsScheme() {
     return EError::NoError;
 }
 
-std::vector<TRowScheme>& TOrderBy::GetScheme() {
-    return scheme_;
-}
-
 void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, ui64 column) {
     auto order = Do<OSort>(rg[column], order_q_.reverse);
     // std::cout << ": " << order.size() << " " << rg[column]->GetSize() << std::endl;
@@ -62,7 +58,7 @@ void TOrderBy::MergeRowGroups(
     }
 }
 
-Expected<std::vector<TColumnPtr>> TOrderBy::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
     bool run = 1;
     
     std::vector<TColumnPtr> ans_;
@@ -71,9 +67,10 @@ Expected<std::vector<TColumnPtr>> TOrderBy::ReadRowGroup() {
         ans_.push_back(MakeEmptyColumn(tp).GetShared());
     }
 
-    while (run) {
+    for (; run; jf_in_->MoveCursor(1)) {
         std::vector<std::vector<std::string>> keys;
         auto [g, err] = jf_in_->ReadRowGroup();
+        // jf_in_->MoveCursor(1);
 
         if (err) {
             if (err == EError::EofErr) {

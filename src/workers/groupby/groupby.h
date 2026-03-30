@@ -26,14 +26,11 @@ public:
     TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TGlobalAgregationQuery selects);
 
     Expected<void> SetupColumnsScheme() override;
-    std::vector<TRowScheme>& GetScheme() override;
-    Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
 
 private:
     TGroupByQuery group_q_;
     TGlobalAgregationQuery agr_q_;
-
-    std::unordered_map<std::string, ui64> name_to_i_;
     
     std::shared_ptr<ITableInput> jf_in_;
     std::vector<TRowScheme> scheme_;

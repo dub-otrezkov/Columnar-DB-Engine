@@ -22,6 +22,8 @@ bool TColumnAgr::IsBlocker() {
 Expected<void> TColumnAgr::ConsumeRowGroup(ITableInput* inp) {
     auto [ans_, err] = inp->ReadColumn(name);
     ans = ans_;
+
+    // std::cout << "@ " << ans << " " << err << std::endl;
     return err;
 }
 
@@ -259,7 +261,6 @@ bool TAvgAgr::IsBlocker() {
 
 Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp) {
     bool run = 1;
-    inp->Reset();
 
     i64 len = 0;
 

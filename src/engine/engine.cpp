@@ -118,18 +118,6 @@ Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf) {
     return eng;
 }
 
-Expected<TEngine> MakeSelectEngine(
-    std::shared_ptr<std::istream> jf,
-    TSelectQuery query
-) {
-    auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_shared<TSelector>(std::make_shared<TJFTableInput>(jf), query));
-    if (err.HasError()) {
-        return err.GetError();
-    }
-    return eng;
-}
-
 Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker) {
     auto eng = std::make_shared<TEngine>();
     auto err = eng->Setup(worker);

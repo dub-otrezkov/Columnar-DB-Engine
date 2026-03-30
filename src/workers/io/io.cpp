@@ -36,7 +36,7 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
     auto is_eof = false;
 
     std::vector<std::vector<std::string>> tmp;
@@ -77,10 +77,6 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
     }
 
     return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
-}
-
-std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
-    return scheme_;
 }
 
 Expected<void> TJFTableInput::SetupColumnsScheme() {
@@ -138,7 +134,7 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
     return ans;
 }
 
-Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EError::EofErr>();
     }
@@ -159,16 +155,11 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
         res.push_back(col);
     }
 
-    current_block_++;
-
     return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 
-std::vector<TRowScheme>& TJFTableInput::GetScheme() {
-    return scheme_;
-}
-
 void TJFTableInput::MoveCursor(i64 delta) {
+    current_rg_.reset();
     if (delta < 0 && current_block_ < -delta) {
         current_block_ = 0;
     } else {
@@ -178,6 +169,7 @@ void TJFTableInput::MoveCursor(i64 delta) {
 
 void TJFTableInput::Reset() {
     current_block_ = 0;
+    current_rg_.reset();
 }
 
 Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {

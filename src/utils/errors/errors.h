@@ -64,9 +64,9 @@ public:
 
     Expected(EError err) : err_(err) {}
 
-    Expected(const Expected&) = delete;
+    Expected(const Expected&) = default;
     Expected(Expected&&) = default;
-    Expected& operator=(const Expected&) = delete;
+    Expected& operator=(const Expected&) = default;
     Expected& operator=(Expected&&) = default;
 
     bool HasError() const {

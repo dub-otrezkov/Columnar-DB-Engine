@@ -1,7 +1,6 @@
 #pragma once
 
 #include "workers/io/io.h"
-#include "workers/selector/selector.h"
 
 #include "columns/types/types.h"
 
@@ -34,7 +33,7 @@ public:
     Expected<void> RunCommand(F func) {
         auto run = true;
 
-        while (run) {
+        for (; run; in_->MoveCursor(1)) {
             auto [block_ptr, err] = in_->ReadRowGroup();
 
             if (err != EError::NoError) {
@@ -71,8 +70,6 @@ public:
 Expected<TEngine> MakeEngineFromCSV(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
 
 Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
-
-Expected<TEngine> MakeSelectEngine(std::shared_ptr<std::istream> jf, TSelectQuery query);
 
 Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker);
 

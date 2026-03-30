@@ -33,7 +33,7 @@ Expected<void> TAgregator::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
     if (!is_all_) {
         bool is_eof = false;
         std::vector<TColumnPtr> ans;
@@ -41,7 +41,6 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
             jf_in_->Reset();
             for (ui64 i = 0; i < jf_in_->GetGroupsCount(); i++) {
                 eng_.ConsumeRowGroup(jf_in_.get());
-
                 jf_in_->MoveCursor(1);
             }
             auto [t, _] = eng_.ThrowRowGroup();
@@ -59,7 +58,6 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
             }
             ans = std::move(*eng_.ThrowRowGroup().GetShared());
             // }
-            jf_in_->MoveCursor(1);
         }
 
         for (ui64 i = 0; i < ans.size(); i++) {
@@ -95,6 +93,11 @@ Expected<std::vector<TColumnPtr>> TAgregator::ReadRowGroup() {
 
     // Expected<std::vector<TColumnPtr>> ret(std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError);
     // return ret;
+}
+
+void TAgregator::MoveCursor(i64 delta) {
+    current_rg_.reset();
+    jf_in_->MoveCursor(delta);
 }
 
 } // namespace JFEngine

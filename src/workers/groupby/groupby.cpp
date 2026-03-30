@@ -29,11 +29,7 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     return EError::NoError;
 }
 
-std::vector<TRowScheme>& TGroupBy::GetScheme() {
-    return scheme_;
-}
-
-Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     bool run = 1;
     std::vector<std::vector<std::string>> changed;
 
@@ -43,7 +39,8 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         }
     }
 
-    while (run) {
+    for (; run; jf_in_->MoveCursor(1)) {
+        // std::cout << "dkfkkf" << " " << jf_in_.get() << std::endl;
         std::vector<std::vector<std::string>> keys;
         auto err = gc_eng.ConsumeRowGroup(jf_in_.get()).GetError();
         auto [g, _] = gc_eng.ThrowRowGroup();
@@ -54,6 +51,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
             if (err2 == EError::EofErr) {
                 run = 0;
             } else {
+                // std::cout << "!!@@ " << err2 << std::endl;
                 return err2;
             }
         }
@@ -88,8 +86,10 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         for (const auto& key : keys) {
             auto& t = groups_.at(key);
             t.eng.ConsumeRowGroup(&t.io);
-            t.io.ReadRowGroup(); // this clear io (bad naming but i dont care)
+            // t.io.ReadRowGroup(); // this clear io (bad naming but i dont care)
         }
+
+        std::cout << "flfllf" << std::endl;
     }
     std::vector<TColumnPtr> ans(scheme_.size());
     for (auto& [_, value] : groups_) {
