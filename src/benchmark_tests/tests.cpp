@@ -699,6 +699,44 @@ COUNT(*),int64
 )");
 }
 
+TEST_F(BenchTest, _30) {
+    constexpr ui64 its = 31;
+    
+    JFEngine::TExecutor exec;
+    prolog(exec);
+    std::string q = "SELECT SUM(what), ";
+    for (i64 i = 1; i < its; i++) {
+        q += "SUM(-(what, " + std::to_string(i) + ")), ";
+    }
+    q.pop_back();
+    q.pop_back();
+    q += " FROM josh";
+
+    {
+        auto err = exec.ExecQuery(q);
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    std::string ans_scheme = "SUM(what),int64\n";
+    for (ui64 i = 1; i < its; i++) {
+        ans_scheme += "SUM(-(what " + std::to_string(i) + ")),int64\n";
+    }
+
+    std::string ans_data;
+
+    for (i64 i = 0; i < its; i++) {
+        // std::cout << 1600000 - static_cast<i64>(i * iter * 8) << std::endl;
+        ans_data += std::to_string(1600000 - static_cast<i64>(i * iter * 8)) + ",";
+    }
+    ans_data.back() = '\n';
+
+    EXPECT_EQ(out_scheme->str(), ans_scheme);
+    EXPECT_EQ(out_data->str(), ans_data);
+}
+
 TEST_F(BenchTest, _31) {
     
     JFEngine::TExecutor exec;

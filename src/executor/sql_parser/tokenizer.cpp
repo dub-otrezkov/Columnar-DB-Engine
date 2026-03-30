@@ -84,6 +84,10 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TLengthToken>();
     } else if (token == "LIMIT") {
         return std::make_shared<TLimitToken>();
+    } else if (token == "+") {
+        return std::make_shared<TPlusToken>();
+    } else if (token == "-") {
+        return std::make_shared<TMinusToken>();
     } else if (token == "ORDER") {
         return std::make_shared<TOrderToken>();
     } else if (token == "(") {

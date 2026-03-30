@@ -181,14 +181,6 @@ void TJFTableInput::Reset() {
 }
 
 Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
-    if (current_block_ >= blocks_pos_.size()) {
-        return MakeError<EError::EofErr>();
-    }
-
-    if (name == "*") {
-        return ReadIthColumn(0);
-    }
-
     static auto name_to_index = [this]() -> auto {
         std::unordered_map<std::string, ui64> poses;
         for (size_t i = 0; i < scheme_.size(); i++) {
@@ -198,11 +190,18 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
     };
 
     static auto inds = name_to_index();
-
-    if (inds.count(name) == 0) {
-        return MakeError<EError::NoSuchColumnsErr>(name);
+    // std::cout << ":%: " << name << std::endl;
+    if (name != "*" && inds.count(name) == 0) {
+        return EError::NoSuchColumnsErr;
     }
 
+    if (current_block_ >= blocks_pos_.size()) {
+        return MakeError<EError::EofErr>();
+    }
+
+    if (name == "*") {
+        return ReadIthColumn(0);
+    }
 
     return ReadIthColumn(inds[name]);
 }

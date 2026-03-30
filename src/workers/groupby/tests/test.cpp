@@ -50,7 +50,7 @@ TEST_F(GroupByTest, Basic) {
     {
         auto jf_in = std::make_shared<TJFTableInput>(jf_table);
 
-        TGroupByQuery gq{std::vector<std::string>{"red"}};
+        TGroupByQuery gq{std::vector<std::shared_ptr<IAgregation>>{std::make_shared<TColumnAgr>("red")}};
 
         TGlobalAgregationQuery aq;
         auto group_name = std::make_shared<TColumnAgr>("red");
