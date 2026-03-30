@@ -53,7 +53,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
                 return EError::BadCmdErr;
             }
 
-            gt->SetSelects(sl->ParseArgs());
+            gt->SetSelects(ParseArgs(sl->GetArgs()));
             sl->SetIsId();
         }
         auto [inp, err] = tokens[i]->Exec();

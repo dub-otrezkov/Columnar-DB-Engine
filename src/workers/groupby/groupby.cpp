@@ -11,7 +11,8 @@ TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TGlo
     jf_in_(std::move(jf_in)),
     scheme_(selects.cols.size()),
     group_q_(std::move(query)),
-    agr_q_(selects)
+    agr_q_(selects),
+    gc_eng(TGlobalAgregationQuery{group_q_.cols})
 {
     jf_in_->SetupColumnsScheme();
 }
@@ -44,16 +45,19 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
 
     while (run) {
         std::vector<std::vector<std::string>> keys;
-        auto [g, err] = jf_in_->ReadRowGroup();
+        auto err = gc_eng.ConsumeRowGroup(jf_in_.get()).GetError();
+        auto [g, _] = gc_eng.ThrowRowGroup();
 
-        if (err) {
-            if (err == EError::EofErr) {
+        auto [ag, err2] = jf_in_->ReadRowGroup();
+
+        if (err2) {
+            if (err2 == EError::EofErr) {
                 run = 0;
             } else {
-                return err;
+                return err2;
             }
         }
-        if (!g || g->empty() || g->at(0)->GetSize() == 0) {
+        if (!ag || ag->empty() || ag->at(0)->GetSize() == 0) {
             continue;
         }
 
@@ -63,8 +67,8 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         for (ui64 i = 0; i < sz; i++) {
             std::vector<std::string> key;
             key.reserve(group_q_.cols.size());
-            for (const auto& k : group_q_.cols) {
-                key.push_back(Do<OJFPrintIth>(rg[name_to_i_[k]], i));
+            for (ui64 j = 0; j < rg.size(); j++) {
+                key.push_back(Do<OJFPrintIth>(rg[j], i));
             }
 
             if (!groups_.contains(key)) {
@@ -73,21 +77,13 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
                 }
                 groups_.emplace(key, TGroup{jf_in_->GetScheme(), agr_q_.Clone()});
             }
-            groups_.at(key).io.UploadRowGroup(rg, i);
+            groups_.at(key).io.UploadRowGroup(*ag, i);
 
             keys.push_back(std::move(key));
         }
 
         std::sort(keys.begin(), keys.end());
         keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
-
-        // for (auto k : keys) {
-        //     std::cout << "|";
-        //     for (auto el : k) {
-        //         std::cout << el << " ";
-        //     }
-        //     std::cout << std::endl;
-        // }
 
         for (const auto& key : keys) {
             auto& t = groups_.at(key);

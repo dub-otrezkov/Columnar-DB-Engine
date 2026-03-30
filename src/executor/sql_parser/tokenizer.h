@@ -25,6 +25,8 @@ enum class ETokens {
     kMin,
     kDistinct,
     kLength,
+    kPlus,
+    kMinus,
     kOpenBracket,
     kCloseBracket,
     kComa, // misc (
@@ -52,6 +54,8 @@ static const std::unordered_map<std::string, ETokens> operators = {
     {"MIN", ETokens::kMin},
     {"MAX", ETokens::kMax},
     {"DISTINCT", ETokens::kDistinct},
+    {"+", ETokens::kPlus},
+    {"-", ETokens::kMinus},
 };
 
 class IToken {
@@ -87,7 +91,7 @@ public:
 
     ETokens GetType() const override;
     
-    TGlobalAgregationQuery ParseArgs();
+    std::vector<std::shared_ptr<IToken>> GetArgs();
     Expected<ITableInput> Exec() override;
 
     void SetIsId();
@@ -192,6 +196,16 @@ public:
     ETokens GetType() const override;
 };
 
+class TPlusToken : public IOperatorCommand {
+public:
+    ETokens GetType() const override;
+};
+
+class TMinusToken : public IOperatorCommand {
+public:
+    ETokens GetType() const override;
+};
+
 class TNameToken : public IToken {
 public:
     TNameToken(std::string name);
@@ -233,6 +247,8 @@ public:
 private:
     std::stringstream ss;
 };
+
+TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp);
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
 

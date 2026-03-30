@@ -16,7 +16,7 @@ namespace JFEngine {
 constexpr ui64 kUnlimited = -1;
 
 struct TGroupByQuery {
-    std::vector<std::string> cols;
+    std::vector<std::shared_ptr<IAgregation>> cols;
     ui64 limit = kUnlimited;
     bool is_id = false;
 };
@@ -37,6 +37,8 @@ private:
     
     std::shared_ptr<ITableInput> jf_in_;
     std::vector<TRowScheme> scheme_;
+
+    TAgregationsEngine gc_eng;
 
     struct TGroup {
         TAgregationsEngine eng;

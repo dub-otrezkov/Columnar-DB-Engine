@@ -42,6 +42,14 @@ ETokens TLengthToken::GetType() const {
     return ETokens::kLength;
 }
 
+ETokens TPlusToken::GetType() const {
+    return ETokens::kPlus;
+}
+
+ETokens TMinusToken::GetType() const {
+    return ETokens::kMinus;
+}
+
 Expected<ITableInput> IOperatorCommand::Exec() {
     return MakeError<EError::UnsupportedErr>();
 }
