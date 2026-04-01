@@ -33,7 +33,6 @@ private:
     TGlobalAgregationQuery agr_q_;
     
     std::shared_ptr<ITableInput> jf_in_;
-    std::vector<TRowScheme> scheme_;
 
     TAgregationsEngine gc_eng;
 

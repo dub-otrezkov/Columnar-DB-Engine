@@ -29,9 +29,18 @@ dot,19,hacker,-10,-10,-1,-1.125
     std::shared_ptr<std::stringstream> scheme_ss;
     std::shared_ptr<std::stringstream> data_ss;
 
+    std::string ans_data = "";
+
+    const ui64 kIter = 50000;
+
     void SetUp() override {
         scheme_ss = std::make_shared<std::stringstream>(scheme);
-        data_ss = std::make_shared<std::stringstream>(data);
+        data_ss = std::make_shared<std::stringstream>();
+        ans_data = "";
+        for (ui64 i = 0; i < kIter; i++) {
+            (*data_ss) << data;
+            ans_data += data;
+        }
     }
 
     void TearDown() override {
@@ -56,7 +65,7 @@ TEST_F(EngineTest, CSVToCSV) {
         err = eng->WriteDataToCSV(out).GetError();
 
         ASSERT_FALSE(err);
-        EXPECT_EQ(out.str(), data);
+        EXPECT_EQ(out.str(), ans_data);
     }
 }
 
@@ -109,11 +118,8 @@ TEST_F(EngineTest, JFBasic) {
         {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
-            if (err) {
-                // std::cout << err->Print() << std::endl;
-            }
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), data);
+            EXPECT_EQ(ans.str(), ans_data);
         }
     }
 }
@@ -182,7 +188,7 @@ TEST_F(EngineTest, JFSmallRowGroupSize) {
             std::stringstream ans;
             err = eng->WriteDataToCSV(ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), data);
+            EXPECT_EQ(ans.str(), ans_data);
         }
     }
 }

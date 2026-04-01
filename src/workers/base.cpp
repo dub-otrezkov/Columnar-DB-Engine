@@ -30,7 +30,7 @@ Expected<IColumn> ITableInput::ReadColumn(const std::string& name) {
         return EError::NoSuchColumnsErr;
     }
 
-    std::cout << "!! " << (current_rg_->GetShared()) << std::endl;
+    // std::cout << "!! " << (current_rg_->GetShared()) << std::endl;
 
     return Expected<IColumn>{current_rg_->GetRes()[name_to_i_[name]], current_rg_->GetError()};
 }
@@ -43,6 +43,7 @@ void ITableInput::Reset() {
 }
 
 void ITableInput::MoveCursor(i64) {
+    current_rg_.reset();
 }
 
 ui64 ITableInput::GetGroupsCount() const {

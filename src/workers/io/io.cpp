@@ -10,7 +10,9 @@
 namespace JFEngine {
 
 Expected<void> TCSVTableInput::SetupColumnsScheme() {
-    scheme_.clear();
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
 
     TCSVReader csv_scheme(*scheme_in_);
 
@@ -37,6 +39,8 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
 }
 
 Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
+
+    // std::cout << "Ffkfkfkkfkfkfkfk" << std::endl;
     auto is_eof = false;
 
     std::vector<std::vector<std::string>> tmp;
@@ -59,7 +63,6 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
             }
         } else {
             if (d.size() != tmp.size()) {
-                std::cout << d.size() << " " << tmp.size() << std::endl;
                 return MakeError<EError::IncorrectFileErr>("diff size");
             }
         }
@@ -80,6 +83,9 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
 }
 
 Expected<void> TJFTableInput::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
     jf_in_->seekg(-8, std::ios::end);
     meta_start_ = ReadI64(*jf_in_);
 
@@ -135,6 +141,7 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
 }
 
 Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
+    // std::cout << "dkdkkdkfkkfdkk" << std::endl;
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EError::EofErr>();
     }
@@ -145,6 +152,8 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
 
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [col, err] = ReadIthColumn(i);
+
+        // std::cout << "!! " << err << " " << col << std::endl;
         if (err) {
             if (!Is<EError::EofErr>(err)) {
                 return err;
@@ -154,6 +163,12 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
         }
         res.push_back(col);
     }
+
+    // std::cout << "---" << std::endl;
+    // for (auto el : res) {
+    //     std::cout << " " << el;
+    // }
+    // std::cout << std::endl;
 
     return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
@@ -165,6 +180,7 @@ void TJFTableInput::MoveCursor(i64 delta) {
     } else {
         current_block_ += delta;
     }
+    // std::cout << current_block_ << std::endl;
 }
 
 void TJFTableInput::Reset() {

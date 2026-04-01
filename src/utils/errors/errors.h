@@ -95,7 +95,7 @@ public:
     }
 
     auto operator*() {
-        return res_;
+        return {res_, err_};
     }
 
     template<std::size_t N>

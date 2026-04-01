@@ -9,6 +9,9 @@ TFilter::TFilter(std::shared_ptr<ITableInput> jf_in, TFilterQuery query) :
 }
 
 Expected<void> TFilter::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
     auto res = jf_in_->SetupColumnsScheme();
     if (res.HasError()) {
         return res;
@@ -50,11 +53,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
                 if (err) {
                     return err;
                 }
-                
-                // for (ui64 i = 0; i < orr->size(); i++) {
-                //     std::cout << orr->at(i);
-                // }
-                // std::cout << std::endl;
 
                 if (al.empty()) {
                     al = *orr;
@@ -90,7 +88,10 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
     for (ui64 i = 0; i < ans.size(); i++) {
         auto res = Do<OFilter>(col[i], keep);
         if (res.HasError()) {
+            std::cout << "NULL" << " " << res.GetError() << std::endl;
             return res.GetError();
+        }
+        if (!ans[i]) {
         }
         ans[i] = res.GetShared();
     }

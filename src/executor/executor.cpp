@@ -60,42 +60,34 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         if (err != EError::NoError) {
             return err;
         }
-        err = eng.Setup(inp).GetError();
-        if (err != EError::NoError) {
-            return err;
-        }
-
-        eng.WriteTableToJF(*TIOFactory::GetIO(cur_t1).GetShared());
 
         TIOFactory::RegisterTableInput(
             kCurTableInput,
-            std::make_shared<TJFTableInput>(
-                TIOFactory::GetIO(cur_t1).GetShared()
-            )
+            inp
         );
 
-        if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
-            d->clear();
-            d->seekg(0, std::ios::beg);
-            d->seekp(0, std::ios::beg);
-            d->str("");
-        } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
-            d->close();
-            d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
-        }
-        // TIOFactory::GetIO(cur_t2).GetShared()->clear();
-        // TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
-        // TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
+        // if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+        //     d->clear();
+        //     d->seekg(0, std::ios::beg);
+        //     d->seekp(0, std::ios::beg);
+        //     d->str("");
+        // } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+        //     d->close();
+        //     d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
+        // }
+        // // TIOFactory::GetIO(cur_t2).GetShared()->clear();
+        // // TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
+        // // TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
 
         std::swap(cur_t1, cur_t2);
     }
+
+    // std::cout << "last block execution started" << std::endl;
     
     auto [_, err3] = tokens[0]->Exec();
     if (err3 != EError::NoError) {
         return err3;
     }
-
-    // eng.Setup(fin);
 
     return nullptr;
 }

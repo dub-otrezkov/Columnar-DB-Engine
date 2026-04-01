@@ -98,7 +98,6 @@ char TCSVOptimizedReader::Peek() {
 }
 
 Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
-    // std::cout << EofC() << std::endl;
     if (EofC()) {
         return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
@@ -113,7 +112,6 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
     ans.push_back("");
 
     while (!EofC()) {
-        // std::cout << "fkkfkf" << " " << cpos_ << " " << av_ << std::endl;
         auto c = ReadSym();
         if (in_quotes && c == EOF) {
             return {std::vector<std::string>(), MakeError<EError::EofErr>()};

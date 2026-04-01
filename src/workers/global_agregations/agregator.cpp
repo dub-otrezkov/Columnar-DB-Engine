@@ -26,6 +26,13 @@ std::vector<TRowScheme>& TAgregator::GetScheme() {
 }
 
 Expected<void> TAgregator::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
+    auto err = jf_in_->SetupColumnsScheme();
+    if (err.HasError()) {
+        return err.GetError();
+    }
     auto names = eng_.GetNames();
     for (ui64 i = 0; i < cols_cnt_; i++) {
         scheme_.emplace_back(names[i], EColumn::kUnitialized);
@@ -38,10 +45,16 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
         bool is_eof = false;
         std::vector<TColumnPtr> ans;
         if (blocker_) {
-            jf_in_->Reset();
-            for (ui64 i = 0; i < jf_in_->GetGroupsCount(); i++) {
-                eng_.ConsumeRowGroup(jf_in_.get());
-                jf_in_->MoveCursor(1);
+            bool run = true;
+            for (; run; jf_in_->MoveCursor(1)) {
+                auto err = eng_.ConsumeRowGroup(jf_in_.get());
+                if (err.HasError()) {
+                    if (err.GetError() == EError::EofErr) {
+                        run = false;
+                    } else {
+                        return err.GetError();
+                    }
+                }
             }
             auto [t, _] = eng_.ThrowRowGroup();
             is_eof = true;
@@ -57,7 +70,6 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
                 }
             }
             ans = std::move(*eng_.ThrowRowGroup().GetShared());
-            // }
         }
 
         for (ui64 i = 0; i < ans.size(); i++) {
@@ -66,33 +78,8 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
         
         return {std::move(ans), (is_eof ? EError::EofErr : EError::NoError)};
     } else {
-        // std::cout << "fjkfjkfk" << std::endl;
         return jf_in_->ReadRowGroup();
     }
-    // std::vector<TColumnPtr> ans;
-    // auto is_eof = 0;
-    // for (ui64 i = 0; i < query_.cols.size(); i++) {
-    //     auto col = query_.cols[i]->ReadRowGroup(jf_in_.get());
-    //     if (col.HasError()) {
-    //         if (!Is<EError::EofErr>(col.GetError())) {
-    //             return col.GetError();
-    //         } else {
-    //             is_eof = 1;
-    //         }
-    //     }
-
-    //     if (!col.GetShared()) {
-    //         continue;
-    //     }
-
-    //     ans.push_back(col.GetShared());
-    //     scheme_[i].type_ = col.GetShared()->GetType();
-    // }
-
-    // jf_in_->MoveCursor(1);
-
-    // Expected<std::vector<TColumnPtr>> ret(std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError);
-    // return ret;
 }
 
 void TAgregator::MoveCursor(i64 delta) {

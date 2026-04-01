@@ -219,6 +219,8 @@ Expected<ITableInput> TSelectToken::Exec() {
 
         eng.Setup(agr);
 
+        // std::cout << ":: " << TIOFactory::GetIO(kResultData).GetShared() << " ";
+        // std::cout << TIOFactory::GetIO(kResultScheme).GetShared() << std::endl;
         eng.WriteDataToCSV(TIOFactory::GetIO(kResultData).GetRes());
         eng.WriteSchemeToCSV(TIOFactory::GetIO(kResultScheme).GetRes());
 

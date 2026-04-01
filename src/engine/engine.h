@@ -31,6 +31,7 @@ public:
 
     template <typename F>
     Expected<void> RunCommand(F func) {
+
         auto run = true;
 
         for (; run; in_->MoveCursor(1)) {
@@ -40,6 +41,7 @@ public:
                 if (Is<EError::EofErr>(err)) {
                     run = false;
                 } else {
+                    std::cout << "engine run command err: " << err << std::endl;
                     return err;
                 }
             }
@@ -51,6 +53,7 @@ public:
             if (block.empty()) {
                 continue;
             }
+
             if (block[0]->GetSize() == 0) {
                 continue;
             }

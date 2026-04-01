@@ -9,9 +9,8 @@ public:
     TNarrowTableInput(std::vector<TRowScheme>& scheme);
 
     Expected<void> SetupColumnsScheme() override;
-    std::vector<TRowScheme>& GetScheme() override;
 
-    void MoveCursor(i64 delta);
+    void MoveCursor(i64 delta) override;
 
     void UploadRowGroup(std::vector<TColumnPtr>& row_group, ui64 row_i);
 

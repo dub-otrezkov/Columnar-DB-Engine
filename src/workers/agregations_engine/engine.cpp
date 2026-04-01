@@ -37,11 +37,6 @@ Expected<std::vector<std::shared_ptr<IColumn>>> TAgregationsEngine::ThrowRowGrou
     std::vector<std::shared_ptr<IColumn>> ans;
     for (auto& c : cols_) {
         auto [res, _] = c->ThrowRowGroup();
-        // std::cout << "! " << res << " " << res->GetSize() << " " << c << std::endl;
-
-        if (!res) {
-            std::cout << "dlldld:: " << _ << std::endl;
-        }
         if (is_groupby_ && res->GetSize() > 1) {
             ans.push_back(Do<OFront>(res));
         } else {

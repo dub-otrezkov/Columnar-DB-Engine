@@ -22,8 +22,6 @@ bool TColumnAgr::IsBlocker() {
 Expected<void> TColumnAgr::ConsumeRowGroup(ITableInput* inp) {
     auto [ans_, err] = inp->ReadColumn(name);
     ans = ans_;
-
-    // std::cout << "@ " << ans << " " << err << std::endl;
     return err;
 }
 
@@ -49,6 +47,7 @@ bool TSumAgr::IsBlocker() {
 
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
     auto err = arg->ConsumeRowGroup(inp);
+
     bool is_eof = false;
     if (err.GetError() != EError::NoError) {
         if (EError::EofErr == err.GetError()) {
@@ -347,7 +346,6 @@ Expected<void> TDistinctAgr::ConsumeRowGroup(ITableInput* inp) {
 
     auto [ans_, err2] = Do<ODistinct>(ans, col);
     if (err2) {
-        // std::cout << ":::: " << err2 << std::endl;
         return err2;
     }
     ans = ans_;
@@ -508,7 +506,6 @@ Expected<void> TMinusAgr::ConsumeRowGroup(ITableInput* inp) {
 
     for (ui64 i = 1; i < args.size(); i++) {
         auto err1 = args[i]->ConsumeRowGroup(inp).GetError();
-        // std::cout << "::: " << err1 << std::endl;
         if (err1 == EError::NoError || err1 == EError::EofErr) {
             auto [c, err2] = Do<OVerticalSub>(ans_, args[i]->ThrowRowGroup().GetShared());
             ans_ = std::move(c);

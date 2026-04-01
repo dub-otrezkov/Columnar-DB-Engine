@@ -34,7 +34,7 @@ dorothy,int64
 3,7,josh,forever,1,cool with u,1,dolores1,2022-06-21,2022-06-21 05:08:14,8
 )";
 
-    static constexpr ui64 iter = 1;
+    static constexpr ui64 iter = 50000;
 
     std::shared_ptr<std::stringstream> out_scheme;
     std::shared_ptr<std::stringstream> out_data;
@@ -83,29 +83,22 @@ void prolog(JFEngine::TExecutor& exec) {
     ASSERT_FALSE(err.HasError());
 }
 
-TEST_F(BenchTest, _35) {
+TEST_F(BenchTest, _1) {
     
     JFEngine::TExecutor exec;
     prolog(exec);
-    {
-        auto err = exec.ExecQuery("SELECT what, +(what, 1), +(what, 2), -(what, 3), COUNT(*) AS c FROM josh GROUP BY what ORDER BY c DESC LIMIT 10;");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
+    std::cout << "prolog finished" << std::endl;
+    // {
+    //     auto err = exec.ExecQuery("SELECT COUNT(*) FROM josh");
+    //     if (err.HasError()) {
+    //         std::cout << err.GetError() << std::endl;
+    //     }
+    //     ASSERT_FALSE(err.HasError());
+    // }
 
-    std::cout << out_scheme->str() << std::endl;
-    std::cout << out_data->str() << std::endl;
-
-//     EXPECT_EQ(out_scheme->str(), R"(empty,string
-// c,int64
-// )");
-//     EXPECT_EQ(out_data->str(), R"(dolores,100000
-// dolores,100000
-// ,100000
-// ,100000
-// )");
+    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+)");
+    EXPECT_EQ(out_data->str(), "400000\n");
 }
 
 } // namespace JFEngine::Testing

@@ -65,7 +65,7 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
     }
     tot[cur] = '\n';
     out_.write(tot, total);
-    
+
     delete[] tot;
 }
 

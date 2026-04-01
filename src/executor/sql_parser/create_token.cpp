@@ -20,6 +20,7 @@ Expected<ITableInput> TCreateToken::Exec() {
         return err.GetError();
     }
     TIOFactory::RegisterFileIO(name, ETypeFile::kJFFile);
+
     eng.WriteTableToJF(*TIOFactory::GetIO(name).GetShared());
 
     return nullptr;
