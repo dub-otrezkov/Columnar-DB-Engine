@@ -50,12 +50,16 @@ ETokens TMinusToken::GetType() const {
     return ETokens::kMinus;
 }
 
-Expected<ITableInput> IOperatorCommand::Exec() {
+Expected<ITableInput> IOperatorCommand::MakeWorker() {
     return MakeError<EError::UnsupportedErr>();
 }
 
 ETokens TAsToken::GetType() const {
     return ETokens::kAs;
+}
+
+ETokens TAndToken::GetType() const {
+    return ETokens::kAnd;
 }
 
 } // namespace JFEngine

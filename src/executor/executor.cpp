@@ -21,7 +21,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     TEngine eng;
     {
-        auto [inp, err2] = tokens[1]->Exec();
+        auto [inp, err2] = tokens[1]->MakeWorker();
         if (err2 != EError::NoError) {
             return err2;
         }
@@ -56,7 +56,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
             gt->SetSelects(ParseArgs(sl->GetArgs()));
             sl->SetIsId();
         }
-        auto [inp, err] = tokens[i]->Exec();
+        auto [inp, err] = tokens[i]->MakeWorker();
         if (err != EError::NoError) {
             return err;
         }
@@ -84,7 +84,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     // std::cout << "last block execution started" << std::endl;
     
-    auto [_, err3] = tokens[0]->Exec();
+    auto [_, err3] = tokens[0]->MakeWorker();
     if (err3 != EError::NoError) {
         return err3;
     }

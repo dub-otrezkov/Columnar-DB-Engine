@@ -65,7 +65,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             std::vector<std::string> key;
             key.reserve(group_q_.cols.size());
             for (ui64 j = 0; j < rg.size(); j++) {
-                key.push_back(Do<OPrintIth>(rg[j], i));
+                key.push_back(Do<OJFPrintIth>(rg[j], i));
             }
 
             if (!groups_.contains(key)) {
@@ -105,6 +105,8 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             }
         }
     }
+
+    assert(ans.size() == GetScheme().size());
 
     return {std::move(ans), EError::EofErr};
 }

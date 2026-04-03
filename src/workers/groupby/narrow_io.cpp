@@ -2,6 +2,8 @@
 
 #include "columns/operators/vector_like.h"
 
+#include <cassert>
+
 namespace JFEngine {
     
 TNarrowTableInput::TNarrowTableInput(std::vector<TRowScheme>& scheme) {
@@ -28,6 +30,7 @@ void TNarrowTableInput::MoveCursor(i64 delta) {
 }
 
 Expected<std::vector<TColumnPtr>> TNarrowTableInput::LoadRowGroup() {
+    assert(buf_->size() == GetScheme().size());
     return buf_;
 }
 

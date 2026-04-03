@@ -97,6 +97,8 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
         MergeRowGroups(ans_, rg);
     }
 
+    assert(ans_.size() == GetScheme().size());
+
     return {std::move(ans_), EError::EofErr};
 }
 

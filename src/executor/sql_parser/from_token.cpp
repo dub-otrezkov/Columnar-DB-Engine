@@ -4,7 +4,9 @@
 
 namespace JFEngine {
 
-Expected<ITableInput> TFromToken::Exec() {
+TFromToken::TFromToken(std::string query) : query_(std::move(query)) {}
+
+Expected<ITableInput> TFromToken::MakeWorker() {
     for (const auto& t : args_) {
         if (t->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>("from token without files");
@@ -15,8 +17,7 @@ Expected<ITableInput> TFromToken::Exec() {
         auto name = std::dynamic_pointer_cast<TNameToken>(args_[0])->GetName();
 
         TIOFactory::RegisterFileIO(name, ETypeFile::kJFFile);
-
-        return std::make_shared<TJFTableInput>(TIOFactory::GetIO(name).GetShared());
+        return std::make_shared<TJFNeccessaryOnly>(TIOFactory::GetIO(name).GetShared(), query_);
     } else if (args_.size() == 2) {
         auto scheme = std::dynamic_pointer_cast<TNameToken>(args_[0])->GetName();
         auto data = std::dynamic_pointer_cast<TNameToken>(args_[1])->GetName();

@@ -79,6 +79,12 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
         out.push_back(col.GetShared());
     }
 
+    // if (out.size() != GetScheme().size()) {
+    //     std::cout << "wtf??? " << out.size() << " " << GetScheme().size() << std::endl;
+    // }
+
+    // assert(out.size() == GetScheme().size());
+
     return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
 }
 
@@ -134,7 +140,7 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
 
     Expected<IColumn> ans(
         col.GetShared(),
-        current_block_ + 1 == blocks_pos_.size() ? MakeError<EError::EofErr>() : EError::NoError
+        current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
     );
 
     return ans;
@@ -169,6 +175,8 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
     //     std::cout << " " << el;
     // }
     // std::cout << std::endl;
+
+    assert(res.size() == GetScheme().size());
 
     return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
@@ -217,6 +225,55 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
 
 ui64 TJFTableInput::GetGroupsCount() const {
     return blocks_pos_.size();
+}
+
+
+TJFNeccessaryOnly::TJFNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query) :
+    TJFTableInput(jf_in),
+    query_(std::move(query))
+{
+}
+
+Expected<void> TJFNeccessaryOnly::SetupColumnsScheme() {
+    auto err = TJFTableInput::SetupColumnsScheme();
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    new_scheme_.clear();
+    cols_.clear();
+    for (ui64 i = 0; i < TJFTableInput::GetScheme().size(); i++) {
+        if (query_.contains(scheme_[i].name_)) {
+            new_scheme_.emplace_back(scheme_[i]);
+            cols_.push_back(i);
+        }
+    }
+    if (new_scheme_.empty()) {
+        new_scheme_.emplace_back(scheme_[0]);
+        cols_.push_back(0);
+    }
+    return EError::NoError;
+}
+
+std::vector<TRowScheme>& TJFNeccessaryOnly::GetScheme() {
+    return new_scheme_;
+}
+
+Expected<std::vector<TColumnPtr>> TJFNeccessaryOnly::LoadRowGroup() {
+    bool is_eof = false;
+    std::vector<TColumnPtr> res;
+    for (auto i : cols_) {
+        auto [r, err] = ReadIthColumn(i);
+        if (err) {
+            if (err == EError::EofErr) {
+                is_eof = true;
+            } else {
+                return err;
+            }
+        }
+        res.push_back(r);
+    }
+    assert(res.size() == GetScheme().size());
+    return {std::move(res), is_eof ? EError::EofErr : EError::NoError};
 }
 
 } // namespace JFEngine

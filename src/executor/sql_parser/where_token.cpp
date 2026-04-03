@@ -10,21 +10,21 @@ ETokens TWhereToken::GetType() const {
     return ETokens::kWhere;
 }
 
-Expected<ITableInput> TWhereToken::Exec() {
+Expected<ITableInput> TWhereToken::MakeWorker() {
     std::vector<TFilterOp> config;
     ui64 i = 0;
     while (i < args_.size()) {
         if (i + 3 > args_.size()) {
             return MakeError<EError::BadCmdErr>();
         }
-        if (args_[i]->GetType() != ETokens::kNameToken) {
+        if (args_[i]->GetType() != ETokens::kNameToken && args_[i]->GetType() != ETokens::kAnd) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a1 = static_cast<TNameToken*>(args_[i].get());
-        if (a1->GetName() == "AND") {
+        if (args_[i]->GetType() == ETokens::kAnd) {
             i++;
             continue;
         }
+        auto a1 = static_cast<TNameToken*>(args_[i].get());
         if (args_[i + 1]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }

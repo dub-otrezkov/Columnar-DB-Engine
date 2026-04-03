@@ -75,9 +75,12 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
         for (ui64 i = 0; i < ans.size(); i++) {
             scheme_[i].type_ = ans[i]->GetType();
         }
+
+        assert(ans.size() == GetScheme().size());
         
         return {std::move(ans), (is_eof ? EError::EofErr : EError::NoError)};
     } else {
+        assert(jf_in_->GetScheme().size() == GetScheme().size());
         return jf_in_->ReadRowGroup();
     }
 }

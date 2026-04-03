@@ -96,6 +96,8 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
         ans[i] = res.GetShared();
     }
 
+    assert(ans.size() == GetScheme().size());
+
     return {std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 

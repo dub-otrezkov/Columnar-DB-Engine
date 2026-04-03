@@ -5,7 +5,7 @@
 
 namespace JFEngine {
 
-Expected<ITableInput> TGroupToken::Exec() {
+Expected<ITableInput> TGroupToken::MakeWorker() {
     // for (const auto& t : args_) {
     //     if (t->GetType() != ETokens::kNameToken) {
     //         return MakeError<EError::BadCmdErr>("from token without files");

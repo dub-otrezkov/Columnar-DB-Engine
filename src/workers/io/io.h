@@ -27,6 +27,8 @@ private:
 
 class TJFTableInput : public ITableInput {
 public:
+    virtual ~TJFTableInput() = default;
+
     TJFTableInput(std::shared_ptr<std::istream> jf_in) {
         jf_in_ = jf_in;
     }
@@ -39,7 +41,7 @@ public:
     void Reset() override;
     ui64 GetGroupsCount() const override;
 
-private:
+protected:
     Expected<IColumn> ReadIthColumn(ui64 i);
 
     std::shared_ptr<std::istream> jf_in_;
@@ -49,6 +51,21 @@ private:
     std::vector<ui64> blocks_pos_;
 
     ui64 current_block_ = 0;
+};
+
+class TJFNeccessaryOnly : public TJFTableInput {
+public:
+    TJFNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query = "");
+
+    std::vector<TRowScheme>& GetScheme() override;
+    Expected<void> SetupColumnsScheme() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+
+private:
+    std::string query_;
+    std::vector<ui64> cols_;
+
+    std::vector<TRowScheme> new_scheme_;
 };
 
 } // JFEngine

@@ -183,7 +183,7 @@ std::vector<std::shared_ptr<IToken>> TSelectToken::GetArgs() {
     return args_;
 }
 
-Expected<ITableInput> TSelectToken::Exec() {
+Expected<ITableInput> TSelectToken::MakeWorker() {
     if (!is_id_) {
         auto args = ParseArgs(args_);
 

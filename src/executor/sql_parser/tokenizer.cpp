@@ -16,7 +16,7 @@ std::optional<ETokens> IsCommand(const std::string& cmd) {
     return std::nullopt;
 }
 
-TTokenizer::TTokenizer(const std::string& data) {
+TTokenizer::TTokenizer(const std::string& data) : query_(data) {
     ss << data;
 }
 
@@ -63,7 +63,7 @@ Expected<IToken> TTokenizer::GetNext() {
     }
 
     if (token == "FROM") {
-        return std::make_shared<TFromToken>();
+        return std::make_shared<TFromToken>(query_);
     } else if (token == "CREATE") {
         return std::make_shared<TCreateToken>();
     } else if (token == "SELECT") {
@@ -102,6 +102,8 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TGroupToken>();
     } else if (token == "AS") {
         return std::make_shared<TAsToken>();
+    } else if (token == "AND") {
+        return std::make_shared<TAndToken>();
     } else {
         return std::make_shared<TNameToken>(token);
     }
