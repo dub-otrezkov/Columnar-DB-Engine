@@ -4,3 +4,5 @@
 Пример запуска запросов - src/executor/debug/main.cpp, src/executor/tests
 
 Тесты, аналогичные бенчмарку - src/benchmark_tests
+
+Clickbench - src/benchmark_tests/clickbench
