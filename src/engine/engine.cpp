@@ -31,11 +31,6 @@ Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
             for (ui64 j = 0; j < block.size(); j++) {
                 row[j] = Do<OPrintIth>(block[j], i);
             }
-
-            // std::cout << row.size() << std::endl;
-            // for (auto el : row) {
-            //     std::cout << el << std::endl;
-            // }
             w.WriteRow(row);
         }
 
@@ -60,9 +55,6 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
             for (ui64 i = 0; i < block[0]->GetSize(); i++) {
-                if (block[j]->GetSize() < 100) {
-                    // std::cout << "::::: " << block[j]->GetSize() << " " << (int)Do<OJFPrintIth>(block[j], i)[0] << std::endl;
-                }
                 row[i] = Do<OJFPrintIth>(block[j], i);
             }
 
@@ -112,18 +104,6 @@ Expected<TEngine> MakeEngineFromCSV(
 Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf) {
     auto eng = std::make_shared<TEngine>();
     auto err = eng->Setup(std::make_shared<TJFTableInput>(jf));
-    if (err.HasError()) {
-        return err.GetError();
-    }
-    return eng;
-}
-
-Expected<TEngine> MakeSelectEngine(
-    std::shared_ptr<std::istream> jf,
-    TSelectQuery query
-) {
-    auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_shared<TSelector>(std::make_shared<TJFTableInput>(jf), query));
     if (err.HasError()) {
         return err.GetError();
     }

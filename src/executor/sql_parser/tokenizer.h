@@ -23,6 +23,7 @@ enum class ETokens {
     kAvg,
     kMax,
     kMin,
+    kAnd,
     kDistinct,
     kLength,
     kPlus,
@@ -38,24 +39,24 @@ enum class ETokens {
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
-    {"FROM", ETokens::kFrom},
-    {"WHERE", ETokens::kWhere},
-    {"GROUP", ETokens::kGroup},
-    {"ORDER", ETokens::kOrder},
-    {"LIMIT", ETokens::kLimit},
+    {"FROM",   ETokens::kFrom},
+    {"WHERE",  ETokens::kWhere},
+    {"GROUP",  ETokens::kGroup},
+    {"ORDER",  ETokens::kOrder},
+    {"LIMIT",  ETokens::kLimit},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
 };
 
 static const std::unordered_map<std::string, ETokens> operators = {
-    {"SUM", ETokens::kSum},
-    {"COUNT", ETokens::kCount},
-    {"AVG", ETokens::kAvg},
-    {"MIN", ETokens::kMin},
-    {"MAX", ETokens::kMax},
+    {"SUM",      ETokens::kSum},
+    {"COUNT",    ETokens::kCount},
+    {"AVG",      ETokens::kAvg},
+    {"MIN",      ETokens::kMin},
+    {"MAX",      ETokens::kMax},
     {"DISTINCT", ETokens::kDistinct},
-    {"+", ETokens::kPlus},
-    {"-", ETokens::kMinus},
+    {"+",        ETokens::kPlus},
+    {"-",        ETokens::kMinus},
 };
 
 class IToken {
@@ -70,7 +71,7 @@ class ICommand : public IToken {
 public:
     virtual ~ICommand() = default;
 
-    virtual Expected<ITableInput> Exec() = 0;
+    virtual Expected<ITableInput> MakeWorker() = 0;
 
     void AddArg(std::shared_ptr<IToken> arg) {
         args_.push_back(arg);
@@ -81,7 +82,7 @@ protected:
 
 class IOperatorCommand : public ICommand {
 public:
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
 };
 
 // commands tokens
@@ -92,7 +93,7 @@ public:
     ETokens GetType() const override;
     
     std::vector<std::shared_ptr<IToken>> GetArgs();
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
 
     void SetIsId();
 
@@ -105,15 +106,17 @@ public:
 
     ETokens GetType() const override;
     
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
 };
 
-class TFromToken : public ICommand {
-public:
+struct TFromToken : public ICommand {
+    TFromToken(std::string query);
 
     ETokens GetType() const override;
     
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
+
+    std::string query_;
 };
 
 class TLimitToken : public ICommand {
@@ -123,7 +126,7 @@ public:
 
     ui64 GetLimit();
     
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
 };
 
 class TOrderToken : public ICommand {
@@ -131,7 +134,7 @@ public:
 
     ETokens GetType() const override;
     
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
 
     std::shared_ptr<TLimitToken> limit_;
 
@@ -142,7 +145,7 @@ public:
 
     ETokens GetType() const override;
     
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
 };
 
 class TGroupToken : public ICommand {
@@ -150,7 +153,7 @@ public:
 
     ETokens GetType() const override;
     
-    Expected<ITableInput> Exec() override;
+    Expected<ITableInput> MakeWorker() override;
     void SetSelects(TGlobalAgregationQuery s);
 
     std::shared_ptr<TLimitToken> limit_;
@@ -224,6 +227,11 @@ public:
     ETokens GetType() const override;
 };
 
+class TAndToken : public IToken {
+public:
+    ETokens GetType() const override;
+};
+
 class TOpenBracketToken : public IToken {
 public:
     ETokens GetType() const override;
@@ -245,6 +253,7 @@ public:
 
     Expected<IToken> GetNext();
 private:
+    std::string query_;
     std::stringstream ss;
 };
 

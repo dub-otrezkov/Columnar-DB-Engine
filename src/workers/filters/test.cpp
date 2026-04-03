@@ -27,6 +27,7 @@ dot,19,hacker,10,82,82,0
 dot,9,hacker,10,92,2,-1
 dot,19,hacker,-10,-10,-1,-1.125
 )";
+    const ui64 kIter = 50000;
 };
 
 
@@ -34,7 +35,10 @@ TEST_F(FiltersTest, EqTest) {
     auto jf_table = std::make_shared<std::stringstream>();
     {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+        auto data_in = std::make_shared<std::stringstream>();
+        for (ui64 i = 0; i < kIter; i++) {
+            (*data_in) << data;
+        }
 
         auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
 

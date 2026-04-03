@@ -9,15 +9,16 @@ namespace JFEngine {
 
 TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TGlobalAgregationQuery selects) :
     jf_in_(std::move(jf_in)),
-    scheme_(selects.cols.size()),
     group_q_(std::move(query)),
     agr_q_(selects),
     gc_eng(TGlobalAgregationQuery{group_q_.cols})
 {
+    scheme_.resize(selects.cols.size());
     jf_in_->SetupColumnsScheme();
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
+    jf_in_->SetupColumnsScheme();
     std::vector<std::string> names(agr_q_.cols.size());
     for (ui64 i = 0; i < scheme_.size(); i++) {
         scheme_[i].name_ = agr_q_.cols[i]->GetName();
@@ -29,11 +30,7 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     return EError::NoError;
 }
 
-std::vector<TRowScheme>& TGroupBy::GetScheme() {
-    return scheme_;
-}
-
-Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     bool run = 1;
     std::vector<std::vector<std::string>> changed;
 
@@ -43,7 +40,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         }
     }
 
-    while (run) {
+    for (; run; jf_in_->MoveCursor(1)) {
         std::vector<std::vector<std::string>> keys;
         auto err = gc_eng.ConsumeRowGroup(jf_in_.get()).GetError();
         auto [g, _] = gc_eng.ThrowRowGroup();
@@ -88,9 +85,10 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
         for (const auto& key : keys) {
             auto& t = groups_.at(key);
             t.eng.ConsumeRowGroup(&t.io);
-            t.io.ReadRowGroup(); // this clear io (bad naming but i dont care)
+            t.io.MoveCursor(1); // this clear io (bad naming but i dont care)
         }
     }
+
     std::vector<TColumnPtr> ans(scheme_.size());
     for (auto& [_, value] : groups_) {
         if (!ans[0]) {
@@ -107,6 +105,8 @@ Expected<std::vector<TColumnPtr>> TGroupBy::ReadRowGroup() {
             }
         }
     }
+
+    assert(ans.size() == GetScheme().size());
 
     return {std::move(ans), EError::EofErr};
 }

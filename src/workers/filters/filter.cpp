@@ -9,23 +9,22 @@ TFilter::TFilter(std::shared_ptr<ITableInput> jf_in, TFilterQuery query) :
 }
 
 Expected<void> TFilter::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
     auto res = jf_in_->SetupColumnsScheme();
     if (res.HasError()) {
         return res;
     }
-    auto sc = GetScheme();
+    scheme_ = jf_in_->GetScheme();
     ui64 i = 0;
-    for (const auto& [name, _] : sc) {
+    for (const auto& [name, _] : scheme_) {
         name_to_i_[name] = i++;
     }
     return nullptr;
 }
 
-std::vector<TRowScheme>& TFilter::GetScheme() {
-    return jf_in_->GetScheme();
-}
-
-Expected<std::vector<TColumnPtr>> TFilter::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
     auto [col_sp, err] = jf_in_->ReadRowGroup();
     bool is_eof = Is<EError::EofErr>(err);
     if (err && !is_eof) {
@@ -54,11 +53,6 @@ Expected<std::vector<TColumnPtr>> TFilter::ReadRowGroup() {
                 if (err) {
                     return err;
                 }
-                
-                // for (ui64 i = 0; i < orr->size(); i++) {
-                //     std::cout << orr->at(i);
-                // }
-                // std::cout << std::endl;
 
                 if (al.empty()) {
                     al = *orr;
@@ -94,12 +88,22 @@ Expected<std::vector<TColumnPtr>> TFilter::ReadRowGroup() {
     for (ui64 i = 0; i < ans.size(); i++) {
         auto res = Do<OFilter>(col[i], keep);
         if (res.HasError()) {
+            std::cout << "NULL" << " " << res.GetError() << std::endl;
             return res.GetError();
+        }
+        if (!ans[i]) {
         }
         ans[i] = res.GetShared();
     }
 
+    assert(ans.size() == GetScheme().size());
+
     return {std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
+}
+
+void TFilter::MoveCursor(i64 delta) {
+    current_rg_.reset();
+    jf_in_->MoveCursor(delta);
 }
 
 } // namespace JFEngine

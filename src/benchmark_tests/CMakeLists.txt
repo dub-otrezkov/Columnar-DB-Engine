@@ -5,3 +5,5 @@ target_link_libraries(bench_test exec_lib)
 target_link_libraries(bench_test GTest::gtest GTest::gtest_main)
 target_link_libraries(bench_debug exec_lib)
 target_link_libraries(bench_debug GTest::gtest GTest::gtest_main)
+
+add_subdirectory(clickbench)

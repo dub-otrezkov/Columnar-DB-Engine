@@ -183,7 +183,7 @@ std::vector<std::shared_ptr<IToken>> TSelectToken::GetArgs() {
     return args_;
 }
 
-Expected<ITableInput> TSelectToken::Exec() {
+Expected<ITableInput> TSelectToken::MakeWorker() {
     if (!is_id_) {
         auto args = ParseArgs(args_);
 
@@ -219,6 +219,8 @@ Expected<ITableInput> TSelectToken::Exec() {
 
         eng.Setup(agr);
 
+        // std::cout << ":: " << TIOFactory::GetIO(kResultData).GetShared() << " ";
+        // std::cout << TIOFactory::GetIO(kResultScheme).GetShared() << std::endl;
         eng.WriteDataToCSV(TIOFactory::GetIO(kResultData).GetRes());
         eng.WriteSchemeToCSV(TIOFactory::GetIO(kResultScheme).GetRes());
 

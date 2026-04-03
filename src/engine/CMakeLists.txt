@@ -14,7 +14,6 @@ target_link_libraries(
     nodes_lib
     iworkers_lib
     io_worker_lib
-    selector_worker_lib
 )
 
 target_link_libraries (engine_test GTest::gtest GTest::gtest_main)

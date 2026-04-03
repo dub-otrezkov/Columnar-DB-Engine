@@ -4,7 +4,7 @@
 
 namespace JFEngine {
 
-Expected<ITableInput> TLimitToken::Exec() {
+Expected<ITableInput> TLimitToken::MakeWorker() {
     return EError::UnsupportedErr;
 }
 

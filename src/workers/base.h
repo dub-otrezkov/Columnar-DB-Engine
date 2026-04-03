@@ -20,18 +20,24 @@ public:
     ITableInput(ui64 row_group_len = kRowGroupLen);
     virtual ~ITableInput() = default;
 
-    virtual Expected<void> SetupColumnsScheme() = 0;
-    virtual std::vector<TRowScheme>& GetScheme() = 0;
-    virtual Expected<std::vector<TColumnPtr>> ReadRowGroup() = 0;
+    virtual std::vector<TRowScheme>& GetScheme();
+    virtual Expected<std::vector<TColumnPtr>> ReadRowGroup();
     virtual Expected<IColumn> ReadColumn(const std::string& name);
+
+    virtual Expected<void> SetupColumnsScheme() = 0;
+    virtual Expected<std::vector<TColumnPtr>> LoadRowGroup() = 0;
+
     virtual ui64 GetGroupsCount() const;
+    virtual ui64 GetRowGroupLen() const;
     virtual void MoveCursor(i64 delta);
     virtual void Reset();
 
-    ui64 GetRowGroupLen() const;
-
 protected:
+    std::optional<Expected<std::vector<TColumnPtr>>> current_rg_;
+    std::vector<TRowScheme> scheme_;
     ui64 row_group_len_;
+
+    std::unordered_map<std::string, ui64> name_to_i_;
 };
 
 } // namespace JFEngine

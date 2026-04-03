@@ -16,6 +16,10 @@ TOrderBy::TOrderBy(std::shared_ptr<ITableInput> jf_in, TOrderByQuery query) :
 }
 
 Expected<void> TOrderBy::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
+    jf_in_->SetupColumnsScheme();
     scheme_ = jf_in_->GetScheme();
     name_to_i_.clear();
     for (auto [name, tp] : scheme_) {
@@ -24,15 +28,9 @@ Expected<void> TOrderBy::SetupColumnsScheme() {
     return EError::NoError;
 }
 
-std::vector<TRowScheme>& TOrderBy::GetScheme() {
-    return scheme_;
-}
-
 void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, ui64 column) {
     auto order = Do<OSort>(rg[column], order_q_.reverse);
-    // std::cout << ": " << order.size() << " " << rg[column]->GetSize() << std::endl;
     for (auto& ptr : rg) {
-        // std::cout << ptr->GetSize() << std::endl;
         auto [col, err] = Do<OApplyOrder>(ptr, order);
         if (!err) {
             ptr = col;
@@ -51,7 +49,11 @@ void TOrderBy::MergeRowGroups(
     std::vector<TColumnPtr>& rg2
 ) {
     for (ui64 i = 0; i < rg1.size(); i++) {
-        // std::cout << "++:" << " " << rg2[i]->GetSize() << " " << rg1[i]->GetSize() << std::endl;
+        // std::cout << "++:" << " " << rg2[i] << " " << rg1[i] << std::endl;
+        if (!rg1[i]) {
+            rg1[i] = MakeEmptyColumn(rg2[i]->GetType()).GetShared();
+            scheme_[i].type_ = rg1[i]->GetType();
+        }
         Do<OPushBackVector>(rg2[i], rg1[i]);
     }
     SortRowGroup(rg1);
@@ -62,18 +64,21 @@ void TOrderBy::MergeRowGroups(
     }
 }
 
-Expected<std::vector<TColumnPtr>> TOrderBy::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
     bool run = 1;
     
     std::vector<TColumnPtr> ans_;
-    ans_.reserve(scheme_.size());
-    for (auto [name, tp] : scheme_) {
-        ans_.push_back(MakeEmptyColumn(tp).GetShared());
-    }
+    ans_.resize(scheme_.size());
+    // for (auto [name, tp] : scheme_) {
+    //     // std::cout << 
+    //     ans_.push_back(MakeEmptyColumn(tp).GetShared());
+    //     std::cout << ":: : " << ans_.back() << " " << tp << std::endl;
+    // }
 
-    while (run) {
+    for (; run; jf_in_->MoveCursor(1)) {
         std::vector<std::vector<std::string>> keys;
         auto [g, err] = jf_in_->ReadRowGroup();
+        // jf_in_->MoveCursor(1);
 
         if (err) {
             if (err == EError::EofErr) {
@@ -88,8 +93,11 @@ Expected<std::vector<TColumnPtr>> TOrderBy::ReadRowGroup() {
 
         auto rg = *g;
 
+        // std::cout << "merge q: " << " " << ans_ << " " << rg << std::endl; 
         MergeRowGroups(ans_, rg);
     }
+
+    assert(ans_.size() == GetScheme().size());
 
     return {std::move(ans_), EError::EofErr};
 }

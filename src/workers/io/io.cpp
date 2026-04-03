@@ -10,7 +10,9 @@
 namespace JFEngine {
 
 Expected<void> TCSVTableInput::SetupColumnsScheme() {
-    scheme_.clear();
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
 
     TCSVReader csv_scheme(*scheme_in_);
 
@@ -36,7 +38,9 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
+
+    // std::cout << "Ffkfkfkkfkfkfkfk" << std::endl;
     auto is_eof = false;
 
     std::vector<std::vector<std::string>> tmp;
@@ -59,7 +63,6 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
             }
         } else {
             if (d.size() != tmp.size()) {
-                std::cout << d.size() << " " << tmp.size() << std::endl;
                 return MakeError<EError::IncorrectFileErr>("diff size");
             }
         }
@@ -76,14 +79,19 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::ReadRowGroup() {
         out.push_back(col.GetShared());
     }
 
+    // if (out.size() != GetScheme().size()) {
+    //     std::cout << "wtf??? " << out.size() << " " << GetScheme().size() << std::endl;
+    // }
+
+    // assert(out.size() == GetScheme().size());
+
     return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
 }
 
-std::vector<TRowScheme>& TCSVTableInput::GetScheme() {
-    return scheme_;
-}
-
 Expected<void> TJFTableInput::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return nullptr;
+    }
     jf_in_->seekg(-8, std::ios::end);
     meta_start_ = ReadI64(*jf_in_);
 
@@ -132,13 +140,14 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
 
     Expected<IColumn> ans(
         col.GetShared(),
-        current_block_ + 1 == blocks_pos_.size() ? MakeError<EError::EofErr>() : EError::NoError
+        current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
     );
 
     return ans;
 }
 
-Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
+Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
+    // std::cout << "dkdkkdkfkkfdkk" << std::endl;
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EError::EofErr>();
     }
@@ -149,6 +158,8 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
 
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [col, err] = ReadIthColumn(i);
+
+        // std::cout << "!! " << err << " " << col << std::endl;
         if (err) {
             if (!Is<EError::EofErr>(err)) {
                 return err;
@@ -159,25 +170,30 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::ReadRowGroup() {
         res.push_back(col);
     }
 
-    current_block_++;
+    // std::cout << "---" << std::endl;
+    // for (auto el : res) {
+    //     std::cout << " " << el;
+    // }
+    // std::cout << std::endl;
+
+    assert(res.size() == GetScheme().size());
 
     return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 
-std::vector<TRowScheme>& TJFTableInput::GetScheme() {
-    return scheme_;
-}
-
 void TJFTableInput::MoveCursor(i64 delta) {
+    current_rg_.reset();
     if (delta < 0 && current_block_ < -delta) {
         current_block_ = 0;
     } else {
         current_block_ += delta;
     }
+    // std::cout << current_block_ << std::endl;
 }
 
 void TJFTableInput::Reset() {
     current_block_ = 0;
+    current_rg_.reset();
 }
 
 Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
@@ -209,6 +225,55 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
 
 ui64 TJFTableInput::GetGroupsCount() const {
     return blocks_pos_.size();
+}
+
+
+TJFNeccessaryOnly::TJFNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query) :
+    TJFTableInput(jf_in),
+    query_(std::move(query))
+{
+}
+
+Expected<void> TJFNeccessaryOnly::SetupColumnsScheme() {
+    auto err = TJFTableInput::SetupColumnsScheme();
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    new_scheme_.clear();
+    cols_.clear();
+    for (ui64 i = 0; i < TJFTableInput::GetScheme().size(); i++) {
+        if (query_.contains(scheme_[i].name_)) {
+            new_scheme_.emplace_back(scheme_[i]);
+            cols_.push_back(i);
+        }
+    }
+    if (new_scheme_.empty()) {
+        new_scheme_.emplace_back(scheme_[0]);
+        cols_.push_back(0);
+    }
+    return EError::NoError;
+}
+
+std::vector<TRowScheme>& TJFNeccessaryOnly::GetScheme() {
+    return new_scheme_;
+}
+
+Expected<std::vector<TColumnPtr>> TJFNeccessaryOnly::LoadRowGroup() {
+    bool is_eof = false;
+    std::vector<TColumnPtr> res;
+    for (auto i : cols_) {
+        auto [r, err] = ReadIthColumn(i);
+        if (err) {
+            if (err == EError::EofErr) {
+                is_eof = true;
+            } else {
+                return err;
+            }
+        }
+        res.push_back(r);
+    }
+    assert(res.size() == GetScheme().size());
+    return {std::move(res), is_eof ? EError::EofErr : EError::NoError};
 }
 
 } // namespace JFEngine

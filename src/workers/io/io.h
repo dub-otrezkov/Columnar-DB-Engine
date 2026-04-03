@@ -17,32 +17,31 @@ public:
     }
 
     Expected<void> SetupColumnsScheme() override;
-    Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
-    std::vector<TRowScheme>& GetScheme() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
 
 private:
     std::shared_ptr<std::istream> scheme_in_;
     std::shared_ptr<std::istream> data_in_;
     TCSVOptimizedReader csv_data_;
-    std::vector<TRowScheme> scheme_;
 };
 
 class TJFTableInput : public ITableInput {
 public:
+    virtual ~TJFTableInput() = default;
+
     TJFTableInput(std::shared_ptr<std::istream> jf_in) {
         jf_in_ = jf_in;
     }
 
     Expected<void> SetupColumnsScheme() override;
-    Expected<std::vector<TColumnPtr>> ReadRowGroup() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<IColumn> ReadColumn(const std::string& name) override;
-    std::vector<TRowScheme>& GetScheme() override;
 
     void MoveCursor(i64 delta) override;
     void Reset() override;
     ui64 GetGroupsCount() const override;
 
-private:
+protected:
     Expected<IColumn> ReadIthColumn(ui64 i);
 
     std::shared_ptr<std::istream> jf_in_;
@@ -50,9 +49,23 @@ private:
     ui64 cols_cnt_;
     ui64 meta_start_;
     std::vector<ui64> blocks_pos_;
-    std::vector<TRowScheme> scheme_;
 
     ui64 current_block_ = 0;
+};
+
+class TJFNeccessaryOnly : public TJFTableInput {
+public:
+    TJFNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query = "");
+
+    std::vector<TRowScheme>& GetScheme() override;
+    Expected<void> SetupColumnsScheme() override;
+    Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+
+private:
+    std::string query_;
+    std::vector<ui64> cols_;
+
+    std::vector<TRowScheme> new_scheme_;
 };
 
 } // JFEngine

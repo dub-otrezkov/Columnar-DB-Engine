@@ -21,7 +21,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     TEngine eng;
     {
-        auto [inp, err2] = tokens[1]->Exec();
+        auto [inp, err2] = tokens[1]->MakeWorker();
         if (err2 != EError::NoError) {
             return err2;
         }
@@ -56,46 +56,38 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
             gt->SetSelects(ParseArgs(sl->GetArgs()));
             sl->SetIsId();
         }
-        auto [inp, err] = tokens[i]->Exec();
+        auto [inp, err] = tokens[i]->MakeWorker();
         if (err != EError::NoError) {
             return err;
         }
-        err = eng.Setup(inp).GetError();
-        if (err != EError::NoError) {
-            return err;
-        }
-
-        eng.WriteTableToJF(*TIOFactory::GetIO(cur_t1).GetShared());
 
         TIOFactory::RegisterTableInput(
             kCurTableInput,
-            std::make_shared<TJFTableInput>(
-                TIOFactory::GetIO(cur_t1).GetShared()
-            )
+            inp
         );
 
-        if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
-            d->clear();
-            d->seekg(0, std::ios::beg);
-            d->seekp(0, std::ios::beg);
-            d->str("");
-        } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
-            d->close();
-            d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
-        }
-        // TIOFactory::GetIO(cur_t2).GetShared()->clear();
-        // TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
-        // TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
+        // if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+        //     d->clear();
+        //     d->seekg(0, std::ios::beg);
+        //     d->seekp(0, std::ios::beg);
+        //     d->str("");
+        // } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+        //     d->close();
+        //     d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
+        // }
+        // // TIOFactory::GetIO(cur_t2).GetShared()->clear();
+        // // TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
+        // // TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
 
         std::swap(cur_t1, cur_t2);
     }
+
+    // std::cout << "last block execution started" << std::endl;
     
-    auto [_, err3] = tokens[0]->Exec();
+    auto [_, err3] = tokens[0]->MakeWorker();
     if (err3 != EError::NoError) {
         return err3;
     }
-
-    // eng.Setup(fin);
 
     return nullptr;
 }

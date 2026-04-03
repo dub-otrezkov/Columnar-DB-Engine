@@ -9,7 +9,7 @@ ETokens TCreateToken::GetType() const {
     return ETokens::kCreate;
 }
 
-Expected<ITableInput> TCreateToken::Exec() {
+Expected<ITableInput> TCreateToken::MakeWorker() {
     TEngine eng;
     if (args_.size() != 1 || args_[0]->GetType() != ETokens::kNameToken) {
         return MakeError<EError::BadCmdErr>();
@@ -20,6 +20,7 @@ Expected<ITableInput> TCreateToken::Exec() {
         return err.GetError();
     }
     TIOFactory::RegisterFileIO(name, ETypeFile::kJFFile);
+
     eng.WriteTableToJF(*TIOFactory::GetIO(name).GetShared());
 
     return nullptr;
