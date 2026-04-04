@@ -8,3 +8,4 @@
 /src/executor/debug/out.txt
 *.jf
 *.csv
+*.data
