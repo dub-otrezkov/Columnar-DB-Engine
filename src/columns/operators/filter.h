@@ -61,10 +61,10 @@ struct OFilterCheck {
             } else if constexpr (std::is_same_v<TCol, TDoubleColumn>) {
                 target = static_cast<T>(std::stold(value));
             } else {
-                target = static_cast<T>(std::stoi(value));
+                target = static_cast<T>(std::stoll(value));
             }
         } catch (...) {
-            std::cout << "not an int" << std::endl;
+            std::cout << "not an int" << " " << value << std::endl;
             return MakeError<EError::NotAnIntErr>();
         }
         if (op == EFilterType::kLike) {
