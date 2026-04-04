@@ -1,54 +1,54 @@
 #include "ios_factory.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
-std::shared_ptr<TIOFactory> TIOFactory::Instance() {
-    static auto factory = std::make_shared<TIOFactory>();
+std::shared_ptr<TIoFactory> TIoFactory::Instance() {
+    static auto factory = std::make_shared<TIoFactory>();
     return factory;
 }
 
-void TIOFactory::RegisterSStreamIO(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
+void TIoFactory::RegisterSStreamIo(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
     auto i = Instance();
     i->ios_[alias] = std::make_shared<std::stringstream>();
 }
 
-void TIOFactory::UnregisterIO(const std::string& alias) { // FOR TESTS (and probably optimizations)
+void TIoFactory::UnregisterIo(const std::string& alias) { // FOR TESTS (and probably optimizations)
     auto i = Instance();
     i->ios_.erase(alias);
 }
 
-void TIOFactory::RegisterCustomIO(const std::string& alias, std::shared_ptr<std::iostream> io) {
+void TIoFactory::RegisterCustomIo(const std::string& alias, std::shared_ptr<std::iostream> io) {
     auto i = Instance();
     i->ios_[alias] = std::move(io);
 }
 
-void TIOFactory::RegisterFileIO(const std::string& alias, ETypeFile t) {
+void TIoFactory::RegisterFileIo(const std::string& alias, ETypeFile t) {
     auto i = Instance();
     if (i->ios_.contains(alias)) {
         return;
     }
-    i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == kJFFile ? ".jf" : ".csv"));
+    i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == kJfFile ? ".jf" : ".csv"));
 }
 
-void TIOFactory::RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp) {
+void TIoFactory::RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp) {
     auto i = Instance();
     i->iotables_[alias] = inp;
 }
 
-Expected<std::iostream> TIOFactory::GetIO(const std::string& alias) {
+Expected<std::iostream> TIoFactory::GetIo(const std::string& alias) {
     auto i = Instance();
     if (i->ios_.contains(alias)) {
         return i->ios_.at(alias);
     }
-    return MakeError<EError::IONotFoundErr>(alias);
+    return MakeError<EError::IoNotFoundErr>(alias);
 }
 
-Expected<ITableInput> TIOFactory::GetTableIO(const std::string& alias) {
+Expected<ITableInput> TIoFactory::GetTableIo(const std::string& alias) {
     auto i = Instance();
     if (i->iotables_.contains(alias)) {
         return i->iotables_.at(alias);
     }
-    return MakeError<EError::IONotFoundErr>(alias);
+    return MakeError<EError::IoNotFoundErr>(alias);
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -1,6 +1,6 @@
 #include "types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 EColumn StrToTColumn(std::string_view data) {
     if (data == ki8SchemeAlias) {
@@ -184,7 +184,7 @@ TTimestamp TimestampFromStr(const std::string& s) {
     };
 }
 
-Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
+Expected<IColumn> MakeColumnJf(std::vector<std::string> data, EColumn type) {
     switch (type) {
         case kUnitialized: {
             return MakeError<EError::UnimplementedErr>();
@@ -192,35 +192,35 @@ Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
         case ki8Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JFStrToI8(data[i]));
+                data[i] = std::to_string(JfStrToI8(data[i]));
             }
             break;
         }
         case ki16Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JFStrToI16(data[i]));
+                data[i] = std::to_string(JfStrToI16(data[i]));
             }
             break;
         }
         case ki32Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JFStrToI32(data[i]));
+                data[i] = std::to_string(JfStrToI32(data[i]));
             }
             break;
         }
         case ki64Column: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JFStrToI64(data[i]));
+                data[i] = std::to_string(JfStrToI64(data[i]));
             }
             break;
         }
         case kDoubleColumn: {
             auto res = std::make_shared<Ti64Column>();
             for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JFStrToDouble(data[i]));
+                data[i] = std::to_string(JfStrToDouble(data[i]));
             }
             break;
         }
@@ -274,4 +274,4 @@ Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type) {
     return MakeColumn(std::move(data), type);
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

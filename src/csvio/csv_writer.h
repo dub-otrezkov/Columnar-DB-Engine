@@ -8,16 +8,16 @@
 #include <vector>
 #include <memory>
 
-namespace JFEngine {
+namespace JfEngine {
 
-class TCSVWriter {
+class TCsvWriter {
 public:
-    TCSVWriter(std::ostream& out, char sep = ',');
+    TCsvWriter(std::ostream& out, char sep = ',');
 
     void WriteRow(const std::vector<std::string>& row);
     void WriteRowGroup(std::vector<std::vector<std::string>> row);
 
-    ~TCSVWriter();
+    ~TCsvWriter();
 
 private:
     ui64 PrepareString(std::string_view str);
@@ -26,4 +26,4 @@ private:
     char sep_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

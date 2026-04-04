@@ -4,7 +4,7 @@
 
 #include "workers/io/io.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 enum EAgregationType {
     kSum,
@@ -196,4 +196,4 @@ struct TAvgAgr : IAgregation {
     void AddArg(std::shared_ptr<IAgregation>) override;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -7,23 +7,23 @@
 #include <cassert>
 #include <iostream>
 
-namespace JFEngine {
+namespace JfEngine {
 
 Expected<void> TEngine::Setup(std::shared_ptr<ITableInput> in) {
     in_ = std::move(in);
     return in_->SetupColumnsScheme();
 }
 
-Expected<void> TEngine::WriteSchemeToCSV(std::ostream& out) {
-    TCSVWriter w(out);
+Expected<void> TEngine::WriteSchemeToCsv(std::ostream& out) {
+    TCsvWriter w(out);
     for (auto col : in_->GetScheme()) {
         w.WriteRow({col.name_, TColumnToStr(col.type_)});
     }
     return nullptr;
 }
 
-Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
-    TCSVWriter w(out);
+Expected<void> TEngine::WriteDataToCsv(std::ostream& out) {
+    TCsvWriter w(out);
 
     auto f = [&w](std::vector<TColumnPtr> block) -> Expected<void> {
         for (ui64 i = 0; i < block[0]->GetSize(); i++) {
@@ -40,13 +40,13 @@ Expected<void> TEngine::WriteDataToCSV(std::ostream& out) {
     return RunCommand(f);
 }
 
-Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
+Expected<void> TEngine::WriteTableToJf(std::ostream& out) {
     std::vector<i64> poses;
 
     ui64 cols_cnt = 0;
 
     auto f = [&poses, &out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
-        TCSVWriter w(out);
+        TCsvWriter w(out);
 
         std::vector<i64> col_poses;
 
@@ -55,7 +55,7 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
             for (ui64 i = 0; i < block[0]->GetSize(); i++) {
-                row[i] = Do<OJFPrintIth>(block[j], i);
+                row[i] = Do<OJfPrintIth>(block[j], i);
             }
 
             col_poses.push_back(out.tellp());
@@ -81,29 +81,29 @@ Expected<void> TEngine::WriteTableToJF(std::ostream& out) {
     for (auto i : poses) {
         PutI64(out, i);
     }
-    auto err = WriteSchemeToCSV(out);
+    auto err = WriteSchemeToCsv(out);
 
     PutI64(out, meta_start);
 
     return err;
 }
 
-Expected<TEngine> MakeEngineFromCSV(
+Expected<TEngine> MakeEngineFromCsv(
     std::shared_ptr<std::istream> scheme,
     std::shared_ptr<std::istream> data,
     ui64 row_group_size
 ) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_shared<TCSVTableInput>(scheme, data, row_group_size));
+    auto err = eng->Setup(std::make_shared<TCsvTableInput>(scheme, data, row_group_size));
     if (!err) {
         return err.GetError();
     }
     return eng;
 }
 
-Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf) {
+Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf) {
     auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_shared<TJFTableInput>(jf));
+    auto err = eng->Setup(std::make_shared<TJfTableInput>(jf));
     if (err.HasError()) {
         return err.GetError();
     }
@@ -119,4 +119,4 @@ Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker) {
     return eng;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

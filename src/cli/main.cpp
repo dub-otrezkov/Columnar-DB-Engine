@@ -10,7 +10,7 @@
 
 using namespace std::chrono;
 
-using namespace JFEngine;
+using namespace JfEngine;
 
 // NEURO SLOP
 
@@ -106,14 +106,14 @@ static int do_convert(const std::string& input_csv,
                       const std::string& input_schema,
                       const std::string& output_jf) {
     // Input files opened directly - no temp dir needed.
-    TIOFactory::RegisterCustomIO("scheme",  open_file(input_schema, std::ios::in | std::ios::out));
-    TIOFactory::RegisterCustomIO("dorothy", open_file(input_csv,    std::ios::in | std::ios::out));
-    TIOFactory::RegisterCustomIO("hits",    open_file(output_jf,    std::ios::in | std::ios::out | std::ios::trunc));
+    TIoFactory::RegisterCustomIo("scheme",  open_file(input_schema, std::ios::in | std::ios::out));
+    TIoFactory::RegisterCustomIo("dorothy", open_file(input_csv,    std::ios::in | std::ios::out));
+    TIoFactory::RegisterCustomIo("hits",    open_file(output_jf,    std::ios::in | std::ios::out | std::ios::trunc));
     // Intermediates as in-memory streams (convert only needs the CREATE step).
-    TIOFactory::RegisterCustomIO("tmp1", std::make_shared<std::stringstream>());
-    TIOFactory::RegisterCustomIO("tmp2", std::make_shared<std::stringstream>());
+    TIoFactory::RegisterCustomIo("tmp1", std::make_shared<std::stringstream>());
+    TIoFactory::RegisterCustomIo("tmp2", std::make_shared<std::stringstream>());
 
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     auto t1  = high_resolution_clock::now();
     auto err = exec.ExecQuery("CREATE hits FROM scheme, dorothy");
     auto t2  = high_resolution_clock::now();
@@ -145,16 +145,16 @@ static int do_query(int query_num,
     }
 
     // Pre-register all aliases before the engine can touch them.
-    TIOFactory::RegisterCustomIO("hits", open_file(input_jf, std::ios::in | std::ios::out));
-    TIOFactory::RegisterCustomIO("tmp1", std::make_shared<std::stringstream>());
-    TIOFactory::RegisterCustomIO("tmp2", std::make_shared<std::stringstream>());
+    TIoFactory::RegisterCustomIo("hits", open_file(input_jf, std::ios::in | std::ios::out));
+    TIoFactory::RegisterCustomIo("tmp1", std::make_shared<std::stringstream>());
+    TIoFactory::RegisterCustomIo("tmp2", std::make_shared<std::stringstream>());
     // RESULT_DATA goes straight to the output file.
-    TIOFactory::RegisterCustomIO("RESULT_DATA",
+    TIoFactory::RegisterCustomIo("RESULT_DATA",
         open_file(output_csv, std::ios::in | std::ios::out | std::ios::trunc));
     // RESULT_SCHEME is discarded (not needed in the benchmark output).
-    TIOFactory::RegisterCustomIO("RESULT_SCHEME", std::make_shared<std::stringstream>());
+    TIoFactory::RegisterCustomIo("RESULT_SCHEME", std::make_shared<std::stringstream>());
 
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     auto t1  = high_resolution_clock::now();
     auto err = exec.ExecQuery(query);
     auto t2  = high_resolution_clock::now();

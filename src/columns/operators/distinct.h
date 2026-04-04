@@ -4,7 +4,7 @@
 
 #include <unordered_set>
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct ODistinct {
     static Expected<IColumn> Exec(Ti8Column& col1, TColumnPtr col2) {
@@ -137,4 +137,4 @@ struct ODistinct {
     }
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

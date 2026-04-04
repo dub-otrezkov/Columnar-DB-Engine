@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace JFEngine {
+namespace JfEngine {
 
 class TAgregator : public ITableInput {
 public:
@@ -30,4 +30,4 @@ private:
     bool is_all_ = false;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

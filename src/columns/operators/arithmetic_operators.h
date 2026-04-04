@@ -1,6 +1,6 @@
 #include "../types/types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct OSum {
     static Expected<IColumn> Exec(Ti8Column& col) {
@@ -342,4 +342,4 @@ struct OSubConst {
     }
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

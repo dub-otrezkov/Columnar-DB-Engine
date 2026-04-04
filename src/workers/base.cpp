@@ -1,6 +1,6 @@
 #include "base.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
 }
@@ -54,4 +54,4 @@ std::vector<TRowScheme>& ITableInput::GetScheme() {
     return scheme_;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

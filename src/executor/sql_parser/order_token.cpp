@@ -3,7 +3,7 @@
 #include "workers/orderby/orderby.h"
 #include "ios_factory/ios_factory.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 Expected<ITableInput> TOrderToken::MakeWorker() {
     for (const auto& t : args_) {
@@ -28,7 +28,7 @@ Expected<ITableInput> TOrderToken::MakeWorker() {
     }
     
     return std::make_shared<TOrderBy>(
-        TIOFactory::GetTableIO(kCurTableInput).GetShared(),
+        TIoFactory::GetTableIo(kCurTableInput).GetShared(),
         std::move(query)
     );
 }
@@ -37,4 +37,4 @@ ETokens TOrderToken::GetType() const {
     return ETokens::kOrder;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

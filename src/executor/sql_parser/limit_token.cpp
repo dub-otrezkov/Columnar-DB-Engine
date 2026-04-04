@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace JFEngine {
+namespace JfEngine {
 
 Expected<ITableInput> TLimitToken::MakeWorker() {
     return EError::UnsupportedErr;
@@ -33,4 +33,4 @@ ETokens TLimitToken::GetType() const {
     return ETokens::kLimit;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

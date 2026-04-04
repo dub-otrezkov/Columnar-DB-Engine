@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct TRowScheme {
     std::string name_;
@@ -40,4 +40,4 @@ protected:
     std::unordered_map<std::string, ui64> name_to_i_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

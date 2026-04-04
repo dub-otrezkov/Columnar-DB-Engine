@@ -2,7 +2,7 @@
 
 #include "../types/types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct OMin {
     static Expected<IColumn> Exec(Ti8Column& col) {
@@ -411,4 +411,4 @@ struct OVerticalMax {
     }
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -1,6 +1,6 @@
 #include "tokenizer.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 ETokens TOpenBracketToken::GetType() const {
     return ETokens::kOpenBracket;
@@ -50,7 +50,7 @@ ETokens TMinusToken::GetType() const {
     return ETokens::kMinus;
 }
 
-Expected<ITableInput> IOperatorCommand::MakeWorker() {
+Expected<ITableInput> IoperatorCommand::MakeWorker() {
     return MakeError<EError::UnsupportedErr>();
 }
 
@@ -62,4 +62,4 @@ ETokens TAndToken::GetType() const {
     return ETokens::kAnd;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

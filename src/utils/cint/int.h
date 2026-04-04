@@ -30,7 +30,7 @@ public:
         }
     }
 
-    static std::string IntToJFStr(T i) {
+    static std::string IntToJfStr(T i) {
         std::string ans(sizeof(T), 'k');
         static char mas[sizeof(T)];
         memcpy(mas, &i, sizeof(T));
@@ -41,7 +41,7 @@ public:
         return std::move(ans);
     }
 
-    static T JFStrToInt(std::string_view in) {
+    static T JfStrToInt(std::string_view in) {
         T ans = 0;
         static char mas[sizeof(T)];
         for (ui8 i = 0; i < sizeof(T); i++) {
@@ -64,20 +64,20 @@ public:
 
 static auto PutI8 = TIntPrinter<i8>::PutInt;
 static auto ReadI8 = TIntPrinter<i8>::ReadInt;
-static auto I8ToJFStr = TIntPrinter<i8>::IntToJFStr;
-static auto JFStrToI8 = TIntPrinter<i8>::JFStrToInt;
+static auto I8ToJfStr = TIntPrinter<i8>::IntToJfStr;
+static auto JfStrToI8 = TIntPrinter<i8>::JfStrToInt;
 
 static auto PutI16 = TIntPrinter<i16>::PutInt;
 static auto ReadI16 = TIntPrinter<i16>::ReadInt;
-static auto I16ToJFStr = TIntPrinter<i16>::IntToJFStr;
-static auto JFStrToI16 = TIntPrinter<i16>::JFStrToInt;
+static auto I16ToJfStr = TIntPrinter<i16>::IntToJfStr;
+static auto JfStrToI16 = TIntPrinter<i16>::JfStrToInt;
 
 static auto PutI32 = TIntPrinter<i32>::PutInt;
 static auto ReadI32 = TIntPrinter<i32>::ReadInt;
-static auto I32ToJFStr = TIntPrinter<i32>::IntToJFStr;
-static auto JFStrToI32 = TIntPrinter<i32>::JFStrToInt;
+static auto I32ToJfStr = TIntPrinter<i32>::IntToJfStr;
+static auto JfStrToI32 = TIntPrinter<i32>::JfStrToInt;
 
 static auto PutI64 = TIntPrinter<i64>::PutInt;
 static auto ReadI64 = TIntPrinter<i64>::ReadInt;
-static auto I64ToJFStr = TIntPrinter<i64>::IntToJFStr;
-static auto JFStrToI64 = TIntPrinter<i64>::JFStrToInt;
+static auto I64ToJfStr = TIntPrinter<i64>::IntToJfStr;
+static auto JfStrToI64 = TIntPrinter<i64>::JfStrToInt;

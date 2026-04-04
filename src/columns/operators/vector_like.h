@@ -2,7 +2,7 @@
 
 #include "../types/types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct OPushBack {
     static void Exec(Ti8Column& col, i8 value) {
@@ -171,4 +171,4 @@ struct OClear {
     }
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -15,7 +15,7 @@ enum EError {
     NotAnDateErr,
     NotAnTimestampErr,
     IntOverflowErr,
-    IONotFoundErr,
+    IoNotFoundErr,
     BadCmdErr,
     BadArgsErr,
     UnsupportedErr,

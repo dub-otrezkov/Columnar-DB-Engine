@@ -5,7 +5,7 @@
 
 #include "../types/types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 template <typename TOperator, typename... Args>
 auto Do(TColumnPtr col, Args&&... args) {
@@ -46,4 +46,4 @@ auto Do(TColumnPtr col, Args&&... args) {
     throw std::runtime_error("bad column type");
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

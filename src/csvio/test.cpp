@@ -3,9 +3,9 @@
 
 #include <gtest/gtest.h>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
-struct IOTests : ::testing::Test {
+struct IoTests : ::testing::Test {
     // correct
     std::string basic = R"(john;frusciante
 josh;klinghoffer
@@ -20,11 +20,11 @@ josh;klinghoffer
     std::string badQuote = R"(slow,"cheet"ah)";
 };
 
-TEST_F(IOTests, BasicRead) {
+TEST_F(IoTests, BasicRead) {
     std::stringstream in;
     in << basic;
 
-    TCSVReader rr(in, ';');
+    TCsvReader rr(in, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -45,10 +45,10 @@ TEST_F(IOTests, BasicRead) {
     }
 }
 
-TEST_F(IOTests, BasicWrite) {
+TEST_F(IoTests, BasicWrite) {
     std::stringstream out;
 
-    TCSVWriter rr(out, ';');
+    TCsvWriter rr(out, ';');
     std::vector<std::string> i;
     i = {"john", "frusciante"};
     rr.WriteRow(i);
@@ -58,11 +58,11 @@ TEST_F(IOTests, BasicWrite) {
     EXPECT_EQ(basic, out.str());
 }
 
-TEST_F(IOTests, AdvancedRead) {
+TEST_F(IoTests, AdvancedRead) {
     std::stringstream in;
     in << advanced;
 
-    TCSVReader rr(in);
+    TCsvReader rr(in);
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -81,10 +81,10 @@ TEST_F(IOTests, AdvancedRead) {
     }
 }
 
-TEST_F(IOTests, AdvancedWrite) {
+TEST_F(IoTests, AdvancedWrite) {
     std::stringstream out;
 
-    TCSVWriter rr(out);
+    TCsvWriter rr(out);
     std::vector<std::string> i;
     i = {R"(Scar "Tissue")", R"(Calif"ornica"tion)", R"(the,"Zephyr song)"};
     rr.WriteRow(i);
@@ -94,11 +94,11 @@ TEST_F(IOTests, AdvancedWrite) {
     EXPECT_EQ(advanced, out.str());
 }
 
-TEST_F(IOTests, EdgeCasesRead) {
+TEST_F(IoTests, EdgeCasesRead) {
     std::stringstream in;
     in << extra;
 
-    TCSVReader rr(in, ';');
+    TCsvReader rr(in, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -110,33 +110,33 @@ TEST_F(IOTests, EdgeCasesRead) {
     }
 }
 
-TEST_F(IOTests, UnclosedQuoteRead) {
+TEST_F(IoTests, UnclosedQuoteRead) {
     std::stringstream in;
     in << unclosedQuote;
 
-    TCSVReader rr(in);
+    TCsvReader rr(in);
 
     auto [_, err] = rr.ReadRow();
 
     ASSERT_TRUE(Is<EError::EofErr>(err));
 }
 
-TEST_F(IOTests, BadQuoteRead) {
+TEST_F(IoTests, BadQuoteRead) {
     std::stringstream in;
     in << badQuote;
 
-    TCSVReader rr(in);
+    TCsvReader rr(in);
 
     auto [_, err] = rr.ReadRow();
 
     ASSERT_TRUE(Is<EError::EofErr>(err));
 }
 
-TEST_F(IOTests, OptimizedRead) {
+TEST_F(IoTests, OptimizedRead) {
     std::stringstream in;
     in << advanced;
 
-    TCSVOptimizedReader rr(in);
+    TCsvOptimizedReader rr(in);
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -155,12 +155,12 @@ TEST_F(IOTests, OptimizedRead) {
     }
 }
 
-TEST_F(IOTests, BufferedRead) {
+TEST_F(IoTests, BufferedRead) {
     {
         std::stringstream in;
         in << advanced;
 
-        TCSVBufferedReader rr(in, 39);
+        TCsvBufferedReader rr(in, 39);
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
         ASSERT_EQ(d->size(), 2);
@@ -170,11 +170,11 @@ TEST_F(IOTests, BufferedRead) {
     }
 }
 
-TEST_F(IOTests, EmptyCases) {
+TEST_F(IoTests, EmptyCases) {
     { // Basic I
         std::stringstream in;
         in << "";
-        TCSVReader rr(in);
+        TCsvReader rr(in);
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }
@@ -182,14 +182,14 @@ TEST_F(IOTests, EmptyCases) {
         std::stringstream in;
         in << R"(
 )";
-        TCSVReader rr(in);
+        TCsvReader rr(in);
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }
     { // Buffiered I
         std::stringstream in;
         in << "";
-        TCSVBufferedReader rr(in);
+        TCsvBufferedReader rr(in);
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }
@@ -197,10 +197,10 @@ TEST_F(IOTests, EmptyCases) {
         std::stringstream in;
         in << R"(
 )";
-        TCSVBufferedReader rr(in);
+        TCsvBufferedReader rr(in);
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

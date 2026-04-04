@@ -2,7 +2,7 @@
 
 #include "workers/base.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 class TNarrowTableInput : public ITableInput {
 public:
@@ -20,4 +20,4 @@ private:
     std::shared_ptr<std::vector<TColumnPtr>> buf_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

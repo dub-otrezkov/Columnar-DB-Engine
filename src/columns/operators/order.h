@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct OSort {
     static std::vector<ui64> Exec(TDateColumn& col, bool rev = false) {
@@ -219,4 +219,4 @@ struct OCmpFirst {
     }
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

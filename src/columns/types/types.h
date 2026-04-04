@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace JFEngine {
+namespace JfEngine {
 
 // basic classes
 
@@ -178,7 +178,7 @@ public:
 
 Expected<IColumn> MakeEmptyColumn(EColumn type);
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
-Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type);
+Expected<IColumn> MakeColumnJf(std::vector<std::string> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
@@ -190,4 +190,4 @@ Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
     return res;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

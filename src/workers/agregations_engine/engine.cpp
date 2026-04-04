@@ -2,7 +2,7 @@
 
 #include "columns/operators/vector_like.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TGlobalAgregationQuery TGlobalAgregationQuery::Clone() {
     std::vector<std::shared_ptr<IAgregation>> ans(cols.size());
@@ -58,4 +58,4 @@ std::vector<std::string> TAgregationsEngine::GetNames() {
     return std::move(ans);
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -5,7 +5,7 @@
 
 #include "columns/operators/filter.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct TFilterOp {
     std::string column_name;
@@ -31,4 +31,4 @@ private:
     TFilterQuery query_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

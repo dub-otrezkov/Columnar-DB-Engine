@@ -1,6 +1,6 @@
 #include "types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TStringColumn::TStringColumn(std::vector<std::string> data) {
     cols_ = std::move(data);
@@ -18,4 +18,4 @@ Expected<void> TStringColumn::Setup(std::vector<std::string>&& data) {
     return nullptr;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

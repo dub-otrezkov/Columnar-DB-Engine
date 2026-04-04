@@ -11,7 +11,7 @@
 
 #include <map>
 
-namespace JFEngine {
+namespace JfEngine {
 
 constexpr ui64 kUnlimited = -1;
 
@@ -62,4 +62,4 @@ private:
     std::unordered_map<std::vector<std::string>, TGroup, VectorStringHasher> groups_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

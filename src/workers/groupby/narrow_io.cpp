@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-namespace JFEngine {
+namespace JfEngine {
     
 TNarrowTableInput::TNarrowTableInput(std::vector<TRowScheme>& scheme) {
     scheme_ = scheme;
@@ -41,4 +41,4 @@ void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, ui64 
     }
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

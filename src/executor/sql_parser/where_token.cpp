@@ -4,7 +4,7 @@
 #include "utils/errors/errors.h"
 #include "ios_factory/ios_factory.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 ETokens TWhereToken::GetType() const {
     return ETokens::kWhere;
@@ -115,9 +115,9 @@ Expected<ITableInput> TWhereToken::MakeWorker() {
     }
 
     return std::make_shared<TFilter>(
-        TIOFactory::GetTableIO(kCurTableInput).GetShared(),
+        TIoFactory::GetTableIo(kCurTableInput).GetShared(),
         TFilterQuery{std::move(config)}
     );
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -1,6 +1,6 @@
 #include "operators.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 enum EFilterType {
     kEq,
@@ -570,4 +570,4 @@ struct OFilter {
     }
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

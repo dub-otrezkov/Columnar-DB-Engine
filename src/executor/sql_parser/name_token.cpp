@@ -2,7 +2,7 @@
 
 #include "ios_factory/ios_factory.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TNameToken::TNameToken(std::string name) :
     name_(std::move(name))
@@ -16,4 +16,4 @@ ETokens TNameToken::GetType() const {
     return ETokens::kNameToken;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine
