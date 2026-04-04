@@ -17,7 +17,7 @@ enum EFilterType {
 
 struct OFilterCheck {
     template<typename T>
-    static Expected<std::vector<bool>> Exec(T& col, EFilterType op, const std::string& value) {
+    static inline Expected<std::vector<bool>> Exec(T& col, EFilterType op, const std::string& value) {
         switch (op) {
             case EFilterType::kEq: {
                 return ExecInner(col, EFilterType::kEq, value);
@@ -48,11 +48,19 @@ struct OFilterCheck {
         }
     }
 
-    static Expected<std::vector<bool>> ExecInner(Ti8Column& col, EFilterType op, const std::string& value, bool inv = false) {
+    template <typename TCol>
+    static inline Expected<std::vector<bool>> ExecInner(TCol& col, EFilterType op, const std::string& value, bool inv = false) {
+        using T = typename TCol::ElemType;
         std::vector<bool> ans(col.GetSize(), inv);
-        i8 target = 0;
+        T target;
         try {
-            target = static_cast<i8>(std::stoi(value));
+            if constexpr (std::is_same_v<TCol, TDateColumn>) {
+                target = DateFromStr(value);
+            } else if constexpr (std::is_same_v<TCol, TTimestampColumn>) {
+                target = TimestampFromStr(value);
+            } else {
+                target = static_cast<T>(std::stoi(value));
+            }
         } catch (...) {
             std::cout << "not an int" << std::endl;
             return MakeError<EError::NotAnIntErr>();
@@ -61,263 +69,59 @@ struct OFilterCheck {
             std::cout << "no like for ints" << std::endl;
             return MakeError<EError::UnsupportedErr>();
         }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
+        switch (op) {
+            case EFilterType::kEq: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     ans[i] = (ans[i] ^ (col.GetData()[i] == target));
-                    break;
                 }
-                case EFilterType::kLess: {
+                break;
+            }
+            case EFilterType::kLess: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     ans[i] = (ans[i] ^ (col.GetData()[i] < target));
-                    break;
                 }
-                case EFilterType::kLeq: {
+                break;
+            }
+            case EFilterType::kLeq: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
-                    break;
                 }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
+                break;
             }
         }
         return ans;
     }
 
-    static Expected<std::vector<bool>> ExecInner(Ti16Column& col, EFilterType op, const std::string& value, bool inv = false) {
+    static inline Expected<std::vector<bool>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {
         std::vector<bool> ans(col.GetSize(), inv);
-        i16 target = 0;
-        try {
-            target = static_cast<i16>(std::stoi(value));
-        } catch (...) {
-            std::cout << "not an int" << std::endl;
-            return MakeError<EError::NotAnIntErr>();
-        }
-        if (op == EFilterType::kLike) {
-            std::cout << "no like for ints" << std::endl;
-            return MakeError<EError::UnsupportedErr>();
-        }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
-                    break;
-                }
-                case EFilterType::kLess: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
-                    break;
-                }
-                case EFilterType::kLeq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
-                    break;
-                }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
-            }
-        }
-        return ans;
-    }
-
-    static Expected<std::vector<bool>> ExecInner(Ti32Column& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
-        i32 target = 0;
-        try {
-            target = std::stoi(value);
-        } catch (...) {
-            std::cout << "not an int" << std::endl;
-            return MakeError<EError::NotAnIntErr>();
-        }
-        if (op == EFilterType::kLike) {
-            std::cout << "no like for ints" << std::endl;
-            return MakeError<EError::UnsupportedErr>();
-        }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
-                    break;
-                }
-                case EFilterType::kLess: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
-                    break;
-                }
-                case EFilterType::kLeq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
-                    break;
-                }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
-            }
-        }
-        return ans;
-    }
-
-    static Expected<std::vector<bool>> ExecInner(Ti64Column& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
-        i64 target = 0;
-        try {
-            target = std::stoll(value);
-        } catch (...) {
-            std::cout << "not an int" << std::endl;
-            return MakeError<EError::NotAnIntErr>();
-        }
-        if (op == EFilterType::kLike) {
-            std::cout << "no like for ints" << std::endl;
-            return MakeError<EError::UnsupportedErr>();
-        }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
-                    break;
-                }
-                case EFilterType::kLess: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
-                    break;
-                }
-                case EFilterType::kLeq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
-                    break;
-                }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
-            }
-        }
-        return ans;
-    }
-
-    static Expected<std::vector<bool>> ExecInner(TDoubleColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
-        ui64 target = 0;
-        try {
-            target = std::stold(value);
-        } catch (...) {
-            std::cout << "not an double" << std::endl;
-            return MakeError<EError::NotAnIntErr>();
-        }
-        if (op == EFilterType::kLike) {
-            std::cout << "no like for ints" << std::endl;
-            return MakeError<EError::UnsupportedErr>();
-        }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
-                    break;
-                }
-                case EFilterType::kLess: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
-                    break;
-                }
-                case EFilterType::kLeq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
-                    break;
-                }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
-            }
-        }
-        return ans;
-    }
-
-    static Expected<std::vector<bool>> ExecInner(TDateColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
-        i64 target = 0;
-        try {
-            target = DateFromStr(value).IntDate();
-        } catch (...) {
-            std::cout << "not an dates" << std::endl;
-            return MakeError<EError::NotAnIntErr>();
-        }
-        if (op == EFilterType::kLike) {
-            std::cout << "no like for dates" << std::endl;
-            return MakeError<EError::UnsupportedErr>();
-        }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i].IntDate() == target));
-                    break;
-                }
-                case EFilterType::kLess: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i].IntDate() < target));
-                    break;
-                }
-                case EFilterType::kLeq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i].IntDate() <= target));
-                    break;
-                }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
-            }
-        }
-        return ans;
-    }
-
-    static Expected<std::vector<bool>> ExecInner(TTimestampColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
-        i64 target = 0;
-        try {
-            target = TimestampFromStr(value).IntTime();
-        } catch (...) {
-            std::cout << "not an dates" << std::endl;
-            return MakeError<EError::NotAnIntErr>();
-        }
-        if (op == EFilterType::kLike) {
-            std::cout << "no like for dates" << std::endl;
-            return MakeError<EError::UnsupportedErr>();
-        }
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i].IntTime() == target));
-                    break;
-                }
-                case EFilterType::kLess: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i].IntTime() < target));
-                    break;
-                }
-                case EFilterType::kLeq: {
-                    ans[i] = (ans[i] ^ (col.GetData()[i].IntTime() <= target));
-                    break;
-                }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
-            }
-        }
-        return ans;
-    }
-
-    static Expected<std::vector<bool>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            switch (op) {
-                case EFilterType::kEq: {
+        switch (op) {
+            case EFilterType::kEq: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     ans[i] = (ans[i] ^ (col.GetData()[i] == value));
-                    break;
                 }
-                case EFilterType::kLess: {
+                break;
+            }
+            case EFilterType::kLess: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     ans[i] = (ans[i] ^ (col.GetData()[i] < value));
-                    break;
                 }
-                case EFilterType::kLeq: {
+                break;
+            }
+            case EFilterType::kLeq: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     ans[i] = (ans[i] ^ (col.GetData()[i] <= value));
-                    break;
                 }
-                case EFilterType::kLike: {
-
+                break;
+            }
+            case EFilterType::kLike: {
+                for (ui64 i = 0; i < col.GetSize(); i++) {
                     if (value.empty()) {
                         ans[i] = ans[i] ^ 1;
-                        break;
+                        continue;
                     }
                     if (value == "%") {
                         ans[i] = ans[i] ^ 1;
-                        break;
+                        continue;
                     }
                     std::string& s = col.GetData()[i];
                     std::vector<i64> pf(value.size(), 0);
@@ -405,168 +209,32 @@ struct OFilterCheck {
                     }
 
                     ans[i] = (ans[i] ^ ans_c);
-                    break;
                 }
-                default:
-                    std::cout << "not supported op" << std::endl;
-                    return MakeError<EError::UnsupportedErr>();
+                break;
             }
+            default:
+                std::cout << "not supported op" << std::endl;
+                return MakeError<EError::UnsupportedErr>();
         }
         return ans;
     }
 };
 
 struct OFilter {
-    static Expected<IColumn> Exec(Ti8Column& col, const std::vector<bool>& mask) {
-        std::vector<i8> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
+    template <typename TCol>
+    static inline Expected<IColumn> Exec(TCol& col, const std::vector<bool>& mask) {
+        using T = typename TCol::ElemType;
+        std::vector<T> vals;
         if (col.GetData().size() != mask.size()) {
             std::cout << "bad filter size" << std::endl;
             return MakeError<EError::BadArgsErr>();
         }
-        vals.reserve(sz);
         for (ui64 i = 0; i < col.GetData().size(); i++) {
             if (mask[i]) {
                 vals.push_back(col.GetData()[i]);
             }
         }
-        return std::make_shared<Ti8Column>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(Ti16Column& col, const std::vector<bool>& mask) {
-        std::vector<i16> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<Ti16Column>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(Ti32Column& col, const std::vector<bool>& mask) {
-        std::vector<i32> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<Ti32Column>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(Ti64Column& col, const std::vector<bool>& mask) {
-        std::vector<i64> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<Ti64Column>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(TDoubleColumn& col, const std::vector<bool>& mask) {
-        std::vector<ld> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<TDoubleColumn>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(TDateColumn& col, const std::vector<bool>& mask) {
-        std::vector<TDate> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<TDateColumn>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(TTimestampColumn& col, const std::vector<bool>& mask) {
-        std::vector<TTimestamp> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<TTimestampColumn>(std::move(vals));
-    }
-
-    static Expected<IColumn> Exec(TStringColumn& col, const std::vector<bool>& mask) {
-        std::vector<std::string> vals;
-        ui64 sz = 0;
-        for (ui64 i = 0; i < mask.size(); i++) {
-            sz += mask[i];
-        }
-        if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
-            return MakeError<EError::BadArgsErr>();
-        }
-        vals.reserve(sz);
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
-            }
-        }
-        return std::make_shared<TStringColumn>(std::move(vals));
+        return std::make_shared<TCol>(std::move(vals));
     }
 };
 

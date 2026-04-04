@@ -325,10 +325,10 @@ TEST_F(BigTest, GroupBySeveral) {
 hers,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,rip,100000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,rip,100000
+frusciante,rip,100000
 john,rip,100000
 josh,rip,100000
-klinghoffer,rip,100000
 )");
 }
 

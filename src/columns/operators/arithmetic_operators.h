@@ -3,7 +3,8 @@
 namespace JfEngine {
 
 struct OSum {
-    static Expected<IColumn> Exec(Ti8Column& col) {
+    template <typename T>
+    static inline Expected<IColumn> Exec(T& col) {
         i64 res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
@@ -11,31 +12,7 @@ struct OSum {
         return std::make_shared<Ti64Column>(std::vector<i64>{res});
     }
 
-    static Expected<IColumn> Exec(Ti16Column& col) {
-        i64 res = 0;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData()[i];
-        }
-        return std::make_shared<Ti64Column>(std::vector<i64>{res});
-    }
-
-    static Expected<IColumn> Exec(Ti32Column& col) {
-        i64 res = 0;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData()[i];
-        }
-        return std::make_shared<Ti64Column>(std::vector<i64>{res});
-    }
-
-    static Expected<IColumn> Exec(Ti64Column& col) {
-        i64 res = 0;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData()[i];
-        }
-        return std::make_shared<Ti64Column>(std::vector<i64>{res});
-    }
-
-    static Expected<IColumn> Exec(TDoubleColumn& col) {
+    static inline Expected<IColumn> Exec(TDoubleColumn& col) {
         ld res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
@@ -43,15 +20,15 @@ struct OSum {
         return std::make_shared<TDoubleColumn>(std::vector<ld>{res});
     }
 
-    static Expected<IColumn> Exec(TDateColumn& col) {
+    static inline Expected<IColumn> Exec(TDateColumn& col) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static Expected<IColumn> Exec(TTimestampColumn& col) {
+    static inline Expected<IColumn> Exec(TTimestampColumn& col) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static Expected<IColumn> Exec(TStringColumn& col) {
+    static inline Expected<IColumn> Exec(TStringColumn& col) {
         std::string res;
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
@@ -61,14 +38,15 @@ struct OSum {
 };
 
 struct OVerticalSum {
-    static Expected<IColumn> Exec(Ti8Column& col1, TColumnPtr col2) {
+    template<typename T>
+    static inline Expected<IColumn> Exec(T& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
-        if (col2->GetType() != EColumn::ki8Column) {
+        if (col2->GetType() != col1.GetType()) {
             return MakeError<EError::BadArgsErr>("no addition between i8 and other type");
         }
-        auto col2_i = static_cast<Ti8Column*>(col2.get());
+        auto col2_i = static_cast<T*>(col2.get());
         std::vector<i64> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
@@ -76,52 +54,7 @@ struct OVerticalSum {
         return std::make_shared<Ti64Column>(ans);
     }
 
-    static Expected<IColumn> Exec(Ti16Column& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::ki16Column) {
-            return MakeError<EError::BadArgsErr>("no addition between i16 and other type");
-        }
-        auto col2_i = static_cast<Ti16Column*>(col2.get());
-        std::vector<i64> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
-        }
-        return std::make_shared<Ti64Column>(ans);
-    }
-
-    static Expected<IColumn> Exec(Ti32Column& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::ki32Column) {
-            return MakeError<EError::BadArgsErr>("no addition between i32 and other type");
-        }
-        auto col2_i = static_cast<Ti32Column*>(col2.get());
-        std::vector<i64> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
-        }
-        return std::make_shared<Ti64Column>(ans);
-    }
-
-    static Expected<IColumn> Exec(Ti64Column& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::ki64Column) {
-            return MakeError<EError::BadArgsErr>("no addition between i64 and other type");
-        }
-        auto col2_i = static_cast<Ti64Column*>(col2.get());
-        std::vector<i64> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
-        }
-        return std::make_shared<Ti64Column>(ans);
-    }
-
-    static Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -136,15 +69,15 @@ struct OVerticalSum {
         return std::make_shared<TDoubleColumn>(ans);
     }
 
-    static Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -161,14 +94,15 @@ struct OVerticalSum {
 };
 
 struct OVerticalSub {
-    static Expected<IColumn> Exec(Ti8Column& col1, TColumnPtr col2) {
+    template <typename T>
+    static inline Expected<IColumn> Exec(T& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
-        if (col2->GetType() != EColumn::ki8Column) {
+        if (col2->GetType() != col1.GetType()) {
             return MakeError<EError::BadArgsErr>("no addition between i8 and other type");
         }
-        auto col2_i = static_cast<Ti8Column*>(col2.get());
+        auto col2_i = static_cast<T*>(col2.get());
         std::vector<i64> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
@@ -176,52 +110,7 @@ struct OVerticalSub {
         return std::make_shared<Ti64Column>(ans);
     }
 
-    static Expected<IColumn> Exec(Ti16Column& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::ki16Column) {
-            return MakeError<EError::BadArgsErr>("no addition between i16 and other type");
-        }
-        auto col2_i = static_cast<Ti16Column*>(col2.get());
-        std::vector<i64> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
-        }
-        return std::make_shared<Ti64Column>(ans);
-    }
-
-    static Expected<IColumn> Exec(Ti32Column& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::ki32Column) {
-            return MakeError<EError::BadArgsErr>("no addition between i32 and other type");
-        }
-        auto col2_i = static_cast<Ti32Column*>(col2.get());
-        std::vector<i64> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
-        }
-        return std::make_shared<Ti64Column>(ans);
-    }
-
-    static Expected<IColumn> Exec(Ti64Column& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::ki64Column) {
-            return MakeError<EError::BadArgsErr>("no addition between i64 and other type");
-        }
-        auto col2_i = static_cast<Ti64Column*>(col2.get());
-        std::vector<i64> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
-        }
-        return std::make_shared<Ti64Column>(ans);
-    }
-
-    static Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -236,21 +125,21 @@ struct OVerticalSub {
         return std::make_shared<TDoubleColumn>(ans);
     }
 
-    static Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
+    static inline Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 };
 
 struct OLength {
-    static Expected<IColumn> Exec(TStringColumn& col) {
+    static inline Expected<IColumn> Exec(TStringColumn& col) {
         std::vector<i64> ans(col.GetSize());
         for (ui64 i = 0; i < col.GetSize(); i++) {
             ans[i] = col.GetData()[i].size();
@@ -259,17 +148,29 @@ struct OLength {
     }
 
     template<typename T>
-    static Expected<IColumn> Exec(T& col) {
+    static inline Expected<IColumn> Exec(T& col) {
         return MakeError<EError::UnsupportedErr>();
     }
 };
 
 struct OAddConst {
-    template<typename TCol, typename TEl>
-    static Expected<IColumn> ExecInner(TCol& col, const std::string& s) {
-        TEl add = 0;
+    static inline Expected<IColumn> Exec(TTimestampColumn& col, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<IColumn> Exec(TDateColumn& col, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    template<typename TCol>
+    static inline Expected<IColumn> Exec(TCol& col, const std::string& s) {
+        typename TCol::ElemType add;
         try {
-            add = static_cast<TEl>(std::stoi(s));
+            if constexpr (std::is_same_v<TCol, TStringColumn>) {
+                add = s;
+            } else {
+                add = static_cast<typename TCol::ElemType>(std::stoi(s));
+            }
         } catch (...) {
             return EError::BadArgsErr;
         }
@@ -280,35 +181,26 @@ struct OAddConst {
         }
         return res;
     }
-
-    static Expected<IColumn> Exec(Ti8Column& col, const std::string& s) {
-        return ExecInner<Ti8Column, i8>(col, s);
-    }
-
-    static Expected<IColumn> Exec(Ti16Column& col, const std::string& s) {
-        return ExecInner<Ti16Column, i16>(col, s);
-    }
-
-    static Expected<IColumn> Exec(Ti32Column& col, const std::string& s) {
-        return ExecInner<Ti32Column, i32>(col, s);
-    }
-
-    static Expected<IColumn> Exec(Ti64Column& col, const std::string& s) {
-        return ExecInner<Ti64Column, i64>(col, s);
-    }
-
-    template<typename T>
-    static Expected<IColumn> Exec(T& col, const std::string& s) {
-        return MakeError<EError::UnsupportedErr>();
-    }
 };
 
 struct OSubConst {
-    template<typename TCol, typename TEl>
-    static Expected<IColumn> ExecInner(TCol& col, const std::string& s) {
-        TEl add = 0;
+    static inline Expected<IColumn> Exec(TTimestampColumn& col, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<IColumn> Exec(TDateColumn& col, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<IColumn> Exec(TStringColumn& col, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    template<typename TCol>
+    static inline Expected<IColumn> Exec(TCol& col, const std::string& s) {
+        typename TCol::ElemType add;
         try {
-            add = static_cast<TEl>(std::stoi(s));
+            add = static_cast<typename TCol::ElemType>(std::stoi(s));
         } catch (...) {
             return EError::BadArgsErr;
         }
@@ -318,27 +210,6 @@ struct OSubConst {
             v -= add;
         }
         return res;
-    }
-
-    static Expected<IColumn> Exec(Ti8Column& col, const std::string& s) {
-        return ExecInner<Ti8Column, i8>(col, s);
-    }
-
-    static Expected<IColumn> Exec(Ti16Column& col, const std::string& s) {
-        return ExecInner<Ti16Column, i16>(col, s);
-    }
-
-    static Expected<IColumn> Exec(Ti32Column& col, const std::string& s) {
-        return ExecInner<Ti32Column, i32>(col, s);
-    }
-
-    static Expected<IColumn> Exec(Ti64Column& col, const std::string& s) {
-        return ExecInner<Ti64Column, i64>(col, s);
-    }
-
-    template<typename T>
-    static Expected<IColumn> Exec(T& col, const std::string& s) {
-        return MakeError<EError::UnsupportedErr>();
     }
 };
 

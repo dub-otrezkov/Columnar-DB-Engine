@@ -54,6 +54,8 @@ using TColumnPtr = std::shared_ptr<IColumn>;
 template <typename T>
 class TStorage : public IColumn {
 public:
+    using ElemType = T;
+
     ui64 GetSize() override {
         return cols_.size();
     }
@@ -134,6 +136,18 @@ struct TDate {
                (static_cast<i64>(month) << 8) |
                (static_cast<i64>(day));
     }
+
+    inline bool operator< (const TDate& other) const {
+        return IntDate() < other.IntDate();
+    }
+
+    inline bool operator== (const TDate& other) const {
+        return IntDate() == other.IntDate();
+    }
+
+    inline bool operator<= (const TDate& other) const {
+        return IntDate() <= other.IntDate();
+    }
 };
 
 class TDateColumn : public TStorage<TDate> {
@@ -159,6 +173,18 @@ struct TTimestamp {
                (static_cast<i64>(hour) << 8) |
                (static_cast<i64>(minute) << 8) |
                (static_cast<i64>(second));
+    }
+
+    inline bool operator< (const TTimestamp& other) const {
+        return IntTime() < other.IntTime();
+    }
+
+    inline bool operator== (const TTimestamp& other) const {
+        return IntTime() == other.IntTime();
+    }
+
+    inline bool operator<= (const TTimestamp& other) const {
+        return IntTime() <= other.IntTime();
     }
 };
 

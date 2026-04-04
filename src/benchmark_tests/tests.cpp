@@ -530,8 +530,8 @@ TEST_F(BenchTest, _22) {
 MIN(hers),string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,forever,100000
-klinghoffer,alive,100000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,alive,100000
+frusciante,forever,100000
 )");
 }
 
