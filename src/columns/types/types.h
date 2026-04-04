@@ -170,7 +170,7 @@ struct TTimestamp {
 
     i64 IntTime() const {
         return (date.IntDate() << 24) |
-               (static_cast<i64>(hour) << 8) |
+               (static_cast<i64>(hour) << 16) |
                (static_cast<i64>(minute) << 8) |
                (static_cast<i64>(second));
     }

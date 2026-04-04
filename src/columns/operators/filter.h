@@ -58,6 +58,8 @@ struct OFilterCheck {
                 target = DateFromStr(value);
             } else if constexpr (std::is_same_v<TCol, TTimestampColumn>) {
                 target = TimestampFromStr(value);
+            } else if constexpr (std::is_same_v<TCol, TDoubleColumn>) {
+                target = static_cast<T>(std::stold(value));
             } else {
                 target = static_cast<T>(std::stoi(value));
             }
