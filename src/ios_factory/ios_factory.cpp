@@ -17,6 +17,11 @@ void TIOFactory::UnregisterIO(const std::string& alias) { // FOR TESTS (and prob
     i->ios_.erase(alias);
 }
 
+void TIOFactory::RegisterCustomIO(const std::string& alias, std::shared_ptr<std::iostream> io) {
+    auto i = Instance();
+    i->ios_[alias] = std::move(io);
+}
+
 void TIOFactory::RegisterFileIO(const std::string& alias, ETypeFile t) {
     auto i = Instance();
     if (i->ios_.contains(alias)) {

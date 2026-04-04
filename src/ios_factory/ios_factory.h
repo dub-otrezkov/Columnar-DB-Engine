@@ -29,6 +29,8 @@ public:
 
     static void UnregisterIO(const std::string& alias); // FOR TESTS (and probably optimizations)
 
+    static void RegisterCustomIO(const std::string& alias, std::shared_ptr<std::iostream> io);
+
     static void RegisterFileIO(const std::string& alias, ETypeFile t);
 
     static void RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp);
