@@ -15,7 +15,7 @@
 // AI GENERATED CODE WARNING
 
 int main() {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
 
     // Список всех запросов (включая CREATE и помеченные как "ok")
     std::vector<std::string> queries = {

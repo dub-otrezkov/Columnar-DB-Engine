@@ -2,7 +2,7 @@
 
 #include "engine/engine.h"
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 TEST_F(AgregationsTest, FullTableTest) {
     auto jf_table = std::make_shared<std::stringstream>();
@@ -10,14 +10,14 @@ TEST_F(AgregationsTest, FullTableTest) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -26,7 +26,7 @@ TEST_F(AgregationsTest, FullTableTest) {
     }
 
     {
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
             if (err.HasError()) {
@@ -41,7 +41,7 @@ TEST_F(AgregationsTest, FullTableTest) {
 
         std::stringstream data_;
 
-        auto res = engine->WriteDataToCSV(data_);
+        auto res = engine->WriteDataToCsv(data_);
     
         // std::cout << data.str() << std::endl;
         EXPECT_EQ(data_.str(), data);
@@ -54,14 +54,14 @@ TEST_F(AgregationsTest, SelectTest) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -74,7 +74,7 @@ TEST_F(AgregationsTest, SelectTest) {
         auto column_name = std::make_shared<TColumnAgr>("what");
         auto sum_agr = std::make_shared<TSumAgr>();
         sum_agr->AddArg(column_name);
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
             if (err.HasError()) {
@@ -89,7 +89,7 @@ TEST_F(AgregationsTest, SelectTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCSV(data);
+        auto res = engine->WriteDataToCsv(data);
     
         EXPECT_EQ(data.str(), R"(1
 -10
@@ -110,14 +110,14 @@ TEST_F(AgregationsTest, SumTest) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -130,7 +130,7 @@ TEST_F(AgregationsTest, SumTest) {
         auto column_name = std::make_shared<TColumnAgr>("what");
         auto sum_agr = std::make_shared<TSumAgr>();
         sum_agr->AddArg(column_name);
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
             if (err.HasError()) {
@@ -145,7 +145,7 @@ TEST_F(AgregationsTest, SumTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCSV(data);
+        auto res = engine->WriteDataToCsv(data);
     
         EXPECT_EQ(data.str(), "196\n");
     }
@@ -157,14 +157,14 @@ TEST_F(AgregationsTest, CountTest) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -177,7 +177,7 @@ TEST_F(AgregationsTest, CountTest) {
         auto column_name = std::make_shared<TColumnAgr>("what");
         auto sum_agr = std::make_shared<TCountAgr>();
         sum_agr->AddArg(column_name);
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
             if (err.HasError()) {
@@ -192,10 +192,10 @@ TEST_F(AgregationsTest, CountTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCSV(data);
+        auto res = engine->WriteDataToCsv(data);
     
         EXPECT_EQ(data.str(), "9\n");
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

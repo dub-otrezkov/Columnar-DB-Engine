@@ -7,14 +7,14 @@
 #include <cassert>
 #include <unordered_map>
 
-namespace JFEngine {
+namespace JfEngine {
 
-Expected<void> TCSVTableInput::SetupColumnsScheme() {
+Expected<void> TCsvTableInput::SetupColumnsScheme() {
     if (!scheme_.empty()) {
         return nullptr;
     }
 
-    TCSVReader csv_scheme(*scheme_in_);
+    TCsvReader csv_scheme(*scheme_in_);
 
     while (1) {
         auto err = csv_scheme.ReadRow();
@@ -38,7 +38,7 @@ Expected<void> TCSVTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
+Expected<std::vector<TColumnPtr>> TCsvTableInput::LoadRowGroup() {
 
     // std::cout << "Ffkfkfkkfkfkfkfk" << std::endl;
     auto is_eof = false;
@@ -88,7 +88,7 @@ Expected<std::vector<TColumnPtr>> TCSVTableInput::LoadRowGroup() {
     return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
 }
 
-Expected<void> TJFTableInput::SetupColumnsScheme() {
+Expected<void> TJfTableInput::SetupColumnsScheme() {
     if (!scheme_.empty()) {
         return nullptr;
     }
@@ -105,7 +105,7 @@ Expected<void> TJFTableInput::SetupColumnsScheme() {
         blocks_pos_[i] = ReadI64(*jf_in_);
     }
     scheme_.reserve(cols_cnt_);
-    TCSVReader r(*jf_in_);
+    TCsvReader r(*jf_in_);
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [d, err] = r.ReadRow();
         if (err != EError::NoError) {
@@ -119,20 +119,20 @@ Expected<void> TJFTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
+Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
     auto start = blocks_pos_[current_block_];
     jf_in_->seekg(start - sizeof(i64) * (cols_cnt_ - i));
     auto pos = ReadI64(*jf_in_);
     jf_in_->seekg(pos);
 
-    TCSVReader rr(*jf_in_);
+    TCsvReader rr(*jf_in_);
     auto d = rr.ReadRow();
 
     if (d.HasError()) {
         return d.GetError();
     }
 
-    auto col = MakeColumnJF(d.GetRes(), scheme_[i].type_);
+    auto col = MakeColumnJf(d.GetRes(), scheme_[i].type_);
 
     if (col.HasError()) {
         return col.GetError();
@@ -146,7 +146,7 @@ Expected<IColumn> TJFTableInput::ReadIthColumn(ui64 i) {
     return ans;
 }
 
-Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
+Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
     // std::cout << "dkdkkdkfkkfdkk" << std::endl;
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EError::EofErr>();
@@ -181,7 +181,7 @@ Expected<std::vector<TColumnPtr>> TJFTableInput::LoadRowGroup() {
     return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 
-void TJFTableInput::MoveCursor(i64 delta) {
+void TJfTableInput::MoveCursor(i64 delta) {
     current_rg_.reset();
     if (delta < 0 && current_block_ < -delta) {
         current_block_ = 0;
@@ -191,12 +191,12 @@ void TJFTableInput::MoveCursor(i64 delta) {
     // std::cout << current_block_ << std::endl;
 }
 
-void TJFTableInput::Reset() {
+void TJfTableInput::Reset() {
     current_block_ = 0;
     current_rg_.reset();
 }
 
-Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
+Expected<IColumn> TJfTableInput::ReadColumn(const std::string& name) {
     static auto name_to_index = [this]() -> auto {
         std::unordered_map<std::string, ui64> poses;
         for (size_t i = 0; i < scheme_.size(); i++) {
@@ -223,25 +223,25 @@ Expected<IColumn> TJFTableInput::ReadColumn(const std::string& name) {
 }
 
 
-ui64 TJFTableInput::GetGroupsCount() const {
+ui64 TJfTableInput::GetGroupsCount() const {
     return blocks_pos_.size();
 }
 
 
-TJFNeccessaryOnly::TJFNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query) :
-    TJFTableInput(jf_in),
+TJfNeccessaryOnly::TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query) :
+    TJfTableInput(jf_in),
     query_(std::move(query))
 {
 }
 
-Expected<void> TJFNeccessaryOnly::SetupColumnsScheme() {
-    auto err = TJFTableInput::SetupColumnsScheme();
+Expected<void> TJfNeccessaryOnly::SetupColumnsScheme() {
+    auto err = TJfTableInput::SetupColumnsScheme();
     if (err.HasError()) {
         return err.GetError();
     }
     new_scheme_.clear();
     cols_.clear();
-    for (ui64 i = 0; i < TJFTableInput::GetScheme().size(); i++) {
+    for (ui64 i = 0; i < TJfTableInput::GetScheme().size(); i++) {
         if (query_.contains(scheme_[i].name_)) {
             new_scheme_.emplace_back(scheme_[i]);
             cols_.push_back(i);
@@ -254,11 +254,11 @@ Expected<void> TJFNeccessaryOnly::SetupColumnsScheme() {
     return EError::NoError;
 }
 
-std::vector<TRowScheme>& TJFNeccessaryOnly::GetScheme() {
+std::vector<TRowScheme>& TJfNeccessaryOnly::GetScheme() {
     return new_scheme_;
 }
 
-Expected<std::vector<TColumnPtr>> TJFNeccessaryOnly::LoadRowGroup() {
+Expected<std::vector<TColumnPtr>> TJfNeccessaryOnly::LoadRowGroup() {
     bool is_eof = false;
     std::vector<TColumnPtr> res;
     for (auto i : cols_) {
@@ -276,4 +276,4 @@ Expected<std::vector<TColumnPtr>> TJFNeccessaryOnly::LoadRowGroup() {
     return {std::move(res), is_eof ? EError::EofErr : EError::NoError};
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

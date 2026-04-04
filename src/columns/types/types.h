@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace JFEngine {
+namespace JfEngine {
 
 // basic classes
 
@@ -54,6 +54,8 @@ using TColumnPtr = std::shared_ptr<IColumn>;
 template <typename T>
 class TStorage : public IColumn {
 public:
+    using ElemType = T;
+
     ui64 GetSize() override {
         return cols_.size();
     }
@@ -134,6 +136,18 @@ struct TDate {
                (static_cast<i64>(month) << 8) |
                (static_cast<i64>(day));
     }
+
+    inline bool operator< (const TDate& other) const {
+        return IntDate() < other.IntDate();
+    }
+
+    inline bool operator== (const TDate& other) const {
+        return IntDate() == other.IntDate();
+    }
+
+    inline bool operator<= (const TDate& other) const {
+        return IntDate() <= other.IntDate();
+    }
 };
 
 class TDateColumn : public TStorage<TDate> {
@@ -160,6 +174,18 @@ struct TTimestamp {
                (static_cast<i64>(minute) << 8) |
                (static_cast<i64>(second));
     }
+
+    inline bool operator< (const TTimestamp& other) const {
+        return IntTime() < other.IntTime();
+    }
+
+    inline bool operator== (const TTimestamp& other) const {
+        return IntTime() == other.IntTime();
+    }
+
+    inline bool operator<= (const TTimestamp& other) const {
+        return IntTime() <= other.IntTime();
+    }
 };
 
 std::string PrintTimestamp(const TTimestamp& d);
@@ -178,7 +204,7 @@ public:
 
 Expected<IColumn> MakeEmptyColumn(EColumn type);
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
-Expected<IColumn> MakeColumnJF(std::vector<std::string> data, EColumn type);
+Expected<IColumn> MakeColumnJf(std::vector<std::string> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
@@ -190,4 +216,4 @@ Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
     return res;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

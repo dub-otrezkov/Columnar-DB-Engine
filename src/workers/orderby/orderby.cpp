@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-namespace JFEngine {
+namespace JfEngine {
 
 TOrderBy::TOrderBy(std::shared_ptr<ITableInput> jf_in, TOrderByQuery query) :
     jf_in_(std::move(jf_in)),
@@ -102,4 +102,4 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
     return {std::move(ans_), EError::EofErr};
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

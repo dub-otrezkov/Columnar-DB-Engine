@@ -1,6 +1,6 @@
 #include "types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 Ti8Column::Ti8Column(std::vector<i8> data) {
     cols_ = std::move(data);
@@ -82,4 +82,4 @@ Expected<void> Ti64Column::Setup(std::vector<std::string>&& data) {
     return nullptr;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

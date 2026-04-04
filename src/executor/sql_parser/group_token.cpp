@@ -3,7 +3,7 @@
 #include "workers/groupby/groupby.h"
 #include "ios_factory/ios_factory.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 Expected<ITableInput> TGroupToken::MakeWorker() {
     // for (const auto& t : args_) {
@@ -24,7 +24,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     }
     
     return std::make_shared<TGroupBy>(
-        TIOFactory::GetTableIO(kCurTableInput).GetShared(),
+        TIoFactory::GetTableIo(kCurTableInput).GetShared(),
         query,
         selects_
     );
@@ -38,4 +38,4 @@ ETokens TGroupToken::GetType() const {
     return ETokens::kGroup;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

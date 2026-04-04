@@ -4,7 +4,7 @@
 
 #include <string_view>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct AgregationsTest : testing::Test {
     std::string scheme = R"(red,string
@@ -27,4 +27,4 @@ dot,19,hacker,-10,-10,-1,-1.125
 )";
 };
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

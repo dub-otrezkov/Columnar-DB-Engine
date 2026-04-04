@@ -12,20 +12,20 @@
 #include <vector>
 #include <iostream>
 
-namespace JFEngine {
+namespace JfEngine {
 
 class TEngine {
-    friend Expected<TEngine> MakeEngineFromCSV(
+    friend Expected<TEngine> MakeEngineFromCsv(
         std::shared_ptr<std::istream> scheme,
         std::shared_ptr<std::istream> data,
         ui64 row_group_size
     );
-    friend Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
+    friend Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
 public:
 
-    Expected<void> WriteSchemeToCSV(std::ostream& out);
-    Expected<void> WriteDataToCSV(std::ostream& out);
-    Expected<void> WriteTableToJF(std::ostream& out);
+    Expected<void> WriteSchemeToCsv(std::ostream& out);
+    Expected<void> WriteDataToCsv(std::ostream& out);
+    Expected<void> WriteTableToJf(std::ostream& out);
 
 public:
 
@@ -70,10 +70,10 @@ public:
     std::shared_ptr<ITableInput> in_;
 };
 
-Expected<TEngine> MakeEngineFromCSV(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
+Expected<TEngine> MakeEngineFromCsv(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
 
-Expected<TEngine> MakeEngineFromJF(std::shared_ptr<std::istream> jf);
+Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
 
 Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker);
 
-} // namespace JFEngine
+} // namespace JfEngine

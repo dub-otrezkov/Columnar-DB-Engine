@@ -1,6 +1,6 @@
 #include "tests.h"
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 TEST_F(OperatorsTest, i64SumTest) {
     {
@@ -123,4 +123,4 @@ TEST_F(OperatorsTest, TimestampSumTest) {
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

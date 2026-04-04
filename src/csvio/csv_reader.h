@@ -6,11 +6,11 @@
 #include <fstream>
 #include <vector>
 
-namespace JFEngine {
+namespace JfEngine {
 
-class TCSVReader {
+class TCsvReader {
 public:
-    TCSVReader(std::istream& in, char sep = ',');
+    TCsvReader(std::istream& in, char sep = ',');
 
     Expected<std::vector<std::string>> ReadRow();
     void RestartRead();
@@ -22,9 +22,9 @@ private:
     std::streampos init_pos_;
 };
 
-class TCSVOptimizedReader { // DO NOT USE ANYWHERE EXCEPT BIG CSV FILE READING, IT DESTROY ISTREAM CORRECTNESS
+class TCsvOptimizedReader { // DO NOT USE ANYWHERE EXCEPT BIG Csv FILE READING, IT DESTROY ISTREAM CORRECTNESS
 public:
-    TCSVOptimizedReader(std::istream& in, char sep = ',');
+    TCsvOptimizedReader(std::istream& in, char sep = ',');
     Expected<std::vector<std::string>> ReadRow();
 
 private:
@@ -43,9 +43,9 @@ private:
     ui64 av_ = 0;
 };
 
-class TCSVBufferedReader {
+class TCsvBufferedReader {
 public:
-    TCSVBufferedReader(std::istream& in, i64 buf_size = 0, char sep = ',');
+    TCsvBufferedReader(std::istream& in, i64 buf_size = 0, char sep = ',');
 
     Expected<std::vector<std::string>> ReadRow();
 
@@ -59,4 +59,4 @@ private:
     char* buf_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

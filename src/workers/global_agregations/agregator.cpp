@@ -2,7 +2,7 @@
 
 #include "columns/operators/operators.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TAgregator::TAgregator(std::shared_ptr<ITableInput> jf_in, TGlobalAgregationQuery query) :
     jf_in_(std::move(jf_in)),
@@ -90,4 +90,4 @@ void TAgregator::MoveCursor(i64 delta) {
     jf_in_->MoveCursor(delta);
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

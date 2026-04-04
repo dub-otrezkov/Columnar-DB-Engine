@@ -1,6 +1,6 @@
 #include "filter.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TFilter::TFilter(std::shared_ptr<ITableInput> jf_in, TFilterQuery query) :
     jf_in_(std::move(jf_in)),
@@ -106,4 +106,4 @@ void TFilter::MoveCursor(i64 delta) {
     jf_in_->MoveCursor(delta);
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

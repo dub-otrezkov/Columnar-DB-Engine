@@ -2,7 +2,7 @@
 
 #include "operators.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 struct TGlobalAgregationQuery {
     std::vector<std::shared_ptr<IAgregation>> cols;
@@ -28,4 +28,4 @@ private:
     bool total_ = false;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

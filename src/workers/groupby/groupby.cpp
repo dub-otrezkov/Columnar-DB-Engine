@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace JFEngine {
+namespace JfEngine {
 
 TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TGlobalAgregationQuery selects) :
     jf_in_(std::move(jf_in)),
@@ -65,7 +65,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             std::vector<std::string> key;
             key.reserve(group_q_.cols.size());
             for (ui64 j = 0; j < rg.size(); j++) {
-                key.push_back(Do<OJFPrintIth>(rg[j], i));
+                key.push_back(Do<OJfPrintIth>(rg[j], i));
             }
 
             if (!groups_.contains(key)) {
@@ -111,4 +111,4 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     return {std::move(ans), EError::EofErr};
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -1,9 +1,9 @@
 #include "tests.h"
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 TEST_F(AgregationsTest, GetColumnsTest) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -36,7 +36,7 @@ peppers,int32
 }
 
 TEST_F(AgregationsTest, GetColumnsSumTest) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -60,7 +60,7 @@ SUM(red),string
 }
 
 TEST_F(AgregationsTest, GetCountTest) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         ASSERT_FALSE(err.HasError());
@@ -77,7 +77,7 @@ TEST_F(AgregationsTest, GetCountTest) {
 }
 
 TEST_F(AgregationsTest, GetAvgTest) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {

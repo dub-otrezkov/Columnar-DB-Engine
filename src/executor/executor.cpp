@@ -6,7 +6,7 @@
 
 #include <fstream>
 
-namespace JFEngine {
+namespace JfEngine {
 
 static const std::string kTmp1 = "tmp1";
 static const std::string kTmp2 = "tmp2";
@@ -25,19 +25,19 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         if (err2 != EError::NoError) {
             return err2;
         }
-        TIOFactory::RegisterTableInput(
+        TIoFactory::RegisterTableInput(
             kCurTableInput,
             inp
         );
     }
     {
-        TIOFactory::RegisterFileIO(
+        TIoFactory::RegisterFileIo(
             kTmp1,
-            ETypeFile::kJFFile
+            ETypeFile::kJfFile
         );
-        TIOFactory::RegisterFileIO(
+        TIoFactory::RegisterFileIo(
             kTmp2,
-            ETypeFile::kJFFile
+            ETypeFile::kJfFile
         );
     }
 
@@ -61,23 +61,23 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
             return err;
         }
 
-        TIOFactory::RegisterTableInput(
+        TIoFactory::RegisterTableInput(
             kCurTableInput,
             inp
         );
 
-        // if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+        // if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIoFactory::GetIo(cur_t2).GetShared())) {
         //     d->clear();
         //     d->seekg(0, std::ios::beg);
         //     d->seekp(0, std::ios::beg);
         //     d->str("");
-        // } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIOFactory::GetIO(cur_t2).GetShared())) {
+        // } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIoFactory::GetIo(cur_t2).GetShared())) {
         //     d->close();
         //     d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
         // }
-        // // TIOFactory::GetIO(cur_t2).GetShared()->clear();
-        // // TIOFactory::GetIO(cur_t2).GetShared()->seekg(0, std::ios::beg);
-        // // TIOFactory::GetIO(cur_t2).GetShared()->seekp(0, std::ios::beg);
+        // // TIoFactory::GetIo(cur_t2).GetShared()->clear();
+        // // TIoFactory::GetIo(cur_t2).GetShared()->seekg(0, std::ios::beg);
+        // // TIoFactory::GetIo(cur_t2).GetShared()->seekp(0, std::ios::beg);
 
         std::swap(cur_t1, cur_t2);
     }
@@ -92,4 +92,4 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
     return nullptr;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -5,11 +5,11 @@
 
 #include <iostream>
 
-namespace JFEngine {
+namespace JfEngine {
 
-class TCSVTableInput : public ITableInput {
+class TCsvTableInput : public ITableInput {
 public:
-    TCSVTableInput(std::shared_ptr<std::istream> scheme_in, std::shared_ptr<std::istream> data_in, ui64 row_group_len = kRowGroupLen) :
+    TCsvTableInput(std::shared_ptr<std::istream> scheme_in, std::shared_ptr<std::istream> data_in, ui64 row_group_len = kRowGroupLen) :
         scheme_in_(std::move(scheme_in)),
         data_in_(std::move(data_in)),
         csv_data_(*data_in_)
@@ -22,14 +22,14 @@ public:
 private:
     std::shared_ptr<std::istream> scheme_in_;
     std::shared_ptr<std::istream> data_in_;
-    TCSVOptimizedReader csv_data_;
+    TCsvOptimizedReader csv_data_;
 };
 
-class TJFTableInput : public ITableInput {
+class TJfTableInput : public ITableInput {
 public:
-    virtual ~TJFTableInput() = default;
+    virtual ~TJfTableInput() = default;
 
-    TJFTableInput(std::shared_ptr<std::istream> jf_in) {
+    TJfTableInput(std::shared_ptr<std::istream> jf_in) {
         jf_in_ = jf_in;
     }
 
@@ -53,9 +53,9 @@ protected:
     ui64 current_block_ = 0;
 };
 
-class TJFNeccessaryOnly : public TJFTableInput {
+class TJfNeccessaryOnly : public TJfTableInput {
 public:
-    TJFNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query = "");
+    TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query = "");
 
     std::vector<TRowScheme>& GetScheme() override;
     Expected<void> SetupColumnsScheme() override;
@@ -68,4 +68,4 @@ private:
     std::vector<TRowScheme> new_scheme_;
 };
 
-} // JFEngine
+} // JfEngine

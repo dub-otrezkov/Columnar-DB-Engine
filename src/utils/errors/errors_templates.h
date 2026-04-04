@@ -5,7 +5,7 @@
 
 #include <unordered_map>
 
-namespace JFEngine {
+namespace JfEngine {
 
 class NotAnIntErr : public IError {
 public:
@@ -36,9 +36,9 @@ public:
     }
 };
 
-class IONotFoundErr : public IError {
+class IoNotFoundErr : public IError {
 public:
-    IONotFoundErr(const std::string& alias) : alias_(alias) {
+    IoNotFoundErr(const std::string& alias) : alias_(alias) {
     }
 
     std::string Print() const override {
@@ -130,4 +130,4 @@ private:
     std::unordered_map<std::string, ui64> cols_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

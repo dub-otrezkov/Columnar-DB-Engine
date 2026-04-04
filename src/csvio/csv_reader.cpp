@@ -3,18 +3,18 @@
 #include <algorithm>
 #include <iostream>
 
-namespace JFEngine {
+namespace JfEngine {
 
 const ui64 kStrReserveSize = (1 << 5);
 
-TCSVReader::TCSVReader(std::istream& in, char sep) :
+TCsvReader::TCsvReader(std::istream& in, char sep) :
     in_(in),
     sep_(sep),
     init_pos_(in_.tellg())
 {
 }
 
-Expected<std::vector<std::string>> TCSVReader::ReadRow() {
+Expected<std::vector<std::string>> TCsvReader::ReadRow() {
     if (in_.eof()) {
         return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
@@ -68,13 +68,13 @@ Expected<std::vector<std::string>> TCSVReader::ReadRow() {
     return {std::move(ans)};
 }
 
-TCSVOptimizedReader::TCSVOptimizedReader(std::istream& in, char sep) :
+TCsvOptimizedReader::TCsvOptimizedReader(std::istream& in, char sep) :
     in_(in),
     sep_(sep)
 {
 }
 
-char TCSVOptimizedReader::ReadSym() {
+char TCsvOptimizedReader::ReadSym() {
     if (cpos_ < av_) {
         return buf_[cpos_++];
     }
@@ -86,18 +86,18 @@ char TCSVOptimizedReader::ReadSym() {
 }
 
 
-bool TCSVOptimizedReader::EofC() {
+bool TCsvOptimizedReader::EofC() {
     return cpos_ >= av_ && in_.eof();
 }
 
-char TCSVOptimizedReader::Peek() {
+char TCsvOptimizedReader::Peek() {
     if (cpos_ < kIBufSize) {
         return buf_[cpos_];
     }
     return in_.peek();
 }
 
-Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
+Expected<std::vector<std::string>> TCsvOptimizedReader::ReadRow() {
     if (EofC()) {
         return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
@@ -150,12 +150,12 @@ Expected<std::vector<std::string>> TCSVOptimizedReader::ReadRow() {
     return ans_e;
 }
 
-void TCSVReader::RestartRead() {
+void TCsvReader::RestartRead() {
     in_.seekg(init_pos_);
 }
 
 
-TCSVBufferedReader::TCSVBufferedReader(std::istream& in, i64 buf_size, char sep) :
+TCsvBufferedReader::TCsvBufferedReader(std::istream& in, i64 buf_size, char sep) :
     in_(in),
     sep_(sep),
     buf_size_(buf_size),
@@ -168,7 +168,7 @@ TCSVBufferedReader::TCSVBufferedReader(std::istream& in, i64 buf_size, char sep)
 }
 
 
-Expected<std::vector<std::string>> TCSVBufferedReader::ReadRow() {
+Expected<std::vector<std::string>> TCsvBufferedReader::ReadRow() {
     if (in_.eof() || cur_pos_ == buf_size_) {
         return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
@@ -221,4 +221,4 @@ Expected<std::vector<std::string>> TCSVBufferedReader::ReadRow() {
     return {std::move(ans)};
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -8,7 +8,7 @@
 #include <string_view>
 #include <memory>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct BenchTest : testing::Test {
 
@@ -40,42 +40,42 @@ dorothy,int64
     std::shared_ptr<std::stringstream> out_data;
 
     void SetUp() override {
-        TIOFactory::RegisterSStreamIO("scheme", ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO("data", ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO("josh", ETypeFile::kJFFile);
-        TIOFactory::RegisterSStreamIO("tmp1", ETypeFile::kJFFile);
-        TIOFactory::RegisterSStreamIO("tmp2", ETypeFile::kJFFile);
+        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
+        TIoFactory::RegisterSStreamIo("tmp1", ETypeFile::kJfFile);
+        TIoFactory::RegisterSStreamIo("tmp2", ETypeFile::kJfFile);
 
-        TIOFactory::GetIO("scheme").GetRes() << scheme;
+        TIoFactory::GetIo("scheme").GetRes() << scheme;
         for (ui64 i = 0; i < iter; i++) {
-            TIOFactory::GetIO("data").GetRes() << data;
+            TIoFactory::GetIo("data").GetRes() << data;
         }
 
-        TIOFactory::RegisterSStreamIO(kResultScheme, ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO(kResultData, ETypeFile::kCSVFile);
+        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
 
         out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIOFactory::GetIO(kResultScheme).GetShared()
+            TIoFactory::GetIo(kResultScheme).GetShared()
         );
         out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIOFactory::GetIO(kResultData).GetShared()
+            TIoFactory::GetIo(kResultData).GetShared()
         );
     }
 
     void TearDown() override {
-        TIOFactory::UnregisterIO("scheme");
-        TIOFactory::UnregisterIO("data");
-        TIOFactory::UnregisterIO("josh");
-        TIOFactory::UnregisterIO("tmp1");
-        TIOFactory::UnregisterIO("tmp2");
+        TIoFactory::UnregisterIo("scheme");
+        TIoFactory::UnregisterIo("data");
+        TIoFactory::UnregisterIo("josh");
+        TIoFactory::UnregisterIo("tmp1");
+        TIoFactory::UnregisterIo("tmp2");
 
-        TIOFactory::UnregisterIO(kResultData);
-        TIOFactory::UnregisterIO(kResultScheme);
+        TIoFactory::UnregisterIo(kResultData);
+        TIoFactory::UnregisterIo(kResultScheme);
     }
 };
 
 
-void prolog(JFEngine::TExecutor& exec) {
+void prolog(JfEngine::TExecutor& exec) {
     auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
     if (err.HasError()) {
         std::cout << err.GetError() << std::endl;
@@ -85,7 +85,7 @@ void prolog(JFEngine::TExecutor& exec) {
 
 TEST_F(BenchTest, _1) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     prolog(exec);
     std::cout << "prolog finished" << std::endl;
     // {
@@ -101,4 +101,4 @@ TEST_F(BenchTest, _1) {
     EXPECT_EQ(out_data->str(), "400000\n");
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

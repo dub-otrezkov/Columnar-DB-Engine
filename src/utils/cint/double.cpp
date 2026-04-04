@@ -8,7 +8,7 @@ void PutDouble(std::ostream& out, ld i) {
     }
 }
 
-std::string DoubleToJFStr(ld i) {
+std::string DoubleToJfStr(ld i) {
     std::stringstream ss;
     PutDouble(ss, i);
     auto res = ss.str();
@@ -25,7 +25,7 @@ ld ReadDouble(std::istream& in) {
     return ans;
 }
 
-ld JFStrToDouble(const std::string& i) {
+ld JfStrToDouble(const std::string& i) {
     std::stringstream ss;
     ss << i;
     return ReadDouble(ss);

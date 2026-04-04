@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct GroupByTest : testing::Test {
     std::string scheme = R"(red,string
@@ -32,14 +32,14 @@ TEST_F(GroupByTest, Basic) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -48,7 +48,7 @@ TEST_F(GroupByTest, Basic) {
     }
 
     {
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq{std::vector<std::shared_ptr<IAgregation>>{std::make_shared<TColumnAgr>("red")}};
 
@@ -73,7 +73,7 @@ TEST_F(GroupByTest, Basic) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCSV(data);
+        auto res = engine->WriteDataToCsv(data);
 
         EXPECT_EQ(data.str(), R"(dot,3,164
 "i,could,have,lied",1,5
@@ -96,14 +96,14 @@ the,2,36
 //             (*data_in) << data;
 //         }
 
-//         auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+//         auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
 //         if (err) {
 //             std::cout << "! " << err << std::endl;
 //         }
 //         ASSERT_FALSE(err);
 
-//         auto err2 = eng->WriteTableToJF(*jf_table);
+//         auto err2 = eng->WriteTableToJf(*jf_table);
         
 //         if (err2.HasError()) {
 //             std::cout << "! " << err2.GetError() << std::endl;
@@ -112,7 +112,7 @@ the,2,36
 //     }
 
 //     {
-//         auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+//         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
 //         TGroupByQuery gq{std::vector<std::shared_ptr<IAgregation>>{std::make_shared<TColumnAgr>("red")}};
 
@@ -137,7 +137,7 @@ the,2,36
 
 //         std::stringstream data;
 
-//         auto res = engine->WriteDataToCSV(data);
+//         auto res = engine->WriteDataToCsv(data);
 
 //         ASSERT_FALSE(res.HasError());
 
@@ -151,4 +151,4 @@ the,2,36
 //     }
 // }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

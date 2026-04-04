@@ -3,15 +3,15 @@
 #include <algorithm>
 
 
-namespace JFEngine {
+namespace JfEngine {
 
-TCSVWriter::TCSVWriter(std::ostream& out, char sep) :
+TCsvWriter::TCsvWriter(std::ostream& out, char sep) :
     out_(out),
     sep_(sep)
 {
 }
 
-ui64 TCSVWriter::PrepareString(std::string_view str) {
+ui64 TCsvWriter::PrepareString(std::string_view str) {
     bool ret = 1;
     ui64 cq = 0;
     for (const auto& ch : str) {
@@ -30,7 +30,7 @@ ui64 TCSVWriter::PrepareString(std::string_view str) {
     return str.size() + 2 + cq;
 }
 
-void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
+void TCsvWriter::WriteRow(const std::vector<std::string>& row) {
     if (row.empty()) {
         return;
     }
@@ -70,7 +70,7 @@ void TCSVWriter::WriteRow(const std::vector<std::string>& row) {
 }
 
 
-void TCSVWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
+void TCsvWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
     if (group.empty()) {
         return;
     }
@@ -111,8 +111,8 @@ void TCSVWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
     delete[] tot;
 }
 
-TCSVWriter::~TCSVWriter() {
+TCsvWriter::~TCsvWriter() {
     out_.flush();
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -1,6 +1,6 @@
 #include "types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TDoubleColumn::TDoubleColumn(std::vector<ld> data) {
     cols_ = std::move(data);
@@ -22,4 +22,4 @@ Expected<void> TDoubleColumn::Setup(std::vector<std::string>&& data) {
     return nullptr;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

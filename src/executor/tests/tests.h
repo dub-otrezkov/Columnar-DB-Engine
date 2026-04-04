@@ -7,7 +7,7 @@
 #include <string_view>
 #include <memory>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct AgregationsTest : testing::Test {
 
@@ -34,32 +34,32 @@ dot,19,hacker,-10,-10,-1,-1.125
     std::shared_ptr<std::stringstream> out_data;
 
     void SetUp() override {
-        TIOFactory::RegisterSStreamIO("scheme", ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO("data", ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO("josh", ETypeFile::kJFFile);
+        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
 
-        TIOFactory::GetIO("scheme").GetRes() << scheme;
-        TIOFactory::GetIO("data").GetRes() << data;
+        TIoFactory::GetIo("scheme").GetRes() << scheme;
+        TIoFactory::GetIo("data").GetRes() << data;
 
-        TIOFactory::RegisterSStreamIO(kResultScheme, ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO(kResultData, ETypeFile::kCSVFile);
+        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
 
         out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIOFactory::GetIO(kResultScheme).GetShared()
+            TIoFactory::GetIo(kResultScheme).GetShared()
         );
         out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIOFactory::GetIO(kResultData).GetShared()
+            TIoFactory::GetIo(kResultData).GetShared()
         );
     }
 
     void TearDown() override {
-        TIOFactory::UnregisterIO("scheme");
-        TIOFactory::UnregisterIO("data");
-        TIOFactory::UnregisterIO("josh");
+        TIoFactory::UnregisterIo("scheme");
+        TIoFactory::UnregisterIo("data");
+        TIoFactory::UnregisterIo("josh");
 
-        TIOFactory::UnregisterIO(kResultData);
-        TIOFactory::UnregisterIO(kResultScheme);
+        TIoFactory::UnregisterIo(kResultData);
+        TIoFactory::UnregisterIo(kResultScheme);
     }
 };
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

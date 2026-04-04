@@ -7,7 +7,7 @@
 
 #include <optional>
 
-namespace JFEngine {
+namespace JfEngine {
 
 std::optional<ETokens> IsCommand(const std::string& cmd) {
     if (cmds.contains(cmd)) {
@@ -171,4 +171,4 @@ Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string&
     return st;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace JFEngine {
+namespace JfEngine {
 
 enum class ETokens {
     kNameToken,
@@ -80,7 +80,7 @@ protected:
     std::vector<std::shared_ptr<IToken>> args_;
 };
 
-class IOperatorCommand : public ICommand {
+class IoperatorCommand : public ICommand {
 public:
     Expected<ITableInput> MakeWorker() override;
 };
@@ -164,47 +164,47 @@ private:
 
 // operator cmds tokens
 
-class TSumToken : public IOperatorCommand {
+class TSumToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TMinToken : public IOperatorCommand {
+class TMinToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TMaxToken : public IOperatorCommand {
+class TMaxToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TCountToken : public IOperatorCommand {
+class TCountToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TDistinctToken : public IOperatorCommand {
+class TDistinctToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TAvgToken : public IOperatorCommand {
+class TAvgToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TLengthToken : public IOperatorCommand {
+class TLengthToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TPlusToken : public IOperatorCommand {
+class TPlusToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
 
-class TMinusToken : public IOperatorCommand {
+class TMinusToken : public IoperatorCommand {
 public:
     ETokens GetType() const override;
 };
@@ -261,4 +261,4 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp);
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
 
-} // namespace JFEngine
+} // namespace JfEngine

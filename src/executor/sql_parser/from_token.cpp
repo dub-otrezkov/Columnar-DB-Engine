@@ -2,7 +2,7 @@
 
 #include "ios_factory/ios_factory.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TFromToken::TFromToken(std::string query) : query_(std::move(query)) {}
 
@@ -16,18 +16,18 @@ Expected<ITableInput> TFromToken::MakeWorker() {
     if (args_.size() == 1) {
         auto name = std::dynamic_pointer_cast<TNameToken>(args_[0])->GetName();
 
-        TIOFactory::RegisterFileIO(name, ETypeFile::kJFFile);
-        return std::make_shared<TJFNeccessaryOnly>(TIOFactory::GetIO(name).GetShared(), query_);
+        TIoFactory::RegisterFileIo(name, ETypeFile::kJfFile);
+        return std::make_shared<TJfNeccessaryOnly>(TIoFactory::GetIo(name).GetShared(), query_);
     } else if (args_.size() == 2) {
         auto scheme = std::dynamic_pointer_cast<TNameToken>(args_[0])->GetName();
         auto data = std::dynamic_pointer_cast<TNameToken>(args_[1])->GetName();
 
-        TIOFactory::RegisterFileIO(scheme, ETypeFile::kCSVFile);
-        TIOFactory::RegisterFileIO(data, ETypeFile::kCSVFile);
+        TIoFactory::RegisterFileIo(scheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileIo(data, ETypeFile::kCsvFile);
 
-        return std::make_shared<TCSVTableInput>(
-            TIOFactory::GetIO(scheme).GetShared(),
-            TIOFactory::GetIO(data).GetShared()
+        return std::make_shared<TCsvTableInput>(
+            TIoFactory::GetIo(scheme).GetShared(),
+            TIoFactory::GetIo(data).GetShared()
         );
     } else {
         return MakeError<EError::BadCmdErr>("bad from command args cnt");
@@ -38,4 +38,4 @@ ETokens TFromToken::GetType() const {
     return ETokens::kFrom;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

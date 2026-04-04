@@ -4,7 +4,7 @@
 
 #include <string_view>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct EngineTest : testing::Test {
     std::string scheme = R"(red,string
@@ -47,22 +47,22 @@ dot,19,hacker,-10,-10,-1,-1.125
     }
 };
 
-TEST_F(EngineTest, CSVToCSV) {
+TEST_F(EngineTest, CsvToCsv) {
 
-    auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
+    auto [eng, err] = MakeEngineFromCsv(scheme_ss, data_ss);
 
     ASSERT_FALSE(err);
 
     {
         std::stringstream out;
-        err = eng->WriteSchemeToCSV(out).GetError();
+        err = eng->WriteSchemeToCsv(out).GetError();
         
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), scheme);
     }
     {
         std::stringstream out;
-        err = eng->WriteDataToCSV(out).GetError();
+        err = eng->WriteDataToCsv(out).GetError();
 
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), ans_data);
@@ -71,87 +71,87 @@ TEST_F(EngineTest, CSVToCSV) {
 
 TEST_F(EngineTest, EmptyData) {
     auto empty_data = std::make_shared<std::stringstream>("\n");
-    auto [eng, err] = MakeEngineFromCSV(scheme_ss, empty_data);
+    auto [eng, err] = MakeEngineFromCsv(scheme_ss, empty_data);
 
     ASSERT_FALSE(err);
 
     {
         std::stringstream out;
-        err = eng->WriteSchemeToCSV(out).GetError();
+        err = eng->WriteSchemeToCsv(out).GetError();
         
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), scheme);
     }
     {
         std::stringstream out;
-        err = eng->WriteDataToCSV(out).GetError();
+        err = eng->WriteDataToCsv(out).GetError();
 
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), "");
     }
 }
 
-TEST_F(EngineTest, JFBasic) {
+TEST_F(EngineTest, JfBasic) {
     auto out = std::make_shared<std::stringstream>();
     {
-        auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss);
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss, data_ss);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(*out).GetError();
+            err = eng->WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
     }
     {
-        auto [eng, err] = MakeEngineFromJF(out);
+        auto [eng, err] = MakeEngineFromJf(out);
 
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCSV(ans).GetError();
+            err = eng->WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCSV(ans).GetError();
+            err = eng->WriteDataToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), ans_data);
         }
     }
 }
 
-TEST_F(EngineTest, JFEmpty) {
+TEST_F(EngineTest, JfEmpty) {
     auto out = std::make_shared<std::stringstream>();
     {
         auto empty_data = std::make_shared<std::stringstream>("\n");
-        auto [eng, err] = MakeEngineFromCSV(scheme_ss, empty_data);
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss, empty_data);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(*out).GetError();
+            err = eng->WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
     }
     {
-        auto [eng, err] = MakeEngineFromJF(out);
+        auto [eng, err] = MakeEngineFromJf(out);
 
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCSV(ans).GetError();
+            err = eng->WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             // EXPECT_EQ(ans.str(), scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCSV(ans).GetError();
+            err = eng->WriteDataToCsv(ans).GetError();
             if (err) {
             }
             ASSERT_FALSE(err);
@@ -160,40 +160,40 @@ TEST_F(EngineTest, JFEmpty) {
     }
 }
 
-TEST_F(EngineTest, JFSmallRowGroupSize) {
+TEST_F(EngineTest, JfSmallRowGroupSize) {
     auto out = std::make_shared<std::stringstream>();
     {
-        auto [eng, err] = MakeEngineFromCSV(scheme_ss, data_ss, /*row_group_size=*/1);
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss, data_ss, /*row_group_size=*/1);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(*out).GetError();
+            err = eng->WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
     }
     {
-        auto [eng, err] = MakeEngineFromJF(out);
+        auto [eng, err] = MakeEngineFromJf(out);
 
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCSV(ans).GetError();
+            err = eng->WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCSV(ans).GetError();
+            err = eng->WriteDataToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), ans_data);
         }
     }
 }
 
-TEST_F(EngineTest, JFDateColumns) {
+TEST_F(EngineTest, JfDateColumns) {
     std::string time_scheme = R"(necessities,date
 )";
     auto time_scheme_ss = std::make_shared<std::stringstream>(time_scheme);
@@ -206,30 +206,30 @@ TEST_F(EngineTest, JFDateColumns) {
     auto out = std::make_shared<std::stringstream>();
 
     {
-        auto [eng, err] = MakeEngineFromCSV(time_scheme_ss, time_data_ss);
+        auto [eng, err] = MakeEngineFromCsv(time_scheme_ss, time_data_ss);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(*out).GetError();
+            err = eng->WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
     }
     {
-        auto [eng, err] = MakeEngineFromJF(out);
+        auto [eng, err] = MakeEngineFromJf(out);
 
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCSV(ans).GetError();
+            err = eng->WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), time_scheme);
         }
 
         {
             std::stringstream ans;
-            auto err2 = eng->WriteDataToCSV(ans).GetError();
+            auto err2 = eng->WriteDataToCsv(ans).GetError();
             if (err) {
                 std::cout << err << std::endl;
             }
@@ -239,7 +239,7 @@ TEST_F(EngineTest, JFDateColumns) {
     }
 }
 
-TEST_F(EngineTest, JFTimeColumns) {
+TEST_F(EngineTest, JfTimeColumns) {
     std::string time_scheme = R"(necessities,timestamp
 )";
     auto time_scheme_ss = std::make_shared<std::stringstream>(time_scheme);
@@ -252,30 +252,30 @@ TEST_F(EngineTest, JFTimeColumns) {
     auto out = std::make_shared<std::stringstream>();
 
     {
-        auto [eng, err] = MakeEngineFromCSV(time_scheme_ss, time_data_ss);
+        auto [eng, err] = MakeEngineFromCsv(time_scheme_ss, time_data_ss);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJF(*out).GetError();
+            err = eng->WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
     }
     {
-        auto [eng, err] = MakeEngineFromJF(out);
+        auto [eng, err] = MakeEngineFromJf(out);
 
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCSV(ans).GetError();
+            err = eng->WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), time_scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCSV(ans).GetError();
+            err = eng->WriteDataToCsv(ans).GetError();
             if (err) {
                 std::cout << err << std::endl;
             }
@@ -285,4 +285,4 @@ TEST_F(EngineTest, JFTimeColumns) {
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

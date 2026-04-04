@@ -1,6 +1,6 @@
 #include "types.h"
 
-namespace JFEngine {
+namespace JfEngine {
 
 TDateColumn::TDateColumn(std::vector<TDate> data) {
     cols_ = std::move(data);
@@ -50,4 +50,4 @@ Expected<void> TTimestampColumn::Setup(std::vector<std::string>&& data) {
     return nullptr;
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

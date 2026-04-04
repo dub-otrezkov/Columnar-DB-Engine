@@ -6,7 +6,7 @@
 
 #include <string_view>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct FiltersTest : testing::Test {
     std::string scheme = R"(red,string
@@ -40,7 +40,7 @@ TEST_F(FiltersTest, EqTest) {
             (*data_in) << data;
         }
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << "errdsd!" << std::endl;
@@ -48,7 +48,7 @@ TEST_F(FiltersTest, EqTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "err!" << std::endl;
@@ -67,7 +67,7 @@ TEST_F(FiltersTest, EqTest) {
                 }
             }
         };
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         auto agr = std::make_shared<TFilter>(jf_in, query);
 
         auto [engine, err] = MakeEngineFromWorker(agr);
@@ -76,7 +76,7 @@ TEST_F(FiltersTest, EqTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCSV(data);
+        auto res = engine->WriteDataToCsv(data);
 
         // if (res.HasError()) {
         //     std::cout << "errrrr" << std::endl;
@@ -91,4 +91,4 @@ dot,9,hacker,10,92,2,-1
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

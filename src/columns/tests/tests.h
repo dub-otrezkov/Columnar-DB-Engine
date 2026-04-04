@@ -4,8 +4,8 @@
 
 #include <string_view>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct OperatorsTest : testing::Test {};
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

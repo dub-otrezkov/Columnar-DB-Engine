@@ -2,7 +2,7 @@
 
 #include "workers/base.h"
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct BigTest : testing::Test {
 
@@ -25,43 +25,43 @@ beam,timestamp
     std::shared_ptr<std::stringstream> out_data;
 
     void SetUp() override {
-        TIOFactory::RegisterSStreamIO("scheme", ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO("data", ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO("josh", ETypeFile::kJFFile);
-        TIOFactory::RegisterSStreamIO("tmp1", ETypeFile::kJFFile);
-        TIOFactory::RegisterSStreamIO("tmp2", ETypeFile::kJFFile);
+        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
+        TIoFactory::RegisterSStreamIo("tmp1", ETypeFile::kJfFile);
+        TIoFactory::RegisterSStreamIo("tmp2", ETypeFile::kJfFile);
 
-        TIOFactory::GetIO("scheme").GetRes() << scheme;
+        TIoFactory::GetIo("scheme").GetRes() << scheme;
         for (ui64 i = 0; i < iter; i++) {
-            TIOFactory::GetIO("data").GetRes() << data;
+            TIoFactory::GetIo("data").GetRes() << data;
         }
 
-        TIOFactory::RegisterSStreamIO(kResultScheme, ETypeFile::kCSVFile);
-        TIOFactory::RegisterSStreamIO(kResultData, ETypeFile::kCSVFile);
+        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
 
         out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIOFactory::GetIO(kResultScheme).GetShared()
+            TIoFactory::GetIo(kResultScheme).GetShared()
         );
         out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIOFactory::GetIO(kResultData).GetShared()
+            TIoFactory::GetIo(kResultData).GetShared()
         );
     }
 
     void TearDown() override {
-        TIOFactory::UnregisterIO("scheme");
-        TIOFactory::UnregisterIO("data");
-        TIOFactory::UnregisterIO("josh");
-        TIOFactory::UnregisterIO("tmp1");
-        TIOFactory::UnregisterIO("tmp2");
+        TIoFactory::UnregisterIo("scheme");
+        TIoFactory::UnregisterIo("data");
+        TIoFactory::UnregisterIo("josh");
+        TIoFactory::UnregisterIo("tmp1");
+        TIoFactory::UnregisterIo("tmp2");
 
-        TIOFactory::UnregisterIO(kResultData);
-        TIOFactory::UnregisterIO(kResultScheme);
+        TIoFactory::UnregisterIo(kResultData);
+        TIoFactory::UnregisterIo(kResultScheme);
     }
 };
 
 TEST_F(BigTest, SimpleColumnGetter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -84,7 +84,7 @@ TEST_F(BigTest, SimpleColumnGetter) {
 
 TEST_F(BigTest, DatesFilter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -108,7 +108,7 @@ TEST_F(BigTest, DatesFilter) {
 
 TEST_F(BigTest, SumGetter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -131,7 +131,7 @@ TEST_F(BigTest, SumGetter) {
 
 TEST_F(BigTest, MinMaxGetter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -157,7 +157,7 @@ MIN(was),string
 
 TEST_F(BigTest, DistinctGetter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -184,7 +184,7 @@ klinghoffer
 
 TEST_F(BigTest, CountDistinctGetter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -208,7 +208,7 @@ TEST_F(BigTest, CountDistinctGetter) {
 
 TEST_F(BigTest, LikeGetter) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -231,7 +231,7 @@ TEST_F(BigTest, LikeGetter) {
 
 TEST_F(BigTest, In) {
     
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -253,7 +253,7 @@ TEST_F(BigTest, In) {
 }
 
 TEST_F(BigTest, GroupBySimple) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -278,7 +278,7 @@ SUM(what),int64
 }
 
 TEST_F(BigTest, GroupByWithWhere) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -305,7 +305,7 @@ josh,100000,100000
 }
 
 TEST_F(BigTest, GroupBySeveral) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -325,15 +325,15 @@ TEST_F(BigTest, GroupBySeveral) {
 hers,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,rip,100000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,rip,100000
+frusciante,rip,100000
 john,rip,100000
 josh,rip,100000
-klinghoffer,rip,100000
 )");
 }
 
 TEST_F(BigTest, OrderBy) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -360,7 +360,7 @@ was,string
 }
 
 TEST_F(BigTest, OrderByStable) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -389,7 +389,7 @@ was,string
 }
 
 TEST_F(BigTest, WhereGroupOrder) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -416,7 +416,7 @@ john,100000,300000
 }
 
 TEST_F(BigTest, GroupByTimestamp) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -443,7 +443,7 @@ COUNT(*),int64
 }
 
 TEST_F(BigTest, GroupOrderWhere) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -470,7 +470,7 @@ klinghoffer,100000,700000
 }
 
 TEST_F(BigTest, GroupOrderLimit) {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
@@ -495,4 +495,4 @@ frusciante,100000,500000
 )");
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-namespace JFEngine {
+namespace JfEngine {
 
 void IAgregation::AddArg(std::shared_ptr<IAgregation>) {
 }
@@ -548,4 +548,4 @@ std::string TMinusAgr::GetName() {
     return std::move(ans);
 }
 
-} // namespace JFEngine
+} // namespace JfEngine

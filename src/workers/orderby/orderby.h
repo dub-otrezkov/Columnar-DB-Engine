@@ -6,7 +6,7 @@
 #include <map>
 #include <queue>
 
-namespace JFEngine {
+namespace JfEngine {
 
 constexpr ui64 kUnlimited = -1;
 
@@ -36,4 +36,4 @@ private:
     std::shared_ptr<ITableInput> jf_in_;
 };
 
-} // namespace JFEngine
+} // namespace JfEngine

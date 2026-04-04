@@ -2,7 +2,7 @@
 
 #include "../operators/filter.h"
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 TEST_F(OperatorsTest, FilterEqTest) {
     auto test = [](EColumn t) -> void {
@@ -606,4 +606,4 @@ TEST_F(OperatorsTest, FilterNLikeTest) {
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing

@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 
-namespace JFEngine::Testing {
+namespace JfEngine::Testing {
 
 struct OrderByTest : testing::Test {
     std::string scheme = R"(red,string
@@ -32,14 +32,14 @@ TEST_F(OrderByTest, Basic) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -48,7 +48,7 @@ TEST_F(OrderByTest, Basic) {
     }
 
     {
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}};
         
@@ -62,7 +62,7 @@ TEST_F(OrderByTest, Basic) {
 
         std::stringstream data_;
 
-        auto res = engine->WriteDataToCSV(data_);
+        auto res = engine->WriteDataToCsv(data_);
 
         // std::cout << data_.str() << std::endl;
         EXPECT_EQ(data_.str(), R"(josh,1,klinghoffer,2,1,2,0
@@ -84,14 +84,14 @@ TEST_F(OrderByTest, Reverse) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -100,7 +100,7 @@ TEST_F(OrderByTest, Reverse) {
     }
 
     {
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TOrderByQuery oq{std::vector<std::string>{"hot"}, true};
         
@@ -114,7 +114,7 @@ TEST_F(OrderByTest, Reverse) {
 
         std::stringstream data_;
 
-        auto res = engine->WriteDataToCSV(data_);
+        auto res = engine->WriteDataToCsv(data_);
 
         EXPECT_EQ(data_.str(), R"(dot,19,hacker,10,92,2,-1
 dot,19,hacker,10,82,82,0
@@ -135,14 +135,14 @@ TEST_F(OrderByTest, Limit) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -151,7 +151,7 @@ TEST_F(OrderByTest, Limit) {
     }
 
     {
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}, false, 3};
         
@@ -165,7 +165,7 @@ TEST_F(OrderByTest, Limit) {
 
         std::stringstream data_;
 
-        auto res = engine->WriteDataToCSV(data_);
+        auto res = engine->WriteDataToCsv(data_);
 
         // std::cout << data_.str() << std::endl;
         EXPECT_EQ(data_.str(), R"(josh,1,klinghoffer,2,1,2,0
@@ -181,14 +181,14 @@ TEST_F(OrderByTest, ReverseLimit) {
         auto scheme_in = std::make_shared<std::stringstream>(scheme);
         auto data_in = std::make_shared<std::stringstream>(data);
 
-        auto [eng, err] = MakeEngineFromCSV(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJF(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -197,7 +197,7 @@ TEST_F(OrderByTest, ReverseLimit) {
     }
 
     {
-        auto jf_in = std::make_shared<TJFTableInput>(jf_table);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TOrderByQuery oq{std::vector<std::string>{"hot"}, true, 4};
         
@@ -211,7 +211,7 @@ TEST_F(OrderByTest, ReverseLimit) {
 
         std::stringstream data_;
 
-        auto res = engine->WriteDataToCSV(data_);
+        auto res = engine->WriteDataToCsv(data_);
 
         EXPECT_EQ(data_.str(), R"(dot,19,hacker,10,92,2,-1
 dot,19,hacker,10,82,82,0
@@ -221,4 +221,4 @@ the,14,sides,52,-4,11,18
     }
 }
 
-} // namespace JFEngine::Testing
+} // namespace JfEngine::Testing
