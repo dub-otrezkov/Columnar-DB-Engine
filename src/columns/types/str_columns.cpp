@@ -19,7 +19,7 @@ Expected<void> TStringColumn::Setup(std::vector<std::string>&& data) {
 }
 
 Expected<void> TStringColumn::Setup(const TVectorString2d& data, ui64 column_i) {
-    // cols_.reserve(data.size());
+    cols_.reserve(data.Size());
     std::string cur;
     for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
         cols_.push_back(cur);

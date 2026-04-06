@@ -27,6 +27,13 @@ public:
         pos_.push_back(buf_.size());
     }
 
+    inline ui64 Size() const {
+        if (width_ == 0) {
+            return 0;
+        }
+        return (pos_.size() + width_ - 1) / width_;
+    }
+
     inline void NewRow() {
         if (width_ == 0) {
             width_ = pos_.size();

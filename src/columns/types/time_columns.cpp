@@ -35,7 +35,7 @@ Expected<void> TDateColumn::Setup(std::vector<std::string>&& data) {
 }
 
 Expected<void> TDateColumn::Setup(const TVectorString2d& data, ui64 column_i) {
-    // cols_.reserve(data.size());
+    cols_.reserve(data.Size());
     std::string s;
     for (ui64 i = 0; !data.At(i, column_i, &s).HasError(); i++) {
         try {
@@ -68,7 +68,7 @@ Expected<void> TTimestampColumn::Setup(std::vector<std::string>&& data) {
 }
 
 Expected<void> TTimestampColumn::Setup(const TVectorString2d& data, ui64 column_i) {
-    // cols_.reserve(data.size());
+    cols_.reserve(data.Size());
     std::string s;
     try {
         for (ui64 i = 0; !data.At(i, column_i, &s).HasError(); i++) {
