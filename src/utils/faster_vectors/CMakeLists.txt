@@ -1,0 +1,1 @@
+add_library(vectors_lib INTERFACE vector_string_2d.h)

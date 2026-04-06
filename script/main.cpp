@@ -14,8 +14,11 @@
 
 // AI GENERATED CODE WARNING
 
+// ./script/build.sh
+// ./script/convert.sh dorothy.csv scheme.csv hits.jf
+
 int main() {
-    JFEngine::TExecutor exec;
+    JfEngine::TExecutor exec;
 
     // Список всех запросов (включая CREATE и помеченные как "ok")
     std::vector<std::string> queries = {

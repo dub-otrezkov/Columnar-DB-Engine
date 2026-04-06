@@ -84,7 +84,6 @@ Expected<IColumn> MakeEmptyColumn(EColumn type) {
             return MakeError<EError::UnsupportedErr>();
         }
     }
-
 }
 
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
@@ -112,6 +111,38 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
         }
         case kStringColumn: {
             return SetupColumn<TStringColumn>(std::move(data));
+        }
+        default: {
+            return MakeError<EError::UnsupportedErr>();
+        }
+    }
+}
+
+Expected<IColumn> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type) {
+    switch (type) {
+        case ki8Column: {
+            return SetupColumn<Ti8Column>(data, column_i);
+        }
+        case ki16Column: {
+            return SetupColumn<Ti16Column>(data, column_i);
+        }
+        case ki32Column: {
+            return SetupColumn<Ti32Column>(data, column_i);
+        }
+        case ki64Column: {
+            return SetupColumn<Ti64Column>(data, column_i);
+        }
+        case kDoubleColumn: {
+            return SetupColumn<TDoubleColumn>(data, column_i);
+        }
+        case kDateColumn: {
+            return SetupColumn<TDateColumn>(data, column_i);
+        }
+        case kTimestampColumn: {
+            return SetupColumn<TTimestampColumn>(data, column_i);
+        }
+        case kStringColumn: {
+            return SetupColumn<TStringColumn>(data, column_i);
         }
         default: {
             return MakeError<EError::UnsupportedErr>();
