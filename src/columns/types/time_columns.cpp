@@ -53,16 +53,16 @@ Expected<void> TDateColumn::Setup(const TVectorString2d& data, ui64 column_i) {
 
 Expected<void> TTimestampColumn::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
-    for (const auto& s : data) {
-        try {
+    try {
+        for (const auto& s : data) {
             // YYYY-MM-DD HH:MM:SS
             if (s.size() != 19) {
                 throw std::runtime_error("");
             }
             cols_.emplace_back(TimestampFromStr(s));
-        } catch (...) {
-            return MakeError<EError::NotAnTimestampErr>();
         }
+    } catch (...) {
+        return MakeError<EError::NotAnTimestampErr>();
     }
     return nullptr;
 }
@@ -70,16 +70,16 @@ Expected<void> TTimestampColumn::Setup(std::vector<std::string>&& data) {
 Expected<void> TTimestampColumn::Setup(const TVectorString2d& data, ui64 column_i) {
     // cols_.reserve(data.size());
     std::string s;
-    for (ui64 i = 0; !data.At(i, column_i, &s).HasError(); i++) {
-        try {
+    try {
+        for (ui64 i = 0; !data.At(i, column_i, &s).HasError(); i++) {
             // YYYY-MM-DD HH:MM:SS
             if (s.size() != 19) {
                 throw std::runtime_error("");
             }
             cols_.emplace_back(TimestampFromStr(s));
-        } catch (...) {
-            return MakeError<EError::NotAnTimestampErr>();
         }
+    } catch (...) {
+        return MakeError<EError::NotAnTimestampErr>();
     }
     return nullptr;
 }

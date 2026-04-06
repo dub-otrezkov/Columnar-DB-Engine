@@ -131,7 +131,7 @@ Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
     TCsvReader rr(*jf_in_);
     auto d = rr.ReadRow();
 
-    if (d.HasError()) {
+    if (d.HasError() && d.GetError() != EError::EofErr) {
         return d.GetError();
     }
 

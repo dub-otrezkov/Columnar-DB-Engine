@@ -1,5 +1,7 @@
 #include "types.h"
 
+#include <charconv>
+
 namespace JfEngine {
 
 Ti8Column::Ti8Column(std::vector<i8> data) {
@@ -36,12 +38,13 @@ EColumn Ti64Column::GetType() {
 
 Expected<void> Ti8Column::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
-    for (const auto& s : data) {
-        try {
-            cols_.push_back(static_cast<i8>(std::stoi(s)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (const auto& s : data) {
+            cols_.push_back(0);
+            std::from_chars(s.data(), s.data() + s.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
@@ -49,24 +52,26 @@ Expected<void> Ti8Column::Setup(std::vector<std::string>&& data) {
 Expected<void> Ti8Column::Setup(const TVectorString2d& data, ui64 column_i) {
     // cols_.reserve(data.size());
     std::string cur;
-    for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
-        try {
-            cols_.push_back(static_cast<i8>(std::stoi(cur)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
+            cols_.push_back(0);
+            std::from_chars(cur.data(), cur.data() + cur.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
 
 Expected<void> Ti16Column::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
-    for (const auto& s : data) {
-        try {
-            cols_.push_back(static_cast<i16>(std::stoi(s)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (const auto& s : data) {
+            cols_.push_back(0);
+            std::from_chars(s.data(), s.data() + s.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
@@ -74,24 +79,26 @@ Expected<void> Ti16Column::Setup(std::vector<std::string>&& data) {
 Expected<void> Ti16Column::Setup(const TVectorString2d& data, ui64 column_i) {
     // cols_.reserve(data.size());
     std::string cur;
-    for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
-        try {
-            cols_.push_back(static_cast<i16>(std::stoi(cur)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
+            cols_.push_back(0);
+            std::from_chars(cur.data(), cur.data() + cur.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
 
 Expected<void> Ti32Column::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
-    for (const auto& s : data) {
-        try {
-            cols_.push_back(static_cast<i32>(std::stoi(s)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (const auto& s : data) {
+            cols_.push_back(0);
+            std::from_chars(s.data(), s.data() + s.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
@@ -99,24 +106,26 @@ Expected<void> Ti32Column::Setup(std::vector<std::string>&& data) {
 Expected<void> Ti32Column::Setup(const TVectorString2d& data, ui64 column_i) {
     // cols_.reserve(data.size());
     std::string cur;
-    for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
-        try {
-            cols_.push_back(static_cast<i32>(std::stoll(cur)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
+            cols_.push_back(0);
+            std::from_chars(cur.data(), cur.data() + cur.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
 
 Expected<void> Ti64Column::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
-    for (const auto& s : data) {
-        try {
-            cols_.push_back(std::stoll(s));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (const auto& s : data) {
+            cols_.push_back(0);
+            std::from_chars(s.data(), s.data() + s.size(), cols_.back());
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
@@ -124,12 +133,14 @@ Expected<void> Ti64Column::Setup(std::vector<std::string>&& data) {
 Expected<void> Ti64Column::Setup(const TVectorString2d& data, ui64 column_i) {
     // cols_.reserve(data.size());
     std::string cur;
-    for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
-        try {
-            cols_.push_back(static_cast<i64>(std::stoll(cur)));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
+    try {
+        for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
+            cols_.push_back(0);
+            std::from_chars(cur.data(), cur.data() + cur.size(), cols_.back());
+            // cols_.push_back(std::stoll(cur));
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }
