@@ -8,13 +8,22 @@ struct OMin {
     template <typename TCol>
     static inline Expected<IColumn> Exec(TCol& col) {
         using T = typename TCol::ElemType;
+        using TRo = typename TCol::ElemTypeRo;
 
-        T res = col.GetData()[0];
+        TRo res = col.GetData()[0];
         for (ui64 i = 1; i < col.GetSize(); i++) {
             res = std::min(res, col.GetData()[i]);
         }
         return std::make_shared<TCol>(std::vector<T>{res});
     }
+
+    // static inline Expected<IColumn> Exec(TStringColumn& col) {
+    //     std::string_view res = col.GetData()[0];
+    //     for (ui64 i = 1; i < col.GetSize(); i++) {
+    //         res = std::min(res, col.GetData()[i]);
+    //     }
+    //     return std::make_shared<TCol>(std::vector<T>{res});
+    // }
 };
 
 struct OVerticalMin {
@@ -41,8 +50,9 @@ struct OMax {
     template <typename TCol>
     static inline Expected<IColumn> Exec(TCol& col) {
         using T = typename TCol::ElemType;
+        using TRo = typename TCol::ElemTypeRo;
 
-        T res = col.GetData()[0];
+        TRo res = col.GetData()[0];
         for (ui64 i = 1; i < col.GetSize(); i++) {
             res = std::max(res, col.GetData()[i]);
         }

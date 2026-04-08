@@ -126,16 +126,28 @@ Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
     auto start = blocks_pos_[current_block_];
     jf_in_->seekg(start - sizeof(i64) * (cols_cnt_ - i));
     auto pos = ReadI64(*jf_in_);
+    ui64 pos_next;
+    if (i + 1 == scheme_.size()) {
+        pos_next = start - sizeof(i64) * (cols_cnt_ - 0);
+    } else {
+        pos_next = ReadI64(*jf_in_);
+    }
     jf_in_->seekg(pos);
 
-    TCsvReader rr(*jf_in_);
-    auto d = rr.ReadRow();
+    // TCsvReader rr(*jf_in_);
+    ui64 len = pos_next - pos;
 
-    if (d.HasError() && d.GetError() != EError::EofErr) {
-        return d.GetError();
-    }
+    // auto d = rr.ReadRow();
 
-    auto col = MakeColumnJf(d.GetRes(), scheme_[i].type_);
+    // if (d.HasError() && d.GetError() != EError::EofErr) {
+    //     return d.GetError();
+    // }
+
+    // auto col = MakeColumnJf(d.GetRes(), scheme_[i].type_);
+    std::vector<char> data(len);
+    jf_in_->read(data.data(), len);
+
+    auto col = MakeColumnJf(data, scheme_[i].type_);
 
     if (col.HasError()) {
         return col.GetError();

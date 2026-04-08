@@ -34,7 +34,8 @@ struct OPrintIth {
     }
 
     static inline std::string Exec(TStringColumn& col, ui64 i) {
-        auto res = col.GetData()[i];
+        std::string res(col.GetData()[i].length(), '.');
+        memcpy(res.data(), col.GetData()[i].data(), res.size());
         return res;
     }
 };
@@ -82,7 +83,8 @@ struct OJfPrintIth {
     }
 
     static inline std::string Exec(TStringColumn& col, ui64 i) {
-        auto res = col.GetData()[i];
+        std::string res(col.GetData()[i].length(), '.');
+        memcpy(res.data(), col.GetData()[i].data(), res.size());
         return res;
     }
 };
@@ -164,6 +166,14 @@ struct OJfPrint {
             ans[i] = col.GetData()[i];
         }
         return std::move(ans);
+    }
+};
+
+
+struct OJfPrintOpt {
+    template <typename TCol>
+    static inline std::vector<char> Exec(TCol& col) {
+        return Serialize(col.GetData());
     }
 };
 

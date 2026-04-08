@@ -215,94 +215,40 @@ TTimestamp TimestampFromStr(const std::string& s) {
     };
 }
 
-Expected<IColumn> MakeColumnJf(std::vector<std::string> data, EColumn type) {
+Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type) {
     switch (type) {
         case kUnitialized: {
             return MakeError<EError::UnimplementedErr>();
         }
         case ki8Column: {
-            auto res = std::make_shared<Ti64Column>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JfStrToI8(data[i]));
-            }
-            break;
+            return std::make_shared<Ti8Column>(Unserialize<i8>(data));
         }
         case ki16Column: {
-            auto res = std::make_shared<Ti64Column>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JfStrToI16(data[i]));
-            }
-            break;
+            return std::make_shared<Ti16Column>(Unserialize<i16>(data));
         }
         case ki32Column: {
-            auto res = std::make_shared<Ti64Column>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JfStrToI32(data[i]));
-            }
-            break;
+            return std::make_shared<Ti32Column>(Unserialize<i32>(data));
         }
         case ki64Column: {
-            auto res = std::make_shared<Ti64Column>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JfStrToI64(data[i]));
-            }
-            break;
+            return std::make_shared<Ti64Column>(Unserialize<i64>(data));
         }
         case kDoubleColumn: {
-            auto res = std::make_shared<Ti64Column>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                data[i] = std::to_string(JfStrToDouble(data[i]));
-            }
-            break;
+            return std::make_shared<TDoubleColumn>(Unserialize<ld>(data));
         }
         case kDateColumn: {
-            auto res = std::make_shared<TDateColumn>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                std::stringstream ss;
-                ss << data[i];
-
-                TDate date{
-                    ReadI16(ss),
-                    ReadI8(ss),
-                    ReadI8(ss),
-                };
-
-                data[i] = PrintDate(date);
-            }
-            break;
+            return std::make_shared<TDateColumn>(Unserialize<TDate>(data));
         }
         case kTimestampColumn: {
-            auto res = std::make_shared<TTimestampColumn>();
-            for (ui64 i = 0; i < data.size(); i++) {
-                std::stringstream ss;
-                ss << data[i];
-
-                TTimestamp date;
-
-                std::string ans;
-
-                
-                TTimestamp time{
-                    TDate{
-                        ReadI16(ss),
-                        ReadI8(ss),
-                        ReadI8(ss),
-                    },
-                    ReadI8(ss),
-                    ReadI8(ss),
-                    ReadI8(ss),
-                };
-
-                data[i] = PrintTimestamp(time);
-            }
-            break;
+            return std::make_shared<TTimestampColumn>(Unserialize<TTimestamp>(data));
+        }
+        case kStringColumn: {
+            return std::make_shared<TStringColumn>(UnserializeString(data));
         }
         default: {
+            throw "wtf???";
         }
         
     }
-
-    return MakeColumn(std::move(data), type);
 }
 
 } // namespace JfEngine

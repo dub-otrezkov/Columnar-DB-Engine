@@ -1,1 +1,1 @@
-add_library(vectors_lib INTERFACE vector_string_2d.h)
+add_library(vectors_lib STATIC vector_string_2d.h vector_1d.h vector_1d.cpp)

@@ -2,6 +2,7 @@
 
 #include "utils/errors/errors_templates.h"
 #include "utils/faster_vectors/vector_string_2d.h"
+#include "utils/faster_vectors/vector_1d.h"
 #include "utils/cint/int.h"
 #include "utils/cint/double.h"
 
@@ -56,20 +57,25 @@ template <typename T>
 class TStorage : public IColumn {
 public:
     using ElemType = T;
+    using ElemTypeRo = T;
 
     ui64 GetSize() override {
         return cols_.size();
     }
 
-    std::vector<T>& GetData() {
+    FlatVector<T>& GetData() {
         return cols_;
     }
 
+    Expected<void> Setup(FlatVector<T> data) {
+        cols_ = std::move(data);
+        return EError::NoError;
+    };
     virtual Expected<void> Setup(std::vector<std::string>&& data) = 0;
     virtual Expected<void> Setup(const TVectorString2d& data, ui64 column_i) = 0;
 
 protected:
-    std::vector<T> cols_;
+    FlatVector<T> cols_;
 };
 
 // colums
@@ -116,8 +122,12 @@ public:
 
 class TStringColumn : public TStorage<std::string> {
 public:
+    // using ElemTypeRo = std::string_view;
+
     TStringColumn() {}
+    TStringColumn(StringVector data);
     TStringColumn(std::vector<std::string> data);
+    TStringColumn(std::vector<std::string_view> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -215,7 +225,7 @@ public:
 Expected<IColumn> MakeEmptyColumn(EColumn type);
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<IColumn> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
-Expected<IColumn> MakeColumnJf(std::vector<std::string> data, EColumn type);
+Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {

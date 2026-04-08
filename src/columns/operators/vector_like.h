@@ -6,16 +6,8 @@ namespace JfEngine {
 
 struct OPushBack {
     template <typename TCol>
-    static inline void Exec(TCol& col, typename TCol::ElemType value) {
-        col.GetData().push_back(std::move(value));
-    }
-};
-
-struct OFront {
-    template <typename TCol>
-    static inline std::shared_ptr<IColumn> Exec(TCol& col) {
-        using T = typename TCol::ElemType;
-        return std::make_shared<TCol>(std::vector<T>{col.GetData()[0]});
+    static inline void Exec(TCol& col, typename TCol::ElemTypeRo value) {
+        col.GetData().push_back(value);
     }
 };
 
