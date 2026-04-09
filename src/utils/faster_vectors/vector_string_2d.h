@@ -48,6 +48,12 @@ public:
     inline bool LastEmpty() {
         return pos_.empty() || pos_.back() == buf_.size();
     }
+
+    inline void Clear() {
+        width_ = 0;
+        buf_.clear();
+        pos_.clear();
+    }
 private:
     std::vector<ui8> buf_;
     std::vector<ui64> pos_;

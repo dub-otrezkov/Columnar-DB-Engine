@@ -101,9 +101,9 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
     return {std::move(ans), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 
-void TFilter::MoveCursor(i64 delta) {
+void TFilter::MoveCursor() {
     current_rg_.reset();
-    jf_in_->MoveCursor(delta);
+    jf_in_->MoveCursor();
 }
 
 } // namespace JfEngine

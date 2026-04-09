@@ -42,7 +42,7 @@ ui64 ITableInput::GetRowGroupLen() const {
 void ITableInput::Reset() {
 }
 
-void ITableInput::MoveCursor(i64) {
+void ITableInput::MoveCursor() {
     current_rg_.reset();
 }
 

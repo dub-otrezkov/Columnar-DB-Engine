@@ -47,8 +47,10 @@ public:
         if (n == offsets_.size()) {
             return;
         }
+        if (n > offsets_.size()) {
+            std::cout << "!! " << n << " " << offsets_.size() << std::endl;
+        }
         assert(n < offsets_.size());
-        // offsets_.(n);
         data_.resize(offsets_[n]);
         offsets_.resize(n);
     }

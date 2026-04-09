@@ -424,7 +424,7 @@ Expected<void> TPlusAgr::ConsumeRowGroup(ITableInput* inp) {
 
     assert(args.size() == 2); // <- she needs him?
 
-    std::cout << "Fklfkflf" << std::endl;
+    // std::cout << "Fklfkflf" << std::endl;
 
     auto err = args[0]->ConsumeRowGroup(inp).GetError();
 
@@ -439,7 +439,7 @@ Expected<void> TPlusAgr::ConsumeRowGroup(ITableInput* inp) {
         auto err1 = args[i]->ConsumeRowGroup(inp).GetError();
         // std::cout << "::: " << err1 << std::endl;
         if (err1 == EError::NoError || err1 == EError::EofErr) {
-            std::cout << "lflflf" << std::endl;
+            // std::cout << "lflflf" << std::endl;
             auto [c, err2] = Do<OVerticalSum>(ans_, args[i]->ThrowRowGroup().GetShared());
             ans_ = std::move(c);
             if (err1 == EError::EofErr) {
@@ -452,7 +452,7 @@ Expected<void> TPlusAgr::ConsumeRowGroup(ITableInput* inp) {
         }
     }
 
-    ans = std::move(ans_);
+    ans = ans_;
 
     return (is_eof ? EError::EofErr : EError::NoError);
 }
@@ -518,7 +518,7 @@ Expected<void> TMinusAgr::ConsumeRowGroup(ITableInput* inp) {
         }
     }
 
-    ans = std::move(ans_);
+    ans = ans_;
 
     return (is_eof ? EError::EofErr : EError::NoError);
 }

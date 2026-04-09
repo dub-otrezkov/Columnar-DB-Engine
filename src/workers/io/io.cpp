@@ -43,7 +43,9 @@ Expected<std::vector<TColumnPtr>> TCsvTableInput::LoadRowGroup() {
     // std::cout << "Ffkfkfkkfkfkfkfk" << std::endl;
     auto is_eof = false;
 
-    TVectorString2d tmp;
+    static TVectorString2d tmp;
+
+    tmp.Clear();
 
     // std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
@@ -196,13 +198,14 @@ Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
     return {std::move(res), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
 }
 
-void TJfTableInput::MoveCursor(i64 delta) {
+void TJfTableInput::MoveCursor() {
     current_rg_.reset();
-    if (delta < 0 && current_block_ < -delta) {
-        current_block_ = 0;
-    } else {
-        current_block_ += delta;
-    }
+    // if (delta < 0 && current_block_ < -delta) {
+    //     current_block_ = 0;
+    // } else {
+    //     current_block_ += delta;
+    // }
+    current_block_++;
     // std::cout << current_block_ << std::endl;
 }
 

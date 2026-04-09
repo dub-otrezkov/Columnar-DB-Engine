@@ -22,7 +22,7 @@ Expected<void> TNarrowTableInput::SetupColumnsScheme() {
     throw "dont do that";
 }
 
-void TNarrowTableInput::MoveCursor(i64 delta) {
+void TNarrowTableInput::MoveCursor() {
     current_rg_.reset();
     for (ui64 i = 0; i < scheme_.size(); i++) {
         buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetShared();

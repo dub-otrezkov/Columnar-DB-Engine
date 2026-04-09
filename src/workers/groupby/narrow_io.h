@@ -10,7 +10,7 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
 
-    void MoveCursor(i64 delta) override;
+    void MoveCursor() override;
 
     void UploadRowGroup(std::vector<TColumnPtr>& row_group, ui64 row_i);
 

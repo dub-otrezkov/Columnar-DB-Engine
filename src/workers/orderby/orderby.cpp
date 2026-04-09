@@ -75,7 +75,7 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
     //     std::cout << ":: : " << ans_.back() << " " << tp << std::endl;
     // }
 
-    for (; run; jf_in_->MoveCursor(1)) {
+    for (; run; jf_in_->MoveCursor()) {
         std::vector<std::vector<std::string>> keys;
         auto [g, err] = jf_in_->ReadRowGroup();
         // jf_in_->MoveCursor(1);
