@@ -174,10 +174,19 @@ struct OAddConst {
         } catch (...) {
             return EError::BadArgsErr;
         }
-        auto res = std::dynamic_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetShared());
+        auto res = std::static_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetShared());
         res->GetData() = col.GetData();
         for (auto& v : res->GetData()) {
             v += add;
+        }
+        return res;
+    }
+
+    static inline Expected<IColumn> Exec(TStringColumn& col, const std::string& s) {
+        auto res = std::static_pointer_cast<TStringColumn>(MakeEmptyColumn(col.GetType()).GetShared());
+        res->GetData().reserve(col.GetData().size());
+        for (auto v : col.GetData()) {
+            res->GetData().push_back(v + s);
         }
         return res;
     }

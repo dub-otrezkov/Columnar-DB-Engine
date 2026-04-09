@@ -29,7 +29,7 @@ public:
 
     virtual ui64 GetGroupsCount() const;
     virtual ui64 GetRowGroupLen() const;
-    virtual void MoveCursor(i64 delta);
+    virtual void MoveCursor();
     virtual void Reset();
 
 protected:

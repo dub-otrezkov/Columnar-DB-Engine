@@ -19,7 +19,7 @@ public:
     Expected<void> SetupColumnsScheme() override;
     std::vector<TRowScheme>& GetScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
-    void MoveCursor(i64 delta);
+    void MoveCursor() override;
 private:
     std::shared_ptr<ITableInput> jf_in_;
 

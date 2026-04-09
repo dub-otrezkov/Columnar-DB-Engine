@@ -40,7 +40,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         }
     }
 
-    for (; run; jf_in_->MoveCursor(1)) {
+    for (; run; jf_in_->MoveCursor()) {
         std::vector<std::vector<std::string>> keys;
         auto err = gc_eng.ConsumeRowGroup(jf_in_.get()).GetError();
         auto [g, _] = gc_eng.ThrowRowGroup();
@@ -85,7 +85,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         for (const auto& key : keys) {
             auto& t = groups_.at(key);
             t.eng.ConsumeRowGroup(&t.io);
-            t.io.MoveCursor(1); // this clear io (bad naming but i dont care)
+            t.io.MoveCursor(); // this clear io (bad naming but i dont care)
         }
     }
 

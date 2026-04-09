@@ -37,7 +37,7 @@ public:
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<IColumn> ReadColumn(const std::string& name) override;
 
-    void MoveCursor(i64 delta) override;
+    void MoveCursor() override;
     void Reset() override;
     ui64 GetGroupsCount() const override;
 

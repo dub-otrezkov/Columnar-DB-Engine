@@ -1,6 +1,8 @@
 #pragma once
 
 #include "utils/errors/errors_templates.h"
+#include "utils/faster_vectors/vector_string_2d.h"
+#include "utils/faster_vectors/vector_1d.h"
 #include "utils/cint/int.h"
 #include "utils/cint/double.h"
 
@@ -55,19 +57,25 @@ template <typename T>
 class TStorage : public IColumn {
 public:
     using ElemType = T;
+    using ElemTypeRo = T;
 
     ui64 GetSize() override {
         return cols_.size();
     }
 
-    std::vector<T>& GetData() {
+    FlatVector<T>& GetData() {
         return cols_;
     }
 
+    Expected<void> Setup(FlatVector<T> data) {
+        cols_ = std::move(data);
+        return EError::NoError;
+    };
     virtual Expected<void> Setup(std::vector<std::string>&& data) = 0;
+    virtual Expected<void> Setup(const TVectorString2d& data, ui64 column_i) = 0;
 
 protected:
-    std::vector<T> cols_;
+    FlatVector<T> cols_;
 };
 
 // colums
@@ -79,6 +87,7 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 class Ti16Column : public TStorage<i16> {
@@ -88,6 +97,7 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 class Ti32Column : public TStorage<i32> {
@@ -97,6 +107,7 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 class Ti64Column : public TStorage<i64> {
@@ -106,15 +117,21 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 class TStringColumn : public TStorage<std::string> {
 public:
+    // using ElemTypeRo = std::string_view;
+
     TStringColumn() {}
+    TStringColumn(StringVector data);
     TStringColumn(std::vector<std::string> data);
+    TStringColumn(std::vector<std::string_view> data);
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 class TDoubleColumn : public TStorage<ld> {
@@ -124,6 +141,7 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 struct TDate {
@@ -131,7 +149,7 @@ struct TDate {
     i8 month;
     i8 day;
 
-    i64 IntDate() const {
+    inline i64 IntDate() const {
         return (static_cast<i64>(year) << 16) |
                (static_cast<i64>(month) << 8) |
                (static_cast<i64>(day));
@@ -157,6 +175,7 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 std::string PrintDate(const TDate& d);
@@ -168,7 +187,7 @@ struct TTimestamp {
     i8 minute;
     i8 second;
 
-    i64 IntTime() const {
+    inline i64 IntTime() const {
         return (date.IntDate() << 24) |
                (static_cast<i64>(hour) << 16) |
                (static_cast<i64>(minute) << 8) |
@@ -198,18 +217,30 @@ public:
 
     EColumn GetType() override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
 // helpers
 
 Expected<IColumn> MakeEmptyColumn(EColumn type);
 Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
-Expected<IColumn> MakeColumnJf(std::vector<std::string> data, EColumn type);
+Expected<IColumn> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
+Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
     auto res = std::make_shared<T>();
     auto t = res->Setup(std::move(data));
+    if (t.HasError()) {
+        return t.GetError();
+    }
+    return res;
+}
+
+template <typename T>
+Expected<IColumn> SetupColumn(const TVectorString2d& data, ui64 column_i) {
+    auto res = std::make_shared<T>();
+    auto t = res->Setup(data, column_i);
     if (t.HasError()) {
         return t.GetError();
     }

@@ -125,7 +125,7 @@ struct OFilterCheck {
                         ans[i] = ans[i] ^ 1;
                         continue;
                     }
-                    std::string& s = col.GetData()[i];
+                    auto s = col.GetData()[i];
                     std::vector<i64> pf(value.size(), 0);
                     i64 st = 0;
 
@@ -225,7 +225,7 @@ struct OFilterCheck {
 struct OFilter {
     template <typename TCol>
     static inline Expected<IColumn> Exec(TCol& col, const std::vector<bool>& mask) {
-        using T = typename TCol::ElemType;
+        using T = typename TCol::ElemTypeRo;
         std::vector<T> vals;
         if (col.GetData().size() != mask.size()) {
             std::cout << "bad filter size" << std::endl;

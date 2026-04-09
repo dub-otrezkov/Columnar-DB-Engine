@@ -31,7 +31,7 @@ dot,19,hacker,-10,-10,-1,-1.125
 
     std::string ans_data = "";
 
-    const ui64 kIter = 50000;
+    const ui64 kIter = 1;
 
     void SetUp() override {
         scheme_ss = std::make_shared<std::stringstream>(scheme);

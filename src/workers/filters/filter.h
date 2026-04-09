@@ -25,7 +25,7 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
-    void MoveCursor(i64 delta);
+    void MoveCursor() override;
 private:
     std::shared_ptr<ITableInput> jf_in_;
     TFilterQuery query_;

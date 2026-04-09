@@ -9,3 +9,5 @@
 *.jf
 *.csv
 *.data
+*.data.old
+*report.txt

@@ -150,10 +150,64 @@ Expected<std::vector<std::string>> TCsvOptimizedReader::ReadRow() {
     return ans_e;
 }
 
+Expected<void> TCsvOptimizedReader::ReadRow(TVectorString2d& out) {
+    if (EofC()) {
+        return MakeError<EError::EofErr>();
+    }
+
+    bool read_smth = false;
+
+    bool in_quotes = false;
+
+    out.NewRow();
+
+    while (!EofC()) {
+        auto c = ReadSym();
+        if (in_quotes && c == EOF) {
+            return MakeError<EError::EofErr>();
+        }
+        if ((!in_quotes && (c == '\n' || c == '\r')) || c == EOF) {
+            break;
+        }
+
+        read_smth = true;
+
+        if (!in_quotes && c == sep_) {
+            // ans.emplace_back();
+            out.NewCol();
+        } else if (c == '"') {
+            if (in_quotes) {
+                if (Peek() == '\"') {
+                    // ans.back() += ReadSym();
+                    out.WriteSymToLastCR(ReadSym());
+                } else if (Peek() != sep_ && Peek() != '\n' && Peek() != '\r') {
+                    return MakeError<EError::EofErr>();
+                } else {
+                    in_quotes = false;
+                }
+            } else if (out.LastEmpty()) {
+                in_quotes = true;
+            } else {
+                // ans.back() += c;
+                out.WriteSymToLastCR(c);
+            }
+        } else {
+            // ans.back() += c;
+            out.WriteSymToLastCR(c);
+        }
+    }
+
+    if (!read_smth) {
+        return EError::EofErr;
+    }
+
+    // return ans_e;
+    return EError::NoError;
+}
+
 void TCsvReader::RestartRead() {
     in_.seekg(init_pos_);
 }
-
 
 TCsvBufferedReader::TCsvBufferedReader(std::istream& in, i64 buf_size, char sep) :
     in_(in),
@@ -200,7 +254,7 @@ Expected<std::vector<std::string>> TCsvBufferedReader::ReadRow() {
                 if (buf_[cur_pos_] == '\"') {
                     ans.back() += buf_[cur_pos_++];
                 } else if (buf_[cur_pos_] != sep_ && buf_[cur_pos_] != '\n' && buf_[cur_pos_] != '\r' && buf_[cur_pos_] != EOF) {
-                    return {std::vector<std::string>(), MakeError<EError::EofErr>()};
+                    return {std::vector<std::string>(), EError::EofErr};
                 } else {
                     in_quotes = false;
                 }

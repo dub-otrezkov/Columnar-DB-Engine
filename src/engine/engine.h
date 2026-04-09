@@ -34,7 +34,7 @@ public:
 
         auto run = true;
 
-        for (; run; in_->MoveCursor(1)) {
+        for (; run; in_->MoveCursor()) {
             auto [block_ptr, err] = in_->ReadRowGroup();
 
             if (err != EError::NoError) {

@@ -2,6 +2,8 @@
 
 #include "utils/errors/errors_templates.h"
 
+#include "utils/faster_vectors/vector_string_2d.h"
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -26,6 +28,7 @@ class TCsvOptimizedReader { // DO NOT USE ANYWHERE EXCEPT BIG Csv FILE READING, 
 public:
     TCsvOptimizedReader(std::istream& in, char sep = ',');
     Expected<std::vector<std::string>> ReadRow();
+    Expected<void> ReadRow(TVectorString2d& out); // EXPERIMENTAL
 
 private:
 

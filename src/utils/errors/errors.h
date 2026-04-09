@@ -22,7 +22,8 @@ enum EError {
     EofErr,
     IncorrectFileErr,
     UnimplementedErr,
-    NoSuchColumnsErr
+    NoSuchColumnsErr,
+    OutOfRangeErr
 };
 
 class IError {

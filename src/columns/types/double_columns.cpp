@@ -12,12 +12,25 @@ EColumn TDoubleColumn::GetType() {
 
 Expected<void> TDoubleColumn::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
-    for (const auto& s : data) {
-        try {
+    try {
+        for (const auto& s : data) {
             cols_.push_back(std::stold(s));
-        } catch (...) {
-            return MakeError<EError::NotAnIntErr>();
         }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
+    }
+    return nullptr;
+}
+
+Expected<void> TDoubleColumn::Setup(const TVectorString2d& data, ui64 column_i) {
+    cols_.reserve(data.Size());
+    std::string cur;
+    try {
+        for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
+            cols_.push_back(std::stold(cur));
+        }
+    } catch (...) {
+        return MakeError<EError::NotAnIntErr>();
     }
     return nullptr;
 }

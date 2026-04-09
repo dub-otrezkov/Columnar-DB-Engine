@@ -9,7 +9,7 @@ namespace JfEngine {
 struct ODistinct {
     template <typename TCol>
     static inline Expected<IColumn> Exec(TCol& col1, TColumnPtr col2) {
-        using T = typename TCol::ElemType;
+        using T = typename TCol::ElemTypeRo;
 
         if (col2->GetType() != col1.GetType()) {
             return EError::BadArgsErr;

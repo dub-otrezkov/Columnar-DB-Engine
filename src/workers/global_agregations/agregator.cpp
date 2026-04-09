@@ -46,7 +46,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
         std::vector<TColumnPtr> ans;
         if (blocker_) {
             bool run = true;
-            for (; run; jf_in_->MoveCursor(1)) {
+            for (; run; jf_in_->MoveCursor()) {
                 auto err = eng_.ConsumeRowGroup(jf_in_.get());
                 if (err.HasError()) {
                     if (err.GetError() == EError::EofErr) {
@@ -85,9 +85,9 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
     }
 }
 
-void TAgregator::MoveCursor(i64 delta) {
+void TAgregator::MoveCursor() {
     current_rg_.reset();
-    jf_in_->MoveCursor(delta);
+    jf_in_->MoveCursor();
 }
 
 } // namespace JfEngine
