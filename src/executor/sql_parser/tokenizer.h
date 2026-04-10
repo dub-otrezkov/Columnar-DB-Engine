@@ -1,6 +1,6 @@
 #pragma once
 
-#include "workers/agregations_engine/engine.h"
+#include "workers/ao_engine/engine.h"
 #include "engine/engine.h"
 #include "utils/errors/errors_templates.h"
 
@@ -48,13 +48,16 @@ static const std::unordered_map<std::string, ETokens> cmds = {
     {"CREATE", ETokens::kCreate},
 };
 
-static const std::unordered_map<std::string, ETokens> operators = {
+static const std::unordered_map<std::string, ETokens> agregations = {
     {"SUM",      ETokens::kSum},
     {"COUNT",    ETokens::kCount},
     {"AVG",      ETokens::kAvg},
     {"MIN",      ETokens::kMin},
     {"MAX",      ETokens::kMax},
     {"DISTINCT", ETokens::kDistinct},
+};
+
+static const std::unordered_map<std::string, ETokens> operators = {
     {"+",        ETokens::kPlus},
     {"-",        ETokens::kMinus},
 };
@@ -154,12 +157,12 @@ public:
     ETokens GetType() const override;
     
     Expected<ITableInput> MakeWorker() override;
-    void SetSelects(TGlobalAgregationQuery s);
+    void SetSelects(TAoQuery s);
 
     std::shared_ptr<TLimitToken> limit_;
 
 private:
-    TGlobalAgregationQuery selects_;
+    TAoQuery selects_;
 };
 
 // operator cmds tokens
@@ -257,7 +260,7 @@ private:
     std::stringstream ss;
 };
 
-TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp);
+TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp);
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
 

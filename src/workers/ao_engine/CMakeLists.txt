@@ -3,4 +3,6 @@ add_library(agregator_engine_lib STATIC
     engine.cpp
     operators.h
     operators.cpp
+    agregations.h
+    agregations.cpp
 )

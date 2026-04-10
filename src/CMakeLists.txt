@@ -4,7 +4,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 project(columnar_eng)
 
-add_compile_options(-O3 -march=native)
+add_compile_options(-O3 -march=native -Wno-unused)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
