@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-24.04
 
     steps:
@@ -19,21 +19,40 @@ jobs:
           sudo apt-get install -y \
             cmake \
             ninja-build \
-            libgtest-dev \
-            g++-14
+            libgtest-dev
 
       - name: Configure
-        run: |
-          cmake -S src -B build \
-            -G Ninja \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_CXX_COMPILER=g++-14
+        run: cmake -S src -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
-      - name: Build (link check)
+      - name: Build
         run: cmake --build build --parallel $(nproc)
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/
+          retention-days: 1
+
+  test:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build/
+
+      - name: Fix permissions
+        run: chmod +x build/**/*_test
 
       - name: Run unit tests
         run: |
-          cd build
-          ctest --output-on-failure --parallel $(nproc) -R \
-            "operators_test|groupby_test|orderby_test|agregator_test|exec_test|exec_big_test"
+          ctest --test-dir build \
+            --output-on-failure \
+            --parallel $(nproc) \
+            -R "operators_test|groupby_test|orderby_test|agregator_test|exec_test|exec_big_test"
