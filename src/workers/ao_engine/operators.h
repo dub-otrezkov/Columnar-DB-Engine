@@ -10,6 +10,8 @@
 namespace JfEngine {
 
 struct IOa {
+    virtual ~IOa() = default;
+
     virtual std::shared_ptr<IOa> Clone() = 0;
     virtual Expected<void> ConsumeRowGroup(ITableInput* inp) = 0;
     virtual Expected<IColumn> ThrowRowGroup() = 0;
