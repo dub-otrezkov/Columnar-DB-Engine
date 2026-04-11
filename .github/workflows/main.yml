@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            libgtest-dev \
+            g++-14
+
+      - name: Configure
+        run: |
+          cmake -S src -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_COMPILER=g++-14
+
+      - name: Build (link check)
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Run unit tests
+        run: |
+          cd build
+          ctest --output-on-failure --parallel $(nproc) -R \
+            "operators_test|groupby_test|orderby_test|agregator_test|exec_test|exec_big_test"
