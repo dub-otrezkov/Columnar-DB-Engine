@@ -460,7 +460,7 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 }
 
 void CheckVectorsEq(
-    const std::vector<std::string>& a,
+    const StringVector& a,
     const std::vector<std::string>& b
 ) {
     EXPECT_EQ(a.size(), b.size());

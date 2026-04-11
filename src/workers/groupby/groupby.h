@@ -51,11 +51,11 @@ private:
         std::size_t operator()(const std::vector<std::string>& v) const {
             std::size_t seed = 2929929;
             std::hash<std::string> hasher;
-            
+
             for (const auto& s : v) {
                 seed ^= hasher(s) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
-            
+
             return seed;
         }
     };
