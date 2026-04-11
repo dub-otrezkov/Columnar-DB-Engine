@@ -1,6 +1,6 @@
 #pragma once
 
-#include "workers/agregations_engine/engine.h"
+#include "workers/ao_engine/engine.h"
 #include "workers/io/io.h"
 
 #include <iostream>
@@ -14,7 +14,7 @@ namespace JfEngine {
 class TAgregator : public ITableInput {
 public:
     TAgregator(std::shared_ptr<ITableInput> jf_in); // return full table
-    TAgregator(std::shared_ptr<ITableInput> jf_in, TGlobalAgregationQuery query);
+    TAgregator(std::shared_ptr<ITableInput> jf_in, TAoQuery query);
 
     Expected<void> SetupColumnsScheme() override;
     std::vector<TRowScheme>& GetScheme() override;
@@ -23,10 +23,9 @@ public:
 private:
     std::shared_ptr<ITableInput> jf_in_;
 
-    TAgregationsEngine eng_;
+    std::shared_ptr<IAoEngine> eng_;
 
     ui64 cols_cnt_ = 0;
-    bool blocker_ = false;
     bool is_all_ = false;
 };
 

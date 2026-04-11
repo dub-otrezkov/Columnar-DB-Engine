@@ -3,19 +3,24 @@
 #include "ios_factory/ios_factory.h"
 #include "workers/global_agregations/agregator.h"
 
+#include <functional>
+
 namespace JfEngine {
 
 ETokens TSelectToken::GetType() const {
     return ETokens::kSelect;
 }
 
-TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
-    std::vector<std::shared_ptr<IAgregation>> args;
-    std::vector<std::shared_ptr<IAgregation>> st;
+TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
 
     std::vector<std::pair<ui64, std::string>> aliases;
 
     bool next_alias = false;
+
+    std::vector<std::shared_ptr<IOa>> args;
+    std::vector<std::shared_ptr<IOa>> st;
+
+    EAoEngineType etype = EAoEngineType::kOperator;
 
     for (auto& token : inp) {
         if (next_alias) {
@@ -40,7 +45,7 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
 
-                auto node = std::make_shared<TColumnAgr>(d);
+                auto node = std::make_shared<TColumnOp>(d);
 
                 if (!st.empty()) {
                     st.back()->AddArg(node);
@@ -52,12 +57,9 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             }
             case ETokens::kSum: {
                 auto node = std::make_shared<TSumAgr>();
+                etype = EAoEngineType::kAgregation;
 
-                if (!st.empty()) {
-                    st.back()->AddArg(node);
-                } else {
-                    args.push_back(node);
-                }
+                args.push_back(node);
 
                 st.push_back(node);
 
@@ -65,12 +67,9 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             }
             case ETokens::kCount: {
                 auto node = std::make_shared<TCountAgr>();
+                etype = EAoEngineType::kAgregation;
 
-                if (!st.empty()) {
-                    st.back()->AddArg(node);
-                } else {
-                    args.push_back(node);
-                }
+                args.push_back(node);
 
                 st.push_back(node);
 
@@ -78,12 +77,9 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             }
             case ETokens::kAvg: {
                 auto node = std::make_shared<TAvgAgr>();
+                etype = EAoEngineType::kAgregation;
 
-                if (!st.empty()) {
-                    st.back()->AddArg(node);
-                } else {
-                    args.push_back(node);
-                }
+                args.push_back(node);
 
                 st.push_back(node);
 
@@ -91,12 +87,9 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             }
             case ETokens::kMin: {
                 auto node = std::make_shared<TMinAgr>();
-
-                if (!st.empty()) {
-                    st.back()->AddArg(node);
-                } else {
-                    args.push_back(node);
-                }
+                etype = EAoEngineType::kAgregation;
+                
+                args.push_back(node);
 
                 st.push_back(node);
 
@@ -104,19 +97,16 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             }
             case ETokens::kMax: {
                 auto node = std::make_shared<TMaxAgr>();
+                etype = EAoEngineType::kAgregation;
 
-                if (!st.empty()) {
-                    st.back()->AddArg(node);
-                } else {
-                    args.push_back(node);
-                }
+                args.push_back(node);
 
                 st.push_back(node);
 
                 break;
             }
             case ETokens::kDistinct: {
-                auto node = std::make_shared<TDistinctAgr>();
+                auto node = std::make_shared<TDistinctOp>();
 
                 if (!st.empty()) {
                     st.back()->AddArg(node);
@@ -129,7 +119,7 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kLength: {
-                auto node = std::make_shared<TLengthAgr>();
+                auto node = std::make_shared<TLengthOp>();
 
                 if (!st.empty()) {
                     st.back()->AddArg(node);
@@ -142,7 +132,7 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kPlus: {
-                auto node = std::make_shared<TPlusAgr>();
+                auto node = std::make_shared<TPlusOp>();
 
                 if (!st.empty()) {
                     st.back()->AddArg(node);
@@ -155,7 +145,7 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMinus: {
-                auto node = std::make_shared<TMinusAgr>();
+                auto node = std::make_shared<TMinusOp>();
 
                 if (!st.empty()) {
                     st.back()->AddArg(node);
@@ -169,9 +159,10 @@ TGlobalAgregationQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             }
         }
     }
-    return TGlobalAgregationQuery{
+    return TAoQuery{
         std::move(args),
-        std::move(aliases)
+        std::move(aliases),
+        etype
     };
 }
 

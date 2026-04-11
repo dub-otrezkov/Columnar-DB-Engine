@@ -70,10 +70,8 @@ TEST_F(AgregationsTest, SelectTest) {
     }
 
     {
-        TGlobalAgregationQuery query;
-        auto column_name = std::make_shared<TColumnAgr>("what");
-        auto sum_agr = std::make_shared<TSumAgr>();
-        sum_agr->AddArg(column_name);
+        TAgregationQuery query;
+        auto column_name = std::make_shared<TColumnOp>("what");
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
@@ -81,7 +79,9 @@ TEST_F(AgregationsTest, SelectTest) {
                 std::cout << err.GetError() << std::endl;
             }
         }
-        auto agr = std::make_shared<TAgregator>(jf_in, TGlobalAgregationQuery{{column_name}});
+        TAoQuery q;
+        q.args = std::vector<std::shared_ptr<IOa>>({column_name});
+        auto agr = std::make_shared<TAgregator>(jf_in, q);
 
         auto [engine, err] = MakeEngineFromWorker(agr);
 
@@ -126,8 +126,8 @@ TEST_F(AgregationsTest, SumTest) {
     }
 
     {
-        TGlobalAgregationQuery query;
-        auto column_name = std::make_shared<TColumnAgr>("what");
+        TAgregationQuery query;
+        auto column_name = std::make_shared<TColumnOp>("what");
         auto sum_agr = std::make_shared<TSumAgr>();
         sum_agr->AddArg(column_name);
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
@@ -137,7 +137,9 @@ TEST_F(AgregationsTest, SumTest) {
                 std::cout << err.GetError() << std::endl;
             }
         }
-        auto agr = std::make_shared<TAgregator>(jf_in, TGlobalAgregationQuery{{sum_agr}});
+        TAoQuery q;
+        q.args = std::vector<std::shared_ptr<IOa>>({sum_agr});
+        auto agr = std::make_shared<TAgregator>(jf_in, q);
 
         auto [engine, err] = MakeEngineFromWorker(agr);
 
@@ -173,8 +175,8 @@ TEST_F(AgregationsTest, CountTest) {
     }
 
     {
-        TGlobalAgregationQuery query;
-        auto column_name = std::make_shared<TColumnAgr>("what");
+        TAgregationQuery query;
+        auto column_name = std::make_shared<TColumnOp>("what");
         auto sum_agr = std::make_shared<TCountAgr>();
         sum_agr->AddArg(column_name);
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
@@ -184,7 +186,9 @@ TEST_F(AgregationsTest, CountTest) {
                 std::cout << err.GetError() << std::endl;
             }
         }
-        auto agr = std::make_shared<TAgregator>(jf_in, TGlobalAgregationQuery{{sum_agr}});
+        TAoQuery q;
+        q.args = std::vector<std::shared_ptr<IOa>>({sum_agr});
+        auto agr = std::make_shared<TAgregator>(jf_in, q);
 
         auto [engine, err] = MakeEngineFromWorker(agr);
 
@@ -195,6 +199,116 @@ TEST_F(AgregationsTest, CountTest) {
         auto res = engine->WriteDataToCsv(data);
     
         EXPECT_EQ(data.str(), "9\n");
+    }
+}
+
+TEST_F(AgregationsTest, Distinct) {
+    auto jf_table = std::make_shared<std::stringstream>();
+    {
+        auto scheme_in = std::make_shared<std::stringstream>(scheme);
+        auto data_in = std::make_shared<std::stringstream>(data);
+
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+
+        if (err) {
+            std::cout << err << std::endl;
+        }
+        ASSERT_FALSE(err);
+
+        auto err2 = eng->WriteTableToJf(*jf_table);
+        
+        if (err2.HasError()) {
+            std::cout << err2.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err2.HasError());
+    }
+
+    {
+        TAgregationQuery query;
+        auto column_name = std::make_shared<TColumnOp>("peppers");
+        auto sum_agr = std::make_shared<TDistinctOp>();
+        sum_agr->AddArg(column_name);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+        {
+            auto err = jf_in->SetupColumnsScheme();
+            if (err.HasError()) {
+                std::cout << err.GetError() << std::endl;
+            }
+        }
+        TAoQuery q;
+        q.args = std::vector<std::shared_ptr<IOa>>({sum_agr});
+        auto agr = std::make_shared<TAgregator>(jf_in, q);
+
+        auto [engine, err] = MakeEngineFromWorker(agr);
+
+        ASSERT_FALSE(err);
+
+        std::stringstream data;
+
+        auto res = engine->WriteDataToCsv(data);
+    
+        EXPECT_EQ(data.str(), R"(2
+4
+6
+0
+52
+9
+10
+-10
+)");
+        // std::cout << data.str() << std::endl;
+    }
+}
+
+TEST_F(AgregationsTest, DistinctCount) {
+    auto jf_table = std::make_shared<std::stringstream>();
+    {
+        auto scheme_in = std::make_shared<std::stringstream>(scheme);
+        auto data_in = std::make_shared<std::stringstream>(data);
+
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+
+        if (err) {
+            std::cout << err << std::endl;
+        }
+        ASSERT_FALSE(err);
+
+        auto err2 = eng->WriteTableToJf(*jf_table);
+        
+        if (err2.HasError()) {
+            std::cout << err2.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err2.HasError());
+    }
+
+    {
+        TAgregationQuery query;
+        auto column_name = std::make_shared<TColumnOp>("peppers");
+        auto dst_agr = std::make_shared<TDistinctOp>();
+        auto cnt_agr = std::make_shared<TCountAgr>();
+        cnt_agr->AddArg(dst_agr);
+        dst_agr->AddArg(column_name);
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+        {
+            auto err = jf_in->SetupColumnsScheme();
+            if (err.HasError()) {
+                std::cout << err.GetError() << std::endl;
+            }
+        }
+        TAoQuery q;
+        q.args = std::vector<std::shared_ptr<IOa>>({cnt_agr});
+        auto agr = std::make_shared<TAgregator>(jf_in, q);
+
+        auto [engine, err] = MakeEngineFromWorker(agr);
+
+        ASSERT_FALSE(err);
+
+        std::stringstream data;
+
+        auto res = engine->WriteDataToCsv(data);
+    
+        EXPECT_EQ(data.str(), "8\n");
+        // std::cout << data.str() << std::endl;
     }
 }
 

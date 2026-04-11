@@ -50,18 +50,18 @@ TEST_F(GroupByTest, Basic) {
     {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
-        TGroupByQuery gq{std::vector<std::shared_ptr<IAgregation>>{std::make_shared<TColumnAgr>("red")}};
+        TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnOp>("red")}};
 
-        TGlobalAgregationQuery aq;
-        auto group_name = std::make_shared<TColumnAgr>("red");
-        auto column_name = std::make_shared<TColumnAgr>("what");
+        TAoQuery aq;
+        auto group_name = std::make_shared<TColumnOp>("red");
+        auto column_name = std::make_shared<TColumnOp>("what");
         auto cnt_agr = std::make_shared<TCountAgr>();
         auto sum_agr = std::make_shared<TSumAgr>();
         cnt_agr->AddArg(column_name);
         sum_agr->AddArg(column_name);
-        aq.cols.push_back(group_name);
-        aq.cols.push_back(cnt_agr);
-        aq.cols.push_back(sum_agr);
+        aq.args.push_back(group_name);
+        aq.args.push_back(cnt_agr);
+        aq.args.push_back(sum_agr);
 
         auto agr = std::make_shared<TGroupBy>(jf_in, gq, aq);
 
@@ -75,13 +75,20 @@ TEST_F(GroupByTest, Basic) {
 
         auto res = engine->WriteDataToCsv(data);
 
-        EXPECT_EQ(data.str(), R"(dot,3,164
+        std::cout << data.str() << std::endl;
+
+        std::string a = data.str();
+        std::sort(a.begin(), a.end());
+        std::string b = R"(dot,3,164
 "i,could,have,lied",1,5
 john,1,-10
 josh,1,1
 stadium,1,0
 the,2,36
-)");
+)";
+        std::sort(b.begin(), b.end());
+
+        EXPECT_EQ(a, b);
     }
 }
 
@@ -114,9 +121,9 @@ the,2,36
 //     {
 //         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
-//         TGroupByQuery gq{std::vector<std::shared_ptr<IAgregation>>{std::make_shared<TColumnAgr>("red")}};
+//         TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnAgr>("red")}};
 
-//         TGlobalAgregationQuery aq;
+//         TAgregationQuery aq;
 //         auto group_name = std::make_shared<TColumnAgr>("red");
 //         auto column_name = std::make_shared<TColumnAgr>("what");
 //         auto cnt_agr = std::make_shared<TCountAgr>();

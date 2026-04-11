@@ -14,7 +14,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     args_.erase(args_.begin());
     auto q = ParseArgs(args_);
     TGroupByQuery query;
-    query.cols = std::move(q.cols);
+    query.cols = std::move(q.args);
     // for (ui64 i = 1; i < q.cols.size(); i++) {
     //     query.cols.push_back(static_cast<TNameToken*>(args_[i].get())->GetName());
     // }
@@ -30,7 +30,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     );
 }
 
-void TGroupToken::SetSelects(TGlobalAgregationQuery s) {
+void TGroupToken::SetSelects(TAoQuery s) {
     selects_ = std::move(s);
 }
 
