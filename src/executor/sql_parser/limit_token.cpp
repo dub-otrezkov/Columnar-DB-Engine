@@ -8,13 +8,11 @@ Expected<ITableInput> TLimitToken::MakeWorker() {
     return EError::UnsupportedErr;
 }
 
-ui64 TLimitToken::GetLimit() {
+ui64 TLimitToken::GetLimit() const {
     if (args_.size() != 1) {
-        std::cout << "wtf???" << " " << args_.size() << std::endl;
         return 0;
     }
     if (args_[0]->GetType() != ETokens::kNameToken) {
-        std::cout << "wtf???" << std::endl;
         return 0;
     }
 
@@ -27,10 +25,6 @@ ui64 TLimitToken::GetLimit() {
     } catch (...) {
         return 0;
     }
-}
-
-ETokens TLimitToken::GetType() const {
-    return ETokens::kLimit;
 }
 
 } // namespace JfEngine

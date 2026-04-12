@@ -15,7 +15,6 @@ public:
     TCsvReader(std::istream& in, char sep = ',');
 
     Expected<std::vector<std::string>> ReadRow();
-    void RestartRead();
 
 private:
     std::istream& in_;
@@ -46,20 +45,5 @@ private:
     ui64 av_ = 0;
 };
 
-class TCsvBufferedReader {
-public:
-    TCsvBufferedReader(std::istream& in, i64 buf_size = 0, char sep = ',');
-
-    Expected<std::vector<std::string>> ReadRow();
-
-private:
-    std::istream& in_;
-    char sep_;
-
-    i64 buf_size_;
-    ui64 cur_pos_ = 0;
-
-    char* buf_;
-};
 
 } // namespace JfEngine

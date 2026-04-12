@@ -82,8 +82,6 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         std::swap(cur_t1, cur_t2);
     }
 
-    // std::cout << "last block execution started" << std::endl;
-    
     auto [_, err3] = tokens[0]->MakeWorker();
     if (err3 != EError::NoError) {
         return err3;

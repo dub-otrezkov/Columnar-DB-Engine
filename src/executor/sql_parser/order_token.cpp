@@ -33,8 +33,4 @@ Expected<ITableInput> TOrderToken::MakeWorker() {
     );
 }
 
-ETokens TOrderToken::GetType() const {
-    return ETokens::kOrder;
-}
-
 } // namespace JfEngine

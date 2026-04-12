@@ -10,11 +10,11 @@ TTimestampColumn::TTimestampColumn(std::vector<TTimestamp> data) {
     cols_ = std::move(data);
 }
 
-EColumn TDateColumn::GetType() {
+EColumn TDateColumn::GetType() const {
     return kDateColumn;
 }
 
-EColumn TTimestampColumn::GetType() {
+EColumn TTimestampColumn::GetType() const {
     return kTimestampColumn;
 }
 

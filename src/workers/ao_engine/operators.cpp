@@ -12,8 +12,6 @@ Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
 
     assert(args.size() == 2); // <- she needs him?
 
-    // std::cout << "Fklfkflf" << std::endl;
-
     auto err = args[0]->ConsumeRowGroup(inp).GetError();
 
     if (err == EError::EofErr) {
@@ -25,9 +23,7 @@ Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
 
     for (ui64 i = 1; i < args.size(); i++) {
         auto err1 = args[i]->ConsumeRowGroup(inp).GetError();
-        // std::cout << "::: " << err1 << std::endl;
         if (err1 == EError::NoError || err1 == EError::EofErr) {
-            // std::cout << "lflflf" << std::endl;
             auto [c, err2] = Do<OVerticalSum>(ans_, args[i]->ThrowRowGroup().GetShared());
             ans_ = std::move(c);
             if (err1 == EError::EofErr) {
@@ -56,17 +52,13 @@ std::shared_ptr<IOa> TPlusOp::Clone() {
     return std::move(r);
 }
 
-std::string TPlusOp::GetName() {
+std::string TPlusOp::GetName() const {
     std::string ans = "+(";
     for (auto& arg : args) {
         ans += arg->GetName() + " ";
     }
     ans.back() = ')';
     return std::move(ans);
-}
-
-void TPlusOp::AddArg(std::shared_ptr<IOa> arg) {
-    args.push_back(std::move(arg));
 }
 
 Expected<IColumn> TMinusOp::ThrowRowGroup() {
@@ -114,21 +106,13 @@ std::shared_ptr<IOa> TMinusOp::Clone() {
     return std::move(r);
 }
 
-void TMinusOp::AddArg(std::shared_ptr<IOa> arg) {
-    args.push_back(std::move(arg));
-}
-
-std::string TMinusOp::GetName() {
+std::string TMinusOp::GetName() const {
     std::string ans = "-(";
     for (auto& arg : args) {
         ans += arg->GetName() + " ";
     }
     ans.back() = ')';
     return std::move(ans);
-}
-
-void TLengthOp::AddArg(std::shared_ptr<IOa> to_agr) {
-    arg = to_agr;
 }
 
 Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
@@ -165,7 +149,7 @@ std::shared_ptr<IOa> TLengthOp::Clone() {
     return r;
 }
 
-std::string TLengthOp::GetName() {
+std::string TLengthOp::GetName() const {
     return "LENGTH(" + arg->GetName() + ")";
 }
 
@@ -187,12 +171,8 @@ std::shared_ptr<IOa> TColumnOp::Clone() {
     return std::make_shared<TColumnOp>(name);
 }
 
-std::string TColumnOp::GetName() {
+std::string TColumnOp::GetName() const {
     return name;
-}
-
-void TDistinctOp::AddArg(std::shared_ptr<IOa> to_agr) {
-    arg = to_agr;
 }
 
 Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp) {
@@ -202,7 +182,6 @@ Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp) {
         if (EError::EofErr == err.GetError()) {
             is_eof = true;
         } else {
-            std::cout << "eof " << err.GetError() << std::endl;
             return err;
         }
     }
@@ -221,7 +200,7 @@ std::shared_ptr<IOa> TDistinctOp::Clone() {
     return r;
 }
 
-std::string TDistinctOp::GetName() {
+std::string TDistinctOp::GetName() const {
     return "DISTINCT(" + arg->GetName() + ")";
 }
 

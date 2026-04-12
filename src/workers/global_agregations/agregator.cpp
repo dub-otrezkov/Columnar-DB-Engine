@@ -62,7 +62,6 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
             auto err = eng_->ConsumeRowGroup(jf_in_.get());
             if (err.HasError()) {
                 if (err.GetError() != EError::EofErr) {
-                    std::cout << "Ffjjfjf" << " " << err.GetError() << std::endl;
                     return err.GetError();
                 } else {
                     is_eof = true;

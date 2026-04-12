@@ -6,7 +6,7 @@ TDoubleColumn::TDoubleColumn(std::vector<ld> data) {
     cols_ = std::move(data);
 }
 
-EColumn TDoubleColumn::GetType() {
+EColumn TDoubleColumn::GetType() const {
     return kDoubleColumn;
 }
 

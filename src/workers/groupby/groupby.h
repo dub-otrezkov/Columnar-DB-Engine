@@ -125,26 +125,6 @@ private:
         }
     };
 
-    struct VectorStringHash {
-        WyHash str_hash;
-
-        ui64 operator()(const std::vector<std::string>& v) const {
-            // Полиномиальный хэш с большим нечётным множителем
-            // h = h * M + hash(s_i), порядок элементов учитывается
-            constexpr ui64 M = 0x517cc1b727220a95ULL; // большое нечётное
-            ui64 h = 0xcbf29ce484222325ULL;            // offset basis
-            for (const auto& s : v) {
-                h = h * M + str_hash(s);
-            }
-            // Финальный mix
-            h ^= h >> 33;
-            h *= 0xff51afd7ed558ccdULL;
-            h ^= h >> 33;
-            return h;
-        }
-    };
-
-
     struct VectorStringHasher {
         inline ui64 operator()(const VectorStringHashed& v) const {
             return v.hash;

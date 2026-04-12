@@ -155,20 +155,6 @@ TEST_F(IoTests, OptimizedRead) {
     }
 }
 
-TEST_F(IoTests, BufferedRead) {
-    {
-        std::stringstream in;
-        in << advanced;
-
-        TCsvBufferedReader rr(in, 39);
-        auto [d, err] = rr.ReadRow();
-        ASSERT_FALSE(err);
-        ASSERT_EQ(d->size(), 2);
-        EXPECT_EQ(d->at(0), R"(Scar "Tissue")");
-        EXPECT_EQ(d->at(1), R"(Calif"ornica"tion)");
-        // EXPECT_EQ(d->at(2), R"(the,"Zephyr song)");
-    }
-}
 
 TEST_F(IoTests, ExperimenatalBufferedRead) {
     {
@@ -217,21 +203,7 @@ TEST_F(IoTests, EmptyCases) {
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }
-    { // Buffiered I
-        std::stringstream in;
-        in << "";
-        TCsvBufferedReader rr(in);
-        auto [d, err] = rr.ReadRow();
-        ASSERT_TRUE(Is<EError::EofErr>(err));
-    }
-    { // Buffiered I
-        std::stringstream in;
-        in << R"(
-)";
-        TCsvBufferedReader rr(in);
-        auto [d, err] = rr.ReadRow();
-        ASSERT_TRUE(Is<EError::EofErr>(err));
-    }
+
 }
 
 } // namespace JfEngine::Testing

@@ -40,55 +40,6 @@ struct OPrintIth {
     }
 };
 
-struct OJfPrintIth {
-    static inline std::string Exec(Ti8Column& col, ui64 i) {
-        auto j = col.GetData()[i];
-        return I8ToJfStr(j);
-    }
-
-    static inline std::string Exec(Ti16Column& col, ui64 i) {
-        auto j = col.GetData()[i];
-        return I16ToJfStr(j);
-    }
-
-    static inline std::string Exec(Ti32Column& col, ui64 i) {
-        auto j = col.GetData()[i];
-        return I32ToJfStr(j);
-    }
-
-    static inline std::string Exec(Ti64Column& col, ui64 i) {
-        auto j = col.GetData()[i];
-        return I64ToJfStr(j);
-    }
-
-    static inline std::string Exec(TDoubleColumn& col, ui64 i) {
-        auto j = col.GetData()[i];
-        return DoubleToJfStr(j);
-    }
-
-    static inline std::string Exec(TDateColumn& col, ui64 i) {
-        auto j = col.GetData()[i];
-
-        return I16ToJfStr(j.year) + I8ToJfStr(j.month) + I8ToJfStr(j.day);
-    }
-
-    static inline std::string Exec(TTimestampColumn& col, ui64 i) {
-        auto j = col.GetData()[i];
-        return I16ToJfStr(j.date.year) +
-               I8ToJfStr(j.date.month) +
-               I8ToJfStr(j.date.day) +
-               I8ToJfStr(j.hour) +
-               I8ToJfStr(j.minute) +
-               I8ToJfStr(j.second);
-    }
-
-    static inline std::string Exec(TStringColumn& col, ui64 i) {
-        std::string res(col.GetData()[i].length(), '.');
-        memcpy(res.data(), col.GetData()[i].data(), res.size());
-        return res;
-    }
-};
-
 struct OJfPrint {
     static inline std::vector<std::string> Exec(Ti8Column& col) {
         std::vector<std::string> ans(col.GetSize());

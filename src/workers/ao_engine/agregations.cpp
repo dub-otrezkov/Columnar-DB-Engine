@@ -8,10 +8,6 @@
 
 namespace JfEngine {
 
-void TSumAgr::AddArg(std::shared_ptr<IOa> to_sum) {
-    arg = to_sum;
-}
-
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
     auto err = arg->ConsumeRowGroup(inp);
 
@@ -56,12 +52,8 @@ std::shared_ptr<IOa> TSumAgr::Clone() {
     return r;
 }
 
-std::string TSumAgr::GetName() {
+std::string TSumAgr::GetName() const {
     return "SUM(" + arg->GetName() + ")";
-}
-
-void TCountAgr::AddArg(std::shared_ptr<IOa> to_sum) {
-    arg = to_sum;
 }
 
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
@@ -92,12 +84,8 @@ std::shared_ptr<IOa> TCountAgr::Clone() {
     return r;
 }
 
-std::string TCountAgr::GetName() {
+std::string TCountAgr::GetName() const {
     return "COUNT(" + arg->GetName() + ")";
-}
-
-void TMinAgr::AddArg(std::shared_ptr<IOa> to_agr) {
-    arg = to_agr;
 }
 
 Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
@@ -143,12 +131,8 @@ std::shared_ptr<IOa> TMinAgr::Clone() {
     return r;
 }
 
-std::string TMinAgr::GetName() {
+std::string TMinAgr::GetName() const {
     return "MIN(" + arg->GetName() + ")";
-}
-
-void TMaxAgr::AddArg(std::shared_ptr<IOa> to_agr) {
-    arg = to_agr;
 }
 
 Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
@@ -194,12 +178,8 @@ std::shared_ptr<IOa> TMaxAgr::Clone() {
     return r;
 }
 
-std::string TMaxAgr::GetName() {
+std::string TMaxAgr::GetName() const {
     return "MAX(" + arg->GetName() + ")";
-}
-
-void TAvgAgr::AddArg(std::shared_ptr<IOa> to_sum) {
-    arg = to_sum;
 }
 
 Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp) {
@@ -258,7 +238,7 @@ std::shared_ptr<IOa> TAvgAgr::Clone() {
     return r;
 }
 
-std::string TAvgAgr::GetName() {
+std::string TAvgAgr::GetName() const {
     return "AVG(" + arg->GetName() + ")";
 }
 

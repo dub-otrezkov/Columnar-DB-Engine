@@ -27,7 +27,6 @@ public:
     virtual Expected<void> SetupColumnsScheme() = 0;
     virtual Expected<std::vector<TColumnPtr>> LoadRowGroup() = 0;
 
-    virtual ui64 GetGroupsCount() const;
     virtual ui64 GetRowGroupLen() const;
     virtual void MoveCursor();
     virtual void Reset();

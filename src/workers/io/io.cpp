@@ -40,7 +40,6 @@ Expected<void> TCsvTableInput::SetupColumnsScheme() {
 
 Expected<std::vector<TColumnPtr>> TCsvTableInput::LoadRowGroup() {
 
-    // std::cout << "Ffkfkfkkfkfkfkfk" << std::endl;
     auto is_eof = false;
 
     static TVectorString2d tmp;
@@ -78,17 +77,10 @@ Expected<std::vector<TColumnPtr>> TCsvTableInput::LoadRowGroup() {
     for (ui64 i = 0; i < scheme_.size(); i++) {
         auto col = MakeColumnOptimized(tmp, i, scheme_[i].type_);
         if (col.HasError()) {
-            std::cout << "column setup error : " << col.GetError() << std::endl;
             return col.GetError();
         }
         out.push_back(col.GetShared());
     }
-
-    // if (out.size() != GetScheme().size()) {
-    //     std::cout << "wtf??? " << out.size() << " " << GetScheme().size() << std::endl;
-    // }
-
-    // assert(out.size() == GetScheme().size());
 
     return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
 }
@@ -175,7 +167,6 @@ Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
     for (ui64 i = 0; i < cols_cnt_; i++) {
         auto [col, err] = ReadIthColumn(i);
 
-        // std::cout << "!! " << err << " " << col << std::endl;
         if (err) {
             if (!Is<EError::EofErr>(err)) {
                 return err;
@@ -185,12 +176,6 @@ Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
         }
         res.push_back(col);
     }
-
-    // std::cout << "---" << std::endl;
-    // for (auto el : res) {
-    //     std::cout << " " << el;
-    // }
-    // std::cout << std::endl;
 
     assert(res.size() == GetScheme().size());
 
@@ -205,7 +190,6 @@ void TJfTableInput::MoveCursor() {
     //     current_block_ += delta;
     // }
     current_block_++;
-    // std::cout << current_block_ << std::endl;
 }
 
 void TJfTableInput::Reset() {
@@ -223,7 +207,6 @@ Expected<IColumn> TJfTableInput::ReadColumn(const std::string& name) {
     };
 
     static auto inds = name_to_index();
-    // std::cout << ":%: " << name << std::endl;
     if (name != "*" && inds.count(name) == 0) {
         return EError::NoSuchColumnsErr;
     }
@@ -237,11 +220,6 @@ Expected<IColumn> TJfTableInput::ReadColumn(const std::string& name) {
     }
 
     return ReadIthColumn(inds[name]);
-}
-
-
-ui64 TJfTableInput::GetGroupsCount() const {
-    return blocks_pos_.size();
 }
 
 
