@@ -27,13 +27,13 @@ ok
 ok
 ok
 no regexp
-no columnar +
+ok
 ok
 ok
 ok
 ok
 no const
-no columnar -
+ok
 ok
 ok
 no offset

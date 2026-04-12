@@ -29,8 +29,39 @@ struct OPushBackVector {
         if (to->GetType() != from.GetType()) {
             throw "bad arg";
         }
-        for (ui64 i = 0; i < from.GetSize(); i++) {
-            OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);
+        auto target = static_cast<TCol*>(to.get());
+        ui64 prev_sz = target->GetData().size();
+        target->GetData().resize(from.GetData().size() + target->GetData().size());
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().data() + prev_sz),
+            reinterpret_cast<char*>(from.GetData().data()),
+            from.GetData().size() * sizeof(typename TCol::ElemType)
+        );
+    }
+
+    static inline void Exec(TStringColumn& from, TColumnPtr to) {
+        if (to->GetType() != from.GetType()) {
+            throw "bad arg";
+        }
+        auto target = static_cast<TStringColumn*>(to.get());
+        ui64 dl = target->GetData().data_size();
+        ui64 prev_sz = target->GetData().size();
+        target->GetData().resize_both(
+            from.GetData().data_size() + target->GetData().data_size(),
+            from.GetData().size() + target->GetData().size()
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().data() + dl),
+            reinterpret_cast<char*>(from.GetData().data()),
+            from.GetData().data_size()
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().offsets_data() + prev_sz),
+            reinterpret_cast<char*>(from.GetData().offsets_data()),
+            from.GetData().size() * sizeof(ui64)
+        );
+        for (ui64 i = 0; i < from.GetData().size(); i++) {
+            target->GetData().offsets_data()[prev_sz + i] += dl;
         }
     }
 };
