@@ -93,12 +93,12 @@ public:
 class TSelectToken : public ICommand {
 public:
 
-    ETokens GetType() const override;
-    
-    std::vector<std::shared_ptr<IToken>> GetArgs();
+    inline ETokens GetType() const override { return ETokens::kSelect; }
+
+    inline std::vector<std::shared_ptr<IToken>> GetArgs() { return args_; }
     Expected<ITableInput> MakeWorker() override;
 
-    void SetIsId();
+    inline void SetIsId() { is_id_ = true; }
 
 private:
     bool is_id_ = false;
@@ -107,16 +107,16 @@ private:
 class TCreateToken : public ICommand {
 public:
 
-    ETokens GetType() const override;
-    
+    inline ETokens GetType() const override { return ETokens::kCreate; }
+
     Expected<ITableInput> MakeWorker() override;
 };
 
 struct TFromToken : public ICommand {
-    TFromToken(std::string query);
+    inline TFromToken(std::string query) : query_(std::move(query)) {}
 
-    ETokens GetType() const override;
-    
+    inline ETokens GetType() const override { return ETokens::kFrom; }
+
     Expected<ITableInput> MakeWorker() override;
 
     std::string query_;
@@ -125,18 +125,18 @@ struct TFromToken : public ICommand {
 class TLimitToken : public ICommand {
 public:
 
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kLimit; }
 
-    ui64 GetLimit();
-    
+    ui64 GetLimit() const;
+
     Expected<ITableInput> MakeWorker() override;
 };
 
 class TOrderToken : public ICommand {
 public:
 
-    ETokens GetType() const override;
-    
+    inline ETokens GetType() const override { return ETokens::kOrder; }
+
     Expected<ITableInput> MakeWorker() override;
 
     std::shared_ptr<TLimitToken> limit_;
@@ -146,18 +146,18 @@ public:
 class TWhereToken : public ICommand {
 public:
 
-    ETokens GetType() const override;
-    
+    inline ETokens GetType() const override { return ETokens::kWhere; }
+
     Expected<ITableInput> MakeWorker() override;
 };
 
 class TGroupToken : public ICommand {
 public:
 
-    ETokens GetType() const override;
-    
+    inline ETokens GetType() const override { return ETokens::kGroup; }
+
     Expected<ITableInput> MakeWorker() override;
-    void SetSelects(TAoQuery s);
+    inline void SetSelects(TAoQuery s) { selects_ = std::move(s); }
 
     std::shared_ptr<TLimitToken> limit_;
 
@@ -169,56 +169,56 @@ private:
 
 class TSumToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kSum; }
 };
 
 class TMinToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kMin; }
 };
 
 class TMaxToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kMax; }
 };
 
 class TCountToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kCount; }
 };
 
 class TDistinctToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kDistinct; }
 };
 
 class TAvgToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kAvg; }
 };
 
 class TLengthToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kLength; }
 };
 
 class TPlusToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kPlus; }
 };
 
 class TMinusToken : public IoperatorCommand {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kMinus; }
 };
 
 class TNameToken : public IToken {
 public:
-    TNameToken(std::string name);
+    inline TNameToken(std::string name) : name_(std::move(name)) {}
 
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kNameToken; }
 
-    std::string GetName() const;
+    inline std::string GetName() const { return name_; }
 private:
     std::string name_;
 };
@@ -227,27 +227,27 @@ private:
 
 class TAsToken : public IToken {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kAs; }
 };
 
 class TAndToken : public IToken {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kAnd; }
 };
 
 class TOpenBracketToken : public IToken {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kOpenBracket; }
 };
 
 class TComaToken : public IToken {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kComa; }
 };
 
 class TCloseBracketToken : public IToken {
 public:
-    ETokens GetType() const override;
+    inline ETokens GetType() const override { return ETokens::kCloseBracket; }
 };
 
 class TTokenizer {

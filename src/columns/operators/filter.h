@@ -64,11 +64,9 @@ struct OFilterCheck {
                 target = static_cast<T>(std::stoll(value));
             }
         } catch (...) {
-            std::cout << "not an int" << " " << value << std::endl;
             return MakeError<EError::NotAnIntErr>();
         }
         if (op == EFilterType::kLike) {
-            std::cout << "no like for ints" << std::endl;
             return MakeError<EError::UnsupportedErr>();
         }
         switch (op) {
@@ -215,7 +213,6 @@ struct OFilterCheck {
                 break;
             }
             default:
-                std::cout << "not supported op" << std::endl;
                 return MakeError<EError::UnsupportedErr>();
         }
         return ans;
@@ -228,7 +225,6 @@ struct OFilter {
         using T = typename TCol::ElemTypeRo;
         std::vector<T> vals;
         if (col.GetData().size() != mask.size()) {
-            std::cout << "bad filter size" << std::endl;
             return MakeError<EError::BadArgsErr>();
         }
         for (ui64 i = 0; i < col.GetData().size(); i++) {

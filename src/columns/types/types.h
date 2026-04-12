@@ -44,9 +44,9 @@ class IColumn {
 public:
     virtual ~IColumn() = default;
 
-    virtual ui64 GetSize() = 0;
+    virtual ui64 GetSize() const = 0;
 
-    virtual EColumn GetType() {
+    virtual EColumn GetType() const {
         return kUnitialized;
     }
 };
@@ -59,7 +59,7 @@ public:
     using ElemType = T;
     using ElemTypeRo = T;
 
-    ui64 GetSize() override {
+    ui64 GetSize() const override {
         return cols_.size();
     }
 
@@ -85,7 +85,7 @@ public:
     Ti8Column() {}
     Ti8Column(std::vector<i8> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -95,7 +95,7 @@ public:
     Ti16Column() {}
     Ti16Column(std::vector<i16> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -105,7 +105,7 @@ public:
     Ti32Column() {}
     Ti32Column(std::vector<i32> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -115,7 +115,7 @@ public:
     Ti64Column() {}
     Ti64Column(std::vector<i64> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -129,7 +129,7 @@ public:
     TStringColumn(std::vector<std::string> data);
     TStringColumn(std::vector<std::string_view> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -139,7 +139,7 @@ public:
     TDoubleColumn() {};
     TDoubleColumn(std::vector<ld> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -173,7 +173,7 @@ public:
     TDateColumn() {}
     TDateColumn(std::vector<TDate> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
@@ -215,7 +215,7 @@ public:
     TTimestampColumn() {}
     TTimestampColumn(std::vector<TTimestamp> data);
 
-    EColumn GetType() override;
+    EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };

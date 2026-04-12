@@ -41,7 +41,6 @@ public:
                 if (Is<EError::EofErr>(err)) {
                     run = false;
                 } else {
-                    std::cout << "engine run command err: " << err << std::endl;
                     return err;
                 }
             }

@@ -22,7 +22,7 @@ TStringColumn::TStringColumn(std::vector<std::string_view> data) {
     }
 }
 
-EColumn TStringColumn::GetType() {
+EColumn TStringColumn::GetType() const {
     return kStringColumn;
 }
 

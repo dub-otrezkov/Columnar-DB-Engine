@@ -19,53 +19,53 @@ struct IAgregationOnly : public IOa {
 struct TSumAgr : public IAgregationOnly {
     std::shared_ptr<IColumn> ans;
 
-    std::string GetName() override;
+    std::string GetName() const override;
 
     std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
 
-    void AddArg(std::shared_ptr<IOa>) override;
+    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TMinAgr : public IAgregationOnly {
     std::shared_ptr<IColumn> ans;
 
-    std::string GetName() override;
+    std::string GetName() const override;
 
     std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
 
-    void AddArg(std::shared_ptr<IOa>) override;
+    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TMaxAgr : public IAgregationOnly {
     std::shared_ptr<IColumn> ans;
 
-    std::string GetName() override;
+    std::string GetName() const override;
 
     std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
 
-    void AddArg(std::shared_ptr<IOa>) override;
+    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TCountAgr : public IAgregationOnly {
     i64 ans = 0;
 
-    std::string GetName() override;
-    
+    std::string GetName() const override;
+
     std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
 
-    void AddArg(std::shared_ptr<IOa>) override;
+    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TAvgAgr : public IAgregationOnly {
@@ -73,14 +73,14 @@ struct TAvgAgr : public IAgregationOnly {
     TCountAgr cnt;
 
     bool inited = false;
-    
-    std::string GetName() override;
+
+    std::string GetName() const override;
     std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
 
-    void AddArg(std::shared_ptr<IOa>) override;
+    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 } // namespace JfEngine

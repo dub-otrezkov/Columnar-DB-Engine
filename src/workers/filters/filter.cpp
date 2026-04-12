@@ -88,7 +88,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
     for (ui64 i = 0; i < ans.size(); i++) {
         auto res = Do<OFilter>(col[i], keep);
         if (res.HasError()) {
-            std::cout << "NULL" << " " << res.GetError() << std::endl;
             return res.GetError();
         }
         if (!ans[i]) {

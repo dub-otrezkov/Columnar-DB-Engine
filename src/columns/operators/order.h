@@ -27,7 +27,6 @@ struct OApplyOrder {
     static inline Expected<IColumn> Exec(TCol& col, const std::vector<ui64>& order) {
         using T = typename TCol::ElemType;
         if (order.size() != col.GetSize()) {
-            std::cout << "ordering error" << " " << order.size() << " " << col.GetSize() << std::endl;
             return EError::BadArgsErr;
         }
         std::vector<T> ans(col.GetSize());

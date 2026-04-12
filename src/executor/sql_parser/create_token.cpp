@@ -5,10 +5,6 @@
 
 namespace JfEngine {
 
-ETokens TCreateToken::GetType() const {
-    return ETokens::kCreate;
-}
-
 Expected<ITableInput> TCreateToken::MakeWorker() {
     TEngine eng;
     if (args_.size() != 1 || args_[0]->GetType() != ETokens::kNameToken) {

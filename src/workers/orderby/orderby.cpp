@@ -68,16 +68,9 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
     
     std::vector<TColumnPtr> ans_;
     ans_.resize(scheme_.size());
-    // for (auto [name, tp] : scheme_) {
-    //     // std::cout << 
-    //     ans_.push_back(MakeEmptyColumn(tp).GetShared());
-    //     std::cout << ":: : " << ans_.back() << " " << tp << std::endl;
-    // }
 
     for (; run; jf_in_->MoveCursor()) {
-        std::vector<std::vector<std::string>> keys;
         auto [g, err] = jf_in_->ReadRowGroup();
-        // jf_in_->MoveCursor(1);
 
         if (err) {
             if (err == EError::EofErr) {
@@ -92,7 +85,6 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
 
         auto rg = *g;
 
-        // std::cout << "merge q: " << " " << ans_ << " " << rg << std::endl; 
         MergeRowGroups(ans_, rg);
     }
 

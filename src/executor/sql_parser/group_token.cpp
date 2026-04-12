@@ -58,12 +58,4 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     );
 }
 
-void TGroupToken::SetSelects(TAoQuery s) {
-    selects_ = std::move(s);
-}
-
-ETokens TGroupToken::GetType() const {
-    return ETokens::kGroup;
-}
-
 } // namespace JfEngine

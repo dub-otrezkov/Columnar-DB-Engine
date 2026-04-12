@@ -6,10 +6,6 @@
 
 namespace JfEngine {
 
-ETokens TWhereToken::GetType() const {
-    return ETokens::kWhere;
-}
-
 Expected<ITableInput> TWhereToken::MakeWorker() {
     std::vector<TFilterOp> config;
     ui64 i = 0;

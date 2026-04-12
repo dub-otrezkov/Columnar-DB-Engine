@@ -4,8 +4,6 @@
 
 namespace JfEngine {
 
-TFromToken::TFromToken(std::string query) : query_(std::move(query)) {}
-
 Expected<ITableInput> TFromToken::MakeWorker() {
     for (const auto& t : args_) {
         if (t->GetType() != ETokens::kNameToken) {
@@ -32,10 +30,6 @@ Expected<ITableInput> TFromToken::MakeWorker() {
     } else {
         return MakeError<EError::BadCmdErr>("bad from command args cnt");
     }
-}
-
-ETokens TFromToken::GetType() const {
-    return ETokens::kFrom;
 }
 
 } // namespace JfEngine
