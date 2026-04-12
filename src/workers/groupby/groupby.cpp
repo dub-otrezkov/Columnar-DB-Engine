@@ -41,7 +41,6 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     }
 
     for (; run; jf_in_->MoveCursor()) {
-        std::vector<std::vector<std::string>> keys;
         auto err = gc_eng->ConsumeRowGroup(jf_in_.get()).GetError();
         auto [g, _] = gc_eng->ThrowRowGroup();
 
@@ -61,34 +60,33 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         auto rg = *g;
         auto sz = rg[0]->GetSize();
 
-        for (ui64 i = 0; i < sz; i++) {
-            std::vector<std::string> key;
-            key.reserve(group_q_.cols.size());
-            for (ui64 j = 0; j < rg.size(); j++) {
-                key.push_back(Do<OJfPrintIth>(rg[j], i));
+        std::vector<std::vector<std::string>> printed(sz, std::vector<std::string>(rg.size()));
+        for (ui64 i = 0; i < rg.size(); i++) {
+            auto printed_col = Do<OJfPrint>(rg[i]);
+            assert(printed_col.size() == sz);
+            for (ui64 j = 0; j < sz; j++) {
+                printed[j].push_back(std::move(printed_col[j]));
             }
+        }
+
+        std::unordered_set<VectorStringHashed, VectorStringHasher> used;
+
+        for (ui64 i = 0; i < sz; i++) {
+            VectorStringHashed key(std::move(printed[i]));
 
             if (!groups_.contains(key)) {
                 if (group_q_.limit != kUnlimited && groups_.size() == group_q_.limit) {
                     continue;
                 }
-
-                // std::cout << "new key:";
-                // for (auto el : key) {
-                //     std::cout << " " << el;
-                // }
-                // std::cout << std::endl;
                 groups_.emplace(key, TGroup{jf_in_->GetScheme(), agr_q_.Clone()});
             }
             groups_.at(key).io.UploadRowGroup(*ag, i);
 
-            keys.push_back(std::move(key));
+            used.insert(std::move(key));
+
         }
 
-        std::sort(keys.begin(), keys.end());
-        keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
-
-        for (const auto& key : keys) {
+        for (const auto& key : used) {
             auto& t = groups_.at(key);
             t.eng->ConsumeRowGroup(&t.io);
             t.io.MoveCursor(); // this clear io (bad naming but i dont care)

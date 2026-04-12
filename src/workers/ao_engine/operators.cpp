@@ -34,7 +34,6 @@ Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
                 is_eof = true;
             }
         } else if (err1 == EError::NoSuchColumnsErr) {
-            std::cout << "dkdkkdkd" << std::endl;
             auto [c, err2] = Do<OAddConst>(ans_, args[i]->GetName());
             ans_ = std::move(c);
         }

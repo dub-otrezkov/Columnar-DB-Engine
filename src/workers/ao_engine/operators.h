@@ -9,6 +9,11 @@
 
 namespace JfEngine {
 
+enum class EAoType {
+    kAgregation,
+    kOperator
+};
+
 struct IOa {
     virtual ~IOa() = default;
 
@@ -19,14 +24,18 @@ struct IOa {
     virtual std::string GetName() = 0;
 
     virtual void AddArg(std::shared_ptr<IOa>) {}
+
+    virtual EAoType GetType() const {
+        return EAoType::kOperator;
+    }
 };
 
 struct TColumnOp : public IOa {
     std::string name;
 
-    TColumnOp(std::string name_);
-
     std::shared_ptr<IColumn> ans;
+
+    TColumnOp(std::string name_);
 
     std::string GetName() override;
     
@@ -34,6 +43,10 @@ struct TColumnOp : public IOa {
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
+
+    virtual inline bool IsTColumnOp() const {
+        return true;
+    }
 };
 
 struct TPlusOp : public IOa {

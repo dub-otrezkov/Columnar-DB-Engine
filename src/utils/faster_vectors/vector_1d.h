@@ -154,6 +154,22 @@ public:
     friend std::vector<char> Serialize(const StringVector& a);
     friend StringVector UnserializeString(const std::vector<char>& a);
 
+    inline char* data() {
+        return data_.data();
+    }
+
+    inline ui64* offsets_data() {
+        return offsets_.data();
+    }
+
+    inline void resize_both(ui64 data_sz, ui64 offsets_sz) {
+        data_.resize(data_sz);
+        offsets_.resize(offsets_sz);
+    }
+
+    inline ui64 data_size() const {
+        return data_.size();
+    }
 private:
     std::vector<char> data_;
     std::vector<ui64> offsets_;

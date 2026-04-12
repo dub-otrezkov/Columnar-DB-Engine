@@ -75,8 +75,6 @@ TEST_F(GroupByTest, Basic) {
 
         auto res = engine->WriteDataToCsv(data);
 
-        std::cout << data.str() << std::endl;
-
         std::string a = data.str();
         std::sort(a.begin(), a.end());
         std::string b = R"(dot,3,164
@@ -92,70 +90,70 @@ the,2,36
     }
 }
 
-// TEST_F(GroupByTest, Stress) {
-//     auto jf_table = std::make_shared<std::stringstream>();
-//     {
-//         constexpr ui64 iter = 50000;
-//         auto scheme_in = std::make_shared<std::stringstream>(scheme);
-//         auto data_in = std::make_shared<std::stringstream>();
+TEST_F(GroupByTest, Stress) {
+    auto jf_table = std::make_shared<std::stringstream>();
+    {
+        constexpr ui64 iter = 500000;
+        auto scheme_in = std::make_shared<std::stringstream>(scheme);
+        auto data_in = std::make_shared<std::stringstream>();
 
-//         for (ui64 i = 0; i < iter; i++) {
-//             (*data_in) << data;
-//         }
+        for (ui64 i = 0; i < iter; i++) {
+            (*data_in) << data;
+        }
 
-//         auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
-//         if (err) {
-//             std::cout << "! " << err << std::endl;
-//         }
-//         ASSERT_FALSE(err);
+        if (err) {
+            std::cout << "! " << err << std::endl;
+        }
+        ASSERT_FALSE(err);
 
-//         auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng->WriteTableToJf(*jf_table);
         
-//         if (err2.HasError()) {
-//             std::cout << "! " << err2.GetError() << std::endl;
-//         }
-//         ASSERT_FALSE(err2.HasError());
-//     }
+        if (err2.HasError()) {
+            std::cout << "! " << err2.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err2.HasError());
+    }
 
-//     {
-//         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    {
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
-//         TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnAgr>("red")}};
+        TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnOp>("red")}};
 
-//         TAgregationQuery aq;
-//         auto group_name = std::make_shared<TColumnAgr>("red");
-//         auto column_name = std::make_shared<TColumnAgr>("what");
-//         auto cnt_agr = std::make_shared<TCountAgr>();
-//         auto sum_agr = std::make_shared<TSumAgr>();
-//         cnt_agr->AddArg(column_name);
-//         sum_agr->AddArg(column_name);
-//         aq.cols.push_back(group_name);
-//         aq.cols.push_back(cnt_agr);
-//         aq.cols.push_back(sum_agr);
+        TAoQuery aq;
+        auto group_name = std::make_shared<TColumnOp>("red");
+        auto column_name = std::make_shared<TColumnOp>("what");
+        auto cnt_agr = std::make_shared<TCountAgr>();
+        auto sum_agr = std::make_shared<TSumAgr>();
+        cnt_agr->AddArg(column_name);
+        sum_agr->AddArg(column_name);
+        aq.args.push_back(group_name);
+        aq.args.push_back(cnt_agr);
+        aq.args.push_back(sum_agr);
 
-//         auto agr = std::make_shared<TGroupBy>(jf_in, gq, aq);
+        auto agr = std::make_shared<TGroupBy>(jf_in, gq, aq);
 
-//         agr->SetupColumnsScheme();
+        agr->SetupColumnsScheme();
 
-//         auto [engine, err] = MakeEngineFromWorker(agr);
+        auto [engine, err] = MakeEngineFromWorker(agr);
 
-//         ASSERT_FALSE(err);
+        ASSERT_FALSE(err);
 
-//         std::stringstream data;
+        std::stringstream data;
 
-//         auto res = engine->WriteDataToCsv(data);
+        auto res = engine->WriteDataToCsv(data);
 
-//         ASSERT_FALSE(res.HasError());
+        ASSERT_FALSE(res.HasError());
 
-// //         EXPECT_EQ(data.str(), R"(dot,3,164
-// // "i,could,have,lied",1,5
-// // john,1,-10
-// // josh,1,1
-// // stadium,1,0
-// // the,2,36
-// // )");
-//     }
-// }
+//         EXPECT_EQ(data.str(), R"(dot,3,164
+// "i,could,have,lied",1,5
+// john,1,-10
+// josh,1,1
+// stadium,1,0
+// the,2,36
+// )");
+    }
+}
 
 } // namespace JfEngine::Testing

@@ -49,7 +49,6 @@ void TOrderBy::MergeRowGroups(
     std::vector<TColumnPtr>& rg2
 ) {
     for (ui64 i = 0; i < rg1.size(); i++) {
-        // std::cout << "++:" << " " << rg2[i] << " " << rg1[i] << std::endl;
         if (!rg1[i]) {
             rg1[i] = MakeEmptyColumn(rg2[i]->GetType()).GetShared();
             scheme_[i].type_ = rg1[i]->GetType();
@@ -57,9 +56,9 @@ void TOrderBy::MergeRowGroups(
         Do<OPushBackVector>(rg2[i], rg1[i]);
     }
     SortRowGroup(rg1);
-    if (order_q_.limit != kUnlimited && rg1[0]->GetSize() > order_q_.limit) {
-        for (ui64 i = 0; i < rg1.size(); i++) {
-            Do<OResize>(rg1[i], order_q_.limit);
+    if (order_q_.limit != kUnlimited && !rg1.empty() && rg1[0]->GetSize() > order_q_.limit) {
+        for (ui64 j = 0; j < rg1.size(); j++) {
+            Do<OResize>(rg1[j], order_q_.limit);
         }
     }
 }

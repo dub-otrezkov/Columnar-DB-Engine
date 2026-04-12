@@ -164,7 +164,6 @@ Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
 }
 
 Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
-    // std::cout << "dkdkkdkfkkfdkk" << std::endl;
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EError::EofErr>();
     }

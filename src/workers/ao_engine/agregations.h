@@ -8,10 +8,16 @@
 
 namespace JfEngine {
 
-struct TSumAgr : public IOa {
-    std::shared_ptr<IColumn> ans;
-
+struct IAgregationOnly : public IOa {
     std::shared_ptr<IOa> arg;
+    
+    EAoType GetType() const override {
+        return EAoType::kAgregation;
+    }
+};
+
+struct TSumAgr : public IAgregationOnly {
+    std::shared_ptr<IColumn> ans;
 
     std::string GetName() override;
 
@@ -23,10 +29,8 @@ struct TSumAgr : public IOa {
     void AddArg(std::shared_ptr<IOa>) override;
 };
 
-struct TMinAgr : public IOa {
+struct TMinAgr : public IAgregationOnly {
     std::shared_ptr<IColumn> ans;
-
-    std::shared_ptr<IOa> arg;
 
     std::string GetName() override;
 
@@ -38,10 +42,8 @@ struct TMinAgr : public IOa {
     void AddArg(std::shared_ptr<IOa>) override;
 };
 
-struct TMaxAgr : public IOa {
+struct TMaxAgr : public IAgregationOnly {
     std::shared_ptr<IColumn> ans;
-
-    std::shared_ptr<IOa> arg;
 
     std::string GetName() override;
 
@@ -53,10 +55,8 @@ struct TMaxAgr : public IOa {
     void AddArg(std::shared_ptr<IOa>) override;
 };
 
-struct TCountAgr : public IOa {
+struct TCountAgr : public IAgregationOnly {
     i64 ans = 0;
-
-    std::shared_ptr<IOa> arg;
 
     std::string GetName() override;
     
@@ -68,13 +68,11 @@ struct TCountAgr : public IOa {
     void AddArg(std::shared_ptr<IOa>) override;
 };
 
-struct TAvgAgr : public IOa {
+struct TAvgAgr : public IAgregationOnly {
     TSumAgr sum;
     TCountAgr cnt;
 
     bool inited = false;
-
-    std::shared_ptr<IOa> arg;
     
     std::string GetName() override;
     std::shared_ptr<IOa> Clone() override;

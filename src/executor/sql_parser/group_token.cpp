@@ -1,30 +1,58 @@
 #include "tokenizer.h"
 
 #include "workers/groupby/groupby.h"
+#include "workers/global_agregations/agregator.h"
 #include "ios_factory/ios_factory.h"
 
 namespace JfEngine {
 
 Expected<ITableInput> TGroupToken::MakeWorker() {
-    // for (const auto& t : args_) {
-    //     if (t->GetType() != ETokens::kNameToken) {
-    //         return MakeError<EError::BadCmdErr>("from token without files");
-    //     }
-    // }
     args_.erase(args_.begin());
     auto q = ParseArgs(args_);
     TGroupByQuery query;
     query.cols = std::move(q.args);
-    // for (ui64 i = 1; i < q.cols.size(); i++) {
-    //     query.cols.push_back(static_cast<TNameToken*>(args_[i].get())->GetName());
-    // }
 
     if (limit_) {
         query.limit = limit_->GetLimit();
     }
-    
+
+    TAoQuery qop;
+    qop.tp = EAoEngineType::kOperator;
+
+    ui64 i = 0;
+    for (auto& col : selects_.args) {
+        if (col->GetType() == EAoType::kOperator) {
+            std::shared_ptr<IOa> col_n = nullptr;
+            ui64 k = 0;
+            for (const auto& [j, name] : selects_.aliases) {
+                if (j == i) {
+                    col_n = std::make_shared<TColumnOp>(name);
+                    qop.aliases.emplace_back(j, name);
+                    selects_.aliases.erase(selects_.aliases.begin() + k);
+                    break;
+                }
+                k++;
+            }
+            if (!col_n) {
+                col_n = std::make_shared<TColumnOp>(col->GetName());
+            }
+
+            std::swap(col, col_n);
+            qop.args.push_back(std::move(col_n));
+        } else {
+            auto casted = std::static_pointer_cast<IAgregationOnly>(col);
+            std::shared_ptr<IOa> col_n = std::make_shared<TColumnOp>(casted->arg->GetName());
+            std::swap(casted->arg, col_n);
+            qop.args.push_back(std::move(col_n));
+        }
+        i++;
+    }
+
     return std::make_shared<TGroupBy>(
-        TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+        std::make_shared<TAgregator>(
+            TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+            std::move(qop)
+        ),
         query,
         selects_
     );
