@@ -9,6 +9,7 @@ namespace JfEngine {
 Expected<ITableInput> TGroupToken::MakeWorker() {
     args_.erase(args_.begin());
     auto q = ParseArgs(args_);
+
     TGroupByQuery query;
     query.cols = std::move(q.args);
 
@@ -22,11 +23,11 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     ui64 i = 0;
     for (auto& col : selects_.args) {
         if (col->GetType() == EAoType::kOperator) {
-            std::shared_ptr<IOa> col_n = nullptr;
+            std::unique_ptr<IOa> col_n = nullptr;
             ui64 k = 0;
             for (const auto& [j, name] : selects_.aliases) {
                 if (j == i) {
-                    col_n = std::make_shared<TColumnOp>(name);
+                    col_n = std::make_unique<TColumnOp>(name);
                     qop.aliases.emplace_back(j, name);
                     selects_.aliases.erase(selects_.aliases.begin() + k);
                     break;
@@ -34,14 +35,14 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
                 k++;
             }
             if (!col_n) {
-                col_n = std::make_shared<TColumnOp>(col->GetName());
+                col_n = std::make_unique<TColumnOp>(col->GetName());
             }
 
             std::swap(col, col_n);
             qop.args.push_back(std::move(col_n));
         } else {
-            auto casted = std::static_pointer_cast<IAgregationOnly>(col);
-            std::shared_ptr<IOa> col_n = std::make_shared<TColumnOp>(casted->arg->GetName());
+            IAgregationOnly* casted = static_cast<IAgregationOnly*>(col.get());
+            std::unique_ptr<IOa> col_n = std::make_unique<TColumnOp>(casted->arg->GetName());
             std::swap(casted->arg, col_n);
             qop.args.push_back(std::move(col_n));
         }
@@ -53,8 +54,8 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
             TIoFactory::GetTableIo(kCurTableInput).GetShared(),
             std::move(qop)
         ),
-        query,
-        selects_
+        std::move(query),
+        std::move(selects_)
     );
 }
 

@@ -21,14 +21,26 @@ public:
         data_.insert(data_.end(), val.begin(), val.end());
     }
 
-    std::string at(ui64 i) const {
-        ui64 len;
+    void push_back_mcpy(void* addr, ui64 len) {
+        offsets_.push_back(data_.size());
+        data_.resize(data_.size() + len);
+        std::memcpy(data_.data() + data_.size() - len, addr, len);
+    }
+
+    inline ui64 get_pos(ui64 i) const {
+        return offsets_.at(i);
+    }
+
+    inline ui64 get_len(ui64 i) const {
         if (i + 1 == offsets_.size()) {
-            len = data_.size() - offsets_[i];
+            return data_.size() - offsets_[i];
         } else {
-            len = offsets_[i + 1] - offsets_[i];
+            return offsets_[i + 1] - offsets_[i];
         }
-        return std::string(data_.data() + offsets_[i], len);
+    }
+
+    std::string at(ui64 i) const {
+        return std::string(data_.data() + offsets_[i], get_len(i));
     }
 
     std::string operator[](ui64 i) const {
@@ -166,6 +178,17 @@ public:
 
     inline ui64 data_size() const {
         return data_.size();
+    }
+
+    bool operator==(const StringVector& other) const {
+        if (other.size() != size()) {
+            return false;
+        }
+        if (other.data_size() != data_size()) {
+            return false;
+        }
+
+        return (data_ == other.data_ && offsets_ == other.offsets_);
     }
 private:
     std::vector<char> data_;

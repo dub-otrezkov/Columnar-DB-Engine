@@ -9,10 +9,14 @@
 namespace JfEngine {
 
 struct IAgregationOnly : public IOa {
-    std::shared_ptr<IOa> arg;
+    std::unique_ptr<IOa> arg;
     
     EAoType GetType() const override {
         return EAoType::kAgregation;
+    }
+
+    inline void AddArg(std::unique_ptr<IOa> to_agr) override {
+        arg = std::move(to_agr);
     }
 };
 
@@ -21,12 +25,10 @@ struct TSumAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
-
-    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TMinAgr : public IAgregationOnly {
@@ -34,12 +36,10 @@ struct TMinAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
-
-    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TMaxAgr : public IAgregationOnly {
@@ -47,12 +47,10 @@ struct TMaxAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
-
-    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TCountAgr : public IAgregationOnly {
@@ -60,12 +58,10 @@ struct TCountAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
-
-    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 struct TAvgAgr : public IAgregationOnly {
@@ -75,12 +71,10 @@ struct TAvgAgr : public IAgregationOnly {
     bool inited = false;
 
     std::string GetName() const override;
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
-
-    inline void AddArg(std::shared_ptr<IOa> to_agr) override { arg = to_agr; }
 };
 
 } // namespace JfEngine

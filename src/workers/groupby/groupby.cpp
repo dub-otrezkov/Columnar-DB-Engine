@@ -7,17 +7,20 @@
 
 namespace JfEngine {
 
+TGroupBy::THashMap JfEngine::TGroupBy::groups_;
+
 TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
     group_q_(std::move(query)),
-    agr_q_(selects),
-    gc_eng(MakeAoEngine(TAoQuery{group_q_.cols, {}, EAoEngineType::kAgregation}))
+    agr_q_(std::move(selects)),
+    gc_eng(MakeAoEngine(TAoQuery{std::move(group_q_.cols), {}, EAoEngineType::kAgregation}))
 {
-    scheme_.resize(selects.args.size());
+    scheme_.resize(agr_q_.args.size());
     jf_in_->SetupColumnsScheme();
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
+    groups_.clear();
     jf_in_->SetupColumnsScheme();
     std::vector<std::string> names(agr_q_.args.size());
     for (ui64 i = 0; i < scheme_.size(); i++) {
@@ -32,7 +35,6 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
 
 Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     bool run = 1;
-    std::vector<std::vector<std::string>> changed;
 
     if (name_to_i_.empty()) {
         for (const auto& k : jf_in_->GetScheme()) {
@@ -60,16 +62,17 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         auto rg = *g;
         auto sz = rg[0]->GetSize();
 
-        std::vector<std::vector<std::string>> printed(sz, std::vector<std::string>(rg.size()));
+        static std::vector<StringVector> printed;
+        printed.resize(sz);
+        for (ui64 i = 0; i < sz; i++) {
+            printed[i].clear();
+        }
         for (ui64 i = 0; i < rg.size(); i++) {
-            auto printed_col = Do<OJfPrint>(rg[i]);
-            assert(printed_col.size() == sz);
-            for (ui64 j = 0; j < sz; j++) {
-                printed[j].push_back(std::move(printed_col[j]));
-            }
+            Do<OJfPrint>(rg[i], printed);
         }
 
-        std::unordered_set<VectorStringHashed, VectorStringHasher> used;
+        static std::unordered_set<VectorStringHashed, VectorStringHasher> used;
+        used.clear();
 
         for (ui64 i = 0; i < sz; i++) {
             VectorStringHashed key(std::move(printed[i]));
@@ -94,7 +97,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     }
 
     std::vector<TColumnPtr> ans(scheme_.size());
-    for (auto&& [_, value] : groups_) {
+    for (auto [_, value] : groups_) {
         if (!ans[0]) {
             auto [t, _] = value.eng->ThrowRowGroup();
             ans = *t;

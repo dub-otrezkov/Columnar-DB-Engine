@@ -13,8 +13,8 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
 
     bool next_alias = false;
 
-    std::vector<std::shared_ptr<IOa>> args;
-    std::vector<std::shared_ptr<IOa>> st;
+    std::vector<std::unique_ptr<IOa>> args;
+    std::vector<IOa*> st;
 
     EAoEngineType etype = EAoEngineType::kOperator;
 
@@ -41,115 +41,135 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
 
-                auto node = std::make_shared<TColumnOp>(d);
+                auto node = std::make_unique<TColumnOp>(d);
+
+                auto ptr = node.get();
 
                 if (!st.empty()) {
-                    st.back()->AddArg(node);
+                    st.back()->AddArg(std::move(node));
                 } else {
-                    args.push_back(node);
+                    args.push_back(std::move(node));
                 }
 
                 break;
             }
             case ETokens::kSum: {
-                auto node = std::make_shared<TSumAgr>();
+                auto node = std::make_unique<TSumAgr>();
                 etype = EAoEngineType::kAgregation;
 
-                args.push_back(node);
+                auto ptr = node.get();
 
-                st.push_back(node);
+                args.push_back(std::move(node));
+
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kCount: {
-                auto node = std::make_shared<TCountAgr>();
+                auto node = std::make_unique<TCountAgr>();
                 etype = EAoEngineType::kAgregation;
 
-                args.push_back(node);
+                auto ptr = node.get();
 
-                st.push_back(node);
+                args.push_back(std::move(node));
+
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kAvg: {
-                auto node = std::make_shared<TAvgAgr>();
+                auto node = std::make_unique<TAvgAgr>();
                 etype = EAoEngineType::kAgregation;
 
-                args.push_back(node);
+                auto ptr = node.get();
 
-                st.push_back(node);
+                args.push_back(std::move(node));
+
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kMin: {
-                auto node = std::make_shared<TMinAgr>();
+                auto node = std::make_unique<TMinAgr>();
                 etype = EAoEngineType::kAgregation;
-                
-                args.push_back(node);
 
-                st.push_back(node);
+                auto ptr = node.get();
+
+                args.push_back(std::move(node));
+
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kMax: {
-                auto node = std::make_shared<TMaxAgr>();
+                auto node = std::make_unique<TMaxAgr>();
                 etype = EAoEngineType::kAgregation;
 
-                args.push_back(node);
+                auto ptr = node.get();
 
-                st.push_back(node);
+                args.push_back(std::move(node));
+
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kDistinct: {
-                auto node = std::make_shared<TDistinctOp>();
+                auto node = std::make_unique<TDistinctOp>();
+
+                auto ptr = node.get();
 
                 if (!st.empty()) {
-                    st.back()->AddArg(node);
+                    st.back()->AddArg(std::move(node));
                 } else {
-                    args.push_back(node);
+                    args.push_back(std::move(node));
                 }
 
-                st.push_back(node);
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kLength: {
-                auto node = std::make_shared<TLengthOp>();
+                auto node = std::make_unique<TLengthOp>();
+
+                auto ptr = node.get();
 
                 if (!st.empty()) {
-                    st.back()->AddArg(node);
+                    st.back()->AddArg(std::move(node));
                 } else {
-                    args.push_back(node);
+                    args.push_back(std::move(node));
                 }
 
-                st.push_back(node);
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kPlus: {
-                auto node = std::make_shared<TPlusOp>();
+                auto node = std::make_unique<TPlusOp>();
+
+                auto ptr = node.get();
 
                 if (!st.empty()) {
-                    st.back()->AddArg(node);
+                    st.back()->AddArg(std::move(node));
                 } else {
-                    args.push_back(node);
+                    args.push_back(std::move(node));
                 }
 
-                st.push_back(node);
+                st.push_back(ptr);
 
                 break;
             }
             case ETokens::kMinus: {
-                auto node = std::make_shared<TMinusOp>();
+                auto node = std::make_unique<TMinusOp>();
+
+                auto ptr = node.get();
 
                 if (!st.empty()) {
-                    st.back()->AddArg(node);
+                    st.back()->AddArg(std::move(node));
                 } else {
-                    args.push_back(node);
+                    args.push_back(std::move(node));
                 }
 
-                st.push_back(node);
+                st.push_back(ptr);
 
                 break;
             }
@@ -170,7 +190,7 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
 
         auto agr = std::make_shared<TAgregator>(
             TIoFactory::GetTableIo(kCurTableInput).GetShared(),
-            args
+            std::move(args)
         );
 
         TEngine eng;

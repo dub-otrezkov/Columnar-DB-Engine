@@ -18,7 +18,7 @@ std::vector<std::string>& IAoEngine::GetNames() {
 }
 
 TAgregationQuery TAgregationQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(cols.size());
+    std::vector<std::unique_ptr<IOa>> ans(cols.size());
     for (ui64 i = 0; i < cols.size(); i++) {
         ans[i] = cols[i]->Clone();
     }
@@ -26,7 +26,7 @@ TAgregationQuery TAgregationQuery::Clone() {
 }
 
 TOperatorQuery TOperatorQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(cols.size());
+    std::vector<std::unique_ptr<IOa>> ans(cols.size());
     for (ui64 i = 0; i < cols.size(); i++) {
         ans[i] = cols[i]->Clone();
     }
@@ -34,7 +34,7 @@ TOperatorQuery TOperatorQuery::Clone() {
 }
 
 TAoQuery TAoQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(args.size());
+    std::vector<std::unique_ptr<IOa>> ans(args.size());
     for (ui64 i = 0; i < ans.size(); i++) {
         ans[i] = args[i]->Clone();
     }
@@ -112,7 +112,7 @@ std::shared_ptr<IAoEngine> TOperatorEngine::Clone() {
     for (ui64 i = 0; i < names.size(); i++) {
         cnames.emplace_back(i, names[i]);
     }
-    return std::make_shared<TOperatorEngine>(q_, cnames);
+    return std::make_shared<TOperatorEngine>(q_.Clone(), cnames);
 }
 
 std::shared_ptr<IAoEngine> TAgregationEngine::Clone() {
@@ -121,7 +121,7 @@ std::shared_ptr<IAoEngine> TAgregationEngine::Clone() {
     for (ui64 i = 0; i < names.size(); i++) {
         cnames.emplace_back(i, names[i]);
     }
-    return std::make_shared<TAgregationEngine>(q_, cnames);
+    return std::make_shared<TAgregationEngine>(q_.Clone(), cnames);
 }
 
 std::vector<std::string>& TAgregationEngine::GetNames() {

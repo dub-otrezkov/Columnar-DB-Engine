@@ -44,8 +44,8 @@ Expected<IColumn> TPlusOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TPlusOp::Clone() {
-    auto r = std::make_shared<TPlusOp>();
+std::unique_ptr<IOa> TPlusOp::Clone() {
+    auto r = std::make_unique<TPlusOp>();
     for (auto& arg : args) {
         r->AddArg(arg->Clone());
     }
@@ -98,8 +98,8 @@ Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
     return (is_eof ? EError::EofErr : EError::NoError);
 }
 
-std::shared_ptr<IOa> TMinusOp::Clone() {
-    auto r = std::make_shared<TMinusOp>();
+std::unique_ptr<IOa> TMinusOp::Clone() {
+    auto r = std::make_unique<TMinusOp>();
     for (auto& arg : args) {
         r->AddArg(arg->Clone());
     }
@@ -143,8 +143,8 @@ Expected<IColumn> TLengthOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TLengthOp::Clone() {
-    auto r = std::make_shared<TLengthOp>();
+std::unique_ptr<IOa> TLengthOp::Clone() {
+    auto r = std::make_unique<TLengthOp>();
     r->arg = arg->Clone();
     return r;
 }
@@ -167,8 +167,8 @@ Expected<IColumn> TColumnOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TColumnOp::Clone() {
-    return std::make_shared<TColumnOp>(name);
+std::unique_ptr<IOa> TColumnOp::Clone() {
+    return std::make_unique<TColumnOp>(name);
 }
 
 std::string TColumnOp::GetName() const {
@@ -194,8 +194,8 @@ Expected<IColumn> TDistinctOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TDistinctOp::Clone() {
-    auto r = std::make_shared<TDistinctOp>();
+std::unique_ptr<IOa> TDistinctOp::Clone() {
+    auto r = std::make_unique<TDistinctOp>();
     r->arg = arg->Clone();
     return r;
 }

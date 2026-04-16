@@ -1,5 +1,4 @@
 add_subdirectory(cint)
-add_subdirectory(logger)
 add_subdirectory(errors)
 add_subdirectory(faster_vectors)
 add_subdirectory(faster_hashmap)

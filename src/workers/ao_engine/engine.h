@@ -6,13 +6,13 @@
 namespace JfEngine {
 
 struct TAgregationQuery {
-    std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::unique_ptr<IOa>> cols;
 
     TAgregationQuery Clone();
 };
 
 struct TOperatorQuery {
-    std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::unique_ptr<IOa>> cols;
 
     TOperatorQuery Clone();
 };
@@ -23,9 +23,26 @@ enum class EAoEngineType {
 };
 
 struct TAoQuery {
-    std::vector<std::shared_ptr<IOa>> args;
+    std::vector<std::unique_ptr<IOa>> args;
     std::vector<std::pair<ui64, std::string>> aliases;
     EAoEngineType tp;
+
+    TAoQuery(
+        std::vector<std::unique_ptr<IOa>> a, 
+        std::vector<std::pair<ui64, std::string>> b,
+        EAoEngineType c
+    ) :
+        args(std::move(a)),
+        aliases(std::move(b)),
+        tp(c)
+    {}
+
+    TAoQuery() = default;
+    TAoQuery(const TAoQuery&) = delete;
+    TAoQuery& operator=(const TAoQuery&) = delete;
+    
+    TAoQuery(TAoQuery&&) = default;
+    TAoQuery& operator=(TAoQuery&&) = default;
 
     TAoQuery Clone();
 };
