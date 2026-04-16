@@ -16,12 +16,11 @@ TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQ
     gc_eng(MakeAoEngine(TAoQuery{std::move(group_q_.cols), {}, EAoEngineType::kAgregation}))
 {
     scheme_.resize(agr_q_.args.size());
-    jf_in_->SetupColumnsScheme();
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
-    groups_.clear();
     jf_in_->SetupColumnsScheme();
+    groups_.clear();
     std::vector<std::string> names(agr_q_.args.size());
     for (ui64 i = 0; i < scheme_.size(); i++) {
         scheme_[i].name_ = agr_q_.args[i]->GetName();
@@ -55,8 +54,14 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                 return err2;
             }
         }
+
         if (!ag || ag->empty() || ag->at(0)->GetSize() == 0) {
             continue;
+        }
+
+        if (!inp_) {
+            inp_ = TNarrowTableInput();
+            inp_->Update(jf_in_->GetScheme());
         }
 
         auto rg = *g;
@@ -71,9 +76,6 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             Do<OJfPrint>(rg[i], printed);
         }
 
-        static std::unordered_set<VectorStringHashed, VectorStringHasher> used;
-        used.clear();
-
         for (ui64 i = 0; i < sz; i++) {
             VectorStringHashed key(std::move(printed[i]));
 
@@ -81,18 +83,12 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                 if (group_q_.limit != kUnlimited && groups_.size() == group_q_.limit) {
                     continue;
                 }
-                groups_.emplace(key, TGroup{jf_in_->GetScheme(), agr_q_.Clone()});
+                groups_.emplace(key, TGroup{agr_q_.Clone()});
             }
-            groups_.at(key).io.UploadRowGroup(*ag, i);
-
-            used.insert(std::move(key));
-
-        }
-
-        for (const auto& key : used) {
-            auto& t = groups_.at(key);
-            t.eng->ConsumeRowGroup(&t.io);
-            t.io.MoveCursor(); // this clear io (bad naming but i dont care)
+            assert(inp_.has_value());
+            inp_->MoveCursor();
+            inp_->UploadRowGroup(*ag, i);
+            groups_.at(key).eng->ConsumeRowGroup(&inp_.value());
         }
     }
 

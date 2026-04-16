@@ -6,8 +6,9 @@
 
 namespace JfEngine {
     
-TNarrowTableInput::TNarrowTableInput(std::vector<TRowScheme>& scheme) {
+void TNarrowTableInput::Update(std::vector<TRowScheme>& scheme) {
     scheme_ = scheme;
+    name_to_i_.clear();
     for (const auto& [name, _] : scheme_) {
         name_to_i_[name] = name_to_i_.size();
     }

@@ -6,7 +6,7 @@ namespace JfEngine {
 
 class TNarrowTableInput : public ITableInput {
 public:
-    TNarrowTableInput(std::vector<TRowScheme>& scheme);
+    void Update(std::vector<TRowScheme>& scheme);
 
     Expected<void> SetupColumnsScheme() override;
 

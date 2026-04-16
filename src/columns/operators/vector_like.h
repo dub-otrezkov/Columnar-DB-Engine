@@ -16,6 +16,7 @@ struct OPushBackFrom {
     template<typename TCol>
     static inline void Exec(TCol& from, TColumnPtr to, i64 i) {
         if (to->GetType() != from.GetType()) {
+            std::cout << "err here: " << to->GetType() << " " << from.GetType() << std::endl;
             throw "bad arg";
         }
         OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);
@@ -25,7 +26,7 @@ struct OPushBackFrom {
 // from, to
 struct OPushBackVector {
     template<typename TCol>
-    static inline void Exec(TCol& from, TColumnPtr to) {
+    static inline Expected<void> Exec(TCol& from, TColumnPtr to) {
         if (to->GetType() != from.GetType()) {
             throw "bad arg";
         }
@@ -37,9 +38,10 @@ struct OPushBackVector {
             reinterpret_cast<char*>(from.GetData().data()),
             from.GetData().size() * sizeof(typename TCol::ElemType)
         );
+        return EError::NoError;
     }
 
-    static inline void Exec(TStringColumn& from, TColumnPtr to) {
+    static inline Expected<void> Exec(TStringColumn& from, TColumnPtr to) {
         if (to->GetType() != from.GetType()) {
             throw "bad arg";
         }
@@ -63,13 +65,15 @@ struct OPushBackVector {
         for (ui64 i = 0; i < from.GetData().size(); i++) {
             target->GetData().offsets_data()[prev_sz + i] += dl;
         }
+        return EError::NoError;
     }
 };
 
 struct OResize {
     template <typename T>
-    static inline void Exec(T& col, i64 len) {
+    static inline Expected<void> Exec(T& col, i64 len) {
         col.GetData().resize(len);
+        return EError::NoError;
     }
 };
 

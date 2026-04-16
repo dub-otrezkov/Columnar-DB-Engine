@@ -44,11 +44,9 @@ private:
 
     struct TGroup {
         std::shared_ptr<IAoEngine> eng;
-        TNarrowTableInput io;
 
-        TGroup(std::vector<TRowScheme>& scheme, TAoQuery agr_q) :
-            eng(MakeAoEngine(std::move(agr_q))),
-            io(scheme)
+        TGroup(TAoQuery agr_q) :
+            eng(MakeAoEngine(std::move(agr_q)))
         {}
     };
 
@@ -94,6 +92,7 @@ private:
 
     using THashMap = std::unordered_map<VectorStringHashed, TGroup, VectorStringHasher>;
     static THashMap groups_;
+    std::optional<TNarrowTableInput> inp_;
 };
 
 } // namespace JfEngine

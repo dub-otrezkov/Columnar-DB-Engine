@@ -1,3 +1,3 @@
 add_executable(columnar_cli main.cpp)
 
-target_link_libraries(columnar_cli engine_lib csv_reader_lib csv_writer_lib errors_lib nodes_lib iworkers_lib io_worker_lib exec_lib)
+target_link_libraries(columnar_cli tcmalloc engine_lib csv_reader_lib csv_writer_lib errors_lib nodes_lib iworkers_lib io_worker_lib exec_lib)
