@@ -41,82 +41,22 @@ struct OPrintIth {
 };
 
 struct OJfPrint {
-    static inline std::vector<std::string> Exec(Ti8Column& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
+    template <typename TCol>
+    static inline void Exec(TCol& col, std::vector<StringVector>& out) {
+        using T = typename TCol::ElemType;
+        assert(col.GetSize() == out.size() && "cant print column");
+        
         for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = I8ToJfStr(col.GetData()[i]);
+            out[i].push_back_mcpy(col.GetData().data() + i, sizeof(T));
         }
-        return std::move(ans);
     }
 
-    static inline std::vector<std::string> Exec(Ti16Column& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = I16ToJfStr(col.GetData()[i]);
-        }
-        return std::move(ans);
-    }
+    static inline void Exec(TStringColumn& col, std::vector<StringVector>& out) {
+        assert(col.GetSize() == out.size() && "cant print column");
 
-    static inline std::vector<std::string> Exec(Ti32Column& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
         for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = I32ToJfStr(col.GetData()[i]);
+            out[i].push_back_mcpy(col.GetData().data() + col.GetData().get_pos(i), col.GetData().get_len(i));
         }
-        return std::move(ans);
-    }
-
-    static inline std::vector<std::string> Exec(Ti64Column& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = I64ToJfStr(col.GetData()[i]);
-        }
-        return std::move(ans);
-    }
-
-    static inline std::vector<std::string> Exec(TDoubleColumn& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = DoubleToJfStr(col.GetData()[i]);
-        }
-        return std::move(ans);
-    }
-
-    static inline std::vector<std::string> Exec(TDateColumn& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            auto j = col.GetData()[i];
-            ans[i] = I16ToJfStr(j.year) + I8ToJfStr(j.month) + I8ToJfStr(j.day);
-        }
-        return std::move(ans);
-    }
-
-    static inline std::vector<std::string> Exec(TTimestampColumn& col) {
-        std::vector<std::string> ans(col.GetSize());
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            auto j = col.GetData()[i];
-            ans[i] = I16ToJfStr(j.date.year) +
-                    I8ToJfStr(j.date.month) +
-                    I8ToJfStr(j.date.day) +
-                    I8ToJfStr(j.hour) +
-                    I8ToJfStr(j.minute) +
-                    I8ToJfStr(j.second);
-        }
-        return std::move(ans);
-    }
-
-    static inline std::vector<std::string> Exec(TStringColumn& col) {
-        std::vector<std::string> ans(col.GetSize());
-        // auto j = col.GetData()[i];
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = col.GetData()[i];
-        }
-        return std::move(ans);
     }
 };
 

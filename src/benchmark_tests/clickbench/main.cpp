@@ -12,6 +12,11 @@
 // >hits.jf; >tmp1.jf; >tmp2.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
 // >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/executor/debug/debug_exec
 
+/*
+sync    
+echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
+*/
+
 // AI GENERATED CODE WARNING
 
 int main() {

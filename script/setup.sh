@@ -2,7 +2,7 @@
 set -e
 
 sudo apt-get update
-sudo apt-get install -y cmake ninja-build libgtest-dev g++
+sudo apt-get install -y cmake ninja-build libgtest-dev g++ libgoogle-perftools-dev
 
 # libgtest-dev installs sources only — build and install the libs
 cd /usr/src/googletest

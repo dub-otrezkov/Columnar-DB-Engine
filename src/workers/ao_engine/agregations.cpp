@@ -46,8 +46,8 @@ Expected<IColumn> TSumAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TSumAgr::Clone() {
-    auto r = std::make_shared<TSumAgr>();
+std::unique_ptr<IOa> TSumAgr::Clone() {
+    auto r = std::make_unique<TSumAgr>();
     r->arg = arg->Clone();
     return r;
 }
@@ -78,8 +78,8 @@ Expected<IColumn> TCountAgr::ThrowRowGroup() {
     return std::make_shared<Ti64Column>(std::vector<i64>{ans});
 }
 
-std::shared_ptr<IOa> TCountAgr::Clone() {
-    auto r = std::make_shared<TCountAgr>();
+std::unique_ptr<IOa> TCountAgr::Clone() {
+    auto r = std::make_unique<TCountAgr>();
     r->arg = arg->Clone();
     return r;
 }
@@ -125,8 +125,8 @@ Expected<IColumn> TMinAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TMinAgr::Clone() {
-    auto r = std::make_shared<TMinAgr>();
+std::unique_ptr<IOa> TMinAgr::Clone() {
+    auto r = std::make_unique<TMinAgr>();
     r->arg = arg->Clone();
     return r;
 }
@@ -172,8 +172,8 @@ Expected<IColumn> TMaxAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TMaxAgr::Clone() {
-    auto r = std::make_shared<TMaxAgr>();
+std::unique_ptr<IOa> TMaxAgr::Clone() {
+    auto r = std::make_unique<TMaxAgr>();
     r->arg = arg->Clone();
     return r;
 }
@@ -188,8 +188,8 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp) {
     i64 len = 0;
 
     if (!inited) {
-        sum.AddArg(arg);
-        cnt.AddArg(arg);
+        sum.AddArg(arg->Clone());
+        cnt.AddArg(std::move(arg));
         inited = true;
     }
 
@@ -232,8 +232,8 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
     return std::make_shared<TDoubleColumn>(std::vector<ld>{avg});
 }
 
-std::shared_ptr<IOa> TAvgAgr::Clone() {
-    auto r = std::make_shared<TAvgAgr>();
+std::unique_ptr<IOa> TAvgAgr::Clone() {
+    auto r = std::make_unique<TAvgAgr>();
     r->arg = arg->Clone();
     return r;
 }
