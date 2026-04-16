@@ -2,6 +2,8 @@
 
 #include "../types/types.h"
 
+#include <nmmintrin.h>
+
 namespace JfEngine {
 
 struct OPrintIth {
@@ -45,7 +47,6 @@ struct OJfPrint {
     static inline void Exec(TCol& col, std::vector<StringVector>& out) {
         using T = typename TCol::ElemType;
         assert(col.GetSize() == out.size() && "cant print column");
-        
         for (ui64 i = 0; i < col.GetSize(); i++) {
             out[i].push_back_mcpy(col.GetData().data() + i, sizeof(T));
         }
@@ -60,6 +61,101 @@ struct OJfPrint {
     }
 };
 
+struct OEqualRow {
+    template <typename TCol>
+    static inline bool Exec(TCol& col, ui64 row, const StringVector& key, ui64 col_idx) {
+        using T = typename TCol::ElemType;
+
+        if (key.get_len(col_idx) != sizeof(T)) {
+            return false;
+        }
+
+        T lhs, rhs;
+        std::memcpy(&lhs, col.GetData().data() + row, sizeof(T));
+        std::memcpy(&rhs, key.data() + key.get_pos(col_idx), sizeof(T));
+        return (lhs == rhs);
+    }
+
+    static inline bool Exec(TStringColumn& col, ui64 row, const StringVector& key, ui64 col_idx) {
+        ui64 len = col.GetData().get_len(row);
+        if (len != key.get_len(col_idx)) {
+            return false;
+        }
+
+        return std::memcmp(
+            col.GetData().data() + col.GetData().get_pos(row),
+            key.data() + key.get_pos(col_idx),
+            len
+        ) == 0;
+    }
+};
+
+struct OHashInto {
+    template <typename TCol>
+    static inline void Exec(TCol& col, std::vector<ui64>& hashes) {
+        using T = typename TCol::ElemType;
+        const T* data = col.GetData().data();
+        const ui64 sz = col.GetSize();
+
+        for (ui64 i = 0; i < sz; i++) {
+            const char* p = reinterpret_cast<const char*>(data + i);
+            size_t len = sizeof(T);
+            ui64 h = hashes[i];
+
+            while (len >= 8) {
+                ui64 chunk;
+                std::memcpy(&chunk, p, 8);
+                h = _mm_crc32_u64(h, chunk);
+                p += 8; len -= 8;
+            }
+            while (len > 0) {
+                h = _mm_crc32_u8((ui32)h, *p++);
+                len--;
+            }
+            hashes[i] = h;
+        }
+    }
+
+    static inline void Exec(TStringColumn& col, std::vector<ui64>& hashes) {
+        const auto& sv = col.GetData();
+        const ui64 sz = col.GetSize();
+
+        for (ui64 i = 0; i < sz; i++) {
+            const char* p = sv.data() + sv.get_pos(i);
+            ui64 len = sv.get_len(i);
+            ui64 h = hashes[i];
+
+            h = _mm_crc32_u64(h, len);
+
+            while (len >= 8) {
+                ui64 chunk;
+                std::memcpy(&chunk, p, 8);
+                h = _mm_crc32_u64(h, chunk);
+                p += 8; len -= 8;
+            }
+            while (len > 0) {
+                h = _mm_crc32_u8((ui32)h, *p++);
+                len--;
+            }
+            hashes[i] = h;
+        }
+    }
+};
+
+struct OJfPrintRow {
+    template <typename TCol>
+    static inline void Exec(TCol& col, ui64 row, StringVector& out) {
+        using T = typename TCol::ElemType;
+        out.push_back_mcpy(col.GetData().data() + row, sizeof(T));
+    }
+
+    static inline void Exec(TStringColumn& col, ui64 row, StringVector& out) {
+        out.push_back_mcpy(
+            col.GetData().data() + col.GetData().get_pos(row),
+            col.GetData().get_len(row)
+        );
+    }
+};
 
 struct OJfPrintOpt {
     template <typename TCol>
