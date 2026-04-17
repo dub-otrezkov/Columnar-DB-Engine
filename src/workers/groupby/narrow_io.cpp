@@ -12,10 +12,16 @@ void TNarrowTableInput::Update(std::vector<TRowScheme>& scheme) {
     for (const auto& [name, _] : scheme_) {
         name_to_i_[name] = name_to_i_.size();
     }
-    buf_ = std::make_shared<std::vector<TColumnPtr>>(scheme_.size());
+    buf_ = std::allocate_shared<std::vector<TColumnPtr>>(ArenaAlloc(), scheme_.size());
 
     for (ui64 i = 0; i < scheme_.size(); i++) {
-        buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetShared();
+        // buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetShared();
+        // assert()
+        if (!buf_->at(i)) {
+            buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetShared();
+        } else {
+            Do<OClear>(buf_->at(i));
+        }
     }
 }
 

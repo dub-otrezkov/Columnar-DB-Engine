@@ -167,7 +167,15 @@ public:
         return data_.data();
     }
 
+    inline const char* data() const {
+        return data_.data();
+    }
+
     inline ui64* offsets_data() {
+        return offsets_.data();
+    }
+
+    inline const ui64* offsets_data() const {
         return offsets_.data();
     }
 

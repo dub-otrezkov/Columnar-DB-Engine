@@ -7,8 +7,6 @@
 
 namespace JfEngine {
 
-TGroupBy::THashMap JfEngine::TGroupBy::groups_;
-
 TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
     group_q_(std::move(query)),
@@ -21,7 +19,6 @@ TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQ
 Expected<void> TGroupBy::SetupColumnsScheme() {
     jf_in_->SetupColumnsScheme();
     groups_.clear();
-    std::vector<std::string> names(agr_q_.args.size());
     for (ui64 i = 0; i < scheme_.size(); i++) {
         scheme_[i].name_ = agr_q_.args[i]->GetName();
         scheme_[i].type_ = EColumn::kUnitialized;
@@ -33,7 +30,7 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
 }
 
 Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
-    bool run = 1;
+    bool run = true;
 
     if (name_to_i_.empty()) {
         for (const auto& k : jf_in_->GetScheme()) {
@@ -49,7 +46,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
 
         if (err2) {
             if (err2 == EError::EofErr) {
-                run = 0;
+                run = false;
             } else {
                 return err2;
             }
@@ -65,35 +62,42 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         }
 
         auto rg = *g;
-        auto sz = rg[0]->GetSize();
+        const ui64 sz = rg[0]->GetSize();
 
-        static std::vector<StringVector> printed;
-        printed.resize(sz);
-        for (ui64 i = 0; i < sz; i++) {
-            printed[i].clear();
+        row_hashes_.assign(sz, 0);
+        for (ui64 c = 0; c < rg.size(); c++) {
+            Do<OHashInto>(rg[c], row_hashes_);
         }
-        for (ui64 i = 0; i < rg.size(); i++) {
-            Do<OJfPrint>(rg[i], printed);
+        for (ui64 i = 0; i < sz; i++) {
+            row_hashes_[i] = Finalize(row_hashes_[i]);
         }
 
         for (ui64 i = 0; i < sz; i++) {
-            VectorStringHashed key(std::move(printed[i]));
+            RowView view{&rg, i, row_hashes_[i]};
+            auto it = groups_.find(view);
 
-            if (!groups_.contains(key)) {
-                if (group_q_.limit != kUnlimited && groups_.size() == group_q_.limit) {
+            if (it == groups_.end()) {
+                if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
                     continue;
                 }
-                groups_.emplace(key, TGroup{agr_q_.Clone()});
+
+                StringVector key_data;
+                key_data.reserve(rg.size());
+                for (ui64 c = 0; c < rg.size(); c++) {
+                    Do<OJfPrintRow>(rg[c], i, key_data);
+                }
+                VectorStringHashed key(std::move(key_data), row_hashes_[i]);
+                it = groups_.emplace(std::move(key), TGroup{agr_q_.Clone()}).first;
             }
-            assert(inp_.has_value());
+
             inp_->MoveCursor();
             inp_->UploadRowGroup(*ag, i);
-            groups_.at(key).eng->ConsumeRowGroup(&inp_.value());
+            it->second.eng->ConsumeRowGroup(&inp_.value());
         }
     }
 
     std::vector<TColumnPtr> ans(scheme_.size());
-    for (auto [_, value] : groups_) {
+    for (auto& [_, value] : groups_) {
         if (!ans[0]) {
             auto [t, _] = value.eng->ThrowRowGroup();
             ans = *t;
@@ -111,7 +115,6 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     }
 
     assert(ans.size() == GetScheme().size());
-
     return {std::move(ans), EError::EofErr};
 }
 

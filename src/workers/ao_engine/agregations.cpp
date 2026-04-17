@@ -75,7 +75,7 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
 }
 
 Expected<IColumn> TCountAgr::ThrowRowGroup() {
-    return std::make_shared<Ti64Column>(std::vector<i64>{ans});
+    return std::allocate_shared<Ti64Column>(ArenaAlloc(), std::vector<i64>{ans});
 }
 
 std::unique_ptr<IOa> TCountAgr::Clone() {
@@ -229,7 +229,7 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
 
     avg /= static_cast<ld>(static_cast<Ti64Column*>(cnt.ThrowRowGroup().GetShared().get())->GetData()[0]);
 
-    return std::make_shared<TDoubleColumn>(std::vector<ld>{avg});
+    return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), std::vector<ld>{avg});
 }
 
 std::unique_ptr<IOa> TAvgAgr::Clone() {

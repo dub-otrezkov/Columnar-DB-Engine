@@ -9,6 +9,8 @@
 namespace JfEngine {
 
 struct IAgregationOnly : public IOa {
+    virtual ~IAgregationOnly() = default;
+
     std::unique_ptr<IOa> arg;
     
     EAoType GetType() const override {

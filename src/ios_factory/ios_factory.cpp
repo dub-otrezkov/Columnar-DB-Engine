@@ -51,4 +51,9 @@ Expected<ITableInput> TIoFactory::GetTableIo(const std::string& alias) {
     return MakeError<EError::IoNotFoundErr>(alias);
 }
 
+void TIoFactory::Clear() {
+    auto i = Instance();
+    i->iotables_.clear();
+}
+
 } // namespace JfEngine
