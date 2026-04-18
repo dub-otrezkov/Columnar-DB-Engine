@@ -46,8 +46,8 @@ Expected<IColumn> TSumAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::unique_ptr<IOa> TSumAgr::Clone() {
-    auto r = std::make_unique<TSumAgr>();
+std::shared_ptr<IOa> TSumAgr::Clone() {
+    auto r = std::allocate_shared<TSumAgr>(ArenaAlloc());
     r->arg = arg->Clone();
     return r;
 }
@@ -78,8 +78,8 @@ Expected<IColumn> TCountAgr::ThrowRowGroup() {
     return std::allocate_shared<Ti64Column>(ArenaAlloc(), std::vector<i64>{ans});
 }
 
-std::unique_ptr<IOa> TCountAgr::Clone() {
-    auto r = std::make_unique<TCountAgr>();
+std::shared_ptr<IOa> TCountAgr::Clone() {
+    auto r = std::allocate_shared<TCountAgr>(ArenaAlloc());
     r->arg = arg->Clone();
     return r;
 }
@@ -125,8 +125,8 @@ Expected<IColumn> TMinAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::unique_ptr<IOa> TMinAgr::Clone() {
-    auto r = std::make_unique<TMinAgr>();
+std::shared_ptr<IOa> TMinAgr::Clone() {
+    auto r = std::allocate_shared<TMinAgr>(ArenaAlloc());
     r->arg = arg->Clone();
     return r;
 }
@@ -172,8 +172,8 @@ Expected<IColumn> TMaxAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::unique_ptr<IOa> TMaxAgr::Clone() {
-    auto r = std::make_unique<TMaxAgr>();
+std::shared_ptr<IOa> TMaxAgr::Clone() {
+    auto r = std::allocate_shared<TMaxAgr>(ArenaAlloc());
     r->arg = arg->Clone();
     return r;
 }
@@ -232,8 +232,8 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
     return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), std::vector<ld>{avg});
 }
 
-std::unique_ptr<IOa> TAvgAgr::Clone() {
-    auto r = std::make_unique<TAvgAgr>();
+std::shared_ptr<IOa> TAvgAgr::Clone() {
+    auto r = std::allocate_shared<TAvgAgr>(ArenaAlloc());
     r->arg = arg->Clone();
     return r;
 }

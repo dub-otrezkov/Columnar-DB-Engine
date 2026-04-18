@@ -23,6 +23,20 @@ struct OPushBackFrom {
     }
 };
 
+struct OPushBackFromBatch {
+    template<typename TCol>
+    static inline void Exec(TCol& from, TColumnPtr to, std::vector<ui64>& is) {
+        if (to->GetType() != from.GetType()) {
+            throw "bad arg";
+        }
+        from.GetData().reserve(from.GetData().size() + is.size());
+        for (const auto& i : is) {
+            assert(i < from.GetData().size());
+            OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);
+        }
+    }
+};
+
 // from, to
 struct OPushBackVector {
     template<typename TCol>

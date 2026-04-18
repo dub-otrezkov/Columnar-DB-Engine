@@ -23,7 +23,7 @@ namespace JfEngine {
 constexpr ui64 kUnlimited = -1;
 
 struct TGroupByQuery {
-    std::vector<std::unique_ptr<IOa>> cols;
+    std::vector<std::shared_ptr<IOa>> cols;
     ui64 limit = kUnlimited;
     bool is_id = false;
 };
@@ -146,13 +146,15 @@ private:
         return h;
     }
 
+    template<typename T>
     using THashMap = boost::unordered_flat_map<
-        VectorStringHashed, TGroup,
+        VectorStringHashed, T,
         VectorStringHasher,
         VectorStringEqual
     >;
 
-    THashMap groups_;
+    THashMap<std::vector<ui64>> keys;
+    THashMap<TGroup> groups_;
     std::optional<TNarrowTableInput> inp_;
     std::vector<StringVector> printed_;
     std::vector<ui64> row_hashes_;

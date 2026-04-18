@@ -13,7 +13,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
 
     bool next_alias = false;
 
-    std::vector<std::unique_ptr<IOa>> args;
+    std::vector<std::shared_ptr<IOa>> args;
     std::vector<IOa*> st;
 
     EAoEngineType etype = EAoEngineType::kOperator;
@@ -41,7 +41,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
 
-                auto node = std::make_unique<TColumnOp>(d);
+                auto node = std::allocate_shared<TColumnOp>(ArenaAlloc(), d);
 
                 auto ptr = node.get();
 
@@ -54,7 +54,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kSum: {
-                auto node = std::make_unique<TSumAgr>();
+                auto node = std::allocate_shared<TSumAgr>(ArenaAlloc());
                 etype = EAoEngineType::kAgregation;
 
                 auto ptr = node.get();
@@ -66,7 +66,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kCount: {
-                auto node = std::make_unique<TCountAgr>();
+                auto node = std::allocate_shared<TCountAgr>(ArenaAlloc());
                 etype = EAoEngineType::kAgregation;
 
                 auto ptr = node.get();
@@ -78,7 +78,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kAvg: {
-                auto node = std::make_unique<TAvgAgr>();
+                auto node = std::allocate_shared<TAvgAgr>(ArenaAlloc());
                 etype = EAoEngineType::kAgregation;
 
                 auto ptr = node.get();
@@ -90,7 +90,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMin: {
-                auto node = std::make_unique<TMinAgr>();
+                auto node = std::allocate_shared<TMinAgr>(ArenaAlloc());
                 etype = EAoEngineType::kAgregation;
 
                 auto ptr = node.get();
@@ -102,7 +102,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMax: {
-                auto node = std::make_unique<TMaxAgr>();
+                auto node = std::allocate_shared<TMaxAgr>(ArenaAlloc());
                 etype = EAoEngineType::kAgregation;
 
                 auto ptr = node.get();
@@ -114,7 +114,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kDistinct: {
-                auto node = std::make_unique<TDistinctOp>();
+                auto node = std::allocate_shared<TDistinctOp>(ArenaAlloc());
 
                 auto ptr = node.get();
 
@@ -129,7 +129,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kLength: {
-                auto node = std::make_unique<TLengthOp>();
+                auto node = std::allocate_shared<TLengthOp>(ArenaAlloc());
 
                 auto ptr = node.get();
 
@@ -144,7 +144,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kPlus: {
-                auto node = std::make_unique<TPlusOp>();
+                auto node = std::allocate_shared<TPlusOp>(ArenaAlloc());
 
                 auto ptr = node.get();
 
@@ -159,7 +159,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMinus: {
-                auto node = std::make_unique<TMinusOp>();
+                auto node = std::allocate_shared<TMinusOp>(ArenaAlloc());
 
                 auto ptr = node.get();
 

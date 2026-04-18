@@ -72,11 +72,13 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             row_hashes_[i] = Finalize(row_hashes_[i]);
         }
 
+        keys.clear();
+
         for (ui64 i = 0; i < sz; i++) {
             RowView view{&rg, i, row_hashes_[i]};
-            auto it = groups_.find(view);
+            auto it = keys.find(view);
 
-            if (it == groups_.end()) {
+            if (it == keys.end()) {
                 if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
                     continue;
                 }
@@ -87,11 +89,22 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                     Do<OJfPrintRow>(rg[c], i, key_data);
                 }
                 VectorStringHashed key(std::move(key_data), row_hashes_[i]);
-                it = groups_.emplace(std::move(key), TGroup{agr_q_.Clone()}).first;
+                it = keys.emplace(std::move(key), std::vector<ui64>(0)).first;
             }
+            it->second.push_back(i);
+            // inp_->MoveCursor();
+            // inp_->UploadRowGroup(*ag, i);
+            // it->second.eng->ConsumeRowGroup(&inp_.value());
+        }
 
+        for (auto& [key, is] : keys) {
             inp_->MoveCursor();
-            inp_->UploadRowGroup(*ag, i);
+            inp_->UploadRowGroup(*ag, is);
+
+            auto it = groups_.find(key);
+            if (it == groups_.end()) {
+                it = groups_.emplace(key, TGroup{agr_q_.Clone()}).first;
+            }
             it->second.eng->ConsumeRowGroup(&inp_.value());
         }
     }

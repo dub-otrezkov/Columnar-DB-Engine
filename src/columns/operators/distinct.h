@@ -5,6 +5,8 @@
 #include <unordered_set>
 #include <type_traits>
 
+#include <boost/unordered/unordered_flat_set.hpp>
+
 namespace JfEngine {
 
 struct ODistinct {
@@ -44,7 +46,7 @@ struct ODistinct {
 
 struct TDistinctSets {
     template <typename T>
-    using TSet = std::unordered_set<T>;
+    using TSet = boost::unordered_flat_set<T>;
 
     std::optional<TSet<i8>> i8_set;
     std::optional<TSet<i16>> i16_set;

@@ -18,6 +18,7 @@ TStringColumn::TStringColumn(StringVector data) {
 TStringColumn::TStringColumn(std::vector<std::string_view> data) {
     // cols_ = std::move(data);
     cols_.clear();
+    cols_.reserve(data.size());
     for (const auto& el : data) {
         cols_.push_back(std::string{el});
     }

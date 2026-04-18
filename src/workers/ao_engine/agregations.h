@@ -11,14 +11,18 @@ namespace JfEngine {
 struct IAgregationOnly : public IOa {
     virtual ~IAgregationOnly() = default;
 
-    std::unique_ptr<IOa> arg;
+    std::shared_ptr<IOa> arg;
     
     EAoType GetType() const override {
         return EAoType::kAgregation;
     }
 
-    inline void AddArg(std::unique_ptr<IOa> to_agr) override {
+    inline void AddArg(std::shared_ptr<IOa> to_agr) override {
         arg = std::move(to_agr);
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
     }
 };
 
@@ -27,7 +31,7 @@ struct TSumAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
+    std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -38,7 +42,7 @@ struct TMinAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
+    std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -49,7 +53,7 @@ struct TMaxAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
+    std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -60,7 +64,7 @@ struct TCountAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
+    std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -73,7 +77,7 @@ struct TAvgAgr : public IAgregationOnly {
     bool inited = false;
 
     std::string GetName() const override;
-    std::unique_ptr<IOa> Clone() override;
+    std::shared_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;

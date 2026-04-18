@@ -28,7 +28,7 @@ private:
         res_(buf_.get(), kBufSize)
     {}
 
-    std::unique_ptr<char[]> buf_;
+    std::shared_ptr<char[]> buf_;
     std::pmr::monotonic_buffer_resource res_;
 };
 
