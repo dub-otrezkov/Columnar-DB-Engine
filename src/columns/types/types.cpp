@@ -57,28 +57,28 @@ std::string TColumnToStr(EColumn data) {
 Expected<IColumn> MakeEmptyColumn(EColumn type) {
     switch (type) {
         case ki8Column: {
-            return std::make_shared<Ti8Column>();
+            return std::allocate_shared<Ti8Column>(ArenaAlloc());
         }
         case ki16Column: {
-            return std::make_shared<Ti16Column>();
+            return std::allocate_shared<Ti16Column>(ArenaAlloc());
         }
         case ki32Column: {
-            return std::make_shared<Ti32Column>();
+            return std::allocate_shared<Ti32Column>(ArenaAlloc());
         }
         case ki64Column: {
-            return std::make_shared<Ti64Column>();
+            return std::allocate_shared<Ti64Column>(ArenaAlloc());
         }
         case kDoubleColumn: {
-            return std::make_shared<TDoubleColumn>();
+            return std::allocate_shared<TDoubleColumn>(ArenaAlloc());
         }
         case kDateColumn: {
-            return std::make_shared<TDateColumn>();
+            return std::allocate_shared<TDateColumn>(ArenaAlloc());
         }
         case kTimestampColumn: {
-            return std::make_shared<TTimestampColumn>();
+            return std::allocate_shared<TTimestampColumn>(ArenaAlloc());
         }
         case kStringColumn: {
-            return std::make_shared<TStringColumn>();
+            return std::allocate_shared<TStringColumn>(ArenaAlloc());
         }
         default: {
             return MakeError<EError::UnsupportedErr>();
@@ -221,33 +221,32 @@ Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type) {
             return MakeError<EError::UnimplementedErr>();
         }
         case ki8Column: {
-            return std::make_shared<Ti8Column>(Unserialize<i8>(data));
+            return std::allocate_shared<Ti8Column>(ArenaAlloc(), Unserialize<i8>(data));
         }
         case ki16Column: {
-            return std::make_shared<Ti16Column>(Unserialize<i16>(data));
+            return std::allocate_shared<Ti16Column>(ArenaAlloc(), Unserialize<i16>(data));
         }
         case ki32Column: {
-            return std::make_shared<Ti32Column>(Unserialize<i32>(data));
+            return std::allocate_shared<Ti32Column>(ArenaAlloc(), Unserialize<i32>(data));
         }
         case ki64Column: {
-            return std::make_shared<Ti64Column>(Unserialize<i64>(data));
+            return std::allocate_shared<Ti64Column>(ArenaAlloc(), Unserialize<i64>(data));
         }
         case kDoubleColumn: {
-            return std::make_shared<TDoubleColumn>(Unserialize<ld>(data));
+            return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), Unserialize<ld>(data));
         }
         case kDateColumn: {
-            return std::make_shared<TDateColumn>(Unserialize<TDate>(data));
+            return std::allocate_shared<TDateColumn>(ArenaAlloc(), Unserialize<TDate>(data));
         }
         case kTimestampColumn: {
-            return std::make_shared<TTimestampColumn>(Unserialize<TTimestamp>(data));
+            return std::allocate_shared<TTimestampColumn>(ArenaAlloc(), Unserialize<TTimestamp>(data));
         }
         case kStringColumn: {
-            return std::make_shared<TStringColumn>(UnserializeString(data));
+            return std::allocate_shared<TStringColumn>(ArenaAlloc(), UnserializeString(data));
         }
         default: {
             throw "wtf???";
         }
-        
     }
 }
 

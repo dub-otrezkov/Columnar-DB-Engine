@@ -1,4 +1,4 @@
-link_libraries(errors_lib vectors_lib)
+link_libraries(errors_lib vectors_lib iworkers_lib)
 
 add_library(nodes_lib STATIC
     types/types.cpp

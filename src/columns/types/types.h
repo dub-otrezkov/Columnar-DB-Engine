@@ -1,5 +1,7 @@
 #pragma once
 
+#include "memory/arena.h"
+
 #include "utils/errors/errors_templates.h"
 #include "utils/faster_vectors/vector_string_2d.h"
 #include "utils/faster_vectors/vector_1d.h"
@@ -229,7 +231,7 @@ Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
-    auto res = std::make_shared<T>();
+    auto res = std::allocate_shared<T>(ArenaAlloc());
     auto t = res->Setup(std::move(data));
     if (t.HasError()) {
         return t.GetError();
@@ -239,7 +241,7 @@ Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
 
 template <typename T>
 Expected<IColumn> SetupColumn(const TVectorString2d& data, ui64 column_i) {
-    auto res = std::make_shared<T>();
+    auto res = std::allocate_shared<T>(ArenaAlloc());
     auto t = res->Setup(data, column_i);
     if (t.HasError()) {
         return t.GetError();

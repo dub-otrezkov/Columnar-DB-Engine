@@ -33,7 +33,7 @@ struct OApplyOrder {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             ans[i] = col.GetData()[order[i]];
         }
-        return std::make_shared<TCol>(ans);
+        return std::allocate_shared<TCol>(ArenaAlloc(), ans);
     }
 };
 

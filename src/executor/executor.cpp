@@ -11,7 +11,14 @@ namespace JfEngine {
 static const std::string kTmp1 = "tmp1";
 static const std::string kTmp2 = "tmp2";
 
+TExecutor::~TExecutor() {
+    TIoFactory::Clear();
+}
+
 Expected<void> TExecutor::ExecQuery(const std::string& query) {
+    TIoFactory::Clear();
+    TMemoryArena::Instance().Reset();
+
     auto [t, err1] = ParseCommand(query);
     if (err1 != EError::NoError) {
         return err1;
@@ -87,7 +94,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         return err3;
     }
 
-    return nullptr;
+    return EError::NoError;
 }
 
 } // namespace JfEngine

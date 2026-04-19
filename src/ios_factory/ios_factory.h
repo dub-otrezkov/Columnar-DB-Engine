@@ -39,6 +39,8 @@ public:
 
     static Expected<ITableInput> GetTableIo(const std::string& alias);
 
+    static void Clear();
+
 private:
     std::unordered_map<std::string, std::shared_ptr<std::iostream>> ios_;
     std::unordered_map<std::string, std::shared_ptr<ITableInput>> iotables_;
