@@ -9,6 +9,7 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += static_cast<i128>(col.GetData()[i]);
         }
+        // std::cout << "SUM: " << (i64)res << std::endl;
         return std::allocate_shared<Ti128Column>(ArenaAlloc(), std::vector<i128>{res});
     }
 
