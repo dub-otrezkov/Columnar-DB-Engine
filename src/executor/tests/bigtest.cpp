@@ -461,7 +461,7 @@ TEST_F(BigTest, GroupOrderWhere) {
 
     EXPECT_EQ(out_scheme->str(), R"(was,string
 COUNT(*),int64
-sum,int64
+sum,int128
 )");
     EXPECT_EQ(out_data->str(), R"(josh,100000,100000
 frusciante,100000,500000

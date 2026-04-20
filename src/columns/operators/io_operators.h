@@ -10,7 +10,6 @@ namespace JfEngine {
 struct OPrintIth {
     template <typename TCol>
     static inline std::string Exec(TCol& col, ui64 i) {
-        std::cout << "!::: " << col.GetType() << std::endl;
         auto res = col.GetData()[i];
         return std::to_string(res);
     }
@@ -19,9 +18,8 @@ struct OPrintIth {
         auto res = col.GetData()[i];
         std::string ans = "";
 
-        std::cout << "kkfkfkfkfkf" << std::endl;
-
-        if (res < 0) {
+        bool neg = (res < 0);
+        if (neg) {
             ans = "-";
             res = -res;
         }
@@ -29,7 +27,7 @@ struct OPrintIth {
             ans += ('0' + res % 10);
             res /= 10;
         }
-        std::reverse(ans.begin() + 1, ans.end());
+        std::reverse(ans.begin() + neg, ans.end());
         return ans;
     }
 
