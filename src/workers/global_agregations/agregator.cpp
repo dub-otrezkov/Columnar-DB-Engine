@@ -51,6 +51,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
                     if (err.GetError() == EError::EofErr) {
                         run = false;
                     } else {
+                        std::cout << "error here: " << err.GetError() << std::endl;
                         return err.GetError();
                     }
                 }

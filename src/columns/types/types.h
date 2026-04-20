@@ -21,6 +21,7 @@ const std::string ki8SchemeAlias = "int8";
 const std::string ki16SchemeAlias = "int16";
 const std::string ki32SchemeAlias = "int32";
 const std::string ki64SchemeAlias = "int64";
+const std::string ki128SchemeAlias = "int128";
 const std::string kStringSchemeAlias = "string";
 const std::string kDoubleSchemeAlias = "double";
 const std::string kDateSchemeAlias = "date";
@@ -33,6 +34,7 @@ enum EColumn {
     ki16Column,
     ki32Column,
     ki64Column,
+    ki128Column,
     kStringColumn,
     kDoubleColumn,
     kDateColumn,
@@ -120,6 +122,23 @@ public:
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
+};
+
+class Ti128Column : public TStorage<i128> {
+public:
+    Ti128Column() {}
+    Ti128Column(std::vector<i128> data);
+
+    EColumn GetType() const override;
+    Expected<void> Setup(std::vector<std::string>&& data) override;
+    Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
+private:
+    struct from_chars_result_128 {
+        const char* ptr;
+        std::errc ec;
+    };
+
+    static from_chars_result_128 from_chars(const char* first, const char* last, i128& value, int base = 10);
 };
 
 class TStringColumn : public TStorage<std::string> {

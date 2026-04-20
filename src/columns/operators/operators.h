@@ -26,6 +26,10 @@ auto Do(TColumnPtr col, Args&&... args) {
             return TOperator::Exec(*static_cast<Ti64Column*>(col.get()), std::forward<Args>(args)...);
             break;
         }
+        case ki128Column: {
+            return TOperator::Exec(*static_cast<Ti64Column*>(col.get()), std::forward<Args>(args)...);
+            break;
+        }
         case kDoubleColumn: {
             return TOperator::Exec(*static_cast<TDoubleColumn*>(col.get()), std::forward<Args>(args)...);
             break;

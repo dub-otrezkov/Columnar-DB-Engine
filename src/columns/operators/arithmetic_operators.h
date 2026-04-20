@@ -5,11 +5,11 @@ namespace JfEngine {
 struct OSum {
     template <typename T>
     static inline Expected<IColumn> Exec(T& col) {
-        i64 res = 0;
+        i128 res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData()[i];
+            res += static_cast<i128>(col.GetData()[i]);
         }
-        return std::allocate_shared<Ti64Column>(ArenaAlloc(), std::vector<i64>{res});
+        return std::allocate_shared<Ti128Column>(ArenaAlloc(), std::vector<i128>{res});
     }
 
     static inline Expected<IColumn> Exec(TDoubleColumn& col) {
@@ -44,14 +44,15 @@ struct OVerticalSum {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
         if (col2->GetType() != col1.GetType()) {
-            return MakeError<EError::BadArgsErr>("no addition between i8 and other type");
+            return MakeError<EError::BadArgsErr>(
+                "no addition between i8 and other type " + std::to_string(col1.GetType()) + " " + std::to_string(col2->GetType()));
         }
         auto col2_i = static_cast<T*>(col2.get());
-        std::vector<i64> ans;
+        std::vector<i128> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
         }
-        return std::allocate_shared<Ti64Column>(ArenaAlloc(), ans);
+        return std::allocate_shared<Ti128Column>(ArenaAlloc(), ans);
     }
 
     static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {

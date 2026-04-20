@@ -217,19 +217,19 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp) {
 }
 
 Expected<IColumn> TAvgAgr::ThrowRowGroup() {
-    ld avg = 0;
+    i128 avg = 0;
     auto [col, _] = sum.ThrowRowGroup();
-    if (col->GetType() == EColumn::ki64Column) {
-        avg = static_cast<Ti64Column*>(col.get())->GetData()[0];
+    if (col->GetType() == EColumn::ki128Column) {
+        avg = static_cast<Ti128Column*>(col.get())->GetData()[0];
     } else if (col->GetType() == EColumn::kDoubleColumn) {
         avg = static_cast<TDoubleColumn*>(col.get())->GetData()[0];
     } else {
         return MakeError<EError::BadArgsErr>("not an int column");
     }
 
-    avg /= static_cast<ld>(static_cast<Ti64Column*>(cnt.ThrowRowGroup().GetShared().get())->GetData()[0]);
+    avg /= static_cast<i128>(static_cast<Ti64Column*>(cnt.ThrowRowGroup().GetShared().get())->GetData()[0]);
 
-    return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), std::vector<ld>{avg});
+    return std::allocate_shared<Ti128Column>(ArenaAlloc(), std::vector<i128>{avg});
 }
 
 std::shared_ptr<IOa> TAvgAgr::Clone() {
