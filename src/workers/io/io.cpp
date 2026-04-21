@@ -208,7 +208,7 @@ Expected<IColumn> TJfTableInput::ReadColumn(const std::string& name) {
 
     static auto inds = name_to_index();
     if (name != "*" && inds.count(name) == 0) {
-        return EError::NoSuchColumnsErr;
+        return MakeError<EError::NoSuchColumnsErr>("no such column " + name);
     }
 
     if (current_block_ >= blocks_pos_.size()) {

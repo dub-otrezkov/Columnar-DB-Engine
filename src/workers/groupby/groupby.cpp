@@ -11,17 +11,25 @@ TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQ
     jf_in_(std::move(jf_in)),
     group_q_(std::move(query)),
     agr_q_(std::move(selects)),
-    gc_eng(MakeAoEngine(TAoQuery{std::move(group_q_.cols), {}, EAoEngineType::kAgregation}))
+    gc_eng(MakeAoEngine(TAoQuery{{}, std::move(group_q_.cols), {}, EAoEngineType::kAgregation}))
 {
-    scheme_.resize(agr_q_.args.size());
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
+    if (!scheme_.empty()) {
+        return EError::NoError;
+    }
     jf_in_->SetupColumnsScheme();
     groups_.clear();
-    for (ui64 i = 0; i < scheme_.size(); i++) {
-        scheme_[i].name_ = agr_q_.args[i]->GetName();
-        scheme_[i].type_ = EColumn::kUnitialized;
+    for (const auto& [i, j] : agr_q_.edges) {
+        agr_q_.args[i]->AddArg(agr_q_.args[j].get());
+    }
+    for (ui64 i = 0; i < agr_q_.args.size(); i++) {
+        // scheme_[i].name_ = agr_q_.args[i]->GetName();
+        // scheme_[i].type_ = EColumn::kUnitialized;
+        if (agr_q_.args[i]->is_final) {
+            scheme_.emplace_back(agr_q_.args[i]->GetName(), EColumn::kUnitialized);
+        }
     }
     for (auto& [i, name] : agr_q_.aliases) {
         scheme_[i].name_ = name;

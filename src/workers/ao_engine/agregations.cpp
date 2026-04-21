@@ -9,21 +9,12 @@
 namespace JfEngine {
 
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto err = arg->ConsumeRowGroup(inp);
-
-    bool is_eof = false;
-    if (err.GetError() != EError::NoError) {
-        if (EError::EofErr == err.GetError()) {
-            is_eof = true;
-        } else {
-            return err;
-        }
-    }
-
     auto [col, _] = arg->ThrowRowGroup();
 
     auto sum = Do<OSum>(col);
+
     if (sum.HasError()) {
+        std::cout << "summ err: " << sum.GetError() << std::endl;
         return sum.GetError();
     }
 
@@ -39,7 +30,7 @@ Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
         ans = tmp.GetShared();
     }
 
-    return (is_eof ? EError::EofErr : EError::NoError);
+    return EError::NoError;
 }
 
 Expected<IColumn> TSumAgr::ThrowRowGroup() {
@@ -48,7 +39,7 @@ Expected<IColumn> TSumAgr::ThrowRowGroup() {
 
 std::shared_ptr<IOa> TSumAgr::Clone() {
     auto r = std::allocate_shared<TSumAgr>(ArenaAlloc());
-    r->arg = arg->Clone();
+    r->is_final = is_final;
     return r;
 }
 
@@ -57,21 +48,11 @@ std::string TSumAgr::GetName() const {
 }
 
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto err = arg->ConsumeRowGroup(inp);
-    bool is_eof = false;
-    if (err.HasError()) {
-        if (err.GetError() == EError::EofErr) {
-            is_eof = true;
-        } else {
-            return err.GetError();
-        }
-    }
-
     auto [t, _] = arg->ThrowRowGroup();
 
     ans += t->GetSize();
 
-    return (is_eof ? EError::EofErr : EError::NoError);
+    return EError::NoError;
 }
 
 Expected<IColumn> TCountAgr::ThrowRowGroup() {
@@ -80,7 +61,7 @@ Expected<IColumn> TCountAgr::ThrowRowGroup() {
 
 std::shared_ptr<IOa> TCountAgr::Clone() {
     auto r = std::allocate_shared<TCountAgr>(ArenaAlloc());
-    r->arg = arg->Clone();
+    r->is_final = is_final;
     return r;
 }
 
@@ -89,16 +70,6 @@ std::string TCountAgr::GetName() const {
 }
 
 Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto err = arg->ConsumeRowGroup(inp);
-    bool is_eof = false;
-    if (err.GetError() != EError::NoError) {
-        if (EError::EofErr == err.GetError()) {
-            is_eof = true;
-        } else {
-            return err;
-        }
-    }
-
     auto [col, _] = arg->ThrowRowGroup();
 
     auto sum = Do<OMin>(col);
@@ -118,7 +89,7 @@ Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
         ans = tmp.GetShared();
     }
 
-    return (is_eof ? EError::EofErr : EError::NoError);
+    return EError::NoError;
 }
 
 Expected<IColumn> TMinAgr::ThrowRowGroup() {
@@ -127,7 +98,7 @@ Expected<IColumn> TMinAgr::ThrowRowGroup() {
 
 std::shared_ptr<IOa> TMinAgr::Clone() {
     auto r = std::allocate_shared<TMinAgr>(ArenaAlloc());
-    r->arg = arg->Clone();
+    r->is_final = is_final;
     return r;
 }
 
@@ -136,16 +107,6 @@ std::string TMinAgr::GetName() const {
 }
 
 Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto err = arg->ConsumeRowGroup(inp);
-    bool is_eof = false;
-    if (err.GetError() != EError::NoError) {
-        if (EError::EofErr == err.GetError()) {
-            is_eof = true;
-        } else {
-            return err;
-        }
-    }
-
     auto [col, _] = arg->ThrowRowGroup();
 
     auto sum = Do<OMax>(col);
@@ -165,7 +126,7 @@ Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
         ans = tmp.GetShared();
     }
 
-    return (is_eof ? EError::EofErr : EError::NoError);
+    return EError::NoError;
 }
 
 Expected<IColumn> TMaxAgr::ThrowRowGroup() {
@@ -174,7 +135,7 @@ Expected<IColumn> TMaxAgr::ThrowRowGroup() {
 
 std::shared_ptr<IOa> TMaxAgr::Clone() {
     auto r = std::allocate_shared<TMaxAgr>(ArenaAlloc());
-    r->arg = arg->Clone();
+    r->is_final = is_final;
     return r;
 }
 
@@ -188,32 +149,16 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp) {
     i64 len = 0;
 
     if (!inited) {
-        sum.AddArg(arg->Clone());
-        cnt.AddArg(std::move(arg));
+        sum.AddArg(arg);
+        cnt.AddArg(arg);
         inited = true;
     }
 
-    bool is_eof = false;
-
     auto sum_col = sum.ConsumeRowGroup(inp);
-    if (sum_col.HasError()) {
-        if (sum_col.GetError() == EError::EofErr) {
-            is_eof = true;
-        } else {
-            return sum_col.GetError();
-        }
-    }
 
     auto cnt_col = cnt.ConsumeRowGroup(inp);
-    if (cnt_col.HasError()) {
-        if (cnt_col.GetError() == EError::EofErr) {
-            is_eof = true;
-        } else {
-            return cnt_col.GetError();
-        }
-    }
 
-    return (is_eof ? EError::EofErr : EError::NoError);
+    return EError::NoError;
 }
 
 Expected<IColumn> TAvgAgr::ThrowRowGroup() {
@@ -234,7 +179,7 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
 
 std::shared_ptr<IOa> TAvgAgr::Clone() {
     auto r = std::allocate_shared<TAvgAgr>(ArenaAlloc());
-    r->arg = arg->Clone();
+    r->is_final = is_final;
     return r;
 }
 

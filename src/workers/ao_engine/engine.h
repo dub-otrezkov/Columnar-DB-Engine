@@ -7,12 +7,34 @@ namespace JfEngine {
 
 struct TAgregationQuery {
     std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::pair<ui64, ui64>> edges;
+
+    TAgregationQuery() {}
+
+    TAgregationQuery(
+        std::vector<std::shared_ptr<IOa>> cols_,
+        std::vector<std::pair<ui64, ui64>> edges_
+    ) :
+        cols(std::move(cols_)),
+        edges(std::move(edges_))
+    {}
 
     TAgregationQuery Clone();
 };
 
 struct TOperatorQuery {
     std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::pair<ui64, ui64>> edges;
+
+    TOperatorQuery() {}
+
+    TOperatorQuery(
+        std::vector<std::shared_ptr<IOa>> cols_,
+        std::vector<std::pair<ui64, ui64>> edges_
+    ) :
+        cols(std::move(cols_)),
+        edges(std::move(edges_))
+    {}
 
     TOperatorQuery Clone();
 };
@@ -23,15 +45,18 @@ enum class EAoEngineType {
 };
 
 struct TAoQuery {
+    std::vector<std::pair<ui64, ui64>> edges;
     std::vector<std::shared_ptr<IOa>> args;
     std::vector<std::pair<ui64, std::string>> aliases;
     EAoEngineType tp;
 
     TAoQuery(
+        std::vector<std::pair<ui64, ui64>> e,
         std::vector<std::shared_ptr<IOa>> a, 
         std::vector<std::pair<ui64, std::string>> b,
         EAoEngineType c
     ) :
+        edges(std::move(e)),
         args(std::move(a)),
         aliases(std::move(b)),
         tp(c)

@@ -16,6 +16,9 @@ struct OPrintIth {
 
     static inline std::string Exec(Ti128Column& col, ui64 i) {
         auto res = col.GetData()[i];
+        if (res == 0) {
+            return "0";
+        }
         std::string ans = "";
 
         bool neg = (res < 0);
