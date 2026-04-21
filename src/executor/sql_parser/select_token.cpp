@@ -5,6 +5,8 @@
 
 #include <functional>
 
+#include <boost/unordered/unordered_flat_map.hpp>
+
 namespace JfEngine {
 
 TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
@@ -208,9 +210,25 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
         all[i]->AddArg(all[j].get());
     }
 
+    boost::unordered_flat_map<std::string, ui64> alias;
+    std::vector<std::shared_ptr<IOa>> fin;
+    for (ui64 i = 0; i < all.size(); i++) {
+        if (!alias.contains(all[i]->GetName())) {
+            alias.emplace(all[i]->GetName(), fin.size());
+            fin.push_back(all[i]->Clone());
+        }
+    }
+
+    for (auto& [i, j] : eds) {
+        i = alias.at(all[i]->GetName());
+        j = alias.at(all[j]->GetName());
+
+        fin[i]->AddArg(fin[j].get());
+    }
+
     return TAoQuery{
         std::move(eds),
-        std::move(all),
+        std::move(fin),
         std::move(aliases),
         etype
     };

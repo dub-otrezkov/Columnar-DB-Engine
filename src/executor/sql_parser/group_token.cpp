@@ -33,19 +33,21 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     for (const auto& [p, c] : selects_.edges) {
         adj[p].push_back(c);
     }
-    std::vector<bool> in_agr_subtree(selects_.args.size(), false);
+    std::vector<bool> in_op_subtree(selects_.args.size(), false);
     {
         std::vector<ui64> stack;
         for (ui64 k = 0; k < selects_.args.size(); k++) {
-            if (selects_.args[k]->GetType() == EAoType::kAgregation) {
+            if (selects_.args[k]->is_final && selects_.args[k]->GetType() != EAoType::kAgregation) {
                 stack.push_back(k);
             }
         }
         while (!stack.empty()) {
             ui64 v = stack.back();
             stack.pop_back();
-            if (in_agr_subtree[v]) continue;
-            in_agr_subtree[v] = true;
+            if (in_op_subtree[v]) {
+                continue;
+            }
+            in_op_subtree[v] = true;
             for (ui64 u : adj[v]) {
                 stack.push_back(u);
             }
@@ -55,7 +57,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     boost::unordered_flat_set<std::string> used;
     for (ui64 i = 0; i < selects_.args.size(); i++) {
         auto& col = selects_.args[i];
-        if (!col->is_final && in_agr_subtree[i]) {
+        if (!col->is_final && !in_op_subtree[i]) {
             continue;
         }
         if (col->GetType() == EAoType::kOperator) {
@@ -76,7 +78,8 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
 
             col_n->is_final = col->is_final;
 
-            std::swap(col, col_n);
+            // std::swap(col, col_n);
+            col.swap(col_n);
             used.insert(col_n->GetName());
             qop.args.push_back(std::move(col_n));
         } else {
