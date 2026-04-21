@@ -125,7 +125,7 @@ std::shared_ptr<IAoEngine> TOperatorEngine::Clone() {
     for (ui64 i = 0; i < names.size(); i++) {
         cnames.emplace_back(i, names[i]);
     }
-    return std::allocate_shared<TOperatorEngine>(ArenaAlloc(), q_.Clone(), std::move(cnames));
+    return std::make_shared<TOperatorEngine>(q_.Clone(), std::move(cnames));
 }
 
 std::shared_ptr<IAoEngine> TAgregationEngine::Clone() {
@@ -134,7 +134,7 @@ std::shared_ptr<IAoEngine> TAgregationEngine::Clone() {
     for (ui64 i = 0; i < names.size(); i++) {
         cnames.emplace_back(i, names[i]);
     }
-    return std::allocate_shared<TAgregationEngine>(ArenaAlloc(), q_.Clone(), std::move(cnames));
+    return std::make_shared<TAgregationEngine>(q_.Clone(), std::move(cnames));
 }
 
 std::vector<std::string>& TAgregationEngine::GetNames() {
@@ -169,14 +169,12 @@ std::vector<std::string>& TOperatorEngine::GetNames() {
 
 std::shared_ptr<IAoEngine> MakeAoEngine(TAoQuery q) {
     if (q.tp == EAoEngineType::kAgregation) {
-        return std::allocate_shared<TAgregationEngine>(
-            ArenaAlloc(),
+        return std::make_shared<TAgregationEngine>(
             TAgregationQuery{std::move(q.args), std::move(q.edges)},
             std::move(q.aliases)
         );
     } else { // q.operators.has_value()
-        return std::allocate_shared<TOperatorEngine>(
-            ArenaAlloc(),
+        return std::make_shared<TOperatorEngine>(
             TOperatorQuery{std::move(q.args), std::move(q.edges)},
             std::move(q.aliases)
         );

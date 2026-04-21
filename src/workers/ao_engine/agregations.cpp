@@ -37,7 +37,7 @@ Expected<IColumn> TSumAgr::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TSumAgr::Clone() {
-    auto r = std::allocate_shared<TSumAgr>(ArenaAlloc());
+    auto r = std::make_shared<TSumAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -55,11 +55,11 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
 }
 
 Expected<IColumn> TCountAgr::ThrowRowGroup() {
-    return std::allocate_shared<Ti64Column>(ArenaAlloc(), std::vector<i64>{ans});
+    return std::make_shared<Ti64Column>(std::vector<i64>{ans});
 }
 
 std::shared_ptr<IOa> TCountAgr::Clone() {
-    auto r = std::allocate_shared<TCountAgr>(ArenaAlloc());
+    auto r = std::make_shared<TCountAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -96,7 +96,7 @@ Expected<IColumn> TMinAgr::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TMinAgr::Clone() {
-    auto r = std::allocate_shared<TMinAgr>(ArenaAlloc());
+    auto r = std::make_shared<TMinAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -133,7 +133,7 @@ Expected<IColumn> TMaxAgr::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TMaxAgr::Clone() {
-    auto r = std::allocate_shared<TMaxAgr>(ArenaAlloc());
+    auto r = std::make_shared<TMaxAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -173,11 +173,11 @@ Expected<IColumn> TAvgAgr::ThrowRowGroup() {
 
     avg /= static_cast<i128>(static_cast<Ti64Column*>(cnt.ThrowRowGroup().GetShared().get())->GetData()[0]);
 
-    return std::allocate_shared<Ti128Column>(ArenaAlloc(), std::vector<i128>{avg});
+    return std::make_shared<Ti128Column>(std::vector<i128>{avg});
 }
 
 std::shared_ptr<IOa> TAvgAgr::Clone() {
-    auto r = std::allocate_shared<TAvgAgr>(ArenaAlloc());
+    auto r = std::make_shared<TAvgAgr>();
     r->is_final = is_final;
     return r;
 }

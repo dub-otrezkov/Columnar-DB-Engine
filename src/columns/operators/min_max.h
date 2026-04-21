@@ -14,7 +14,7 @@ struct OMin {
         for (ui64 i = 1; i < col.GetSize(); i++) {
             res = std::min(res, col.GetData()[i]);
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::vector<T>{res});
+        return std::make_shared<TCol>(std::vector<T>{res});
     }
 };
 
@@ -34,7 +34,7 @@ struct OVerticalMin {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(std::min(col1.GetData()[i], col2_i->GetData()[i]));
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::move(ans));
+        return std::make_shared<TCol>(std::move(ans));
     }
 };
 
@@ -48,7 +48,7 @@ struct OMax {
         for (ui64 i = 1; i < col.GetSize(); i++) {
             res = std::max(res, col.GetData()[i]);
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::vector<T>{res});
+        return std::make_shared<TCol>(std::vector<T>{res});
     }
 };
 
@@ -68,7 +68,7 @@ struct OVerticalMax {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(std::max(col1.GetData()[i], col2_i->GetData()[i]));
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::move(ans));
+        return std::make_shared<TCol>(std::move(ans));
     }
 };
 
