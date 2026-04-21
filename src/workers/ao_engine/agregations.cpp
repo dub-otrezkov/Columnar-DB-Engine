@@ -14,7 +14,6 @@ Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
     auto sum = Do<OSum>(col);
 
     if (sum.HasError()) {
-        std::cout << "summ err: " << sum.GetError() << std::endl;
         return sum.GetError();
     }
 

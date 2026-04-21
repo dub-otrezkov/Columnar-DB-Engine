@@ -16,7 +16,7 @@ struct OPushBackFrom {
     template<typename TCol>
     static inline void Exec(TCol& from, TColumnPtr to, i64 i) {
         if (to->GetType() != from.GetType()) {
-            std::cout << "err here: " << to->GetType() << " " << from.GetType() << std::endl;
+            // std::cout << "err here: " << to->GetType() << " " << from.GetType() << std::endl;
             throw "bad arg";
         }
         OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);

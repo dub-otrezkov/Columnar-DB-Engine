@@ -49,7 +49,6 @@ Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
 
 
     for (ui64 i = 1; i < args.size(); i++) {
-        std::cout << ans_ << " " << _ << " -> " << " " << args[0] << " " << args[i]->GetName() << std::endl;
         auto [c, err2] = Do<OSubConst>(ans_, args[i]->GetName());
         ans_ = std::move(c);
     }
@@ -107,13 +106,10 @@ TColumnOp::TColumnOp(std::string name_) :
 Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp) {
     auto [ans_, err] = inp->ReadColumn(name);
     ans = ans_;
-
-    std::cout << "!!!% " << ans << " " << err << " " << static_cast<IOa*>(this) << std::endl;
     return err;
 }
 
 Expected<IColumn> TColumnOp::ThrowRowGroup() {
-    std::cout << "name: " << name << std::endl;
     return ans;
 }
 

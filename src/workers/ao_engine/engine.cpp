@@ -75,7 +75,7 @@ Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
             if (err.GetError() == EError::EofErr) {
                 is_eof = true;
             } else if (c->is_final) {
-                std::cout << "GOT ERR:" << " " << err.GetError() << std::endl;
+                // std::cout << "GOT ERR:" << " " << err.GetError() << std::endl;
                 return err.GetError();
             }
         }
