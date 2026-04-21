@@ -21,12 +21,7 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     }
     jf_in_->SetupColumnsScheme();
     groups_.clear();
-    for (const auto& [i, j] : agr_q_.edges) {
-        agr_q_.args[i]->AddArg(agr_q_.args[j].get());
-    }
     for (ui64 i = 0; i < agr_q_.args.size(); i++) {
-        // scheme_[i].name_ = agr_q_.args[i]->GetName();
-        // scheme_[i].type_ = EColumn::kUnitialized;
         if (agr_q_.args[i]->is_final) {
             scheme_.emplace_back(agr_q_.args[i]->GetName(), EColumn::kUnitialized);
         }

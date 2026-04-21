@@ -32,9 +32,6 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     ui64 i = 0;
     boost::unordered_flat_set<std::string> used;
     for (auto& col : selects_.args) {
-        if (!col->is_final) {
-            continue;
-        }
         if (col->GetType() == EAoType::kOperator) {
             std::shared_ptr<IOa> col_n = nullptr;
             ui64 k = 0;
@@ -51,16 +48,14 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
                 col_n = std::allocate_shared<TColumnOp>(ArenaAlloc(), col->GetName());
             }
 
-            if (col->is_final) {
-                col_n->is_final = true;
-            }
+            col_n->is_final = col->is_final;
 
             std::swap(col, col_n);
             used.insert(col_n->GetName());
             qop.args.push_back(std::move(col_n));
         } else {
             qop.args.push_back(std::allocate_shared<TColumnOp>(ArenaAlloc(), col->GetColumn()));
-            qop.args.back()->is_final = true;
+            qop.args.back()->is_final = col->is_final;
             used.insert(qop.args.back()->GetName());
         }
         i++;
@@ -68,16 +63,11 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
 
     for (auto& agr : query.cols) {
         auto name = agr->GetName();
-        std::cout << name << std::endl;
         if (as.contains(name) || used.contains(name) || name == "*") {
             continue;
         }
         qop.args.push_back(std::make_shared<TColumnOp>(name));
         used.insert(qop.args.back()->GetName());
-    }
-
-    for (auto& p : query.cols) {
-        p->is_final = true;
     }
 
     return std::make_shared<TGroupBy>(
