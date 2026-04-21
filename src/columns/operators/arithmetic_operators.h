@@ -9,7 +9,7 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += static_cast<i128>(col.GetData()[i]);
         }
-        return std::allocate_shared<Ti128Column>(ArenaAlloc(), std::vector<i128>{res});
+        return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
 
     static inline Expected<IColumn> Exec(TDoubleColumn& col) {
@@ -17,7 +17,7 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
         }
-        return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), std::vector<ld>{res});
+        return std::make_shared<TDoubleColumn>(std::vector<ld>{res});
     }
 
     static inline Expected<IColumn> Exec(TDateColumn& col) {
@@ -33,7 +33,7 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
         }
-        return std::allocate_shared<TStringColumn>(ArenaAlloc(), std::vector<std::string>{res});
+        return std::make_shared<TStringColumn>(std::vector<std::string>{res});
     }
 };
 
@@ -52,7 +52,7 @@ struct OVerticalSum {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
         }
-        return std::allocate_shared<Ti128Column>(ArenaAlloc(), ans);
+        return std::make_shared<Ti128Column>(ans);
     }
 
     static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
@@ -67,7 +67,7 @@ struct OVerticalSum {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
         }
-        return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), ans);
+        return std::make_shared<TDoubleColumn>(ans);
     }
 
     static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
@@ -90,7 +90,7 @@ struct OVerticalSum {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
         }
-        return std::allocate_shared<TStringColumn>(ArenaAlloc(), ans);
+        return std::make_shared<TStringColumn>(ans);
     }
 };
 
@@ -108,7 +108,7 @@ struct OVerticalSub {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
         }
-        return std::allocate_shared<Ti64Column>(ArenaAlloc(), ans);
+        return std::make_shared<Ti64Column>(ans);
     }
 
     static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
@@ -123,7 +123,7 @@ struct OVerticalSub {
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
         }
-        return std::allocate_shared<TDoubleColumn>(ArenaAlloc(), ans);
+        return std::make_shared<TDoubleColumn>(ans);
     }
 
     static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
@@ -145,7 +145,7 @@ struct OLength {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             ans[i] = col.GetData()[i].size();
         }
-        return std::allocate_shared<Ti64Column>(ArenaAlloc(), std::move(ans));
+        return std::make_shared<Ti64Column>(std::move(ans));
     }
 
     template<typename T>

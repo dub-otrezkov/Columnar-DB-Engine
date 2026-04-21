@@ -232,7 +232,7 @@ struct OFilter {
                 vals.push_back(col.GetData()[i]);
             }
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::move(vals));
+        return std::make_shared<TCol>(std::move(vals));
     }
 };
 

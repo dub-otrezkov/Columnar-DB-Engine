@@ -46,7 +46,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
 
-                obs.push_back(std::allocate_shared<TColumnOp>(ArenaAlloc(), d));
+                obs.push_back(std::make_shared<TColumnOp>(d));
 
                 if (!st.empty()) {
                     // st.back()->AddArg(obs.size() - 1);
@@ -58,7 +58,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kSum: {
-                obs.push_back(std::allocate_shared<TSumAgr>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TSumAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -68,7 +68,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kCount: {
-                obs.push_back(std::allocate_shared<TCountAgr>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TCountAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -78,7 +78,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kAvg: {
-                obs.push_back(std::allocate_shared<TAvgAgr>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TAvgAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -88,7 +88,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMin: {
-                obs.push_back(std::allocate_shared<TMinAgr>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TMinAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -98,7 +98,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMax: {
-                obs.push_back(std::allocate_shared<TMaxAgr>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TMaxAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -108,7 +108,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kDistinct: {
-                obs.push_back(std::allocate_shared<TDistinctOp>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TDistinctOp>());
 
                 if (!st.empty()) {
                     // st.back()->AddArg(obs.size() - 1);
@@ -122,7 +122,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kLength: {
-                obs.push_back(std::allocate_shared<TLengthOp>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TLengthOp>());
 
                 if (!st.empty()) {
                     // st.back()->AddArg(obs.size() - 1);
@@ -136,7 +136,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kPlus: {
-                obs.push_back(std::allocate_shared<TPlusOp>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TPlusOp>());
 
                 if (!st.empty()) {
                     // st.back()->AddArg(obs.size() - 1);
@@ -150,7 +150,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
                 break;
             }
             case ETokens::kMinus: {
-                obs.push_back(std::allocate_shared<TMinusOp>(ArenaAlloc()));
+                obs.push_back(std::make_shared<TMinusOp>());
 
                 if (!st.empty()) {
                     // st.back()->AddArg(obs.size() - 1);

@@ -26,7 +26,7 @@ Expected<IColumn> TPlusOp::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TPlusOp::Clone() {
-    auto r = std::allocate_shared<TPlusOp>(ArenaAlloc());
+    auto r = std::make_shared<TPlusOp>();
     r->is_final = is_final;
     return std::move(r);
 }
@@ -59,7 +59,7 @@ Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
 }
 
 std::shared_ptr<IOa> TMinusOp::Clone() {
-    auto r = std::allocate_shared<TMinusOp>(ArenaAlloc());
+    auto r = std::make_shared<TMinusOp>();
     r->is_final = is_final;
     return std::move(r);
 }
@@ -90,7 +90,7 @@ Expected<IColumn> TLengthOp::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TLengthOp::Clone() {
-    auto r = std::allocate_shared<TLengthOp>(ArenaAlloc());
+    auto r = std::make_shared<TLengthOp>();
     r->is_final = is_final;
     return std::move(r);
 }
@@ -114,7 +114,7 @@ Expected<IColumn> TColumnOp::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TColumnOp::Clone() {
-    auto r = std::allocate_shared<TColumnOp>(ArenaAlloc(), name);
+    auto r = std::make_shared<TColumnOp>(name);
     r->is_final = is_final;
     return std::move(r);
 }
@@ -134,7 +134,7 @@ Expected<IColumn> TDistinctOp::ThrowRowGroup() {
 }
 
 std::shared_ptr<IOa> TDistinctOp::Clone() {
-    auto r = std::allocate_shared<TDistinctOp>(ArenaAlloc());
+    auto r = std::make_shared<TDistinctOp>();
     r->is_final = is_final;
     return std::move(r);
 }

@@ -249,7 +249,7 @@ Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type);
 
 template <typename T>
 Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
-    auto res = std::allocate_shared<T>(ArenaAlloc());
+    auto res = std::make_shared<T>();
     auto t = res->Setup(std::move(data));
     if (t.HasError()) {
         return t.GetError();
@@ -259,7 +259,7 @@ Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
 
 template <typename T>
 Expected<IColumn> SetupColumn(const TVectorString2d& data, ui64 column_i) {
-    auto res = std::allocate_shared<T>(ArenaAlloc());
+    auto res = std::make_shared<T>();
     auto t = res->Setup(data, column_i);
     if (t.HasError()) {
         return t.GetError();

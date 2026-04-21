@@ -64,7 +64,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
             ui64 k = 0;
             for (const auto& [j, name] : selects_.aliases) {
                 if (j == i) {
-                    col_n = std::allocate_shared<TColumnOp>(ArenaAlloc(), name);
+                    col_n = std::make_shared<TColumnOp>(name);
                     qop.aliases.emplace_back(j, name);
                     selects_.aliases.erase(selects_.aliases.begin() + k);
                     break;
@@ -72,7 +72,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
                 k++;
             }
             if (!col_n) {
-                col_n = std::allocate_shared<TColumnOp>(ArenaAlloc(), col->GetName());
+                col_n = std::make_shared<TColumnOp>(col->GetName());
             }
 
             col_n->is_final = col->is_final;
@@ -82,7 +82,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
             used.insert(col_n->GetName());
             qop.args.push_back(std::move(col_n));
         } else {
-            qop.args.push_back(std::allocate_shared<TColumnOp>(ArenaAlloc(), col->GetColumn()));
+            qop.args.push_back(std::make_shared<TColumnOp>(col->GetColumn()));
             qop.args.back()->is_final = col->is_final;
             used.insert(qop.args.back()->GetName());
         }

@@ -30,7 +30,7 @@ struct ODistinct {
         for (auto i : dist) {
             ans.push_back(i);
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::move(ans));
+        return std::make_shared<TCol>(std::move(ans));
     }
 
     static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
@@ -107,7 +107,7 @@ struct ODistinctStreamV {
                 ans.push_back(col1.GetData()[i]);
             }
         }
-        return std::allocate_shared<TCol>(ArenaAlloc(), std::move(ans));
+        return std::make_shared<TCol>(std::move(ans));
     }
 
     static inline Expected<IColumn> Exec(TDateColumn& col, TDistinctSets& st) {
