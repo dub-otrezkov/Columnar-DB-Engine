@@ -20,7 +20,7 @@ void TNarrowTableInput::Update(std::vector<TRowScheme>& scheme) {
 }
 
 Expected<void> TNarrowTableInput::SetupColumnsScheme() {
-    throw "dont do that";
+    return EError::NoError;
 }
 
 void TNarrowTableInput::MoveCursor() {
@@ -37,10 +37,6 @@ Expected<std::vector<TColumnPtr>> TNarrowTableInput::LoadRowGroup() {
 
 void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, std::vector<ui64>& row_i) {
     ui64 i = 0;
-    // for (auto el : row_i) {
-    //     std::cout << el << " ";
-    // }
-    // std::cout << "| " << row_group.size() << " " << row_group[0]->GetSize() << " " << row_i.size() << std::endl;
     for (auto& col : row_group) {
         Do<OPushBackFromBatch>(col, buf_->at(i++), row_i);
     }

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include <boost/unordered/unordered_flat_map.hpp>
+
 namespace JfEngine {
 
 struct TRowScheme {
@@ -13,7 +15,7 @@ struct TRowScheme {
     EColumn type_;
 };
 
-const ui64 kRowGroupLen = 10000;
+const ui64 kRowGroupLen = 100000;
 
 class ITableInput {
 public:
@@ -36,7 +38,7 @@ protected:
     std::vector<TRowScheme> scheme_;
     ui64 row_group_len_;
 
-    std::unordered_map<std::string, ui64> name_to_i_;
+    std::unordered_map<std::string_view, ui64> name_to_i_;
 };
 
 } // namespace JfEngine

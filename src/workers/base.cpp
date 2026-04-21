@@ -21,7 +21,7 @@ Expected<IColumn> ITableInput::ReadColumn(const std::string& name) {
     }
 
     if (name_to_i_.empty()) {
-        for (auto [name, _] : scheme_) {
+        for (const auto& [name, _] : scheme_) {
             name_to_i_[name] = name_to_i_.size();
         }
     }

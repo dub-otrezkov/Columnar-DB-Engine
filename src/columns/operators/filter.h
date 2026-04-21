@@ -97,19 +97,19 @@ struct OFilterCheck {
         switch (op) {
             case EFilterType::kEq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] == value));
+                    ans[i] = (ans[i] ^ (col.GetData().ro_at(i) == value));
                 }
                 break;
             }
             case EFilterType::kLess: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] < value));
+                    ans[i] = (ans[i] ^ (col.GetData().ro_at(i) < value));
                 }
                 break;
             }
             case EFilterType::kLeq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] <= value));
+                    ans[i] = (ans[i] ^ (col.GetData().ro_at(i) <= value));
                 }
                 break;
             }
@@ -123,7 +123,7 @@ struct OFilterCheck {
                         ans[i] = ans[i] ^ 1;
                         continue;
                     }
-                    auto s = col.GetData()[i];
+                    auto s = col.GetData().ro_at(i);
                     std::vector<i64> pf(value.size(), 0);
                     i64 st = 0;
 

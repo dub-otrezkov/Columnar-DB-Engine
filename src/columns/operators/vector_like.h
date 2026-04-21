@@ -16,7 +16,6 @@ struct OPushBackFrom {
     template<typename TCol>
     static inline void Exec(TCol& from, TColumnPtr to, i64 i) {
         if (to->GetType() != from.GetType()) {
-            // std::cout << "err here: " << to->GetType() << " " << from.GetType() << std::endl;
             throw "bad arg";
         }
         OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);
@@ -29,10 +28,11 @@ struct OPushBackFromBatch {
         if (to->GetType() != from.GetType()) {
             throw "bad arg";
         }
-        from.GetData().reserve(from.GetData().size() + is.size());
+        auto& t = *static_cast<TCol*>(to.get());
+        t.GetData().reserve(t.GetData().size() + is.size());
         for (const auto& i : is) {
             assert(i < from.GetData().size());
-            OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);
+            OPushBack::Exec(t, from.GetData()[i]);
         }
     }
 };

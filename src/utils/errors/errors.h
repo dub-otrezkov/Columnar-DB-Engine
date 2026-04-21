@@ -38,10 +38,6 @@ public:
 
 template <EError T>
 bool Is(EError in) {
-    // if (!in) {
-    //     return false;
-    // }
-    // return in->GetId() == typeid(T).hash_code();
     return T == in;
 }
 
@@ -50,7 +46,6 @@ EError MakeError(std::string arg = "") {
     if (!arg.empty()) {
         // std::cout << "GOT ERR: " << " " << T << " " << arg << std::endl;
     }
-    // return std::make_shared<T>(std::forward<Args>(args)...);
     return T;
 }
 

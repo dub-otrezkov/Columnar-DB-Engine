@@ -43,6 +43,10 @@ public:
         return std::string(data_.data() + offsets_[i], get_len(i));
     }
 
+    std::string_view ro_at(ui64 i) const {
+        return std::string_view(data_.data() + offsets_[i], get_len(i));
+    }
+
     std::string operator[](ui64 i) const {
         return at(i);
     }
@@ -80,7 +84,7 @@ public:
         ui64 pos;
 
         reference operator*() const {
-            return col->at(pos);
+            return col->ro_at(pos);
         }
 
         Iterator& operator++() {
