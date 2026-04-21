@@ -2,10 +2,10 @@
 
 #include "../types/types.h"
 
-#include <unordered_set>
-#include <type_traits>
-
 #include <boost/unordered/unordered_flat_set.hpp>
+
+#include <type_traits>
+#include <unordered_set>
 
 namespace JfEngine {
 

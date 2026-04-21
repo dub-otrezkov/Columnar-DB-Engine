@@ -1,7 +1,6 @@
 #include "io.h"
 
 #include "csvio/csv_reader.h"
-
 #include "utils/errors/errors_templates.h"
 
 #include <cassert>

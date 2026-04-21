@@ -1,4 +1,7 @@
+#include "hashmap.h"
+
 #include <gtest/gtest.h>
+
 #include <chrono>
 #include <iomanip>
 #include <random>
@@ -7,7 +10,6 @@
 #include <vector>
 
 // Предполагается, что ваш хеш-мап лежит здесь
-#include "hashmap.h" 
 
 namespace {
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "sql_parser/tokenizer.h"
-
 #include "utils/errors/errors.h"
 
 #include <iostream>

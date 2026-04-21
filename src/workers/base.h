@@ -1,12 +1,11 @@
 #pragma once
 
+#include "columns/types/types.h"
 #include "utils/errors/errors_templates.h"
 
-#include "columns/types/types.h"
+#include <boost/unordered/unordered_flat_map.hpp>
 
 #include <vector>
-
-#include <boost/unordered/unordered_flat_map.hpp>
 
 namespace JfEngine {
 

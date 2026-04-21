@@ -1,5 +1,4 @@
 #include "tests.h"
-
 #include "workers/base.h"
 
 namespace JfEngine::Testing {

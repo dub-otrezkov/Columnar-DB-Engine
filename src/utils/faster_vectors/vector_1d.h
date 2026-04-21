@@ -2,10 +2,10 @@
 
 #include <utils/cint/int.h>
 
-#include <vector>
-#include <string>
 #include <cassert>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 template <typename T>
 struct FlatVectorImpl {

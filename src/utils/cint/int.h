@@ -1,10 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <sstream>
-
-#include <cstring>
-#include <cstdint>
 
 using i8 = int8_t;
 using ui8 = uint8_t;

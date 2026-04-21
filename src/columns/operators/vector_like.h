@@ -1,6 +1,5 @@
-#include "operators.h"
-
 #include "../types/types.h"
+#include "operators.h"
 
 namespace JfEngine {
 

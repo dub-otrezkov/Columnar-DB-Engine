@@ -1,7 +1,7 @@
 #include "workers/orderby/orderby.h"
 
-#include "columns/operators/vector_like.h"
 #include "columns/operators/order.h"
+#include "columns/operators/vector_like.h"
 #include "columns/types/types.h"
 
 #include <algorithm>

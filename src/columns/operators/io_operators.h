@@ -2,8 +2,9 @@
 
 #include "../types/types.h"
 
-#include <algorithm>
 #include <nmmintrin.h>
+
+#include <algorithm>
 
 namespace JfEngine {
 

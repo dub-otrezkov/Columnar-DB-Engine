@@ -1,9 +1,8 @@
 #pragma once
 
-#include "io_operators.h"
-#include "arithmetic_operators.h"
-
 #include "../types/types.h"
+#include "arithmetic_operators.h"
+#include "io_operators.h"
 
 namespace JfEngine {
 
