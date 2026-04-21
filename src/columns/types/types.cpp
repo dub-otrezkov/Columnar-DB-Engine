@@ -15,6 +15,9 @@ EColumn StrToTColumn(std::string_view data) {
     if (data == ki64SchemeAlias) {
         return ki64Column;
     }
+    if (data == ki128SchemeAlias) {
+        return ki128Column;
+    }
     if (data == kDoubleSchemeAlias) {
         return kDoubleColumn;
     }
@@ -41,6 +44,8 @@ std::string TColumnToStr(EColumn data) {
             return ki32SchemeAlias;
         case ki64Column:
             return ki64SchemeAlias;
+        case ki128Column:
+            return ki128SchemeAlias;
         case kDoubleColumn:
             return kDoubleSchemeAlias;
         case kDateColumn:
@@ -67,6 +72,9 @@ Expected<IColumn> MakeEmptyColumn(EColumn type) {
         }
         case ki64Column: {
             return std::allocate_shared<Ti64Column>(ArenaAlloc());
+        }
+        case ki128Column: {
+            return std::allocate_shared<Ti128Column>(ArenaAlloc());
         }
         case kDoubleColumn: {
             return std::allocate_shared<TDoubleColumn>(ArenaAlloc());
@@ -100,6 +108,9 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
         case ki64Column: {
             return SetupColumn<Ti64Column>(std::move(data));
         }
+        case ki128Column: {
+            return SetupColumn<Ti128Column>(std::move(data));
+        }
         case kDoubleColumn: {
             return SetupColumn<TDoubleColumn>(std::move(data));
         }
@@ -131,6 +142,9 @@ Expected<IColumn> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i
         }
         case ki64Column: {
             return SetupColumn<Ti64Column>(data, column_i);
+        }
+        case ki128Column: {
+            return SetupColumn<Ti128Column>(data, column_i);
         }
         case kDoubleColumn: {
             return SetupColumn<TDoubleColumn>(data, column_i);

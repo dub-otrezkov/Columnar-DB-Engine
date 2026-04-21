@@ -52,6 +52,7 @@ struct TDistinctSets {
     std::optional<TSet<i16>> i16_set;
     std::optional<TSet<i32>> i32_set;
     std::optional<TSet<i64>> i64_set;
+    std::optional<TSet<i128>> i128_set;
     std::optional<TSet<ld>> ld_set;
     std::optional<TSet<std::string>> string_set;
 
@@ -77,6 +78,11 @@ struct TDistinctSets {
                 i64_set = TSet<i64>{};
             }
             return *i64_set;
+        } else if constexpr (std::is_same_v<T, i128>) {
+            if (!i64_set) {
+                i128_set = TSet<i128>{};
+            }
+            return *i128_set;
         } else if constexpr (std::is_same_v<T, ld>) {
             if (!ld_set) {
                 ld_set = TSet<ld>{};

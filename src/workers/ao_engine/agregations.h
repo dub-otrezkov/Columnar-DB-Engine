@@ -11,14 +11,14 @@ namespace JfEngine {
 struct IAgregationOnly : public IOa {
     virtual ~IAgregationOnly() = default;
 
-    std::shared_ptr<IOa> arg;
+    IOa* arg;
     
     EAoType GetType() const override {
         return EAoType::kAgregation;
     }
 
-    inline void AddArg(std::shared_ptr<IOa> to_agr) override {
-        arg = std::move(to_agr);
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
     }
 
     inline const std::string& GetColumn() const override {

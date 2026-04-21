@@ -45,8 +45,11 @@ bool Is(EError in) {
     return T == in;
 }
 
-template <EError T, typename... Args>
-EError MakeError(Args&&... args) {
+template <EError T>
+EError MakeError(std::string arg = "") {
+    if (!arg.empty()) {
+        // std::cout << "GOT ERR: " << " " << T << " " << arg << std::endl;
+    }
     // return std::make_shared<T>(std::forward<Args>(args)...);
     return T;
 }

@@ -51,19 +51,27 @@ TEST_F(GroupByTest, Basic) {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnOp>("red")}};
+        gq.cols[0]->is_final = true;
 
         TAoQuery aq;
         auto group_name = std::make_shared<TColumnOp>("red");
         auto column_name = std::make_shared<TColumnOp>("what");
         auto cnt_agr = std::make_shared<TCountAgr>();
         auto sum_agr = std::make_shared<TSumAgr>();
-        cnt_agr->AddArg(column_name);
-        sum_agr->AddArg(column_name);
+        aq.args.push_back(column_name);
         aq.args.push_back(group_name);
         aq.args.push_back(cnt_agr);
         aq.args.push_back(sum_agr);
+        aq.edges = {
+            {2, 0},
+            {3, 0}
+        };
 
-        auto agr = std::make_shared<TGroupBy>(jf_in, gq, aq);
+        group_name->is_final = true;
+        cnt_agr->is_final = true;
+        sum_agr->is_final = true;
+
+        auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
         agr->SetupColumnsScheme();
 
@@ -76,6 +84,7 @@ TEST_F(GroupByTest, Basic) {
         auto res = engine->WriteDataToCsv(data);
 
         std::string a = data.str();
+        std::cout << a << std::endl;
         std::sort(a.begin(), a.end());
         std::string b = R"(dot,3,164
 "i,could,have,lied",1,5
@@ -120,19 +129,29 @@ TEST_F(GroupByTest, Stress) {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnOp>("red")}};
+        gq.cols[0]->is_final = true;
 
         TAoQuery aq;
         auto group_name = std::make_shared<TColumnOp>("red");
         auto column_name = std::make_shared<TColumnOp>("what");
         auto cnt_agr = std::make_shared<TCountAgr>();
         auto sum_agr = std::make_shared<TSumAgr>();
-        cnt_agr->AddArg(column_name);
-        sum_agr->AddArg(column_name);
+        // cnt_agr->AddArg(column_name);
+        // sum_agr->AddArg(column_name);
+        aq.args.push_back(column_name);
         aq.args.push_back(group_name);
         aq.args.push_back(cnt_agr);
         aq.args.push_back(sum_agr);
+        aq.edges = {
+            {2, 0},
+            {3, 0}
+        };
 
-        auto agr = std::make_shared<TGroupBy>(jf_in, gq, aq);
+        group_name->is_final = true;
+        cnt_agr->is_final = true;
+        sum_agr->is_final = true;
+
+        auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
         agr->SetupColumnsScheme();
 

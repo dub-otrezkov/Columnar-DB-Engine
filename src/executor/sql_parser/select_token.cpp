@@ -5,6 +5,8 @@
 
 #include <functional>
 
+#include <boost/unordered/unordered_flat_map.hpp>
+
 namespace JfEngine {
 
 TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
@@ -13,8 +15,11 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
 
     bool next_alias = false;
 
-    std::vector<std::shared_ptr<IOa>> args;
-    std::vector<IOa*> st;
+    std::vector<std::shared_ptr<IOa>> obs;
+    std::vector<ui64> args;
+    std::vector<ui64> st;
+
+    std::vector<std::pair<ui64, ui64>> eds;
 
     EAoEngineType etype = EAoEngineType::kOperator;
 
@@ -41,142 +46,189 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp) {
             case ETokens::kNameToken: {
                 auto d = static_cast<TNameToken*>(token.get())->GetName();
 
-                auto node = std::allocate_shared<TColumnOp>(ArenaAlloc(), d);
-
-                auto ptr = node.get();
+                obs.push_back(std::allocate_shared<TColumnOp>(ArenaAlloc(), d));
 
                 if (!st.empty()) {
-                    st.back()->AddArg(std::move(node));
+                    // st.back()->AddArg(obs.size() - 1);
+                    eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
-                    args.push_back(std::move(node));
+                    args.push_back(obs.size() - 1);
                 }
 
                 break;
             }
             case ETokens::kSum: {
-                auto node = std::allocate_shared<TSumAgr>(ArenaAlloc());
+                obs.push_back(std::allocate_shared<TSumAgr>(ArenaAlloc()));
                 etype = EAoEngineType::kAgregation;
 
-                auto ptr = node.get();
+                args.push_back(obs.size() - 1);
 
-                args.push_back(std::move(node));
-
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kCount: {
-                auto node = std::allocate_shared<TCountAgr>(ArenaAlloc());
+                obs.push_back(std::allocate_shared<TCountAgr>(ArenaAlloc()));
                 etype = EAoEngineType::kAgregation;
 
-                auto ptr = node.get();
+                args.push_back(obs.size() - 1);
 
-                args.push_back(std::move(node));
-
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kAvg: {
-                auto node = std::allocate_shared<TAvgAgr>(ArenaAlloc());
+                obs.push_back(std::allocate_shared<TAvgAgr>(ArenaAlloc()));
                 etype = EAoEngineType::kAgregation;
 
-                auto ptr = node.get();
+                args.push_back(obs.size() - 1);
 
-                args.push_back(std::move(node));
-
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kMin: {
-                auto node = std::allocate_shared<TMinAgr>(ArenaAlloc());
+                obs.push_back(std::allocate_shared<TMinAgr>(ArenaAlloc()));
                 etype = EAoEngineType::kAgregation;
 
-                auto ptr = node.get();
+                args.push_back(obs.size() - 1);
 
-                args.push_back(std::move(node));
-
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kMax: {
-                auto node = std::allocate_shared<TMaxAgr>(ArenaAlloc());
+                obs.push_back(std::allocate_shared<TMaxAgr>(ArenaAlloc()));
                 etype = EAoEngineType::kAgregation;
 
-                auto ptr = node.get();
+                args.push_back(obs.size() - 1);
 
-                args.push_back(std::move(node));
-
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kDistinct: {
-                auto node = std::allocate_shared<TDistinctOp>(ArenaAlloc());
-
-                auto ptr = node.get();
+                obs.push_back(std::allocate_shared<TDistinctOp>(ArenaAlloc()));
 
                 if (!st.empty()) {
-                    st.back()->AddArg(std::move(node));
+                    // st.back()->AddArg(obs.size() - 1);
+                    eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
-                    args.push_back(std::move(node));
+                    args.push_back(obs.size() - 1);
                 }
 
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kLength: {
-                auto node = std::allocate_shared<TLengthOp>(ArenaAlloc());
-
-                auto ptr = node.get();
+                obs.push_back(std::allocate_shared<TLengthOp>(ArenaAlloc()));
 
                 if (!st.empty()) {
-                    st.back()->AddArg(std::move(node));
+                    // st.back()->AddArg(obs.size() - 1);
+                    eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
-                    args.push_back(std::move(node));
+                    args.push_back(obs.size() - 1);
                 }
 
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kPlus: {
-                auto node = std::allocate_shared<TPlusOp>(ArenaAlloc());
-
-                auto ptr = node.get();
+                obs.push_back(std::allocate_shared<TPlusOp>(ArenaAlloc()));
 
                 if (!st.empty()) {
-                    st.back()->AddArg(std::move(node));
+                    // st.back()->AddArg(obs.size() - 1);
+                    eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
-                    args.push_back(std::move(node));
+                    args.push_back(obs.size() - 1);
                 }
 
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
             case ETokens::kMinus: {
-                auto node = std::allocate_shared<TMinusOp>(ArenaAlloc());
-
-                auto ptr = node.get();
+                obs.push_back(std::allocate_shared<TMinusOp>(ArenaAlloc()));
 
                 if (!st.empty()) {
-                    st.back()->AddArg(std::move(node));
+                    // st.back()->AddArg(obs.size() - 1);
+                    eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
-                    args.push_back(std::move(node));
+                    args.push_back(obs.size() - 1);
                 }
 
-                st.push_back(ptr);
+                st.push_back(obs.size() - 1);
 
                 break;
             }
         }
     }
+    for (auto& p : args) {
+        obs[p]->is_final = true;
+    }
+    std::vector<std::vector<ui64>> gr(obs.size());
+    for (const auto& [i, j] : eds) {
+        gr[i].push_back(j);
+    }
+    std::vector<bool> used(gr.size(), false);
+
+    std::vector<ui64> topsort;
+
+    auto dfs = [&](auto dfs, ui64 v) -> void {
+        used[v] = true;
+        for (const auto& to : gr[v]) {
+            if (!used[to]) {
+                dfs(dfs, to);
+            }
+        }
+        topsort.push_back(v);
+    };
+
+    for (ui64 i = 0; i < gr.size(); i++) {
+        if (!used[i] && obs[i]->is_final) {
+            dfs(dfs, i);
+        }
+    }
+
+    std::vector<ui64> inv(topsort.size());
+    for (ui64 i = 0; i < topsort.size(); i++) {
+        inv[topsort[i]] = i;
+    }
+
+    std::vector<std::shared_ptr<IOa>> all(obs.size());
+
+    for (ui64 i = 0; i < all.size(); i++) {
+        all[inv[i]] = std::move(obs[i]);
+    }
+
+    for (auto& [i, j] : eds) {
+        i = inv[i];
+        j = inv[j];
+
+        all[i]->AddArg(all[j].get());
+    }
+
+    boost::unordered_flat_map<std::string, ui64> alias;
+    std::vector<std::shared_ptr<IOa>> fin;
+    for (ui64 i = 0; i < all.size(); i++) {
+        if (!alias.contains(all[i]->GetName())) {
+            alias.emplace(all[i]->GetName(), fin.size());
+            fin.push_back(all[i]->Clone());
+        }
+    }
+
+    for (auto& [i, j] : eds) {
+        i = alias.at(all[i]->GetName());
+        j = alias.at(all[j]->GetName());
+
+        fin[i]->AddArg(fin[j].get());
+    }
+
     return TAoQuery{
-        std::move(args),
+        std::move(eds),
+        std::move(fin),
         std::move(aliases),
         etype
     };
@@ -203,7 +255,7 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
         eng.WriteDataToCsv(TIoFactory::GetIo(kResultData).GetRes());
         eng.WriteSchemeToCsv(TIoFactory::GetIo(kResultScheme).GetRes());
 
-        return nullptr;
+        return EError::NoError;
     } else {
         TIoFactory::GetTableIo(kCurTableInput).GetShared()->SetupColumnsScheme();
 
@@ -221,7 +273,7 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
         eng.WriteDataToCsv(TIoFactory::GetIo(kResultData).GetRes());
         eng.WriteSchemeToCsv(TIoFactory::GetIo(kResultScheme).GetRes());
 
-        return nullptr;
+        return EError::NoError;
     }
 }
 

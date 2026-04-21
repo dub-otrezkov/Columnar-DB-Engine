@@ -70,8 +70,9 @@ TEST_F(AgregationsTest, SelectTest) {
     }
 
     {
-        TAgregationQuery query;
-        auto column_name = std::make_unique<TColumnOp>("what");
+        TOperatorQuery query;
+        auto column_name = std::make_shared<TColumnOp>("what");
+        column_name->is_final = true;
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
@@ -127,9 +128,9 @@ TEST_F(AgregationsTest, SumTest) {
 
     {
         TAgregationQuery query;
-        auto column_name = std::make_unique<TColumnOp>("what");
-        auto sum_agr = std::make_unique<TSumAgr>();
-        sum_agr->AddArg(std::move(column_name));
+        auto column_name = std::make_shared<TColumnOp>("what");
+        auto sum_agr = std::make_shared<TSumAgr>();
+        sum_agr->is_final = true;
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
@@ -138,7 +139,11 @@ TEST_F(AgregationsTest, SumTest) {
             }
         }
         TAoQuery q;
+        q.args.push_back(std::move(column_name));
         q.args.push_back(std::move(sum_agr));
+        q.edges = {
+            {1, 0}
+        };
         auto agr = std::make_shared<TAgregator>(jf_in, std::move(q));
 
         auto [engine, err] = MakeEngineFromWorker(agr);
@@ -176,9 +181,9 @@ TEST_F(AgregationsTest, CountTest) {
 
     {
         TAgregationQuery query;
-        auto column_name = std::make_unique<TColumnOp>("what");
-        auto sum_agr = std::make_unique<TCountAgr>();
-        sum_agr->AddArg(std::move(column_name));
+        auto column_name = std::make_shared<TColumnOp>("what");
+        auto sum_agr = std::make_shared<TCountAgr>();
+        sum_agr->is_final = true;
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
         {
             auto err = jf_in->SetupColumnsScheme();
@@ -187,7 +192,13 @@ TEST_F(AgregationsTest, CountTest) {
             }
         }
         TAoQuery q;
+        q.args.push_back(std::move(column_name));
         q.args.push_back(std::move(sum_agr));
+        q.edges = {
+            {1, 0}
+        };
+        q.tp = EAoEngineType::kAgregation;
+
         auto agr = std::make_shared<TAgregator>(jf_in, std::move(q));
 
         auto [engine, err] = MakeEngineFromWorker(agr);

@@ -2,6 +2,7 @@
 
 #include "../types/types.h"
 
+#include <algorithm>
 #include <nmmintrin.h>
 
 namespace JfEngine {
@@ -11,6 +12,26 @@ struct OPrintIth {
     static inline std::string Exec(TCol& col, ui64 i) {
         auto res = col.GetData()[i];
         return std::to_string(res);
+    }
+
+    static inline std::string Exec(Ti128Column& col, ui64 i) {
+        auto res = col.GetData()[i];
+        if (res == 0) {
+            return "0";
+        }
+        std::string ans = "";
+
+        bool neg = (res < 0);
+        if (neg) {
+            ans = "-";
+            res = -res;
+        }
+        while (res > 0) {
+            ans += ('0' + res % 10);
+            res /= 10;
+        }
+        std::reverse(ans.begin() + neg, ans.end());
+        return ans;
     }
 
     static inline std::string Exec(TDoubleColumn& col, ui64 i) {

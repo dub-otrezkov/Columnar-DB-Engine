@@ -18,6 +18,9 @@ using ui32 = uint32_t;
 using i64 = int64_t;
 using ui64 = uint64_t;
 
+using i128 = __int128_t;
+using ui128 = __uint128_t;
+
 
 template <typename T>
 class TIntPrinter {

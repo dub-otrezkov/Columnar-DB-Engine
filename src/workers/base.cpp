@@ -27,7 +27,7 @@ Expected<IColumn> ITableInput::ReadColumn(const std::string& name) {
     }
 
     if (!name_to_i_.contains(name)) {
-        return EError::NoSuchColumnsErr;
+        return MakeError<EError::NoSuchColumnsErr>("no such column " + name);
     }
 
     return Expected<IColumn>{current_rg_->GetRes()[name_to_i_[name]], current_rg_->GetError()};

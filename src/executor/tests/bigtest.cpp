@@ -124,7 +124,7 @@ TEST_F(BigTest, SumGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int128
 )");
     EXPECT_EQ(out_data->str(), std::to_string(16 * iter) + "\n");
 }
@@ -224,7 +224,7 @@ TEST_F(BigTest, LikeGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int128
 )");
     EXPECT_EQ(out_data->str(), std::to_string(4 * iter) + "\n");
 }
@@ -271,7 +271,7 @@ TEST_F(BigTest, GroupBySimple) {
 
     EXPECT_EQ(out_scheme->str(), R"(hers,string
 COUNT(*),int64
-SUM(what),int64
+SUM(what),int128
 )");
     EXPECT_EQ(out_data->str(), R"(rip,400000,1600000
 )");
@@ -296,10 +296,10 @@ TEST_F(BigTest, GroupByWithWhere) {
 
     EXPECT_EQ(out_scheme->str(), R"(was,string
 COUNT(*),int64
-SUM(what),int64
+SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(john,100000,300000
-josh,100000,100000
+    EXPECT_EQ(out_data->str(), R"(josh,100000,100000
+john,100000,300000
 )");
     // std::cout << out_data->str() << std::endl;
 }
@@ -325,10 +325,10 @@ TEST_F(BigTest, GroupBySeveral) {
 hers,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,rip,100000
+    EXPECT_EQ(out_data->str(), R"(john,rip,100000
 frusciante,rip,100000
-john,rip,100000
 josh,rip,100000
+klinghoffer,rip,100000
 )");
 }
 
@@ -407,7 +407,7 @@ TEST_F(BigTest, WhereGroupOrder) {
 
     EXPECT_EQ(out_scheme->str(), R"(was,string
 COUNT(*),int64
-sum,int64
+sum,int128
 )");
     EXPECT_EQ(out_data->str(), R"(josh,100000,100000
 john,100000,300000
@@ -461,7 +461,7 @@ TEST_F(BigTest, GroupOrderWhere) {
 
     EXPECT_EQ(out_scheme->str(), R"(was,string
 COUNT(*),int64
-sum,int64
+sum,int128
 )");
     EXPECT_EQ(out_data->str(), R"(josh,100000,100000
 frusciante,100000,500000
@@ -488,7 +488,7 @@ TEST_F(BigTest, GroupOrderLimit) {
 
     EXPECT_EQ(out_scheme->str(), R"(was,string
 COUNT(*),int64
-sum,int64
+sum,int128
 )");
     EXPECT_EQ(out_data->str(), R"(klinghoffer,100000,700000
 frusciante,100000,500000

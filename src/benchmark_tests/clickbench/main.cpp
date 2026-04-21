@@ -12,6 +12,8 @@
 // >hits.jf; >tmp1.jf; >tmp2.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
 // >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/executor/debug/debug_exec
 
+// >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
+
 /*
 sync    
 echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
@@ -96,16 +98,6 @@ int main() {
                 std::cerr << "Stopping execution due to CREATE failure." << std::endl;
                 break;
             }
-        }
-
-        // Дописываем разделители в файлы (режим std::ios::app)
-        {
-            std::ofstream out("RESULT_DATA.csv", std::ios::app);
-            out << "----------\n";
-        }
-        {
-            std::ofstream out("RESULT_SCHEME.csv", std::ios::app);
-            out << "----------\n";
         }
     }
 
