@@ -1,5 +1,4 @@
 #include "agregations_test.h"
-
 #include "engine/engine.h"
 
 namespace JfEngine::Testing {

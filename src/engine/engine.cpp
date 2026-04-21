@@ -1,11 +1,11 @@
 #include "engine.h"
 
-#include "csvio/csv_writer.h"
 #include "columns/operators/operators.h"
+#include "csvio/csv_writer.h"
 
-#include <sstream>
 #include <cassert>
 #include <iostream>
+#include <sstream>
 
 namespace JfEngine {
 

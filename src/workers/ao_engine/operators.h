@@ -1,10 +1,8 @@
 #pragma once
 
-#include "utils/faster_hashmap/hashset.h"
-
-#include "columns/operators/operators.h"
 #include "columns/operators/distinct.h"
-
+#include "columns/operators/operators.h"
+#include "utils/faster_hashmap/hashset.h"
 #include "workers/io/io.h"
 
 namespace JfEngine {

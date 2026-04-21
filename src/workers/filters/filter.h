@@ -1,9 +1,8 @@
 #pragma once
 
+#include "columns/operators/filter.h"
 #include "csvio/csv_reader.h"
 #include "workers/base.h"
-
-#include "columns/operators/filter.h"
 
 namespace JfEngine {
 

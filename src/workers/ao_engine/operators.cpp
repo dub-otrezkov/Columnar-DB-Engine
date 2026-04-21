@@ -1,7 +1,7 @@
 #include "operators.h"
 
-#include "columns/operators/operators.h"
 #include "columns/operators/min_max.h"
+#include "columns/operators/operators.h"
 
 #include <cassert>
 
