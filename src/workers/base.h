@@ -7,6 +7,9 @@
 
 #include <vector>
 
+// vector<TColumnPtr> is shared between callers of ReadRowGroup — keep shared_ptr
+template <> struct TExpectedUseShared<std::vector<JfEngine::TColumnPtr>> : std::true_type {};
+
 namespace JfEngine {
 
 struct TRowScheme {

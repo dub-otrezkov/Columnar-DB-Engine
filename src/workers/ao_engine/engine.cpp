@@ -18,7 +18,7 @@ std::vector<std::string>& IAoEngine::GetNames() {
 }
 
 TAgregationQuery TAgregationQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(cols.size());
+    std::vector<std::unique_ptr<IOa>> ans(cols.size());
     for (ui64 i = 0; i < cols.size(); i++) {
         ans[i] = cols[i]->Clone();
     }
@@ -29,7 +29,7 @@ TAgregationQuery TAgregationQuery::Clone() {
 }
 
 TOperatorQuery TOperatorQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(cols.size());
+    std::vector<std::unique_ptr<IOa>> ans(cols.size());
     for (ui64 i = 0; i < cols.size(); i++) {
         ans[i] = cols[i]->Clone();
     }
@@ -40,7 +40,7 @@ TOperatorQuery TOperatorQuery::Clone() {
 }
 
 TAoQuery TAoQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(args.size());
+    std::vector<std::unique_ptr<IOa>> ans(args.size());
     for (ui64 i = 0; i < ans.size(); i++) {
         ans[i] = args[i]->Clone();
     }

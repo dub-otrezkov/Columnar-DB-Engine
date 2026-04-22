@@ -26,10 +26,10 @@ Expected<IColumn> TPlusOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TPlusOp::Clone() {
-    auto r = std::make_shared<TPlusOp>();
+std::unique_ptr<IOa> TPlusOp::Clone() {
+    auto r = std::make_unique<TPlusOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TPlusOp::GetName() const {
@@ -59,10 +59,10 @@ Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-std::shared_ptr<IOa> TMinusOp::Clone() {
-    auto r = std::make_shared<TMinusOp>();
+std::unique_ptr<IOa> TMinusOp::Clone() {
+    auto r = std::make_unique<TMinusOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TMinusOp::GetName() const {
@@ -90,10 +90,10 @@ Expected<IColumn> TLengthOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TLengthOp::Clone() {
-    auto r = std::make_shared<TLengthOp>();
+std::unique_ptr<IOa> TLengthOp::Clone() {
+    auto r = std::make_unique<TLengthOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TLengthOp::GetName() const {
@@ -116,10 +116,10 @@ Expected<IColumn> TExtractMinuteOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TExtractMinuteOp::Clone() {
-    auto r = std::make_shared<TExtractMinuteOp>();
+std::unique_ptr<IOa> TExtractMinuteOp::Clone() {
+    auto r = std::make_unique<TExtractMinuteOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TExtractMinuteOp::GetName() const {
@@ -142,10 +142,10 @@ Expected<IColumn> TTruncMinuteOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TTruncMinuteOp::Clone() {
-    auto r = std::make_shared<TTruncMinuteOp>();
+std::unique_ptr<IOa> TTruncMinuteOp::Clone() {
+    auto r = std::make_unique<TTruncMinuteOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TTruncMinuteOp::GetName() const {
@@ -166,10 +166,10 @@ Expected<IColumn> TColumnOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TColumnOp::Clone() {
-    auto r = std::make_shared<TColumnOp>(name);
+std::unique_ptr<IOa> TColumnOp::Clone() {
+    auto r = std::make_unique<TColumnOp>(name);
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TColumnOp::GetName() const {
@@ -186,10 +186,10 @@ Expected<IColumn> TDistinctOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TDistinctOp::Clone() {
-    auto r = std::make_shared<TDistinctOp>();
+std::unique_ptr<IOa> TDistinctOp::Clone() {
+    auto r = std::make_unique<TDistinctOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TDistinctOp::GetName() const {

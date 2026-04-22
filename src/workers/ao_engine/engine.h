@@ -6,35 +6,45 @@
 namespace JfEngine {
 
 struct TAgregationQuery {
-    std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::unique_ptr<IOa>> cols;
     std::vector<std::pair<ui64, ui64>> edges;
 
     TAgregationQuery() {}
 
     TAgregationQuery(
-        std::vector<std::shared_ptr<IOa>> cols_,
+        std::vector<std::unique_ptr<IOa>> cols_,
         std::vector<std::pair<ui64, ui64>> edges_
     ) :
         cols(std::move(cols_)),
         edges(std::move(edges_))
     {}
+
+    TAgregationQuery(const TAgregationQuery&) = delete;
+    TAgregationQuery& operator=(const TAgregationQuery&) = delete;
+    TAgregationQuery(TAgregationQuery&&) = default;
+    TAgregationQuery& operator=(TAgregationQuery&&) = default;
 
     TAgregationQuery Clone();
 };
 
 struct TOperatorQuery {
-    std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::unique_ptr<IOa>> cols;
     std::vector<std::pair<ui64, ui64>> edges;
 
     TOperatorQuery() {}
 
     TOperatorQuery(
-        std::vector<std::shared_ptr<IOa>> cols_,
+        std::vector<std::unique_ptr<IOa>> cols_,
         std::vector<std::pair<ui64, ui64>> edges_
     ) :
         cols(std::move(cols_)),
         edges(std::move(edges_))
     {}
+
+    TOperatorQuery(const TOperatorQuery&) = delete;
+    TOperatorQuery& operator=(const TOperatorQuery&) = delete;
+    TOperatorQuery(TOperatorQuery&&) = default;
+    TOperatorQuery& operator=(TOperatorQuery&&) = default;
 
     TOperatorQuery Clone();
 };
@@ -46,13 +56,13 @@ enum class EAoEngineType {
 
 struct TAoQuery {
     std::vector<std::pair<ui64, ui64>> edges;
-    std::vector<std::shared_ptr<IOa>> args;
+    std::vector<std::unique_ptr<IOa>> args;
     std::vector<std::pair<ui64, std::string>> aliases;
     EAoEngineType tp;
 
     TAoQuery(
         std::vector<std::pair<ui64, ui64>> e,
-        std::vector<std::shared_ptr<IOa>> a, 
+        std::vector<std::unique_ptr<IOa>> a,
         std::vector<std::pair<ui64, std::string>> b,
         EAoEngineType c
     ) :
@@ -65,7 +75,7 @@ struct TAoQuery {
     TAoQuery() = default;
     TAoQuery(const TAoQuery&) = delete;
     TAoQuery& operator=(const TAoQuery&) = delete;
-    
+
     TAoQuery(TAoQuery&&) = default;
     TAoQuery& operator=(TAoQuery&&) = default;
 

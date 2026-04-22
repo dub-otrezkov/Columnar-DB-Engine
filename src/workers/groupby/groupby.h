@@ -19,7 +19,7 @@ namespace JfEngine {
 constexpr ui64 kUnlimited = -1;
 
 struct TGroupByQuery {
-    std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::unique_ptr<IOa>> cols;
     ui64 limit = kUnlimited;
     bool is_id = false;
 };

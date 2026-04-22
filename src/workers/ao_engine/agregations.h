@@ -31,7 +31,7 @@ struct TSumAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -42,7 +42,7 @@ struct TMinAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -53,7 +53,7 @@ struct TMaxAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -64,7 +64,7 @@ struct TCountAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;
@@ -77,7 +77,7 @@ struct TAvgAgr : public IAgregationOnly {
     bool inited = false;
 
     std::string GetName() const override;
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     Expected<IColumn> ThrowRowGroup() override;

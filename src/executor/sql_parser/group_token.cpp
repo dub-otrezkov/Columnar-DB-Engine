@@ -61,11 +61,11 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
             continue;
         }
         if (col->GetType() == EAoType::kOperator) {
-            std::shared_ptr<IOa> col_n = nullptr;
+            std::unique_ptr<IOa> col_n = nullptr;
             ui64 k = 0;
             for (const auto& [j, name] : selects_.aliases) {
                 if (col->is_final && j == jrank) {
-                    col_n = std::make_shared<TColumnOp>(name);
+                    col_n = std::make_unique<TColumnOp>(name);
                     qop.aliases.emplace_back(jrank, name);
                     selects_.aliases.erase(selects_.aliases.begin() + k);
                     break;
@@ -73,7 +73,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
                 k++;
             }
             if (!col_n) {
-                col_n = std::make_shared<TColumnOp>(col->GetName());
+                col_n = std::make_unique<TColumnOp>(col->GetName());
             }
 
             col_n->is_final = col->is_final;
@@ -85,7 +85,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
                 jrank++;
             }
         } else {
-            qop.args.push_back(std::make_shared<TColumnOp>(col->GetColumn()));
+            qop.args.push_back(std::make_unique<TColumnOp>(col->GetColumn()));
             qop.args.back()->is_final = col->is_final;
             used.insert(qop.args.back()->GetName());
             if (col->is_final) {
@@ -99,7 +99,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
         if (as.contains(name) || used.contains(name) || name == "*") {
             continue;
         }
-        qop.args.push_back(std::make_shared<TColumnOp>(name));
+        qop.args.push_back(std::make_unique<TColumnOp>(name));
         used.insert(qop.args.back()->GetName());
     }
 
