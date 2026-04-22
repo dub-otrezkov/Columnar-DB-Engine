@@ -1,5 +1,6 @@
 #include "operators.h"
 
+#include "columns/operators/dates.h"
 #include "columns/operators/min_max.h"
 #include "columns/operators/operators.h"
 
@@ -97,6 +98,33 @@ std::shared_ptr<IOa> TLengthOp::Clone() {
 
 std::string TLengthOp::GetName() const {
     return "LENGTH(" + arg->GetName() + ")";
+}
+
+Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
+    auto [t, _] = arg->ThrowRowGroup();
+
+    auto [ans_, err] = Do<OExtractMinute>(t);
+    std::cout << ":::L " << ans_ << " " << err << std::endl;
+    if (err) {
+        return err;
+    }
+    ans = std::move(ans_);
+
+    return EError::NoError;
+}
+
+Expected<IColumn> TExtractMinuteOp::ThrowRowGroup() {
+    return ans;
+}
+
+std::shared_ptr<IOa> TExtractMinuteOp::Clone() {
+    auto r = std::make_shared<TExtractMinuteOp>();
+    r->is_final = is_final;
+    return std::move(r);
+}
+
+std::string TExtractMinuteOp::GetName() const {
+    return "EXTRACT_MINUTE(" + arg->GetName() + ")";
 }
 
 TColumnOp::TColumnOp(std::string name_) :

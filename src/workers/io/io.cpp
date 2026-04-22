@@ -116,18 +116,18 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
 }
 
 Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
-    auto start = blocks_pos_[current_block_];
-    jf_in_->seekg(start - sizeof(i64) * (cols_cnt_ - i));
-    auto pos = ReadI64(*jf_in_);
-    ui64 pos_next;
-    if (i + 1 == scheme_.size()) {
-        pos_next = start - sizeof(i64) * (cols_cnt_ - 0);
-    } else {
-        pos_next = ReadI64(*jf_in_);
+    if (!poses_of_cols_) {
+        std::vector<ui64> p(scheme_.size());
+        auto start = blocks_pos_[current_block_];
+        // std::cout << "ijjfjfj" << " " << scheme_.size() << " " << start << std::endl;
+        jf_in_->seekg(start - sizeof(ui64) * (cols_cnt_));
+        jf_in_->read(reinterpret_cast<char*>(p.data()), sizeof(ui64) * cols_cnt_);
+        p.push_back(start - sizeof(i64) * (cols_cnt_));
+        poses_of_cols_ = std::move(p);
     }
+    ui64 pos = poses_of_cols_->at(i);
+    ui64 pos_next = poses_of_cols_->at(i + 1);
     jf_in_->seekg(pos);
-
-    // TCsvReader rr(*jf_in_);
     ui64 len = pos_next - pos;
 
     // auto d = rr.ReadRow();
@@ -183,6 +183,7 @@ Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
 
 void TJfTableInput::MoveCursor() {
     current_rg_.reset();
+    poses_of_cols_.reset();
     // if (delta < 0 && current_block_ < -delta) {
     //     current_block_ = 0;
     // } else {

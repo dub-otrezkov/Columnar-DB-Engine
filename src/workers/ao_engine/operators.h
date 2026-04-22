@@ -114,6 +114,27 @@ struct TLengthOp : public IOa {
     }
 };
 
+struct TExtractMinuteOp : public IOa {
+    std::shared_ptr<IColumn> ans;
+
+    IOa* arg;
+
+    std::string GetName() const override;
+
+    std::shared_ptr<IOa> Clone() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<IColumn> ThrowRowGroup() override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
+    }
+};
+
 struct TDistinctOp : public IOa {
     TColumnPtr ans;
 
