@@ -18,7 +18,10 @@ public:
 
     void push_back(std::string_view val) {
         offsets_.push_back(data_.size());
-        data_.insert(data_.end(), val.begin(), val.end());
+        // data_.insert(data_.end(), val.begin(), val.end());
+        data_.resize(data_.size() + val.size());
+        std::memcpy(data_.data() + data_.size() - val.size(), val.data(), val.size());
+
     }
 
     void push_back_mcpy(void* addr, ui64 len) {
@@ -39,8 +42,8 @@ public:
         }
     }
 
-    std::string at(ui64 i) const {
-        return std::string(data_.data() + offsets_[i], get_len(i));
+    std::string_view at(ui64 i) const {
+        return std::string_view(data_.data() + offsets_[i], get_len(i));
     }
 
     std::string_view ro_at(ui64 i) const {
@@ -48,7 +51,7 @@ public:
     }
 
     std::string operator[](ui64 i) const {
-        return at(i);
+        return std::string(data_.data() + offsets_[i], get_len(i));
     }
 
     inline ui64 size() const {

@@ -54,24 +54,21 @@ static const std::unordered_map<std::string, ETokens> agregations = {
     {"AVG",      ETokens::kAvg},
     {"MIN",      ETokens::kMin},
     {"MAX",      ETokens::kMax},
-    {"DISTINCT", ETokens::kDistinct},
 };
 
 static const std::unordered_map<std::string, ETokens> operators = {
     {"+",        ETokens::kPlus},
     {"-",        ETokens::kMinus},
+    {"DISTINCT", ETokens::kDistinct},
 };
 
-class IToken {
-public:
+struct IToken {
     virtual ~IToken() = default;
 
     virtual ETokens GetType() const = 0;
-private:
 };
 
-class ICommand : public IToken {
-public:
+struct ICommand : public IToken {
     virtual ~ICommand() = default;
 
     virtual Expected<ITableInput> MakeWorker() = 0;
@@ -79,20 +76,17 @@ public:
     void AddArg(std::shared_ptr<IToken> arg) {
         args_.push_back(arg);
     }
-protected:
+
     std::vector<std::shared_ptr<IToken>> args_;
 };
 
-class IoperatorCommand : public ICommand {
-public:
+struct IoperatorCommand : public ICommand {
     Expected<ITableInput> MakeWorker() override;
 };
 
 // commands tokens
 
-class TSelectToken : public ICommand {
-public:
-
+struct TSelectToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kSelect; }
 
     inline std::vector<std::shared_ptr<IToken>> GetArgs() { return args_; }
@@ -100,13 +94,10 @@ public:
 
     inline void SetIsId() { is_id_ = true; }
 
-private:
     bool is_id_ = false;
 };
 
-class TCreateToken : public ICommand {
-public:
-
+struct TCreateToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kCreate; }
 
     Expected<ITableInput> MakeWorker() override;
@@ -260,7 +251,7 @@ private:
     std::stringstream ss;
 };
 
-TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp);
+TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by = false);
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
 

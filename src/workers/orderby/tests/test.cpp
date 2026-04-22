@@ -72,8 +72,8 @@ stadium,5,arcadium,6,0,0,-1.2
 the,9,afterglow,9,40,81,1.8
 the,14,sides,52,-4,11,18
 dot,19,hacker,-10,-10,-1,-1.125
-dot,19,hacker,10,92,2,-1
 dot,19,hacker,10,82,82,0
+dot,19,hacker,10,92,2,-1
 )");
     }
 }
@@ -116,9 +116,9 @@ TEST_F(OrderByTest, Reverse) {
 
         auto res = engine->WriteDataToCsv(data_);
 
-        EXPECT_EQ(data_.str(), R"(dot,19,hacker,10,92,2,-1
+        EXPECT_EQ(data_.str(), R"(dot,19,hacker,-10,-10,-1,-1.125
 dot,19,hacker,10,82,82,0
-dot,19,hacker,-10,-10,-1,-1.125
+dot,19,hacker,10,92,2,-1
 the,14,sides,52,-4,11,18
 the,9,afterglow,9,40,81,1.8
 "i,could,have,lied",6,919,0,5,-5,82
@@ -213,9 +213,9 @@ TEST_F(OrderByTest, ReverseLimit) {
 
         auto res = engine->WriteDataToCsv(data_);
 
-        EXPECT_EQ(data_.str(), R"(dot,19,hacker,10,92,2,-1
+        EXPECT_EQ(data_.str(), R"(dot,19,hacker,-10,-10,-1,-1.125
 dot,19,hacker,10,82,82,0
-dot,19,hacker,-10,-10,-1,-1.125
+dot,19,hacker,10,92,2,-1
 the,14,sides,52,-4,11,18
 )");
     }
