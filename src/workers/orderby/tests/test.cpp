@@ -78,6 +78,57 @@ dot,19,hacker,10,92,2,-1
     }
 }
 
+TEST_F(OrderByTest, Offset) {
+    auto jf_table = std::make_shared<std::stringstream>();
+    {
+        auto scheme_in = std::make_shared<std::stringstream>(scheme);
+        auto data_in = std::make_shared<std::stringstream>(data);
+
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+
+        if (err) {
+            std::cout << "! " << err << std::endl;
+        }
+        ASSERT_FALSE(err);
+
+        auto err2 = eng->WriteTableToJf(*jf_table);
+        
+        if (err2.HasError()) {
+            std::cout << "! " << err2.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err2.HasError());
+    }
+
+    {
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+
+        TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}};
+        oq.offset = 2;
+        
+        auto agr = std::make_shared<TOrderBy>(jf_in, oq);
+
+        agr->SetupColumnsScheme();
+
+        auto [engine, err] = MakeEngineFromWorker(agr);
+
+        ASSERT_FALSE(err);
+
+        std::stringstream data_;
+
+        auto res = engine->WriteDataToCsv(data_);
+
+        // std::cout << data_.str() << std::endl;
+        EXPECT_EQ(data_.str(), R"(stadium,5,arcadium,6,0,0,-1.2
+"i,could,have,lied",6,919,0,5,-5,82
+the,9,afterglow,9,40,81,1.8
+the,14,sides,52,-4,11,18
+dot,19,hacker,-10,-10,-1,-1.125
+dot,19,hacker,10,82,82,0
+dot,19,hacker,10,92,2,-1
+)");
+    }
+}
+
 TEST_F(OrderByTest, Reverse) {
     auto jf_table = std::make_shared<std::stringstream>();
     {

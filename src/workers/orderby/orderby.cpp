@@ -11,6 +11,9 @@ TOrderBy::TOrderBy(std::shared_ptr<ITableInput> jf_in, TOrderByQuery query) :
     jf_in_(std::move(jf_in)),
     order_q_(std::move(query))
 {
+    if (order_q_.limit != kUnlimited) {
+        order_q_.limit += order_q_.offset;
+    }
     jf_in_->SetupColumnsScheme();
 }
 
@@ -149,6 +152,12 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
     }
 
     assert(ans_.size() == GetScheme().size());
+
+    if (order_q_.offset > 0) {
+        for (auto& k : ans_) {
+            k = Do<OOffset>(k, order_q_.offset).GetShared();
+        }
+    }
 
     return {std::move(ans_), EError::EofErr};
 }

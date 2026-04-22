@@ -15,6 +15,7 @@ struct TOrderByQuery {
     std::vector<std::string> cols;
     bool reverse = false;
     i64 limit = kUnlimited;
+    i64 offset = 0;
 };
 
 class TOrderBy : public ITableInput {

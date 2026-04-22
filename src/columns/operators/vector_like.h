@@ -90,6 +90,40 @@ struct OResize {
     }
 };
 
+struct OOffset {
+    template <typename TCol>
+    static inline Expected<IColumn> Exec(TCol& col, i64 offset) {
+        using T = typename TCol::ElemType;
+        std::vector<T> ans(col.GetData().size() - offset);
+        std::memcpy(
+            reinterpret_cast<char*>(ans.data()),
+            reinterpret_cast<char*>(col.GetData().data() + offset),
+            ans.size() * sizeof(T)
+        );
+        return std::make_shared<TCol>(std::move(ans));
+    }
+
+    static inline Expected<IColumn> Exec(TStringColumn& col, i64 offset) {
+        StringVector ans;
+        ans.resize_both(col.GetData().data_size() - col.GetData().get_pos(offset), col.GetData().size() - offset);
+        std::memcpy(
+            reinterpret_cast<char*>(ans.data()),
+            reinterpret_cast<char*>(col.GetData().data() + col.GetData().get_pos(offset)),
+            col.GetData().data_size() - col.GetData().get_pos(offset)
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(ans.offsets_data()),
+            reinterpret_cast<char*>(col.GetData().offsets_data() + offset),
+            ans.size() * sizeof(i64)
+        );
+        i64 del = ans.offsets_data()[0];
+        for (i64 i = 0; i < ans.size(); i++) {
+            ans.offsets_data()[i] -= del;
+        }
+        return std::make_shared<TStringColumn>(std::move(ans));
+    }
+};
+
 struct OClear {
     template <typename TCol>
     static inline Expected<void> Exec(TCol& col) {

@@ -104,7 +104,6 @@ Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     auto [t, _] = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OExtractMinute>(t);
-    std::cout << ":::L " << ans_ << " " << err << std::endl;
     if (err) {
         return err;
     }

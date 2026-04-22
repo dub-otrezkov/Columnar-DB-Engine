@@ -36,7 +36,8 @@ enum class ETokens {
     kBy, // misc (
     kGroup,
     kOrder,
-    kLimit
+    kLimit,
+    kOffset
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
@@ -45,6 +46,7 @@ static const std::unordered_map<std::string, ETokens> cmds = {
     {"GROUP",  ETokens::kGroup},
     {"ORDER",  ETokens::kOrder},
     {"LIMIT",  ETokens::kLimit},
+    {"OFFSET", ETokens::kOffset},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
 };
@@ -125,14 +127,24 @@ public:
     Expected<ITableInput> MakeWorker() override;
 };
 
-class TOrderToken : public ICommand {
+class TOffsetToken : public ICommand {
 public:
+
+    inline ETokens GetType() const override { return ETokens::kOffset; }
+
+    ui64 GetOffset() const;
+
+    Expected<ITableInput> MakeWorker() override;
+};
+
+struct TOrderToken : public ICommand {
 
     inline ETokens GetType() const override { return ETokens::kOrder; }
 
     Expected<ITableInput> MakeWorker() override;
 
     std::shared_ptr<TLimitToken> limit_;
+    std::shared_ptr<TOffsetToken> offset_;
 
 };
 
