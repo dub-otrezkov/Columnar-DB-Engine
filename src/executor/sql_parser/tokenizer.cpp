@@ -83,6 +83,8 @@ Expected<IToken> TTokenizer::GetNext() {
         return std::make_shared<TLengthToken>();
     } else if (token == "EXTRACT_MINUTE") {
         return std::make_shared<TExtractMinuteToken>();
+    } else if (token == "TRUNC_MINUTE") {
+        return std::make_shared<TTruncMinuteToken>();
     } else if (token == "LIMIT") {
         return std::make_shared<TLimitToken>();
     } else if (token == "OFFSET") {

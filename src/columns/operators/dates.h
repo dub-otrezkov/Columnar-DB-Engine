@@ -21,4 +21,20 @@ struct OExtractMinute {
     }
 };
 
+struct OTruncMinute {
+    template <typename TCol>
+    static inline Expected<IColumn> Exec(TCol& col) {
+        return std::make_shared<Ti64Column>(std::vector<i64>(col.GetSize(), 0));
+    }
+
+    static inline Expected<IColumn> Exec(TTimestampColumn& col) {
+        std::vector<TTimestamp> ans(col.GetSize());
+        for (i64 i = 0; i < col.GetSize(); i++) {
+            ans[i] = col.GetData().at(i);
+            ans[i].second = 0;
+        } 
+        return std::make_shared<TTimestampColumn>(std::move(ans));
+    }
+};
+
 } // namespace JfEngine

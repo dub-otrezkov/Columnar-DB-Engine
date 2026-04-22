@@ -21,7 +21,7 @@ ok
 ok
 ok
 ok
-ok (no *!)
+ok
 ok
 ok
 ok
@@ -36,8 +36,8 @@ no const
 ok
 ok
 ok
-no offset
-no offset
-no offset
-no offset
-no offset
+ok
+no if
+ok
+ok
+ok
