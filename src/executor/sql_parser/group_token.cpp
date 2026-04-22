@@ -54,6 +54,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
     }
 
     boost::unordered_flat_set<std::string> used;
+    ui64 jrank = 0;
     for (ui64 i = 0; i < selects_.args.size(); i++) {
         auto& col = selects_.args[i];
         if (!col->is_final && !in_op_subtree[i]) {
@@ -63,9 +64,9 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
             std::shared_ptr<IOa> col_n = nullptr;
             ui64 k = 0;
             for (const auto& [j, name] : selects_.aliases) {
-                if (j == i) {
+                if (col->is_final && j == jrank) {
                     col_n = std::make_shared<TColumnOp>(name);
-                    qop.aliases.emplace_back(j, name);
+                    qop.aliases.emplace_back(jrank, name);
                     selects_.aliases.erase(selects_.aliases.begin() + k);
                     break;
                 }
@@ -77,14 +78,19 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
 
             col_n->is_final = col->is_final;
 
-            // std::swap(col, col_n);
             col.swap(col_n);
             used.insert(col_n->GetName());
             qop.args.push_back(std::move(col_n));
+            if (col->is_final) {
+                jrank++;
+            }
         } else {
             qop.args.push_back(std::make_shared<TColumnOp>(col->GetColumn()));
             qop.args.back()->is_final = col->is_final;
             used.insert(qop.args.back()->GetName());
+            if (col->is_final) {
+                jrank++;
+            }
         }
     }
 
