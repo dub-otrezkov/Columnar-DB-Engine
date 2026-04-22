@@ -45,6 +45,8 @@ protected:
 
     std::shared_ptr<std::istream> jf_in_;
 
+    std::optional<std::vector<ui64>> poses_of_cols_;
+
     ui64 cols_cnt_;
     ui64 meta_start_;
     std::vector<ui64> blocks_pos_;

@@ -22,7 +22,7 @@ static const std::vector<std::string> kQueries = {
     // 1: ok
     "SELECT COUNT(*) FROM hits WHERE AdvEngineID <> 0",
     // 2: ok
-    "SELECT SUM(AdvEngineID), COUNT(*), AVG(ResolutionWidth) FROM hits",
+    "SELECT SUM(AdvEngineID), COUNT(AdvEngineID), AVG(ResolutionWidth) FROM hits",
     // 3: ok
     "SELECT AVG(UserID) FROM hits",
     // 4: ok
@@ -36,7 +36,7 @@ static const std::vector<std::string> kQueries = {
     // 8: ok
     "SELECT RegionID, COUNT(DISTINCT(UserID)) AS u FROM hits GROUP BY RegionID ORDER BY u DESC LIMIT 10",
     // 9: ok
-    "SELECT RegionID, SUM(AdvEngineID), COUNT(*) AS c, AVG(ResolutionWidth), COUNT(DISTINCT(UserID)) FROM hits GROUP BY RegionID ORDER BY c DESC LIMIT 10",
+    "SELECT RegionID, SUM(AdvEngineID), COUNT(AdvEngineID) AS c, AVG(ResolutionWidth), COUNT(DISTINCT(UserID)) FROM hits GROUP BY RegionID ORDER BY c DESC LIMIT 10",
     // 10: ok
     "SELECT MobilePhoneModel, COUNT(DISTINCT(UserID)) AS u FROM hits WHERE MobilePhoneModel <> '' GROUP BY MobilePhoneModel ORDER BY u DESC LIMIT 10",
     // 11: ok
@@ -53,18 +53,18 @@ static const std::vector<std::string> kQueries = {
     "SELECT UserID, SearchPhrase, COUNT(*) FROM hits GROUP BY UserID, SearchPhrase ORDER BY 'COUNT(*)' DESC LIMIT 10",
     // 17: ok
     "SELECT UserID, SearchPhrase, COUNT(*) FROM hits GROUP BY UserID, SearchPhrase LIMIT 10",
-    // 18: no dates (extract(minute FROM EventTime))
-    "",
+    // 18: ok
+    "SELECT UserID, EXTRACT_MINUTE(EventTime) AS m, SearchPhrase, COUNT(*) FROM hits GROUP BY UserID, m, SearchPhrase ORDER BY 'COUNT(*)' DESC LIMIT 10",
     // 19: ok
     "SELECT UserID FROM hits WHERE UserID = 435090932899640449",
     // 20: ok
-    "SELECT COUNT(*) FROM hits WHERE URL LIKE '%google%'",
+    "SELECT COUNT(URL) FROM hits WHERE URL LIKE '%google%'",
     // 21: ok
-    "SELECT SearchPhrase, MIN(URL), COUNT(*) AS c FROM hits WHERE URL LIKE '%google%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
+    "SELECT SearchPhrase, MIN(URL), COUNT(URL) AS c FROM hits WHERE URL LIKE '%google%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
     // 22: ok
-    "SELECT SearchPhrase, MIN(URL), MIN(Title), COUNT(*) AS c, COUNT(DISTINCT(UserID)) FROM hits WHERE Title LIKE '%Google%' AND URL NOT LIKE '%.google.%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
-    // 23: ok (no *!) - SELECT * is not supported
-    "",
+    "SELECT SearchPhrase, MIN(URL), MIN(Title), COUNT(URL) AS c, COUNT(DISTINCT(UserID)) FROM hits WHERE Title LIKE '%Google%' AND URL NOT LIKE '%.google.%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
+    // 23: ok (SELECT * replaced with explicit column list)
+    "SELECT WatchID, JavaEnable, Title, GoodEvent, EventTime, EventDate, CounterID, ClientIP, RegionID, UserID, CounterClass, OS, UserAgent, URL, Referer, IsRefresh, RefererCategoryID, RefererRegionID, URLCategoryID, URLRegionID, ResolutionWidth, ResolutionHeight, ResolutionDepth, FlashMajor, FlashMinor, FlashMinor2, NetMajor, NetMinor, UserAgentMajor, UserAgentMinor, CookieEnable, JavascriptEnable, IsMobile, MobilePhone, MobilePhoneModel, Params, IPNetworkID, TraficSourceID, SearchEngineID, SearchPhrase, AdvEngineID, IsArtifical, WindowClientWidth, WindowClientHeight, ClientTimeZone, ClientEventTime, SilverlightVersion1, SilverlightVersion2, SilverlightVersion3, SilverlightVersion4, PageCharset, CodeVersion, IsLink, IsDownload, IsNotBounce, FUniqID, OriginalURL, HID, IsOldCounter, IsEvent, IsParameter, DontCountHits, WithHash, HitColor, LocalEventTime, Age, Sex, Income, Interests, Robotness, RemoteIP, WindowName, OpenerName, HistoryLength, BrowserLanguage, BrowserCountry, SocialNetwork, SocialAction, HTTPError, SendTiming, DNSTiming, ConnectTiming, ResponseStartTiming, ResponseEndTiming, FetchTiming, SocialSourceNetworkID, SocialSourcePage, ParamPrice, ParamOrderID, ParamCurrency, ParamCurrencyID, OpenstatServiceName, OpenstatCampaignID, OpenstatAdID, OpenstatSourceID, UTMSource, UTMMedium, UTMCampaign, UTMContent, UTMTerm, FromTag, HasGCLID, RefererHash, URLHash, CLID FROM hits ORDER BY EventTime LIMIT 10",
     // 24: ok
     "SELECT SearchPhrase FROM hits WHERE SearchPhrase <> '' ORDER BY EventTime LIMIT 10",
     // 25: ok
@@ -72,29 +72,37 @@ static const std::vector<std::string> kQueries = {
     // 26: ok
     "SELECT SearchPhrase FROM hits WHERE SearchPhrase <> '' ORDER BY EventTime, SearchPhrase LIMIT 10",
     // 27: ok
-    "SELECT CounterID, AVG(LENGTH(URL)) AS l, COUNT(*) AS c FROM hits WHERE URL <> '' GROUP BY CounterID HAVING c > 100000 ORDER BY l DESC LIMIT 25",
+    "SELECT CounterID, AVG(LENGTH(URL)) AS l, COUNT(URL) AS c FROM hits WHERE URL <> '' GROUP BY CounterID HAVING c > 100000 ORDER BY l DESC LIMIT 25",
     // 28: no regexp
     "",
-    // 29: no columnar +
-    "",
+    // 29: ok
+    "SELECT SUM(ResolutionWidth), SUM(+(ResolutionWidth, 1)), SUM(+(ResolutionWidth, 2)), SUM(+(ResolutionWidth, 3)), SUM(+(ResolutionWidth, 4)), SUM(+(ResolutionWidth, 5)), SUM(+(ResolutionWidth, 6)), SUM(+(ResolutionWidth, 7)), SUM(+(ResolutionWidth, 8)), SUM(+(ResolutionWidth, 9)), SUM(+(ResolutionWidth, 10)), SUM(+(ResolutionWidth, 11)), SUM(+(ResolutionWidth, 12)), SUM(+(ResolutionWidth, 13)), SUM(+(ResolutionWidth, 14)), SUM(+(ResolutionWidth, 15)), SUM(+(ResolutionWidth, 16)), SUM(+(ResolutionWidth, 17)), SUM(+(ResolutionWidth, 18)), SUM(+(ResolutionWidth, 19)), SUM(+(ResolutionWidth, 20)), SUM(+(ResolutionWidth, 21)), SUM(+(ResolutionWidth, 22)), SUM(+(ResolutionWidth, 23)), SUM(+(ResolutionWidth, 24)), SUM(+(ResolutionWidth, 25)), SUM(+(ResolutionWidth, 26)), SUM(+(ResolutionWidth, 27)), SUM(+(ResolutionWidth, 28)), SUM(+(ResolutionWidth, 29)), SUM(+(ResolutionWidth, 30)), SUM(+(ResolutionWidth, 31)), SUM(+(ResolutionWidth, 32)), SUM(+(ResolutionWidth, 33)), SUM(+(ResolutionWidth, 34)), SUM(+(ResolutionWidth, 35)), SUM(+(ResolutionWidth, 36)), SUM(+(ResolutionWidth, 37)), SUM(+(ResolutionWidth, 38)), SUM(+(ResolutionWidth, 39)), SUM(+(ResolutionWidth, 40)), SUM(+(ResolutionWidth, 41)), SUM(+(ResolutionWidth, 42)), SUM(+(ResolutionWidth, 43)), SUM(+(ResolutionWidth, 44)), SUM(+(ResolutionWidth, 45)), SUM(+(ResolutionWidth, 46)), SUM(+(ResolutionWidth, 47)), SUM(+(ResolutionWidth, 48)), SUM(+(ResolutionWidth, 49)), SUM(+(ResolutionWidth, 50)), SUM(+(ResolutionWidth, 51)), SUM(+(ResolutionWidth, 52)), SUM(+(ResolutionWidth, 53)), SUM(+(ResolutionWidth, 54)), SUM(+(ResolutionWidth, 55)), SUM(+(ResolutionWidth, 56)), SUM(+(ResolutionWidth, 57)), SUM(+(ResolutionWidth, 58)), SUM(+(ResolutionWidth, 59)), SUM(+(ResolutionWidth, 60)), SUM(+(ResolutionWidth, 61)), SUM(+(ResolutionWidth, 62)), SUM(+(ResolutionWidth, 63)), SUM(+(ResolutionWidth, 64)), SUM(+(ResolutionWidth, 65)), SUM(+(ResolutionWidth, 66)), SUM(+(ResolutionWidth, 67)), SUM(+(ResolutionWidth, 68)), SUM(+(ResolutionWidth, 69)), SUM(+(ResolutionWidth, 70)), SUM(+(ResolutionWidth, 71)), SUM(+(ResolutionWidth, 72)), SUM(+(ResolutionWidth, 73)), SUM(+(ResolutionWidth, 74)), SUM(+(ResolutionWidth, 75)), SUM(+(ResolutionWidth, 76)), SUM(+(ResolutionWidth, 77)), SUM(+(ResolutionWidth, 78)), SUM(+(ResolutionWidth, 79)), SUM(+(ResolutionWidth, 80)), SUM(+(ResolutionWidth, 81)), SUM(+(ResolutionWidth, 82)), SUM(+(ResolutionWidth, 83)), SUM(+(ResolutionWidth, 84)), SUM(+(ResolutionWidth, 85)), SUM(+(ResolutionWidth, 86)), SUM(+(ResolutionWidth, 87)), SUM(+(ResolutionWidth, 88)), SUM(+(ResolutionWidth, 89)) FROM hits",
     // 30: ok
     "SELECT SearchEngineID, ClientIP, COUNT(*) AS c, SUM(IsRefresh), AVG(ResolutionWidth) FROM hits WHERE SearchPhrase <> '' GROUP BY SearchEngineID, ClientIP ORDER BY c DESC LIMIT 10",
     // 31: ok
-    "SELECT WatchID, ClientIP, COUNT(*) AS c, SUM(IsRefresh), AVG(ResolutionWidth) FROM hits WHERE SearchPhrase <> '' GROUP BY WatchID, ClientIP ORDER BY c DESC LIMIT 10",
+    "SELECT WatchID, ClientIP, COUNT(IsRefresh) AS c, SUM(IsRefresh), AVG(ResolutionWidth) FROM hits WHERE SearchPhrase <> '' GROUP BY WatchID, ClientIP ORDER BY c DESC LIMIT 10",
     // 32: ok
-    "SELECT WatchID, ClientIP, COUNT(*) AS c, SUM(IsRefresh), AVG(ResolutionWidth) FROM hits GROUP BY WatchID, ClientIP ORDER BY c DESC LIMIT 10",
+    "SELECT WatchID, ClientIP, COUNT(IsRefresh) AS c, SUM(IsRefresh), AVG(ResolutionWidth) FROM hits GROUP BY WatchID, ClientIP ORDER BY c DESC LIMIT 10",
     // 33: ok
     "SELECT URL, COUNT(*) AS c FROM hits GROUP BY URL ORDER BY c DESC LIMIT 10",
     // 34: no const (SELECT 1, URL ...)
     "",
-    // 35: no columnar - (ClientIP - 1 ...)
-    "",
+    // 35: ok
+    "SELECT ClientIP, -(ClientIP, 1), -(ClientIP, 2), -(ClientIP, 3), COUNT(*) AS c FROM hits GROUP BY ClientIP, -(ClientIP, 1), -(ClientIP, 2), -(ClientIP, 3) ORDER BY c DESC LIMIT 10",
     // 36: ok
     "SELECT URL, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-01' AND EventDate <= '2013-07-31' AND DontCountHits = 0 AND IsRefresh = 0 AND URL <> '' GROUP BY URL ORDER BY PageViews DESC LIMIT 10",
     // 37: ok
     "SELECT Title, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-01' AND EventDate <= '2013-07-31' AND DontCountHits = 0 AND IsRefresh = 0 AND Title <> '' GROUP BY Title ORDER BY PageViews DESC LIMIT 10",
-    // 38-42: no offset
-    "", "", "", "", "",
+    // 38: ok
+    "SELECT URL, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-01' AND EventDate <= '2013-07-31' AND IsRefresh = 0 AND IsLink <> 0 AND IsDownload = 0 GROUP BY URL ORDER BY PageViews DESC LIMIT 10 OFFSET 1000",
+    // 39: no CASE WHEN
+    "",
+    // 40: ok
+    "SELECT URLHash, EventDate, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-01' AND EventDate <= '2013-07-31' AND IsRefresh = 0 AND TraficSourceID IN (-1, 6) AND RefererHash = 3594120000172545465 GROUP BY URLHash, EventDate ORDER BY PageViews DESC LIMIT 10 OFFSET 100",
+    // 41: ok
+    "SELECT WindowClientWidth, WindowClientHeight, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-01' AND EventDate <= '2013-07-31' AND IsRefresh = 0 AND DontCountHits = 0 AND URLHash = 2868770270353813622 GROUP BY WindowClientWidth, WindowClientHeight ORDER BY PageViews DESC LIMIT 10 OFFSET 10000",
+    // 42: ok
+    "SELECT TRUNC_MINUTE(EventTime) AS M, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-14' AND EventDate <= '2013-07-15' AND IsRefresh = 0 AND DontCountHits = 0 GROUP BY M ORDER BY M LIMIT 10 OFFSET 1000",
 };
 
 // Open a file as a shared iostream. mode should include in|out.

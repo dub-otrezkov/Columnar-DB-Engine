@@ -26,6 +26,9 @@ Expected<ITableInput> TOrderToken::MakeWorker() {
     if (limit_) {
         query.limit = limit_->GetLimit();
     }
+    if (offset_) {
+        query.offset = offset_->GetOffset();
+    }
     
     return std::make_shared<TOrderBy>(
         TIoFactory::GetTableIo(kCurTableInput).GetShared(),

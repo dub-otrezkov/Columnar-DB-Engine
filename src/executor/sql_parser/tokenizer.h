@@ -25,6 +25,8 @@ enum class ETokens {
     kMin,
     kAnd,
     kDistinct,
+    kExtractMinute,
+    kTruncMinute,
     kLength,
     kPlus,
     kMinus,
@@ -35,7 +37,8 @@ enum class ETokens {
     kBy, // misc (
     kGroup,
     kOrder,
-    kLimit
+    kLimit,
+    kOffset
 };
 
 static const std::unordered_map<std::string, ETokens> cmds = {
@@ -44,6 +47,7 @@ static const std::unordered_map<std::string, ETokens> cmds = {
     {"GROUP",  ETokens::kGroup},
     {"ORDER",  ETokens::kOrder},
     {"LIMIT",  ETokens::kLimit},
+    {"OFFSET", ETokens::kOffset},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
 };
@@ -54,24 +58,23 @@ static const std::unordered_map<std::string, ETokens> agregations = {
     {"AVG",      ETokens::kAvg},
     {"MIN",      ETokens::kMin},
     {"MAX",      ETokens::kMax},
-    {"DISTINCT", ETokens::kDistinct},
 };
 
 static const std::unordered_map<std::string, ETokens> operators = {
     {"+",        ETokens::kPlus},
     {"-",        ETokens::kMinus},
+    {"DISTINCT", ETokens::kDistinct},
+    {"EXTRACT_MINUTE", ETokens::kExtractMinute},
+    {"TRUNC_MINUTE", ETokens::kTruncMinute},
 };
 
-class IToken {
-public:
+struct IToken {
     virtual ~IToken() = default;
 
     virtual ETokens GetType() const = 0;
-private:
 };
 
-class ICommand : public IToken {
-public:
+struct ICommand : public IToken {
     virtual ~ICommand() = default;
 
     virtual Expected<ITableInput> MakeWorker() = 0;
@@ -79,20 +82,17 @@ public:
     void AddArg(std::shared_ptr<IToken> arg) {
         args_.push_back(arg);
     }
-protected:
+
     std::vector<std::shared_ptr<IToken>> args_;
 };
 
-class IoperatorCommand : public ICommand {
-public:
+struct IoperatorCommand : public ICommand {
     Expected<ITableInput> MakeWorker() override;
 };
 
 // commands tokens
 
-class TSelectToken : public ICommand {
-public:
-
+struct TSelectToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kSelect; }
 
     inline std::vector<std::shared_ptr<IToken>> GetArgs() { return args_; }
@@ -100,13 +100,10 @@ public:
 
     inline void SetIsId() { is_id_ = true; }
 
-private:
     bool is_id_ = false;
 };
 
-class TCreateToken : public ICommand {
-public:
-
+struct TCreateToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kCreate; }
 
     Expected<ITableInput> MakeWorker() override;
@@ -132,14 +129,24 @@ public:
     Expected<ITableInput> MakeWorker() override;
 };
 
-class TOrderToken : public ICommand {
+class TOffsetToken : public ICommand {
 public:
+
+    inline ETokens GetType() const override { return ETokens::kOffset; }
+
+    ui64 GetOffset() const;
+
+    Expected<ITableInput> MakeWorker() override;
+};
+
+struct TOrderToken : public ICommand {
 
     inline ETokens GetType() const override { return ETokens::kOrder; }
 
     Expected<ITableInput> MakeWorker() override;
 
     std::shared_ptr<TLimitToken> limit_;
+    std::shared_ptr<TOffsetToken> offset_;
 
 };
 
@@ -190,6 +197,14 @@ public:
 class TDistinctToken : public IoperatorCommand {
 public:
     inline ETokens GetType() const override { return ETokens::kDistinct; }
+};
+
+struct TExtractMinuteToken : public IoperatorCommand {
+    inline ETokens GetType() const override { return ETokens::kExtractMinute; }
+};
+
+struct TTruncMinuteToken : public IoperatorCommand {
+    inline ETokens GetType() const override { return ETokens::kTruncMinute; }
 };
 
 class TAvgToken : public IoperatorCommand {
@@ -260,7 +275,7 @@ private:
     std::stringstream ss;
 };
 
-TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp);
+TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by = false);
 
 Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
 

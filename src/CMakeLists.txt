@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(utils)
 
-link_libraries(cint_lib Boost::boost)
+link_libraries(cint_lib Boost::boost tcmalloc)
 
 add_subdirectory(csvio)
 add_subdirectory(benchmark_tests)

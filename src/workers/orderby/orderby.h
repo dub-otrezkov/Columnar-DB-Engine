@@ -1,6 +1,7 @@
 #pragma once
 
 #include "csvio/csv_reader.h"
+#include "columns/operators/order.h"
 #include "workers/base.h"
 
 #include <map>
@@ -8,12 +9,13 @@
 
 namespace JfEngine {
 
-constexpr ui64 kUnlimited = -1;
+constexpr i64 kUnlimited = OMergeSort::kUnlimited;
 
 struct TOrderByQuery {
     std::vector<std::string> cols;
     bool reverse = false;
-    ui64 limit = kUnlimited;
+    i64 limit = kUnlimited;
+    i64 offset = 0;
 };
 
 class TOrderBy : public ITableInput {
@@ -24,8 +26,7 @@ public:
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
 
 private:
-    void SortRowGroup(std::vector<TColumnPtr>& rg);
-    void SortRowGroup(std::vector<TColumnPtr>& rg, ui64 column);
+    void SortRowGroup(std::vector<TColumnPtr>& rg, std::vector<TColumnPtr>& other);
     void MergeRowGroups(
         std::vector<TColumnPtr>& rg1,
         std::vector<TColumnPtr>& rg2

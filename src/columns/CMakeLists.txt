@@ -11,6 +11,7 @@ add_library(nodes_lib STATIC
     operators/filter.h
     operators/vector_like.h
     operators/order.h
+    operators/dates.h
     types/int_columns.cpp
     types/str_columns.cpp
     types/double_columns.cpp
