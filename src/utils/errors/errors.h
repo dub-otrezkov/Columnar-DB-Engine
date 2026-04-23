@@ -57,11 +57,13 @@ struct TExpectedUseShared : std::false_type {};
 // Forward-declare JfEngine types that need shared_ptr
 namespace JfEngine {
     class IColumn;
+    class TEngine;
     class ITableInput;
 }
 
 template <> struct TExpectedUseShared<JfEngine::IColumn>     : std::true_type {};
 template <> struct TExpectedUseShared<JfEngine::ITableInput> : std::true_type {};
+template <> struct TExpectedUseShared<JfEngine::TEngine>     : std::true_type {};
 template <> struct TExpectedUseShared<std::iostream>         : std::true_type {};
 
 // ---------------------------------------------------------------------------
