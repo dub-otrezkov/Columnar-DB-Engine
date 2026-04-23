@@ -19,7 +19,7 @@ TTokenizer::TTokenizer(const std::string& data) : query_(data) {
     ss << data;
 }
 
-Expected<IToken> TTokenizer::GetNext() {
+Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
     if (ss.eof()) {
         return MakeError<EError::EofErr>();
     }
@@ -122,7 +122,7 @@ Expected<TParsedCommand> ParseCommand(const std::string& cmd) {
     TTokenizer tkz(cmd);
 
     while (auto cur = tkz.GetNext()) {
-        auto token_up = cur.Release();
+        auto token_up = std::move(cur.GetRes());
         IToken* raw = token_up.get();
 
         switch (raw->GetType()) {

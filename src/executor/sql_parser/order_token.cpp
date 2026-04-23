@@ -5,7 +5,7 @@
 
 namespace JfEngine {
 
-Expected<ITableInput> TOrderToken::MakeWorker() {
+Expected<TTableInputPtr> TOrderToken::MakeWorker() {
     for (const auto& t : args_) {
         if (t->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>("from token without files");
@@ -31,7 +31,7 @@ Expected<ITableInput> TOrderToken::MakeWorker() {
     }
     
     return std::make_shared<TOrderBy>(
-        TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+        TIoFactory::GetTableIo(kCurTableInput),
         std::move(query)
     );
 }

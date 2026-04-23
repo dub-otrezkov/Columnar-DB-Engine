@@ -78,7 +78,7 @@ struct OMergeSort {
 
 struct OApply2 {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col, TColumnPtr other, const std::vector<i64>& ids) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, TColumnPtr other, const std::vector<i64>& ids) {
         using T = typename TCol::ElemType;
         if (col.GetType() != other->GetType()) {
             return MakeError<EError::BadArgsErr>("cant merge different columns");
@@ -106,7 +106,7 @@ struct OApply2 {
 
 struct OApplyOrder {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col, const std::vector<ui64>& order) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<ui64>& order) {
         using T = typename TCol::ElemType;
         if (order.size() != col.GetSize()) {
             return EError::BadArgsErr;
@@ -118,7 +118,7 @@ struct OApplyOrder {
         return std::make_shared<TCol>(std::move(ans));
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col, const std::vector<ui64>& order) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<ui64>& order) {
         if (order.size() != col.GetSize()) {
             return EError::BadArgsErr;
         }

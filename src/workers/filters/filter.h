@@ -20,13 +20,13 @@ struct TFilterQuery {
 
 class TFilter : public ITableInput {
 public:
-    TFilter(std::shared_ptr<ITableInput> jf_in, TFilterQuery query);
+    TFilter(TTableInputPtr jf_in, TFilterQuery query);
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     void MoveCursor() override;
 private:
-    std::shared_ptr<ITableInput> jf_in_;
+    TTableInputPtr jf_in_;
     TFilterQuery query_;
 };
 

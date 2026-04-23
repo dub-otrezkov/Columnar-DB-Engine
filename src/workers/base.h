@@ -7,9 +7,6 @@
 
 #include <vector>
 
-// vector<TColumnPtr> is shared between callers of ReadRowGroup — keep shared_ptr
-template <> struct TExpectedUseShared<std::vector<JfEngine::TColumnPtr>> : std::true_type {};
-
 namespace JfEngine {
 
 struct TRowScheme {
@@ -19,6 +16,9 @@ struct TRowScheme {
 
 const ui64 kRowGroupLen = 100000;
 
+class ITableInput;
+using TTableInputPtr = std::shared_ptr<ITableInput>;
+
 class ITableInput {
 public:
     ITableInput(ui64 row_group_len = kRowGroupLen);
@@ -26,7 +26,7 @@ public:
 
     virtual std::vector<TRowScheme>& GetScheme();
     virtual Expected<std::vector<TColumnPtr>> ReadRowGroup();
-    virtual Expected<IColumn> ReadColumn(const std::string& name);
+    virtual Expected<TColumnPtr> ReadColumn(const std::string& name);
 
     virtual Expected<void> SetupColumnsScheme() = 0;
     virtual Expected<std::vector<TColumnPtr>> LoadRowGroup() = 0;
@@ -36,7 +36,8 @@ public:
     virtual void Reset();
 
 protected:
-    std::optional<Expected<std::vector<TColumnPtr>>> current_rg_;
+    std::shared_ptr<std::vector<TColumnPtr>> current_rg_;
+    EError current_rg_err_ = EError::NoError;
     std::vector<TRowScheme> scheme_;
     ui64 row_group_len_;
 

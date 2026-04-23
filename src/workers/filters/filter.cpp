@@ -2,7 +2,7 @@
 
 namespace JfEngine {
 
-TFilter::TFilter(std::shared_ptr<ITableInput> jf_in, TFilterQuery query) :
+TFilter::TFilter(TTableInputPtr jf_in, TFilterQuery query) :
     jf_in_(std::move(jf_in)),
     query_(std::move(query))
 {
@@ -30,9 +30,9 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
     if (err && !is_eof) {
         return err;
     }
-    auto col = *col_sp;
+    auto& col = col_sp;
     if (col.empty()) {
-        return col;
+        return {col, err};
     }
 
     std::vector<bool> keep(col[0]->GetSize(), 1);
@@ -55,13 +55,13 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
                 }
 
                 if (al.empty()) {
-                    al = *orr;
+                    al = orr;
                 } else {
-                    for (ui64 i = 0; i < orr->size(); i++) {
+                    for (ui64 i = 0; i < orr.size(); i++) {
                         if (op == EFilterType::kIn) {
-                            al[i] = (al[i] | orr->at(i));
+                            al[i] = (al[i] | orr.at(i));
                         } else {
-                            al[i] = (al[i] & orr->at(i));
+                            al[i] = (al[i] & orr.at(i));
                         }
                     }
                 }
@@ -78,7 +78,7 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             }
 
             for (ui64 i = 0; i < keep.size(); i++) {
-                keep[i] = (keep[i] & (*bl)[i]);
+                keep[i] = (keep[i] & bl[i]);
             }
         }
     }
@@ -92,7 +92,7 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
         }
         if (!ans[i]) {
         }
-        ans[i] = res.GetShared();
+        ans[i] = res.GetRes();
     }
 
     assert(ans.size() == GetScheme().size());
@@ -102,6 +102,7 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
 
 void TFilter::MoveCursor() {
     current_rg_.reset();
+    current_rg_err_ = EError::NoError;
     jf_in_->MoveCursor();
 }
 

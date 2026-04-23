@@ -49,108 +49,64 @@ EError MakeError(std::string arg = "") {
 }
 
 // ---------------------------------------------------------------------------
-// Ownership policy trait — specialize to opt into shared_ptr for Expected<T>
-// ---------------------------------------------------------------------------
-template <typename T>
-struct TExpectedUseShared : std::false_type {};
-
-// Forward-declare JfEngine types that need shared_ptr
-namespace JfEngine {
-    class IColumn;
-    class TEngine;
-    class ITableInput;
-}
-
-template <> struct TExpectedUseShared<JfEngine::IColumn>     : std::true_type {};
-template <> struct TExpectedUseShared<JfEngine::ITableInput> : std::true_type {};
-template <> struct TExpectedUseShared<JfEngine::TEngine>     : std::true_type {};
-template <> struct TExpectedUseShared<std::iostream>         : std::true_type {};
-
-// ---------------------------------------------------------------------------
-// Expected<T>
+// Expected<T>  —  stores T directly via std::optional<T>
 // ---------------------------------------------------------------------------
 template <typename T>
 class Expected {
-    static constexpr bool kShared = TExpectedUseShared<T>::value;
-    using PtrType = std::conditional_t<kShared, std::shared_ptr<T>, std::unique_ptr<T>>;
-
-    static PtrType MakePtr(T&& val) {
-        if constexpr (kShared) {
-            return std::make_shared<T>(std::move(val));
-        } else {
-            return std::make_unique<T>(std::move(val));
-        }
-    }
+    std::optional<T> val_;
+    EError err_ = EError::NoError;
 
 public:
-    Expected(std::nullptr_t) {}
+    Expected() {}
 
-    Expected(T&& res, EError err = EError::NoError)
-        : res_(MakePtr(std::move(res))), err_(err) {}
+    Expected(T val, EError err = EError::NoError)
+        : val_(std::move(val)), err_(err) {}
 
-    Expected(PtrType res, EError err = EError::NoError)
-        : res_(std::move(res)), err_(err) {}
-
-    // Derived-type constructors
-    template<typename R>
-    Expected(std::shared_ptr<R> res, EError err = EError::NoError)
-        requires (kShared)
-        : res_(std::move(res)), err_(err) {}
-
-    template<typename R>
-    Expected(std::unique_ptr<R> res, EError err = EError::NoError)
-        requires (!kShared)
-        : res_(std::move(res)), err_(err) {}
+    template<typename U>
+    Expected(U val, EError err = EError::NoError)
+        requires (std::is_constructible_v<T, U&&>
+                  && !std::is_same_v<std::decay_t<U>, T>
+                  && !std::is_same_v<std::decay_t<U>, EError>
+                  && !std::is_same_v<std::decay_t<U>, std::nullptr_t>)
+        : val_(T(std::move(val))), err_(err) {}
 
     Expected(EError err) : err_(err) {}
 
-    // Copy: implicitly deleted when PtrType = unique_ptr, works for shared_ptr
     Expected(const Expected&) = default;
     Expected(Expected&&) = default;
     Expected& operator=(const Expected&) = default;
     Expected& operator=(Expected&&) = default;
 
     bool HasError() const { return err_ != EError::NoError; }
-    EError GetError() { return err_; }
-    T& GetRes() { return *res_; }
+    bool HasValue() const { return val_.has_value(); }
+    EError GetError() const { return err_; }
 
-    // GetShared() — shared_ptr variant only
-    std::shared_ptr<T> GetShared() requires (kShared) { return res_; }
+    T& GetRes() {
+        assert(val_.has_value());
+        return *val_;
+    }
 
-    // Release() — unique_ptr variant only
-    std::unique_ptr<T> Release() requires (!kShared) { return std::move(res_); }
+    const T& GetRes() const {
+        assert(val_.has_value());
+        return *val_;
+    }
 
     explicit operator bool() const { return !HasError(); }
 
     T* operator->() {
-        assert(!HasError());
-        return res_.get();
-    }
-
-    auto operator*() {
-        if constexpr (kShared) {
-            return std::make_pair(res_, err_);
-        } else {
-            return std::make_pair(std::move(res_), err_);
-        }
+        assert(val_.has_value());
+        return &*val_;
     }
 
     template<std::size_t N>
     auto get() {
         if constexpr (N == 0) {
-            if constexpr (kShared) {
-                return res_;
-            } else {
-                return std::move(res_);
-            }
-        } else if constexpr (N == 1) {
+            if (val_) return std::move(*val_);
+            return T{};
+        } else {
             return err_;
         }
     }
-
-private:
-    PtrType res_ = nullptr;
-    EError err_ = EError::NoError;
 };
 
 namespace std {
@@ -159,11 +115,7 @@ namespace std {
 
     template<typename T>
     struct tuple_element<0, Expected<T>> {
-        using type = conditional_t<
-            TExpectedUseShared<T>::value,
-            shared_ptr<T>,
-            unique_ptr<T>
-        >;
+        using type = T;
     };
 
     template<typename T>

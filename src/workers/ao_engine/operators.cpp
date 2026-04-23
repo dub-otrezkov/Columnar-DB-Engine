@@ -9,8 +9,7 @@
 namespace JfEngine {
 
 Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [ans_, _] = args[0]->ThrowRowGroup();
-
+    auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
         auto [c, err2] = Do<OAddConst>(ans_, args[i]->GetName());
@@ -22,7 +21,7 @@ Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TPlusOp::ThrowRowGroup() {
+TColumnPtr TPlusOp::ThrowRowGroup() {
     return ans;
 }
 
@@ -41,13 +40,12 @@ std::string TPlusOp::GetName() const {
     return std::move(ans);
 }
 
-Expected<IColumn> TMinusOp::ThrowRowGroup() {
+TColumnPtr TMinusOp::ThrowRowGroup() {
     return ans;
 }
 
 Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [ans_, _] = args[0]->ThrowRowGroup();
-
+    auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
         auto [c, err2] = Do<OSubConst>(ans_, args[i]->GetName());
@@ -75,7 +73,7 @@ std::string TMinusOp::GetName() const {
 }
 
 Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OLength>(t);
     if (err) {
@@ -86,7 +84,7 @@ Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TLengthOp::ThrowRowGroup() {
+TColumnPtr TLengthOp::ThrowRowGroup() {
     return ans;
 }
 
@@ -101,7 +99,7 @@ std::string TLengthOp::GetName() const {
 }
 
 Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OExtractMinute>(t);
     if (err) {
@@ -112,7 +110,7 @@ Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TExtractMinuteOp::ThrowRowGroup() {
+TColumnPtr TExtractMinuteOp::ThrowRowGroup() {
     return ans;
 }
 
@@ -127,7 +125,7 @@ std::string TExtractMinuteOp::GetName() const {
 }
 
 Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OTruncMinute>(t);
     if (err) {
@@ -138,7 +136,7 @@ Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TTruncMinuteOp::ThrowRowGroup() {
+TColumnPtr TTruncMinuteOp::ThrowRowGroup() {
     return ans;
 }
 
@@ -162,7 +160,7 @@ Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp) {
     return err;
 }
 
-Expected<IColumn> TColumnOp::ThrowRowGroup() {
+TColumnPtr TColumnOp::ThrowRowGroup() {
     return ans;
 }
 
@@ -177,12 +175,12 @@ std::string TColumnOp::GetName() const {
 }
 
 Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [col, _] = arg->ThrowRowGroup();
-    ans = Do<ODistinctStreamV>(col, cur_sets).GetShared();
+    auto col = arg->ThrowRowGroup();
+    ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
     return EError::NoError;
 }
 
-Expected<IColumn> TDistinctOp::ThrowRowGroup() {
+TColumnPtr TDistinctOp::ThrowRowGroup() {
     return ans;
 }
 

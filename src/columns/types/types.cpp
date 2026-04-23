@@ -59,7 +59,7 @@ std::string TColumnToStr(EColumn data) {
     }
 }
 
-Expected<IColumn> MakeEmptyColumn(EColumn type) {
+Expected<TColumnPtr> MakeEmptyColumn(EColumn type) {
     switch (type) {
         case ki8Column: {
             return std::make_shared<Ti8Column>();
@@ -94,7 +94,7 @@ Expected<IColumn> MakeEmptyColumn(EColumn type) {
     }
 }
 
-Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
+Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type) {
     switch (type) {
         case ki8Column: {
             return SetupColumn<Ti8Column>(std::move(data));
@@ -129,7 +129,7 @@ Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type) {
     }
 }
 
-Expected<IColumn> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type) {
+Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type) {
     switch (type) {
         case ki8Column: {
             return SetupColumn<Ti8Column>(data, column_i);
@@ -229,7 +229,7 @@ TTimestamp TimestampFromStr(const std::string& s) {
     };
 }
 
-Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type) {
+Expected<TColumnPtr> MakeColumnJf(std::vector<char> data, EColumn type) {
     switch (type) {
         case kUnitialized: {
             return MakeError<EError::UnimplementedErr>();

@@ -9,7 +9,7 @@
 
 namespace JfEngine {
 
-Expected<ITableInput> TGroupToken::MakeWorker() {
+Expected<TTableInputPtr> TGroupToken::MakeWorker() {
     args_.erase(args_.begin());
     auto q = ParseArgs(args_);
 
@@ -105,7 +105,7 @@ Expected<ITableInput> TGroupToken::MakeWorker() {
 
     return std::make_shared<TGroupBy>(
         std::make_shared<TAgregator>(
-            TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+            TIoFactory::GetTableIo(kCurTableInput),
             std::move(qop)
         ),
         std::move(query),

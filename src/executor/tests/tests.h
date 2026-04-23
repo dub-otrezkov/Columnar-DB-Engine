@@ -37,17 +37,17 @@ dot,19,hacker,-10,-10,-1,-1.125
         TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
         TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
 
-        TIoFactory::GetIo("scheme").GetRes() << scheme;
-        TIoFactory::GetIo("data").GetRes() << data;
+        *TIoFactory::GetIo("scheme") << scheme;
+        *TIoFactory::GetIo("data") << data;
 
         TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
         TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
 
         out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultScheme).GetShared()
+            TIoFactory::GetIo(kResultScheme)
         );
         out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultData).GetShared()
+            TIoFactory::GetIo(kResultData)
         );
     }
 

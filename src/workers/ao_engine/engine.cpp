@@ -82,15 +82,14 @@ Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
     return (is_eof ? EError::EofErr : EError::NoError);
 }
 
-Expected<std::vector<std::shared_ptr<IColumn>>> TAgregationEngine::ThrowRowGroup() {
-    std::vector<std::shared_ptr<IColumn>> ans;
+std::vector<TColumnPtr> TAgregationEngine::ThrowRowGroup() {
+    std::vector<TColumnPtr> ans;
     for (auto& c : q_.cols) {
         if (c->is_final) {
-            auto [res, _] = c->ThrowRowGroup();
-            ans.push_back(std::move(res));
+            ans.push_back(c->ThrowRowGroup());
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp) {
@@ -108,15 +107,14 @@ Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp) {
     return (is_eof ? EError::EofErr : EError::NoError);
 }
 
-Expected<std::vector<std::shared_ptr<IColumn>>> TOperatorEngine::ThrowRowGroup() {
-    std::vector<std::shared_ptr<IColumn>> ans;
+std::vector<TColumnPtr> TOperatorEngine::ThrowRowGroup() {
+    std::vector<TColumnPtr> ans;
     for (auto& c : q_.cols) {
         if (c->is_final) {
-            auto [res, _] = c->ThrowRowGroup();
-            ans.push_back(std::move(res));
+            ans.push_back(c->ThrowRowGroup());
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 std::shared_ptr<IAoEngine> TOperatorEngine::Clone() {

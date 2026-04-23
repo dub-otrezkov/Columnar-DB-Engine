@@ -20,7 +20,7 @@ struct TOrderByQuery {
 
 class TOrderBy : public ITableInput {
 public:
-    TOrderBy(std::shared_ptr<ITableInput> jf_in, TOrderByQuery query);
+    TOrderBy(TTableInputPtr jf_in, TOrderByQuery query);
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
@@ -34,7 +34,7 @@ private:
 
     TOrderByQuery order_q_;
     
-    std::shared_ptr<ITableInput> jf_in_;
+    TTableInputPtr jf_in_;
 };
 
 } // namespace JfEngine

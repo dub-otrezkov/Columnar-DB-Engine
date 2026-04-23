@@ -6,7 +6,7 @@
 
 namespace JfEngine {
 
-Expected<ITableInput> TWhereToken::MakeWorker() {
+Expected<TTableInputPtr> TWhereToken::MakeWorker() {
     std::vector<TFilterOp> config;
     ui64 i = 0;
     while (i < args_.size()) {
@@ -111,7 +111,7 @@ Expected<ITableInput> TWhereToken::MakeWorker() {
     }
 
     return std::make_shared<TFilter>(
-        TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+        TIoFactory::GetTableIo(kCurTableInput),
         TFilterQuery{std::move(config)}
     );
 }

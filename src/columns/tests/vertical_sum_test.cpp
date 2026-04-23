@@ -12,16 +12,16 @@ TEST_F(OperatorsTest, i64VerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
             // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 4);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 4);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
         std::vector<i64> ans{9, 15, 6, -11};
         for (ui64 i = 0; i < 4; i++) {
             EXPECT_EQ(res->GetData()[i], ans[i]);
@@ -40,16 +40,16 @@ TEST_F(OperatorsTest, i32VerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
             // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 4);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 4);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
         std::vector<i64> ans{9, 15, 6, -11};
         for (ui64 i = 0; i < 4; i++) {
             EXPECT_EQ(res->GetData()[i], ans[i]);
@@ -67,16 +67,16 @@ TEST_F(OperatorsTest, i16VerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
             // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 4);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 4);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
         std::vector<i64> ans{9, 15, 6, -11};
         for (ui64 i = 0; i < 4; i++) {
             EXPECT_EQ(res->GetData()[i], ans[i]);
@@ -94,16 +94,16 @@ TEST_F(OperatorsTest, i8VerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
             // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 4);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 4);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
         std::vector<i64> ans{9, 15, 6, -11};
         for (ui64 i = 0; i < 4; i++) {
             EXPECT_EQ(res->GetData()[i], ans[i]);
@@ -121,16 +121,16 @@ TEST_F(OperatorsTest, i64DoubleSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
             // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 4);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::kDoubleColumn);
-        auto res = std::dynamic_pointer_cast<TDoubleColumn>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 4);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::kDoubleColumn);
+        auto res = std::dynamic_pointer_cast<TDoubleColumn>(r.GetRes());
         std::vector<ld> ans{8.5, 15.2, 6.1, -12.04};
         for (ui64 i = 0; i < 4; i++) {
             EXPECT_FLOAT_EQ(res->GetData()[i], ans[i]);
@@ -148,16 +148,16 @@ TEST_F(OperatorsTest, StringVerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
             // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 2);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::kStringColumn);
-        auto res = std::dynamic_pointer_cast<TStringColumn>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 2);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::kStringColumn);
+        auto res = std::dynamic_pointer_cast<TStringColumn>(r.GetRes());
         std::vector<std::string> ans{"johnfrusciante", "joshklinghoffer"};
         for (ui64 i = 0; i < ans.size(); i++) {
             EXPECT_EQ(res->GetData()[i], ans[i]);
@@ -175,7 +175,7 @@ TEST_F(OperatorsTest, DateVerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         ASSERT_TRUE(r.HasError());
     }
@@ -191,7 +191,7 @@ TEST_F(OperatorsTest, TimeStampVerticalSumTest) {
         ASSERT_FALSE(a.HasError());
         ASSERT_FALSE(b.HasError());
 
-        auto r = Do<OVerticalSum>(a.GetShared(), b.GetShared());
+        auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         ASSERT_TRUE(r.HasError());
     }

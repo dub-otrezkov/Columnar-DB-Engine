@@ -16,7 +16,7 @@ TEST_F(AgregationsTest, FullTableTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -60,7 +60,7 @@ TEST_F(AgregationsTest, SelectTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -116,7 +116,7 @@ TEST_F(AgregationsTest, SumTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -168,7 +168,7 @@ TEST_F(AgregationsTest, CountTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;

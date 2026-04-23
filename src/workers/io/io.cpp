@@ -78,7 +78,7 @@ Expected<std::vector<TColumnPtr>> TCsvTableInput::LoadRowGroup() {
         if (col.HasError()) {
             return col.GetError();
         }
-        out.push_back(col.GetShared());
+        out.push_back(col.GetRes());
     }
 
     return {std::move(out), (is_eof ? MakeError<EError::EofErr>() : EError::NoError)};
@@ -107,15 +107,15 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
         if (err != EError::NoError) {
             return err;
         }
-        if (d->size() != 2) {
+        if (d.size() != 2) {
             return MakeError<EError::IncorrectFileErr>("bad scheme");
         }
-        scheme_.emplace_back(d->at(0), StrToTColumn(d->at(1)));
+        scheme_.emplace_back(d.at(0), StrToTColumn(d.at(1)));
     }
     return nullptr;
 }
 
-Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
+Expected<TColumnPtr> TJfTableInput::ReadIthColumn(ui64 i) {
     if (!poses_of_cols_) {
         std::vector<ui64> p(scheme_.size());
         auto start = blocks_pos_[current_block_];
@@ -146,8 +146,8 @@ Expected<IColumn> TJfTableInput::ReadIthColumn(ui64 i) {
         return col.GetError();
     }
 
-    Expected<IColumn> ans(
-        col.GetShared(),
+    Expected<TColumnPtr> ans(
+        col.GetRes(),
         current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
     );
 
@@ -183,6 +183,7 @@ Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
 
 void TJfTableInput::MoveCursor() {
     current_rg_.reset();
+    current_rg_err_ = EError::NoError;
     poses_of_cols_.reset();
     // if (delta < 0 && current_block_ < -delta) {
     //     current_block_ = 0;
@@ -195,9 +196,10 @@ void TJfTableInput::MoveCursor() {
 void TJfTableInput::Reset() {
     current_block_ = 0;
     current_rg_.reset();
+    current_rg_err_ = EError::NoError;
 }
 
-Expected<IColumn> TJfTableInput::ReadColumn(const std::string& name) {
+Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
     static auto name_to_index = [this]() -> auto {
         std::unordered_map<std::string, ui64> poses;
         for (size_t i = 0; i < scheme_.size(); i++) {

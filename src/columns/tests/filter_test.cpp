@@ -11,23 +11,23 @@ TEST_F(OperatorsTest, FilterEqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kEq, "9");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kEq, "9");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 2);
     };
 
@@ -42,23 +42,23 @@ TEST_F(OperatorsTest, FilterEqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kEq, "2022-02-24");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kEq, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 1);
     }
 
@@ -74,23 +74,23 @@ TEST_F(OperatorsTest, FilterEqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kEq, "2022-02-24 04:04:04");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kEq, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 1);
     }
 }
@@ -102,23 +102,23 @@ TEST_F(OperatorsTest, FilterLessTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLess, "9");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLess, "9");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 1);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 1);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 2);
     };
 
@@ -133,23 +133,23 @@ TEST_F(OperatorsTest, FilterLessTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLess, "2022-02-24");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLess, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 1);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 1);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 1);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 1);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 3);
     }
 
@@ -165,23 +165,23 @@ TEST_F(OperatorsTest, FilterLessTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLess, "2022-02-24 04:04:04");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLess, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 1);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 1);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 2);
     }
 }
@@ -193,23 +193,23 @@ TEST_F(OperatorsTest, FilterLeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLeq, "9");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLeq, "9");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 1);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 1);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 4);
     };
 
@@ -224,23 +224,23 @@ TEST_F(OperatorsTest, FilterLeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLeq, "2022-02-24");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLeq, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 1);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 1);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 1);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 1);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 4);
     }
 
@@ -256,23 +256,23 @@ TEST_F(OperatorsTest, FilterLeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLeq, "2022-02-24 04:04:04");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLeq, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 1);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 1);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 3);
     }
 }
@@ -284,23 +284,23 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGreater, "9");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGreater, "9");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 1);
-        EXPECT_EQ(mask->at(2), 0);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 1);
+        EXPECT_EQ(mask.at(2), 0);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 1);
     };
 
@@ -315,23 +315,23 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGreater, "2022-02-24");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGreater, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 1);
     }
 
@@ -347,23 +347,23 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGreater, "2022-02-24 04:04:04");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGreater, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 1);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 1);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 2);
     }
 }
@@ -375,23 +375,23 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGeq, "9");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGeq, "9");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 0);
-        EXPECT_EQ(mask->at(1), 1);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 1);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 0);
+        EXPECT_EQ(mask.at(1), 1);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 1);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 3);
     };
 
@@ -406,23 +406,23 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGeq, "2022-02-24");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGeq, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 0);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 0);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 2);
     }
 
@@ -438,23 +438,23 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kGeq, "2022-02-24 04:04:04");
+        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGeq, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
-        auto mask = r.GetShared();
+        auto mask = r.GetRes();
 
-        ASSERT_TRUE(mask->size() == 5);
+        ASSERT_TRUE(mask.size() == 5);
 
-        EXPECT_EQ(mask->at(0), 1);
-        EXPECT_EQ(mask->at(1), 0);
-        EXPECT_EQ(mask->at(2), 1);
-        EXPECT_EQ(mask->at(3), 0);
-        EXPECT_EQ(mask->at(4), 1);
+        EXPECT_EQ(mask.at(0), 1);
+        EXPECT_EQ(mask.at(1), 0);
+        EXPECT_EQ(mask.at(2), 1);
+        EXPECT_EQ(mask.at(3), 0);
+        EXPECT_EQ(mask.at(4), 1);
 
-        auto e = Do<OFilter>(m.GetShared(), *mask);
+        auto e = Do<OFilter>(m.GetRes(), mask);
         ASSERT_FALSE(e.HasError());
-        auto ans = e.GetShared();
+        auto ans = e.GetRes();
         ASSERT_EQ(ans->GetSize(), 3);
     }
 }
@@ -489,17 +489,17 @@ TEST_F(OperatorsTest, FilterLikeTest) {
         ASSERT_FALSE(m.HasError());
 
         {
-            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLike, "9");
+            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLike, "9");
 
             ASSERT_FALSE(r.HasError());
 
-            auto mask = r.GetShared();
+            auto mask = r.GetRes();
 
-            ASSERT_TRUE(mask->size() == data.size());
+            ASSERT_TRUE(mask.size() == data.size());
             
-            auto e = Do<OFilter>(m.GetShared(), *mask);
+            auto e = Do<OFilter>(m.GetRes(), mask);
             ASSERT_FALSE(e.HasError());
-            auto ans = e.GetShared();
+            auto ans = e.GetRes();
             ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
             CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
                 "9"
@@ -508,17 +508,17 @@ TEST_F(OperatorsTest, FilterLikeTest) {
 
         
         {
-            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kLike, "%h%");
+            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLike, "%h%");
 
             ASSERT_FALSE(r.HasError());
 
-            auto mask = r.GetShared();
+            auto mask = r.GetRes();
 
-            ASSERT_TRUE(mask->size() == data.size());
+            ASSERT_TRUE(mask.size() == data.size());
             
-            auto e = Do<OFilter>(m.GetShared(), *mask);
+            auto e = Do<OFilter>(m.GetRes(), mask);
             ASSERT_FALSE(e.HasError());
-            auto ans = e.GetShared();
+            auto ans = e.GetRes();
             ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
             CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
                 "john",
@@ -554,17 +554,17 @@ TEST_F(OperatorsTest, FilterNLikeTest) {
         ASSERT_FALSE(m.HasError());
 
         {
-            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kNLike, "9");
+            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kNLike, "9");
 
             ASSERT_FALSE(r.HasError());
 
-            auto mask = r.GetShared();
+            auto mask = r.GetRes();
 
-            ASSERT_TRUE(mask->size() == data.size());
+            ASSERT_TRUE(mask.size() == data.size());
             
-            auto e = Do<OFilter>(m.GetShared(), *mask);
+            auto e = Do<OFilter>(m.GetRes(), mask);
             ASSERT_FALSE(e.HasError());
-            auto ans = e.GetShared();
+            auto ans = e.GetRes();
             ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
             CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
                 "john",
@@ -583,17 +583,17 @@ TEST_F(OperatorsTest, FilterNLikeTest) {
 
         
         {
-            auto r = Do<OFilterCheck>(m.GetShared(), EFilterType::kNLike, "%h%");
+            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kNLike, "%h%");
 
             ASSERT_FALSE(r.HasError());
 
-            auto mask = r.GetShared();
+            auto mask = r.GetRes();
 
-            ASSERT_TRUE(mask->size() == data.size());
+            ASSERT_TRUE(mask.size() == data.size());
             
-            auto e = Do<OFilter>(m.GetShared(), *mask);
+            auto e = Do<OFilter>(m.GetRes(), mask);
             ASSERT_FALSE(e.HasError());
-            auto ans = e.GetShared();
+            auto ans = e.GetRes();
             ASSERT_EQ(ans->GetType(), EColumn::kStringColumn);
             CheckVectorsEq(static_cast<TStringColumn*>(ans.get())->GetData(), std::vector<std::string>{
                 "9",

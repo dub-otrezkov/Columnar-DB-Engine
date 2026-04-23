@@ -33,17 +33,17 @@ public:
 
     static void RegisterFileIo(const std::string& alias, ETypeFile t);
 
-    static void RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp);
+    static void RegisterTableInput(const std::string& alias, TTableInputPtr inp);
 
-    static Expected<std::iostream> GetIo(const std::string& alias);
+    static std::shared_ptr<std::iostream> GetIo(const std::string& alias);
 
-    static Expected<ITableInput> GetTableIo(const std::string& alias);
+    static TTableInputPtr GetTableIo(const std::string& alias);
 
     static void Clear();
 
 private:
     std::unordered_map<std::string, std::shared_ptr<std::iostream>> ios_;
-    std::unordered_map<std::string, std::shared_ptr<ITableInput>> iotables_;
+    std::unordered_map<std::string, TTableInputPtr> iotables_;
 };
 
 } // namespace JfEngin 

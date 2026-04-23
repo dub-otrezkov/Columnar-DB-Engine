@@ -77,7 +77,7 @@ struct IToken {
 struct ICommand : public IToken {
     virtual ~ICommand() = default;
 
-    virtual Expected<ITableInput> MakeWorker() = 0;
+    virtual Expected<TTableInputPtr> MakeWorker() = 0;
 
     void AddArg(IToken* arg) {
         args_.push_back(arg);
@@ -87,7 +87,7 @@ struct ICommand : public IToken {
 };
 
 struct IoperatorCommand : public ICommand {
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 };
 
 // commands tokens
@@ -96,7 +96,7 @@ struct TSelectToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kSelect; }
 
     inline const std::vector<IToken*>& GetArgs() const { return args_; }
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 
     inline void SetIsId() { is_id_ = true; }
 
@@ -106,7 +106,7 @@ struct TSelectToken : public ICommand {
 struct TCreateToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kCreate; }
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 };
 
 struct TFromToken : public ICommand {
@@ -114,7 +114,7 @@ struct TFromToken : public ICommand {
 
     inline ETokens GetType() const override { return ETokens::kFrom; }
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 
     std::string query_;
 };
@@ -126,7 +126,7 @@ public:
 
     ui64 GetLimit() const;
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 };
 
 class TOffsetToken : public ICommand {
@@ -136,14 +136,14 @@ public:
 
     ui64 GetOffset() const;
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 };
 
 struct TOrderToken : public ICommand {
 
     inline ETokens GetType() const override { return ETokens::kOrder; }
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 
     TLimitToken* limit_ = nullptr;
     TOffsetToken* offset_ = nullptr;
@@ -155,7 +155,7 @@ public:
 
     inline ETokens GetType() const override { return ETokens::kWhere; }
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
 };
 
 class TGroupToken : public ICommand {
@@ -163,7 +163,7 @@ public:
 
     inline ETokens GetType() const override { return ETokens::kGroup; }
 
-    Expected<ITableInput> MakeWorker() override;
+    Expected<TTableInputPtr> MakeWorker() override;
     inline void SetSelects(TAoQuery s) { selects_ = std::move(s); }
 
     TLimitToken* limit_ = nullptr;
@@ -269,7 +269,7 @@ class TTokenizer {
 public:
     TTokenizer(const std::string& data);
 
-    Expected<IToken> GetNext();
+    Expected<std::unique_ptr<IToken>> GetNext();
 private:
     std::string query_;
     std::stringstream ss;

@@ -62,15 +62,15 @@ public:
         return nullptr;
     }
 
-    Expected<void> Setup(std::shared_ptr<ITableInput> in);
+    Expected<void> Setup(TTableInputPtr in);
 
-    std::shared_ptr<ITableInput> in_;
+    TTableInputPtr in_;
 };
 
 Expected<TEngine> MakeEngineFromCsv(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
 
 Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
 
-Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker);
+Expected<TEngine> MakeEngineFromWorker(TTableInputPtr worker);
 
 } // namespace JfEngine

@@ -4,7 +4,7 @@ namespace JfEngine {
 
 struct OSum {
     template <typename T>
-    static inline Expected<IColumn> Exec(T& col) {
+    static inline Expected<TColumnPtr> Exec(T& col) {
         i128 res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += static_cast<i128>(col.GetData()[i]);
@@ -12,7 +12,7 @@ struct OSum {
         return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
 
-    static inline Expected<IColumn> Exec(TDoubleColumn& col) {
+    static inline Expected<TColumnPtr> Exec(TDoubleColumn& col) {
         ld res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
@@ -20,15 +20,15 @@ struct OSum {
         return std::make_shared<TDoubleColumn>(std::vector<ld>{res});
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<IColumn> Exec(TTimestampColumn& col) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
         std::string res;
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += col.GetData()[i];
@@ -39,7 +39,7 @@ struct OSum {
 
 struct OVerticalSum {
     template<typename T>
-    static inline Expected<IColumn> Exec(T& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(T& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -55,7 +55,7 @@ struct OVerticalSum {
         return std::make_shared<Ti128Column>(ans);
     }
 
-    static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TDoubleColumn& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -70,15 +70,15 @@ struct OVerticalSum {
         return std::make_shared<TDoubleColumn>(ans);
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -96,7 +96,7 @@ struct OVerticalSum {
 
 struct OVerticalSub {
     template <typename T>
-    static inline Expected<IColumn> Exec(T& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(T& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -111,7 +111,7 @@ struct OVerticalSub {
         return std::make_shared<Ti64Column>(ans);
     }
 
-    static inline Expected<IColumn> Exec(TDoubleColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TDoubleColumn& col1, TColumnPtr col2) {
         if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
@@ -126,21 +126,21 @@ struct OVerticalSub {
         return std::make_shared<TDoubleColumn>(ans);
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 };
 
 struct OLength {
-    static inline Expected<IColumn> Exec(TStringColumn& col) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
         std::vector<i64> ans(col.GetSize());
         for (ui64 i = 0; i < col.GetSize(); i++) {
             ans[i] = col.GetData()[i].size();
@@ -149,22 +149,22 @@ struct OLength {
     }
 
     template<typename T>
-    static inline Expected<IColumn> Exec(T& col) {
+    static inline Expected<TColumnPtr> Exec(T& col) {
         return MakeError<EError::UnsupportedErr>();
     }
 };
 
 struct OAddConst {
-    static inline Expected<IColumn> Exec(TTimestampColumn& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col, const std::string& s) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, const std::string& s) {
         return EError::UnsupportedErr;
     }
 
     template<typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& s) {
         typename TCol::ElemType add;
         try {
             if constexpr (std::is_same_v<TCol, TStringColumn>) {
@@ -175,7 +175,7 @@ struct OAddConst {
         } catch (...) {
             return EError::BadArgsErr;
         }
-        auto res = std::static_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetShared());
+        auto res = std::static_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetRes());
         res->GetData() = col.GetData();
         for (auto& v : res->GetData()) {
             v += add;
@@ -183,8 +183,8 @@ struct OAddConst {
         return res;
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col, const std::string& s) {
-        auto res = std::static_pointer_cast<TStringColumn>(MakeEmptyColumn(col.GetType()).GetShared());
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
+        auto res = std::static_pointer_cast<TStringColumn>(MakeEmptyColumn(col.GetType()).GetRes());
         res->GetData().reserve(col.GetData().size());
         for (auto v : col.GetData()) {
             res->GetData().push_back(v + s);
@@ -194,27 +194,27 @@ struct OAddConst {
 };
 
 struct OSubConst {
-    static inline Expected<IColumn> Exec(TTimestampColumn& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col, const std::string& s) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, const std::string& s) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
         return EError::UnsupportedErr;
     }
 
     template<typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col, const std::string& s) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& s) {
         typename TCol::ElemType add;
         try {
             add = static_cast<typename TCol::ElemType>(std::stoi(s));
         } catch (...) {
             return EError::BadArgsErr;
         }
-        auto res = std::dynamic_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetShared());
+        auto res = std::dynamic_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetRes());
         res->GetData() = col.GetData();
         for (auto& v : res->GetData()) {
             v -= add;

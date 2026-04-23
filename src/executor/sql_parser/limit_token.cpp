@@ -4,7 +4,7 @@
 
 namespace JfEngine {
 
-Expected<ITableInput> TLimitToken::MakeWorker() {
+Expected<TTableInputPtr> TLimitToken::MakeWorker() {
     return EError::UnsupportedErr;
 }
 
@@ -28,7 +28,7 @@ ui64 TLimitToken::GetLimit() const {
 }
 
 
-Expected<ITableInput> TOffsetToken::MakeWorker() {
+Expected<TTableInputPtr> TOffsetToken::MakeWorker() {
     return EError::UnsupportedErr;
 }
 

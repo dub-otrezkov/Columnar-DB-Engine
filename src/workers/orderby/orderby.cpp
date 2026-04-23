@@ -7,7 +7,7 @@
 
 namespace JfEngine {
 
-TOrderBy::TOrderBy(std::shared_ptr<ITableInput> jf_in, TOrderByQuery query) :
+TOrderBy::TOrderBy(TTableInputPtr jf_in, TOrderByQuery query) :
     jf_in_(std::move(jf_in)),
     order_q_(std::move(query))
 {
@@ -114,7 +114,7 @@ void TOrderBy::MergeRowGroups(
 ) {
     for (ui64 i = 0; i < rg1.size(); i++) {
         if (!rg1[i]) {
-            rg1[i] = MakeEmptyColumn(rg2[i]->GetType()).GetShared();
+            rg1[i] = MakeEmptyColumn(rg2[i]->GetType()).GetRes();
             scheme_[i].type_ = rg1[i]->GetType();
         }
     }
@@ -142,11 +142,11 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
                 return err;
             }
         }
-        if (!g || g->empty() || g->at(0)->GetSize() == 0) {
+        if (g.empty() || g.at(0)->GetSize() == 0) {
             continue;
         }
 
-        auto rg = *g;
+        auto& rg = g;
 
         MergeRowGroups(ans_, rg);
     }
@@ -155,7 +155,7 @@ Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
 
     if (order_q_.offset > 0) {
         for (auto& k : ans_) {
-            k = Do<OOffset>(k, order_q_.offset).GetShared();
+            k = Do<OOffset>(k, order_q_.offset).GetRes();
         }
     }
 

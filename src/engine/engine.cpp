@@ -9,7 +9,7 @@
 
 namespace JfEngine {
 
-Expected<void> TEngine::Setup(std::shared_ptr<ITableInput> in) {
+Expected<void> TEngine::Setup(TTableInputPtr in) {
     in_ = std::move(in);
     return in_->SetupColumnsScheme();
 }
@@ -93,30 +93,30 @@ Expected<TEngine> MakeEngineFromCsv(
     std::shared_ptr<std::istream> data,
     ui64 row_group_size
 ) {
-    auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_shared<TCsvTableInput>(scheme, data, row_group_size));
+    TEngine eng;
+    auto err = eng.Setup(std::make_shared<TCsvTableInput>(scheme, data, row_group_size));
     if (!err) {
         return err.GetError();
     }
-    return eng;
+    return std::move(eng);
 }
 
 Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf) {
-    auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(std::make_shared<TJfTableInput>(jf));
+    TEngine eng;
+    auto err = eng.Setup(std::make_shared<TJfTableInput>(jf));
     if (err.HasError()) {
         return err.GetError();
     }
-    return eng;
+    return std::move(eng);
 }
 
-Expected<TEngine> MakeEngineFromWorker(std::shared_ptr<ITableInput> worker) {
-    auto eng = std::make_shared<TEngine>();
-    auto err = eng->Setup(worker);
+Expected<TEngine> MakeEngineFromWorker(TTableInputPtr worker) {
+    TEngine eng;
+    auto err = eng.Setup(worker);
     if (err.HasError()) {
         return err.GetError();
     }
-    return eng;
+    return std::move(eng);
 }
 
 } // namespace JfEngine

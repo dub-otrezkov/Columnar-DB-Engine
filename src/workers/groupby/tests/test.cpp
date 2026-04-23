@@ -39,7 +39,7 @@ TEST_F(GroupByTest, Basic) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -116,7 +116,7 @@ TEST_F(GroupByTest, Stress) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;

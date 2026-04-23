@@ -9,13 +9,13 @@ TEST_F(OperatorsTest, i64SumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 1);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 1);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
 
         EXPECT_EQ(res->GetData()[0], 27);
     }
@@ -28,13 +28,13 @@ TEST_F(OperatorsTest, i32SumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 1);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 1);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
 
         EXPECT_EQ(res->GetData()[0], 27);
     }
@@ -47,13 +47,13 @@ TEST_F(OperatorsTest, i16SumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 1);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 1);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
 
         EXPECT_EQ(res->GetData()[0], 27);
     }
@@ -66,13 +66,13 @@ TEST_F(OperatorsTest, i8SumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 1);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::ki64Column);
-        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 1);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::ki64Column);
+        auto res = std::dynamic_pointer_cast<Ti64Column>(r.GetRes());
 
         EXPECT_EQ(res->GetData()[0], 27);
     }
@@ -85,13 +85,13 @@ TEST_F(OperatorsTest, StringSumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_FALSE(r.HasError());
 
-        ASSERT_TRUE(r.GetShared()->GetSize() == 1);
-        ASSERT_TRUE(r.GetShared()->GetType() == EColumn::kStringColumn);
-        auto res = std::dynamic_pointer_cast<TStringColumn>(r.GetShared());
+        ASSERT_TRUE(r.GetRes()->GetSize() == 1);
+        ASSERT_TRUE(r.GetRes()->GetType() == EColumn::kStringColumn);
+        auto res = std::dynamic_pointer_cast<TStringColumn>(r.GetRes());
 
         EXPECT_EQ(res->GetData()[0], "john*frusciante10");
     }
@@ -104,7 +104,7 @@ TEST_F(OperatorsTest, DateSumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_TRUE(r.HasError());
     }
@@ -117,7 +117,7 @@ TEST_F(OperatorsTest, TimestampSumTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OSum>(m.GetShared());
+        auto r = Do<OSum>(m.GetRes());
 
         ASSERT_TRUE(r.HasError());
     }

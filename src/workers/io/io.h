@@ -35,13 +35,13 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
-    Expected<IColumn> ReadColumn(const std::string& name) override;
+    Expected<TColumnPtr> ReadColumn(const std::string& name) override;
 
     void MoveCursor() override;
     void Reset() override;
 
 protected:
-    Expected<IColumn> ReadIthColumn(ui64 i);
+    Expected<TColumnPtr> ReadIthColumn(ui64 i);
 
     std::shared_ptr<std::istream> jf_in_;
 

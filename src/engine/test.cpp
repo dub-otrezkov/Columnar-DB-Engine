@@ -55,14 +55,14 @@ TEST_F(EngineTest, CsvToCsv) {
 
     {
         std::stringstream out;
-        err = eng->WriteSchemeToCsv(out).GetError();
+        err = eng.WriteSchemeToCsv(out).GetError();
         
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), scheme);
     }
     {
         std::stringstream out;
-        err = eng->WriteDataToCsv(out).GetError();
+        err = eng.WriteDataToCsv(out).GetError();
 
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), ans_data);
@@ -77,14 +77,14 @@ TEST_F(EngineTest, EmptyData) {
 
     {
         std::stringstream out;
-        err = eng->WriteSchemeToCsv(out).GetError();
+        err = eng.WriteSchemeToCsv(out).GetError();
         
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), scheme);
     }
     {
         std::stringstream out;
-        err = eng->WriteDataToCsv(out).GetError();
+        err = eng.WriteDataToCsv(out).GetError();
 
         ASSERT_FALSE(err);
         EXPECT_EQ(out.str(), "");
@@ -99,7 +99,7 @@ TEST_F(EngineTest, JfBasic) {
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -110,14 +110,14 @@ TEST_F(EngineTest, JfBasic) {
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCsv(ans).GetError();
+            err = eng.WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCsv(ans).GetError();
+            err = eng.WriteDataToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), ans_data);
         }
@@ -133,7 +133,7 @@ TEST_F(EngineTest, JfEmpty) {
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -144,14 +144,14 @@ TEST_F(EngineTest, JfEmpty) {
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCsv(ans).GetError();
+            err = eng.WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             // EXPECT_EQ(ans.str(), scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCsv(ans).GetError();
+            err = eng.WriteDataToCsv(ans).GetError();
             if (err) {
             }
             ASSERT_FALSE(err);
@@ -168,7 +168,7 @@ TEST_F(EngineTest, JfSmallRowGroupSize) {
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -179,14 +179,14 @@ TEST_F(EngineTest, JfSmallRowGroupSize) {
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCsv(ans).GetError();
+            err = eng.WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCsv(ans).GetError();
+            err = eng.WriteDataToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), ans_data);
         }
@@ -211,7 +211,7 @@ TEST_F(EngineTest, JfDateColumns) {
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -222,14 +222,14 @@ TEST_F(EngineTest, JfDateColumns) {
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCsv(ans).GetError();
+            err = eng.WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), time_scheme);
         }
 
         {
             std::stringstream ans;
-            auto err2 = eng->WriteDataToCsv(ans).GetError();
+            auto err2 = eng.WriteDataToCsv(ans).GetError();
             if (err) {
                 std::cout << err << std::endl;
             }
@@ -257,7 +257,7 @@ TEST_F(EngineTest, JfTimeColumns) {
         ASSERT_FALSE(err);
 
         {
-            err = eng->WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(*out).GetError();
 
             ASSERT_FALSE(err);
         }
@@ -268,14 +268,14 @@ TEST_F(EngineTest, JfTimeColumns) {
         ASSERT_FALSE(err);
         {
             std::stringstream ans;
-            err = eng->WriteSchemeToCsv(ans).GetError();
+            err = eng.WriteSchemeToCsv(ans).GetError();
             ASSERT_FALSE(err);
             EXPECT_EQ(ans.str(), time_scheme);
         }
 
         {
             std::stringstream ans;
-            err = eng->WriteDataToCsv(ans).GetError();
+            err = eng.WriteDataToCsv(ans).GetError();
             if (err) {
                 std::cout << err << std::endl;
             }

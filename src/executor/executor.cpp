@@ -28,14 +28,11 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     TEngine eng;
     {
-        auto [inp, err2] = tokens[1]->MakeWorker();
-        if (err2 != EError::NoError) {
-            return err2;
+        auto inp = tokens[1]->MakeWorker();
+        if (inp.HasError()) {
+            return inp.GetError();
         }
-        TIoFactory::RegisterTableInput(
-            kCurTableInput,
-            inp
-        );
+        TIoFactory::RegisterTableInput(kCurTableInput, inp.GetRes());
     }
     {
         TIoFactory::RegisterFileIo(
@@ -63,15 +60,12 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
             gt->SetSelects(ParseArgs(sl->GetArgs()));
             sl->SetIsId();
         }
-        auto [inp, err] = tokens[i]->MakeWorker();
-        if (err != EError::NoError) {
-            return err;
+        auto inp = tokens[i]->MakeWorker();
+        if (inp.HasError()) {
+            return inp.GetError();
         }
 
-        TIoFactory::RegisterTableInput(
-            kCurTableInput,
-            inp
-        );
+        TIoFactory::RegisterTableInput(kCurTableInput, inp.GetRes());
 
         std::swap(cur_t1, cur_t2);
     }

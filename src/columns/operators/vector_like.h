@@ -92,33 +92,37 @@ struct OResize {
 
 struct OOffset {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col, i64 offset) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, i64 offset) {
         using T = typename TCol::ElemType;
-        std::vector<T> ans(col.GetData().size() - offset);
+        i64 safe_offset = std::min(offset, static_cast<i64>(col.GetData().size()));
+        std::vector<T> ans(col.GetData().size() - safe_offset);
         std::memcpy(
             reinterpret_cast<char*>(ans.data()),
-            reinterpret_cast<char*>(col.GetData().data() + offset),
+            reinterpret_cast<char*>(col.GetData().data() + safe_offset),
             ans.size() * sizeof(T)
         );
         return std::make_shared<TCol>(std::move(ans));
     }
 
-    static inline Expected<IColumn> Exec(TStringColumn& col, i64 offset) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, i64 offset) {
+        i64 safe_offset = std::min(offset, static_cast<i64>(col.GetData().size()));
         StringVector ans;
-        ans.resize_both(col.GetData().data_size() - col.GetData().get_pos(offset), col.GetData().size() - offset);
+        ans.resize_both(col.GetData().data_size() - col.GetData().get_pos(safe_offset), col.GetData().size() - safe_offset);
         std::memcpy(
             reinterpret_cast<char*>(ans.data()),
-            reinterpret_cast<char*>(col.GetData().data() + col.GetData().get_pos(offset)),
-            col.GetData().data_size() - col.GetData().get_pos(offset)
+            reinterpret_cast<char*>(col.GetData().data() + col.GetData().get_pos(safe_offset)),
+            col.GetData().data_size() - col.GetData().get_pos(safe_offset)
         );
         std::memcpy(
             reinterpret_cast<char*>(ans.offsets_data()),
-            reinterpret_cast<char*>(col.GetData().offsets_data() + offset),
+            reinterpret_cast<char*>(col.GetData().offsets_data() + safe_offset),
             ans.size() * sizeof(i64)
         );
-        i64 del = ans.offsets_data()[0];
-        for (i64 i = 0; i < ans.size(); i++) {
-            ans.offsets_data()[i] -= del;
+        if (ans.size() > 0) {
+            i64 del = ans.offsets_data()[0];
+            for (i64 i = 0; i < ans.size(); i++) {
+                ans.offsets_data()[i] -= del;
+            }
         }
         return std::make_shared<TStringColumn>(std::move(ans));
     }

@@ -48,7 +48,7 @@ TEST_F(FiltersTest, EqTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "err!" << std::endl;

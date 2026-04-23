@@ -2,7 +2,7 @@
 
 namespace JfEngine {
 
-Expected<ITableInput> IoperatorCommand::MakeWorker() {
+Expected<TTableInputPtr> IoperatorCommand::MakeWorker() {
     return MakeError<EError::UnsupportedErr>();
 }
 

@@ -13,15 +13,15 @@ namespace JfEngine {
 
 class TAgregator : public ITableInput {
 public:
-    TAgregator(std::shared_ptr<ITableInput> jf_in); // return full table
-    TAgregator(std::shared_ptr<ITableInput> jf_in, TAoQuery query);
+    TAgregator(TTableInputPtr jf_in); // return full table
+    TAgregator(TTableInputPtr jf_in, TAoQuery query);
 
     Expected<void> SetupColumnsScheme() override;
     std::vector<TRowScheme>& GetScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     void MoveCursor() override;
 private:
-    std::shared_ptr<ITableInput> jf_in_;
+    TTableInputPtr jf_in_;
 
     std::shared_ptr<IAoEngine> eng_;
 

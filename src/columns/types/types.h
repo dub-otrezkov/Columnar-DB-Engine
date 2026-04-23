@@ -242,13 +242,13 @@ public:
 
 // helpers
 
-Expected<IColumn> MakeEmptyColumn(EColumn type);
-Expected<IColumn> MakeColumn(std::vector<std::string> data, EColumn type);
-Expected<IColumn> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
-Expected<IColumn> MakeColumnJf(std::vector<char> data, EColumn type);
+Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
+Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
+Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
+Expected<TColumnPtr> MakeColumnJf(std::vector<char> data, EColumn type);
 
 template <typename T>
-Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
+Expected<TColumnPtr> SetupColumn(std::vector<std::string>&& data) {
     auto res = std::make_shared<T>();
     auto t = res->Setup(std::move(data));
     if (t.HasError()) {
@@ -258,7 +258,7 @@ Expected<IColumn> SetupColumn(std::vector<std::string>&& data) {
 }
 
 template <typename T>
-Expected<IColumn> SetupColumn(const TVectorString2d& data, ui64 column_i) {
+Expected<TColumnPtr> SetupColumn(const TVectorString2d& data, ui64 column_i) {
     auto res = std::make_shared<T>();
     auto t = res->Setup(data, column_i);
     if (t.HasError()) {

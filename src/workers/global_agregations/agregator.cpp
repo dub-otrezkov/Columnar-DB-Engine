@@ -4,12 +4,12 @@
 
 namespace JfEngine {
 
-TAgregator::TAgregator(std::shared_ptr<ITableInput> jf_in, TAoQuery query) :
+TAgregator::TAgregator(TTableInputPtr jf_in, TAoQuery query) :
     jf_in_(std::move(jf_in)),
     eng_(MakeAoEngine(std::move(query)))
 {}
 
-TAgregator::TAgregator(std::shared_ptr<ITableInput> jf_in) : jf_in_(std::move(jf_in)), is_all_(true) {
+TAgregator::TAgregator(TTableInputPtr jf_in) : jf_in_(std::move(jf_in)), is_all_(true) {
 }
 
 std::vector<TRowScheme>& TAgregator::GetScheme() {
@@ -55,9 +55,8 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
                     }
                 }
             }
-            auto [t, _] = eng_->ThrowRowGroup();
+            ans = eng_->ThrowRowGroup();
             is_eof = true;
-            ans = *t;
         } else {
             auto err = eng_->ConsumeRowGroup(jf_in_.get());
             if (err.HasError()) {
@@ -67,7 +66,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
                     is_eof = true;
                 }
             }
-            ans = std::move(*eng_->ThrowRowGroup().GetShared());
+            ans = eng_->ThrowRowGroup();
         }
 
         for (ui64 i = 0; i < ans.size(); i++) {
@@ -85,6 +84,7 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
 
 void TAgregator::MoveCursor() {
     current_rg_.reset();
+    current_rg_err_ = EError::NoError;
     jf_in_->MoveCursor();
 }
 

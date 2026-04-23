@@ -257,14 +257,14 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
     };
 }
 
-Expected<ITableInput> TSelectToken::MakeWorker() {
+Expected<TTableInputPtr> TSelectToken::MakeWorker() {
     if (!is_id_) {
         auto args = ParseArgs(args_);
 
-        TIoFactory::GetTableIo(kCurTableInput).GetShared()->SetupColumnsScheme();
+        TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
 
         auto agr = std::make_shared<TAgregator>(
-            TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+            TIoFactory::GetTableIo(kCurTableInput),
             std::move(args)
         );
 
@@ -275,15 +275,15 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
 
         eng.Setup(agr);
 
-        eng.WriteDataToCsv(TIoFactory::GetIo(kResultData).GetRes());
-        eng.WriteSchemeToCsv(TIoFactory::GetIo(kResultScheme).GetRes());
+        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
+        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
 
         return EError::NoError;
     } else {
-        TIoFactory::GetTableIo(kCurTableInput).GetShared()->SetupColumnsScheme();
+        TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
 
         auto agr = std::make_shared<TAgregator>(
-            TIoFactory::GetTableIo(kCurTableInput).GetShared()
+            TIoFactory::GetTableIo(kCurTableInput)
         );
 
         TEngine eng;
@@ -293,8 +293,8 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
 
         eng.Setup(agr);
 
-        eng.WriteDataToCsv(TIoFactory::GetIo(kResultData).GetRes());
-        eng.WriteSchemeToCsv(TIoFactory::GetIo(kResultScheme).GetRes());
+        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
+        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
 
         return EError::NoError;
     }
