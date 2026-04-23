@@ -212,7 +212,7 @@ Expected<TParsedCommand> ParseCommand(const std::string& cmd) {
         }
     }
 
-    return std::make_unique<TParsedCommand>(TParsedCommand{std::move(all), std::move(st)});
+    return TParsedCommand{std::move(all), std::move(st)};
 }
 
 } // namespace JfEngine
