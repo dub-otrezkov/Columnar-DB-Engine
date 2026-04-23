@@ -40,7 +40,7 @@ public:
             ans[i] = mas[i];
         }
 
-        return std::move(ans);
+        return ans;
     }
 
     static T JfStrToInt(std::string_view in) {

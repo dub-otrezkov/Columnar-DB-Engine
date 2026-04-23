@@ -24,7 +24,7 @@ Expected<void> TOrderBy::SetupColumnsScheme() {
     jf_in_->SetupColumnsScheme();
     scheme_ = jf_in_->GetScheme();
     name_to_i_.clear();
-    for (auto [name, tp] : scheme_) {
+    for (const auto& [name, tp] : scheme_) {
         name_to_i_[name] = name_to_i_.size();
     }
     return EError::NoError;

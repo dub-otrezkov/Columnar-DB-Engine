@@ -6,8 +6,8 @@ TStringColumn::TStringColumn(std::vector<std::string> data) {
     // cols_ = std::move(data);
     cols_.clear();
     cols_.reserve(data.size());
-    for (const auto& el : data) {
-        cols_.push_back(el);
+    for (auto& el : data) {
+        cols_.push_back(std::move(el));
     }
 }
 

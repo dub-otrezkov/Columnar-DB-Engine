@@ -18,7 +18,7 @@ struct OSort {
             }
             return (col.GetData().at(i) < col.GetData().at(j));
         });
-        return std::move(ans);
+        return ans;
     }
 };
 

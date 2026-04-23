@@ -16,7 +16,7 @@ Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
         ans_ = std::move(c);
     }
 
-    ans = ans_;
+    ans = std::move(ans_);
 
     return EError::NoError;
 }
@@ -37,7 +37,7 @@ std::string TPlusOp::GetName() const {
         ans += arg->GetName() + " ";
     }
     ans.back() = ')';
-    return std::move(ans);
+    return ans;
 }
 
 TColumnPtr TMinusOp::ThrowRowGroup() {
@@ -52,7 +52,7 @@ Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
         ans_ = std::move(c);
     }
 
-    ans = ans_;
+    ans = std::move(ans_);
 
     return EError::NoError;
 }
@@ -69,7 +69,7 @@ std::string TMinusOp::GetName() const {
         ans += arg->GetName() + " ";
     }
     ans.back() = ')';
-    return std::move(ans);
+    return ans;
 }
 
 Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {

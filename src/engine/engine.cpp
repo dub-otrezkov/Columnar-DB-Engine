@@ -16,7 +16,7 @@ Expected<void> TEngine::Setup(TTableInputPtr in) {
 
 Expected<void> TEngine::WriteSchemeToCsv(std::ostream& out) {
     TCsvWriter w(out);
-    for (auto col : in_->GetScheme()) {
+    for (const auto& col : in_->GetScheme()) {
         w.WriteRow({col.name_, TColumnToStr(col.type_)});
     }
     return nullptr;
