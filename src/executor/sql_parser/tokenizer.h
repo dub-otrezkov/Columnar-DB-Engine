@@ -79,11 +79,11 @@ struct ICommand : public IToken {
 
     virtual Expected<ITableInput> MakeWorker() = 0;
 
-    void AddArg(std::shared_ptr<IToken> arg) {
+    void AddArg(IToken* arg) {
         args_.push_back(arg);
     }
 
-    std::vector<std::shared_ptr<IToken>> args_;
+    std::vector<IToken*> args_;
 };
 
 struct IoperatorCommand : public ICommand {
@@ -95,7 +95,7 @@ struct IoperatorCommand : public ICommand {
 struct TSelectToken : public ICommand {
     inline ETokens GetType() const override { return ETokens::kSelect; }
 
-    inline std::vector<std::shared_ptr<IToken>> GetArgs() { return args_; }
+    inline const std::vector<IToken*>& GetArgs() const { return args_; }
     Expected<ITableInput> MakeWorker() override;
 
     inline void SetIsId() { is_id_ = true; }
@@ -145,8 +145,8 @@ struct TOrderToken : public ICommand {
 
     Expected<ITableInput> MakeWorker() override;
 
-    std::shared_ptr<TLimitToken> limit_;
-    std::shared_ptr<TOffsetToken> offset_;
+    TLimitToken* limit_ = nullptr;
+    TOffsetToken* offset_ = nullptr;
 
 };
 
@@ -166,7 +166,7 @@ public:
     Expected<ITableInput> MakeWorker() override;
     inline void SetSelects(TAoQuery s) { selects_ = std::move(s); }
 
-    std::shared_ptr<TLimitToken> limit_;
+    TLimitToken* limit_ = nullptr;
 
 private:
     TAoQuery selects_;
@@ -275,8 +275,13 @@ private:
     std::stringstream ss;
 };
 
-TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by = false);
+struct TParsedCommand {
+    std::vector<std::unique_ptr<IToken>> all;
+    std::vector<ICommand*> cmds;
+};
 
-Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd);
+TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by = false);
+
+Expected<TParsedCommand> ParseCommand(const std::string& cmd);
 
 } // namespace JfEngine

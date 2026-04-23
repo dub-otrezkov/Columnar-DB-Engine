@@ -10,7 +10,7 @@ Expected<ITableInput> TCreateToken::MakeWorker() {
     if (args_.size() != 1 || args_[0]->GetType() != ETokens::kNameToken) {
         return MakeError<EError::BadCmdErr>();
     }
-    auto name = std::dynamic_pointer_cast<TNameToken>(args_[0])->GetName();
+    auto name = static_cast<TNameToken*>(args_[0])->GetName();
     auto err = eng.Setup(TIoFactory::GetTableIo(kCurTableInput).GetShared());
     if (err.HasError()) {
         return err.GetError();

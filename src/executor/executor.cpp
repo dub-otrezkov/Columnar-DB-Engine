@@ -24,7 +24,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         return err1;
     }
 
-    auto tokens = *t;
+    auto& tokens = t->cmds;
 
     TEngine eng;
     {
@@ -53,8 +53,8 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
 
     for (ui64 i = 2; i < tokens.size(); i++) {
         if (tokens[i]->GetType() == ETokens::kGroup) {
-            auto gt = std::dynamic_pointer_cast<TGroupToken>(tokens[i]);
-            auto sl = std::dynamic_pointer_cast<TSelectToken>(tokens[0]);
+            auto* gt = dynamic_cast<TGroupToken*>(tokens[i]);
+            auto* sl = dynamic_cast<TSelectToken*>(tokens[0]);
 
             if (!sl) {
                 return EError::BadCmdErr;
@@ -72,19 +72,6 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
             kCurTableInput,
             inp
         );
-
-        // if (auto d = std::dynamic_pointer_cast<std::stringstream>(TIoFactory::GetIo(cur_t2).GetShared())) {
-        //     d->clear();
-        //     d->seekg(0, std::ios::beg);
-        //     d->seekp(0, std::ios::beg);
-        //     d->str("");
-        // } else if (auto d = std::dynamic_pointer_cast<std::fstream>(TIoFactory::GetIo(cur_t2).GetShared())) {
-        //     d->close();
-        //     d->open(cur_t2 + ".jf", std::ios::out | std::ios::in | std::ios::trunc);
-        // }
-        // // TIoFactory::GetIo(cur_t2).GetShared()->clear();
-        // // TIoFactory::GetIo(cur_t2).GetShared()->seekg(0, std::ios::beg);
-        // // TIoFactory::GetIo(cur_t2).GetShared()->seekp(0, std::ios::beg);
 
         std::swap(cur_t1, cur_t2);
     }

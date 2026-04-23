@@ -20,14 +20,14 @@ Expected<ITableInput> TWhereToken::MakeWorker() {
             i++;
             continue;
         }
-        auto a1 = static_cast<TNameToken*>(args_[i].get());
+        auto a1 = static_cast<TNameToken*>(args_[i]);
         if (args_[i + 1]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a2 = static_cast<TNameToken*>(args_[i + 1].get());
+        auto a2 = static_cast<TNameToken*>(args_[i + 1]);
         if (a2->GetName() == "IN" || (a2->GetName() == "NOT" &&
-            args_[i + 2].get()->GetType() == ETokens::kNameToken && 
-            static_cast<TNameToken*>(args_[i + 2].get())->GetName() == "IN"))
+            args_[i + 2]->GetType() == ETokens::kNameToken &&
+            static_cast<TNameToken*>(args_[i + 2])->GetName() == "IN"))
         {
             bool rev = (a2->GetName() == "NOT");
 
@@ -42,7 +42,7 @@ Expected<ITableInput> TWhereToken::MakeWorker() {
             while (i < args_.size() && args_[i]->GetType() != ETokens::kCloseBracket) {
                 if (args_[i]->GetType() == ETokens::kNameToken) {
                     args_for_in.push_back(
-                        static_cast<TNameToken*>(args_[i].get())->GetName()
+                        static_cast<TNameToken*>(args_[i])->GetName()
                     );
                 }
                 i++;
@@ -60,7 +60,7 @@ Expected<ITableInput> TWhereToken::MakeWorker() {
         if (args_[i + 2]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a3 = static_cast<TNameToken*>(args_[i + 2].get());
+        auto a3 = static_cast<TNameToken*>(args_[i + 2]);
 
 
         if (a2->GetName() == "NOT") {
@@ -73,7 +73,7 @@ Expected<ITableInput> TWhereToken::MakeWorker() {
             if (a3->GetName() != "LIKE") {
                 return MakeError<EError::BadCmdErr>();
             }
-            auto a4 = static_cast<TNameToken*>(args_[i + 3].get());
+            auto a4 = static_cast<TNameToken*>(args_[i + 3]);
             config.emplace_back(
                 a1->GetName(),
                 EFilterType::kNLike,

@@ -9,7 +9,7 @@
 
 namespace JfEngine {
 
-TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) {
+TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
     std::vector<std::pair<ui64, std::string>> aliases;
 
@@ -25,13 +25,13 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
 
     std::string last_col = "";
 
-    for (auto& token : inp) {
+    for (auto token : inp) {
         if (next_alias) {
             next_alias = false;
             if (token->GetType() == ETokens::kNameToken) {
                 aliases.emplace_back(
                     args.size() - 1,
-                    static_cast<TNameToken*>(token.get())->GetName()
+                    static_cast<TNameToken*>(token)->GetName()
                 );
                 continue;
             }
@@ -46,7 +46,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kNameToken: {
-                auto d = static_cast<TNameToken*>(token.get())->GetName();
+                auto d = static_cast<TNameToken*>(token)->GetName();
 
                 obs.push_back(std::make_unique<TColumnOp>(d));
 
