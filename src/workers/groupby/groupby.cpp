@@ -7,7 +7,7 @@
 
 namespace JfEngine {
 
-TGroupBy::TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQuery selects) :
+TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
     group_q_(std::move(query)),
     agr_q_(std::move(selects)),
@@ -43,7 +43,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
 
     for (; run; jf_in_->MoveCursor()) {
         auto err = gc_eng->ConsumeRowGroup(jf_in_.get()).GetError();
-        auto [g, _] = gc_eng->ThrowRowGroup();
+        auto g = gc_eng->ThrowRowGroup();
 
         auto [ag, err2] = jf_in_->ReadRowGroup();
 
@@ -55,7 +55,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             }
         }
 
-        if (!ag || ag->empty() || ag->at(0)->GetSize() == 0) {
+        if (ag.empty() || ag.at(0)->GetSize() == 0) {
             continue;
         }
 
@@ -64,7 +64,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             inp_->Update(jf_in_->GetScheme());
         }
 
-        auto rg = *g;
+        auto& rg = g;
         const ui64 sz = rg[0]->GetSize();
 
         row_hashes_.assign(sz, 0);
@@ -102,7 +102,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
 
         for (auto& [key, is] : keys) {
             inp_->MoveCursor();
-            inp_->UploadRowGroup(*ag, is);
+            inp_->UploadRowGroup(ag, is);
 
             auto it = groups_.find(key);
             if (it == groups_.end()) {
@@ -115,15 +115,13 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     std::vector<TColumnPtr> ans(scheme_.size());
     for (auto& [_, value] : groups_) {
         if (!ans[0]) {
-            auto [t, _] = value.eng->ThrowRowGroup();
-            ans = *t;
+            ans = value.eng->ThrowRowGroup();
             for (ui64 i = 0; i < ans.size(); i++) {
                 Do<OResize>(ans[i], 1);
                 scheme_[i].type_ = ans[i]->GetType();
             }
         } else {
-            auto [tgars, _] = value.eng->ThrowRowGroup();
-            auto gars = *tgars;
+            auto gars = value.eng->ThrowRowGroup();
             for (ui64 i = 0; i < gars.size(); i++) {
                 Do<OPushBackFrom>(gars[i], ans[i], 0);
             }

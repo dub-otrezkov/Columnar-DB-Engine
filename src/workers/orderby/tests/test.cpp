@@ -39,7 +39,7 @@ TEST_F(OrderByTest, Basic) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -91,7 +91,7 @@ TEST_F(OrderByTest, Offset) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -142,7 +142,7 @@ TEST_F(OrderByTest, Reverse) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -193,7 +193,7 @@ TEST_F(OrderByTest, Limit) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -239,7 +239,7 @@ TEST_F(OrderByTest, ReverseLimit) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
         
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;

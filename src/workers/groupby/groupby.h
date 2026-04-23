@@ -19,14 +19,14 @@ namespace JfEngine {
 constexpr ui64 kUnlimited = -1;
 
 struct TGroupByQuery {
-    std::vector<std::shared_ptr<IOa>> cols;
+    std::vector<std::unique_ptr<IOa>> cols;
     ui64 limit = kUnlimited;
     bool is_id = false;
 };
 
 class TGroupBy : public ITableInput {
 public:
-    TGroupBy(std::shared_ptr<ITableInput> jf_in, TGroupByQuery query, TAoQuery selects);
+    TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects);
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
@@ -35,7 +35,7 @@ private:
     TGroupByQuery group_q_;
     TAoQuery agr_q_;
 
-    std::shared_ptr<ITableInput> jf_in_;
+    TTableInputPtr jf_in_;
     std::shared_ptr<IAoEngine> gc_eng;
 
     struct TGroup {

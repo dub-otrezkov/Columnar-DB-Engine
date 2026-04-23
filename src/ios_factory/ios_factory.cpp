@@ -30,25 +30,25 @@ void TIoFactory::RegisterFileIo(const std::string& alias, ETypeFile t) {
     i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == kJfFile ? ".jf" : ".csv"));
 }
 
-void TIoFactory::RegisterTableInput(const std::string& alias, std::shared_ptr<ITableInput> inp) {
+void TIoFactory::RegisterTableInput(const std::string& alias, TTableInputPtr inp) {
     auto i = Instance();
     i->iotables_[alias] = inp;
 }
 
-Expected<std::iostream> TIoFactory::GetIo(const std::string& alias) {
+std::shared_ptr<std::iostream> TIoFactory::GetIo(const std::string& alias) {
     auto i = Instance();
     if (i->ios_.contains(alias)) {
         return i->ios_.at(alias);
     }
-    return MakeError<EError::IoNotFoundErr>(alias);
+    return nullptr;
 }
 
-Expected<ITableInput> TIoFactory::GetTableIo(const std::string& alias) {
+TTableInputPtr TIoFactory::GetTableIo(const std::string& alias) {
     auto i = Instance();
     if (i->iotables_.contains(alias)) {
         return i->iotables_.at(alias);
     }
-    return MakeError<EError::IoNotFoundErr>(alias);
+    return nullptr;
 }
 
 void TIoFactory::Clear() {

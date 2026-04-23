@@ -9,27 +9,26 @@
 namespace JfEngine {
 
 Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [ans_, _] = args[0]->ThrowRowGroup();
-
+    auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
         auto [c, err2] = Do<OAddConst>(ans_, args[i]->GetName());
         ans_ = std::move(c);
     }
 
-    ans = ans_;
+    ans = std::move(ans_);
 
     return EError::NoError;
 }
 
-Expected<IColumn> TPlusOp::ThrowRowGroup() {
+TColumnPtr TPlusOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TPlusOp::Clone() {
-    auto r = std::make_shared<TPlusOp>();
+std::unique_ptr<IOa> TPlusOp::Clone() {
+    auto r = std::make_unique<TPlusOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TPlusOp::GetName() const {
@@ -38,31 +37,30 @@ std::string TPlusOp::GetName() const {
         ans += arg->GetName() + " ";
     }
     ans.back() = ')';
-    return std::move(ans);
+    return ans;
 }
 
-Expected<IColumn> TMinusOp::ThrowRowGroup() {
+TColumnPtr TMinusOp::ThrowRowGroup() {
     return ans;
 }
 
 Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [ans_, _] = args[0]->ThrowRowGroup();
-
+    auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
         auto [c, err2] = Do<OSubConst>(ans_, args[i]->GetName());
         ans_ = std::move(c);
     }
 
-    ans = ans_;
+    ans = std::move(ans_);
 
     return EError::NoError;
 }
 
-std::shared_ptr<IOa> TMinusOp::Clone() {
-    auto r = std::make_shared<TMinusOp>();
+std::unique_ptr<IOa> TMinusOp::Clone() {
+    auto r = std::make_unique<TMinusOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TMinusOp::GetName() const {
@@ -71,11 +69,11 @@ std::string TMinusOp::GetName() const {
         ans += arg->GetName() + " ";
     }
     ans.back() = ')';
-    return std::move(ans);
+    return ans;
 }
 
 Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OLength>(t);
     if (err) {
@@ -86,14 +84,14 @@ Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TLengthOp::ThrowRowGroup() {
+TColumnPtr TLengthOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TLengthOp::Clone() {
-    auto r = std::make_shared<TLengthOp>();
+std::unique_ptr<IOa> TLengthOp::Clone() {
+    auto r = std::make_unique<TLengthOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TLengthOp::GetName() const {
@@ -101,7 +99,7 @@ std::string TLengthOp::GetName() const {
 }
 
 Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OExtractMinute>(t);
     if (err) {
@@ -112,14 +110,14 @@ Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TExtractMinuteOp::ThrowRowGroup() {
+TColumnPtr TExtractMinuteOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TExtractMinuteOp::Clone() {
-    auto r = std::make_shared<TExtractMinuteOp>();
+std::unique_ptr<IOa> TExtractMinuteOp::Clone() {
+    auto r = std::make_unique<TExtractMinuteOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TExtractMinuteOp::GetName() const {
@@ -127,7 +125,7 @@ std::string TExtractMinuteOp::GetName() const {
 }
 
 Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OTruncMinute>(t);
     if (err) {
@@ -138,14 +136,14 @@ Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TTruncMinuteOp::ThrowRowGroup() {
+TColumnPtr TTruncMinuteOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TTruncMinuteOp::Clone() {
-    auto r = std::make_shared<TTruncMinuteOp>();
+std::unique_ptr<IOa> TTruncMinuteOp::Clone() {
+    auto r = std::make_unique<TTruncMinuteOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TTruncMinuteOp::GetName() const {
@@ -162,14 +160,14 @@ Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp) {
     return err;
 }
 
-Expected<IColumn> TColumnOp::ThrowRowGroup() {
+TColumnPtr TColumnOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TColumnOp::Clone() {
-    auto r = std::make_shared<TColumnOp>(name);
+std::unique_ptr<IOa> TColumnOp::Clone() {
+    auto r = std::make_unique<TColumnOp>(name);
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TColumnOp::GetName() const {
@@ -177,19 +175,19 @@ std::string TColumnOp::GetName() const {
 }
 
 Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp) {
-    auto [col, _] = arg->ThrowRowGroup();
-    ans = Do<ODistinctStreamV>(col, cur_sets).GetShared();
+    auto col = arg->ThrowRowGroup();
+    ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
     return EError::NoError;
 }
 
-Expected<IColumn> TDistinctOp::ThrowRowGroup() {
+TColumnPtr TDistinctOp::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TDistinctOp::Clone() {
-    auto r = std::make_shared<TDistinctOp>();
+std::unique_ptr<IOa> TDistinctOp::Clone() {
+    auto r = std::make_unique<TDistinctOp>();
     r->is_final = is_final;
-    return std::move(r);
+    return r;
 }
 
 std::string TDistinctOp::GetName() const {

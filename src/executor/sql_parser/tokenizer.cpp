@@ -19,7 +19,7 @@ TTokenizer::TTokenizer(const std::string& data) : query_(data) {
     ss << data;
 }
 
-Expected<IToken> TTokenizer::GetNext() {
+Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
     if (ss.eof()) {
         return MakeError<EError::EofErr>();
     }
@@ -41,7 +41,7 @@ Expected<IToken> TTokenizer::GetNext() {
         while (ss.peek() != EOF && std::isspace(ss.peek())) {
             ss.get();
         }
-        return std::make_shared<TNameToken>(token);
+        return std::make_unique<TNameToken>(token);
     }
 
     while (1) {
@@ -62,127 +62,157 @@ Expected<IToken> TTokenizer::GetNext() {
     }
 
     if (token == "FROM") {
-        return std::make_shared<TFromToken>(query_);
+        return std::make_unique<TFromToken>(query_);
     } else if (token == "CREATE") {
-        return std::make_shared<TCreateToken>();
+        return std::make_unique<TCreateToken>();
     } else if (token == "SELECT") {
-        return std::make_shared<TSelectToken>();
+        return std::make_unique<TSelectToken>();
     } else if (token == "SUM") {
-        return std::make_shared<TSumToken>();
+        return std::make_unique<TSumToken>();
     } else if (token == "COUNT") {
-        return std::make_shared<TCountToken>();
+        return std::make_unique<TCountToken>();
     } else if (token == "AVG") {
-        return std::make_shared<TAvgToken>();
+        return std::make_unique<TAvgToken>();
     } else if (token == "MIN") {
-        return std::make_shared<TMinToken>();
+        return std::make_unique<TMinToken>();
     } else if (token == "MAX") {
-        return std::make_shared<TMaxToken>();
+        return std::make_unique<TMaxToken>();
     } else if (token == "DISTINCT") {
-        return std::make_shared<TDistinctToken>();
+        return std::make_unique<TDistinctToken>();
     } else if (token == "LENGTH") {
-        return std::make_shared<TLengthToken>();
+        return std::make_unique<TLengthToken>();
     } else if (token == "EXTRACT_MINUTE") {
-        return std::make_shared<TExtractMinuteToken>();
+        return std::make_unique<TExtractMinuteToken>();
     } else if (token == "TRUNC_MINUTE") {
-        return std::make_shared<TTruncMinuteToken>();
+        return std::make_unique<TTruncMinuteToken>();
     } else if (token == "LIMIT") {
-        return std::make_shared<TLimitToken>();
+        return std::make_unique<TLimitToken>();
     } else if (token == "OFFSET") {
-        return std::make_shared<TLimitToken>();
+        return std::make_unique<TOffsetToken>();
     } else if (token == "+") {
-        return std::make_shared<TPlusToken>();
+        return std::make_unique<TPlusToken>();
     } else if (token == "-") {
-        return std::make_shared<TMinusToken>();
+        return std::make_unique<TMinusToken>();
     } else if (token == "ORDER") {
-        return std::make_shared<TOrderToken>();
+        return std::make_unique<TOrderToken>();
     } else if (token == "(") {
-        return std::make_shared<TOpenBracketToken>();
+        return std::make_unique<TOpenBracketToken>();
     } else if (token == ")") {
-        return std::make_shared<TCloseBracketToken>();
+        return std::make_unique<TCloseBracketToken>();
     } else if (token == ",") {
-        return std::make_shared<TComaToken>();
+        return std::make_unique<TComaToken>();
     } else if (token == "WHERE" || token == "HAVING") {
-        return std::make_shared<TWhereToken>();
+        return std::make_unique<TWhereToken>();
     } else if (token == "GROUP") {
-        return std::make_shared<TGroupToken>();
+        return std::make_unique<TGroupToken>();
     } else if (token == "AS") {
-        return std::make_shared<TAsToken>();
+        return std::make_unique<TAsToken>();
     } else if (token == "AND") {
-        return std::make_shared<TAndToken>();
+        return std::make_unique<TAndToken>();
     } else {
-        return std::make_shared<TNameToken>(token);
+        return std::make_unique<TNameToken>(token);
     }
 }
 
-Expected<std::vector<std::shared_ptr<ICommand>>> ParseCommand(const std::string& cmd) {
-    std::vector<std::shared_ptr<ICommand>> st;
-    std::vector<std::shared_ptr<ICommand>> ags_need;
+Expected<TParsedCommand> ParseCommand(const std::string& cmd) {
+    std::vector<std::unique_ptr<IToken>> all;
+    std::vector<ICommand*> st;
+    std::vector<ICommand*> ags_need;
 
     TTokenizer tkz(cmd);
 
     while (auto cur = tkz.GetNext()) {
-        switch (cur.GetShared()->GetType()) {
+        auto token_up = std::move(cur.GetRes());
+        IToken* raw = token_up.get();
+
+        switch (raw->GetType()) {
         case ETokens::kOpenBracket:
         case ETokens::kComa:
+            all.push_back(std::move(token_up));
             break;
-        case ETokens::kFrom:
-            st.push_back(std::static_pointer_cast<TFromToken>(cur.GetShared()));
-            ags_need.push_back(st.back());
+        case ETokens::kFrom: {
+            auto* p = static_cast<TFromToken*>(raw);
+            all.push_back(std::move(token_up));
+            st.push_back(p);
+            ags_need.push_back(p);
             break;
-        case ETokens::kCreate:
-            st.push_back(std::static_pointer_cast<TCreateToken>(cur.GetShared()));
-            ags_need.push_back(st.back());
+        }
+        case ETokens::kCreate: {
+            auto* p = static_cast<TCreateToken*>(raw);
+            all.push_back(std::move(token_up));
+            st.push_back(p);
+            ags_need.push_back(p);
             break;
-        case ETokens::kSelect:
-            st.push_back(std::static_pointer_cast<TSelectToken>(cur.GetShared()));
-            ags_need.push_back(st.back());
+        }
+        case ETokens::kSelect: {
+            auto* p = static_cast<TSelectToken*>(raw);
+            all.push_back(std::move(token_up));
+            st.push_back(p);
+            ags_need.push_back(p);
             break;
-        case ETokens::kWhere:
-            st.push_back(std::static_pointer_cast<TWhereToken>(cur.GetShared()));
-            ags_need.push_back(st.back());
+        }
+        case ETokens::kWhere: {
+            auto* p = static_cast<TWhereToken*>(raw);
+            all.push_back(std::move(token_up));
+            st.push_back(p);
+            ags_need.push_back(p);
             break;
-        case ETokens::kGroup:
-            st.push_back(std::static_pointer_cast<TGroupToken>(cur.GetShared()));
-            ags_need.push_back(st.back());
+        }
+        case ETokens::kGroup: {
+            auto* p = static_cast<TGroupToken*>(raw);
+            all.push_back(std::move(token_up));
+            st.push_back(p);
+            ags_need.push_back(p);
             break;
-        case ETokens::kOrder:
-            st.push_back(std::static_pointer_cast<TOrderToken>(cur.GetShared()));
-            ags_need.push_back(st.back());
+        }
+        case ETokens::kOrder: {
+            auto* p = static_cast<TOrderToken*>(raw);
+            all.push_back(std::move(token_up));
+            st.push_back(p);
+            ags_need.push_back(p);
             break;
-        case ETokens::kLimit:
+        }
+        case ETokens::kLimit: {
+            auto* p = static_cast<TLimitToken*>(raw);
+            all.push_back(std::move(token_up));
             if (!st.empty()) {
                 if (st.back()->GetType() == ETokens::kOrder) {
-                    static_cast<TOrderToken*>(st.back().get())->limit_ = std::static_pointer_cast<TLimitToken>(cur.GetShared());
+                    static_cast<TOrderToken*>(st.back())->limit_ = p;
                 } else if (st.back()->GetType() == ETokens::kGroup) {
-                    static_cast<TGroupToken*>(st.back().get())->limit_ = std::static_pointer_cast<TLimitToken>(cur.GetShared());
+                    static_cast<TGroupToken*>(st.back())->limit_ = p;
                 } else {
-                    st.push_back(std::static_pointer_cast<TLimitToken>(cur.GetShared()));
+                    st.push_back(p);
                 }
             }
-            ags_need.push_back(std::static_pointer_cast<TLimitToken>(cur.GetShared()));
+            ags_need.push_back(p);
             break;
-        case ETokens::kOffset:
+        }
+        case ETokens::kOffset: {
+            auto* p = static_cast<TOffsetToken*>(raw);
+            all.push_back(std::move(token_up));
             if (!st.empty()) {
                 if (st.back()->GetType() == ETokens::kOrder) {
-                    static_cast<TOrderToken*>(st.back().get())->offset_ = std::static_pointer_cast<TOffsetToken>(cur.GetShared());
+                    static_cast<TOrderToken*>(st.back())->offset_ = p;
                 } else {
-                    st.push_back(std::static_pointer_cast<TLimitToken>(cur.GetShared()));
+                    st.push_back(p);
                 }
             }
-            ags_need.push_back(std::static_pointer_cast<TLimitToken>(cur.GetShared()));
+            ags_need.push_back(p);
             break;
+        }
         case ETokens::kCloseBracket:
         default: {
-            if (st.empty() || !st.back()) {
+            if (ags_need.empty()) {
                 return MakeError<EError::BadCmdErr>("failed parse query");
             }
-            ags_need.back()->AddArg(cur.GetShared());
+            all.push_back(std::move(token_up));
+            ags_need.back()->AddArg(raw);
             break;
         }
         }
     }
 
-    return st;
+    return TParsedCommand{std::move(all), std::move(st)};
 }
 
 } // namespace JfEngine

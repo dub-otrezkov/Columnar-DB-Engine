@@ -18,7 +18,7 @@ std::vector<std::string>& IAoEngine::GetNames() {
 }
 
 TAgregationQuery TAgregationQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(cols.size());
+    std::vector<std::unique_ptr<IOa>> ans(cols.size());
     for (ui64 i = 0; i < cols.size(); i++) {
         ans[i] = cols[i]->Clone();
     }
@@ -29,7 +29,7 @@ TAgregationQuery TAgregationQuery::Clone() {
 }
 
 TOperatorQuery TOperatorQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(cols.size());
+    std::vector<std::unique_ptr<IOa>> ans(cols.size());
     for (ui64 i = 0; i < cols.size(); i++) {
         ans[i] = cols[i]->Clone();
     }
@@ -40,7 +40,7 @@ TOperatorQuery TOperatorQuery::Clone() {
 }
 
 TAoQuery TAoQuery::Clone() {
-    std::vector<std::shared_ptr<IOa>> ans(args.size());
+    std::vector<std::unique_ptr<IOa>> ans(args.size());
     for (ui64 i = 0; i < ans.size(); i++) {
         ans[i] = args[i]->Clone();
     }
@@ -82,15 +82,14 @@ Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
     return (is_eof ? EError::EofErr : EError::NoError);
 }
 
-Expected<std::vector<std::shared_ptr<IColumn>>> TAgregationEngine::ThrowRowGroup() {
-    std::vector<std::shared_ptr<IColumn>> ans;
+std::vector<TColumnPtr> TAgregationEngine::ThrowRowGroup() {
+    std::vector<TColumnPtr> ans;
     for (auto& c : q_.cols) {
         if (c->is_final) {
-            auto [res, _] = c->ThrowRowGroup();
-            ans.push_back(std::move(res));
+            ans.push_back(c->ThrowRowGroup());
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp) {
@@ -108,15 +107,14 @@ Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp) {
     return (is_eof ? EError::EofErr : EError::NoError);
 }
 
-Expected<std::vector<std::shared_ptr<IColumn>>> TOperatorEngine::ThrowRowGroup() {
-    std::vector<std::shared_ptr<IColumn>> ans;
+std::vector<TColumnPtr> TOperatorEngine::ThrowRowGroup() {
+    std::vector<TColumnPtr> ans;
     for (auto& c : q_.cols) {
         if (c->is_final) {
-            auto [res, _] = c->ThrowRowGroup();
-            ans.push_back(std::move(res));
+            ans.push_back(c->ThrowRowGroup());
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 std::shared_ptr<IAoEngine> TOperatorEngine::Clone() {

@@ -3,11 +3,12 @@
 #include "utils/cint/int.h"
 
 #include <cassert>
+#include <iosfwd>
+#include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <typeinfo>
-#include <memory>
-#include <optional>
 
 enum EError {
     NoError = 0,
@@ -34,8 +35,6 @@ public:
     virtual i64 GetId() const;
 };
 
-// using Error = std::shared_ptr<IError>;
-
 template <EError T>
 bool Is(EError in) {
     return T == in;
@@ -49,17 +48,27 @@ EError MakeError(std::string arg = "") {
     return T;
 }
 
+// ---------------------------------------------------------------------------
+// Expected<T>  —  stores T directly via std::optional<T>
+// ---------------------------------------------------------------------------
 template <typename T>
 class Expected {
+    std::optional<T> val_;
+    EError err_ = EError::NoError;
+
 public:
-    Expected(std::nullptr_t) {}
+    Expected() {}
 
-    Expected(T&& res, EError err = EError::NoError) : res_(std::make_shared<T>(std::forward<T>(res))), err_(err) {}
+    Expected(T val, EError err = EError::NoError)
+        : val_(std::move(val)), err_(err) {}
 
-    Expected(std::shared_ptr<T> res, EError err = EError::NoError) : res_(std::move(res)), err_(err) {}
-
-    template<typename R>
-    Expected(std::shared_ptr<R> res, EError err = EError::NoError) : res_(std::move(res)), err_(err) {}
+    template<typename U>
+    Expected(U val, EError err = EError::NoError)
+        requires (std::is_constructible_v<T, U&&>
+                  && !std::is_same_v<std::decay_t<U>, T>
+                  && !std::is_same_v<std::decay_t<U>, EError>
+                  && !std::is_same_v<std::decay_t<U>, std::nullptr_t>)
+        : val_(T(std::move(val))), err_(err) {}
 
     Expected(EError err) : err_(err) {}
 
@@ -68,47 +77,36 @@ public:
     Expected& operator=(const Expected&) = default;
     Expected& operator=(Expected&&) = default;
 
-    bool HasError() const {
-        return (err_ != EError::NoError);
-    }
-
-    EError GetError() {
-        return err_;
-    }
+    bool HasError() const { return err_ != EError::NoError; }
+    bool HasValue() const { return val_.has_value(); }
+    EError GetError() const { return err_; }
 
     T& GetRes() {
-        return *res_;
+        assert(val_.has_value());
+        return *val_;
     }
 
-    std::shared_ptr<T> GetShared() {
-        return res_;
+    const T& GetRes() const {
+        assert(val_.has_value());
+        return *val_;
     }
 
-    explicit operator bool() const {
-        return !HasError();
-    }
+    explicit operator bool() const { return !HasError(); }
 
     T* operator->() {
-        assert(!HasError());
-        return res_;
-    }
-
-    auto operator*() {
-        return {res_, err_};
+        assert(val_.has_value());
+        return &*val_;
     }
 
     template<std::size_t N>
-    auto get() const {
+    auto get() {
         if constexpr (N == 0) {
-            return res_;
-        }
-        else if constexpr (N == 1) {
+            if (val_) return std::move(*val_);
+            return T{};
+        } else {
             return err_;
         }
     }
-private:
-    std::shared_ptr<T> res_ = nullptr;
-    EError err_ = EError::NoError;
 };
 
 namespace std {
@@ -117,7 +115,7 @@ namespace std {
 
     template<typename T>
     struct tuple_element<0, Expected<T>> {
-        using type = std::shared_ptr<T>;
+        using type = T;
     };
 
     template<typename T>
@@ -140,17 +138,12 @@ public:
     Expected& operator=(const Expected&) = default;
     Expected& operator=(Expected&&) = default;
 
-    bool HasError() const {
-        return (err_ != EError::NoError);
-    }
+    bool HasError() const { return err_ != EError::NoError; }
 
-    explicit operator bool() const {
-        return !HasError();
-    }
+    explicit operator bool() const { return !HasError(); }
 
-    EError GetError() {
-        return err_;
-    }
+    EError GetError() { return err_; }
+
 private:
     EError err_ = EError::NoError;
 };

@@ -11,7 +11,7 @@ namespace JfEngine {
 
 struct ODistinct {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TCol& col1, TColumnPtr col2) {
         using T = typename TCol::ElemTypeRo;
 
         if (col2->GetType() != col1.GetType()) {
@@ -33,11 +33,11 @@ struct ODistinct {
         return std::make_shared<TCol>(std::move(ans));
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TColumnPtr col2) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<IColumn> Exec(TTimestampColumn& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TColumnPtr col2) {
         return EError::UnsupportedErr;
     }
 };
@@ -99,7 +99,7 @@ struct TDistinctSets {
 
 struct ODistinctStreamV {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col1, TDistinctSets& st) {
+    static inline Expected<TColumnPtr> Exec(TCol& col1, TDistinctSets& st) {
         using T = typename TCol::ElemTypeRo;
         std::vector<T> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
@@ -110,11 +110,11 @@ struct ODistinctStreamV {
         return std::make_shared<TCol>(std::move(ans));
     }
 
-    static inline Expected<IColumn> Exec(TDateColumn& col, TDistinctSets& st) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TDistinctSets& st) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<IColumn> Exec(TTimestampColumn& col1, TDistinctSets& st) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TDistinctSets& st) {
         return EError::UnsupportedErr;
     }
 };

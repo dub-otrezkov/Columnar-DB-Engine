@@ -4,7 +4,7 @@ std::string operator+(std::string_view a, std::string_view b) {
     std::string res(a.length() + b.length(), '0');
     std::memcpy(res.data(), a.data(), a.length());
     std::memcpy(res.data() + a.length(), b.data(), b.length());
-    return std::move(res);
+    return res;
 }
 
 std::vector<char> Serialize(const StringVector& a) {
@@ -37,5 +37,5 @@ StringVector UnserializeString(const std::vector<char>& a) {
     std::memcpy(res.data_.data(), a.data(), data_sz);
     std::memcpy(reinterpret_cast<char*>(res.offsets_.data()), a.data() + data_sz, res.offsets_.size() * sizeof(ui64));
 
-    return std::move(res);
+    return res;
 }

@@ -4,7 +4,7 @@
 
 namespace JfEngine {
 
-Expected<ITableInput> TLimitToken::MakeWorker() {
+Expected<TTableInputPtr> TLimitToken::MakeWorker() {
     return EError::UnsupportedErr;
 }
 
@@ -16,7 +16,7 @@ ui64 TLimitToken::GetLimit() const {
         return 0;
     }
 
-    auto str = static_cast<TNameToken*>(args_[0].get())->GetName();
+    auto str = static_cast<TNameToken*>(args_[0])->GetName();
 
     try {
         auto ans = std::stoll(str);
@@ -28,7 +28,7 @@ ui64 TLimitToken::GetLimit() const {
 }
 
 
-Expected<ITableInput> TOffsetToken::MakeWorker() {
+Expected<TTableInputPtr> TOffsetToken::MakeWorker() {
     return EError::UnsupportedErr;
 }
 
@@ -40,7 +40,7 @@ ui64 TOffsetToken::GetOffset() const {
         return 0;
     }
 
-    auto str = static_cast<TNameToken*>(args_[0].get())->GetName();
+    auto str = static_cast<TNameToken*>(args_[0])->GetName();
 
     try {
         auto ans = std::stoll(str);

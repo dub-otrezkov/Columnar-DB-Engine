@@ -221,7 +221,7 @@ struct OFilterCheck {
 
 struct OFilter {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col, const std::vector<bool>& mask) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<bool>& mask) {
         using T = typename TCol::ElemTypeRo;
         std::vector<T> vals;
         if (col.GetData().size() != mask.size()) {

@@ -15,7 +15,7 @@ void TNarrowTableInput::Update(std::vector<TRowScheme>& scheme) {
     buf_ = std::make_shared<std::vector<TColumnPtr>>(scheme_.size());
 
     for (ui64 i = 0; i < scheme_.size(); i++) {
-        buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetShared();
+        buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetRes();
     }
 }
 
@@ -25,14 +25,15 @@ Expected<void> TNarrowTableInput::SetupColumnsScheme() {
 
 void TNarrowTableInput::MoveCursor() {
     current_rg_.reset();
+    current_rg_err_ = EError::NoError;
     for (ui64 i = 0; i < scheme_.size(); i++) {
-        buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetShared();
+        buf_->at(i) = MakeEmptyColumn(scheme_[i].type_).GetRes();
     }
 }
 
 Expected<std::vector<TColumnPtr>> TNarrowTableInput::LoadRowGroup() {
     assert(buf_->size() == GetScheme().size());
-    return buf_;
+    return std::vector<TColumnPtr>(*buf_);
 }
 
 void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, std::vector<ui64>& row_i) {

@@ -224,14 +224,14 @@ template <typename T>
 std::vector<char> Serialize(const std::vector<T>& a) {
     std::vector<char> res(a.size() * sizeof(T));
     std::memcpy(res.data(), reinterpret_cast<const char*>(a.data()), res.size());
-    return std::move(res);
+    return res;
 }
 
 template <typename T>
 std::vector<T> Unserialize(const std::vector<char>& a) {
     std::vector<T> res(a.size() / sizeof(T));
     std::memcpy(res.data(), a.data(), a.size());
-    return std::move(res);
+    return res;
 }
 
 std::vector<char> Serialize(const StringVector& a);

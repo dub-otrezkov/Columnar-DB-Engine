@@ -39,8 +39,8 @@ TEST_F(GroupByTest, Basic) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
-        
+        auto err2 = eng.WriteTableToJf(*jf_table);
+
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
         }
@@ -50,26 +50,25 @@ TEST_F(GroupByTest, Basic) {
     {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
-        TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnOp>("red")}};
-        gq.cols[0]->is_final = true;
+        TGroupByQuery gq;
+        {
+            auto c = std::make_unique<TColumnOp>("red");
+            c->is_final = true;
+            gq.cols.push_back(std::move(c));
+        }
 
         TAoQuery aq;
-        auto group_name = std::make_shared<TColumnOp>("red");
-        auto column_name = std::make_shared<TColumnOp>("what");
-        auto cnt_agr = std::make_shared<TCountAgr>();
-        auto sum_agr = std::make_shared<TSumAgr>();
-        aq.args.push_back(column_name);
-        aq.args.push_back(group_name);
-        aq.args.push_back(cnt_agr);
-        aq.args.push_back(sum_agr);
+        aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
+        aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
+        aq.args.push_back(std::make_unique<TCountAgr>());          // 2
+        aq.args.push_back(std::make_unique<TSumAgr>());            // 3
         aq.edges = {
             {2, 0},
             {3, 0}
         };
-
-        group_name->is_final = true;
-        cnt_agr->is_final = true;
-        sum_agr->is_final = true;
+        aq.args[1]->is_final = true;
+        aq.args[2]->is_final = true;
+        aq.args[3]->is_final = true;
 
         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
@@ -117,8 +116,8 @@ TEST_F(GroupByTest, Stress) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng->WriteTableToJf(*jf_table);
-        
+        auto err2 = eng.WriteTableToJf(*jf_table);
+
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
         }
@@ -128,28 +127,25 @@ TEST_F(GroupByTest, Stress) {
     {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
-        TGroupByQuery gq{std::vector<std::shared_ptr<IOa>>{std::make_shared<TColumnOp>("red")}};
-        gq.cols[0]->is_final = true;
+        TGroupByQuery gq;
+        {
+            auto c = std::make_unique<TColumnOp>("red");
+            c->is_final = true;
+            gq.cols.push_back(std::move(c));
+        }
 
         TAoQuery aq;
-        auto group_name = std::make_shared<TColumnOp>("red");
-        auto column_name = std::make_shared<TColumnOp>("what");
-        auto cnt_agr = std::make_shared<TCountAgr>();
-        auto sum_agr = std::make_shared<TSumAgr>();
-        // cnt_agr->AddArg(column_name);
-        // sum_agr->AddArg(column_name);
-        aq.args.push_back(column_name);
-        aq.args.push_back(group_name);
-        aq.args.push_back(cnt_agr);
-        aq.args.push_back(sum_agr);
+        aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
+        aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
+        aq.args.push_back(std::make_unique<TCountAgr>());          // 2
+        aq.args.push_back(std::make_unique<TSumAgr>());            // 3
         aq.edges = {
             {2, 0},
             {3, 0}
         };
-
-        group_name->is_final = true;
-        cnt_agr->is_final = true;
-        sum_agr->is_final = true;
+        aq.args[1]->is_final = true;
+        aq.args[2]->is_final = true;
+        aq.args[3]->is_final = true;
 
         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
@@ -164,14 +160,6 @@ TEST_F(GroupByTest, Stress) {
         auto res = engine->WriteDataToCsv(data);
 
         ASSERT_FALSE(res.HasError());
-
-//         EXPECT_EQ(data.str(), R"(dot,3,164
-// "i,could,have,lied",1,5
-// john,1,-10
-// josh,1,1
-// stadium,1,0
-// the,2,36
-// )");
     }
 }
 

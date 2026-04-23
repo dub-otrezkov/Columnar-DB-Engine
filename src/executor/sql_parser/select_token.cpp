@@ -9,13 +9,13 @@
 
 namespace JfEngine {
 
-TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) {
+TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
     std::vector<std::pair<ui64, std::string>> aliases;
 
     bool next_alias = false;
 
-    std::vector<std::shared_ptr<IOa>> obs;
+    std::vector<std::unique_ptr<IOa>> obs;
     std::vector<ui64> args;
     std::vector<ui64> st;
 
@@ -25,13 +25,13 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
 
     std::string last_col = "";
 
-    for (auto& token : inp) {
+    for (auto token : inp) {
         if (next_alias) {
             next_alias = false;
             if (token->GetType() == ETokens::kNameToken) {
                 aliases.emplace_back(
                     args.size() - 1,
-                    static_cast<TNameToken*>(token.get())->GetName()
+                    static_cast<TNameToken*>(token)->GetName()
                 );
                 continue;
             }
@@ -46,18 +46,11 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kNameToken: {
-                auto d = static_cast<TNameToken*>(token.get())->GetName();
+                auto d = static_cast<TNameToken*>(token)->GetName();
 
-                // if (d == "*" && !last_col.empty() && !has_group_by) {
-                //     d = last_col;
-                // } else if (d != "*") {
-                //     last_col = d;
-                // }
-
-                obs.push_back(std::make_shared<TColumnOp>(d));
+                obs.push_back(std::make_unique<TColumnOp>(d));
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -66,7 +59,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kSum: {
-                obs.push_back(std::make_shared<TSumAgr>());
+                obs.push_back(std::make_unique<TSumAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -76,7 +69,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kCount: {
-                obs.push_back(std::make_shared<TCountAgr>());
+                obs.push_back(std::make_unique<TCountAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -86,7 +79,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kAvg: {
-                obs.push_back(std::make_shared<TAvgAgr>());
+                obs.push_back(std::make_unique<TAvgAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -96,7 +89,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kMin: {
-                obs.push_back(std::make_shared<TMinAgr>());
+                obs.push_back(std::make_unique<TMinAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -106,7 +99,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kMax: {
-                obs.push_back(std::make_shared<TMaxAgr>());
+                obs.push_back(std::make_unique<TMaxAgr>());
                 etype = EAoEngineType::kAgregation;
 
                 args.push_back(obs.size() - 1);
@@ -116,10 +109,9 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kDistinct: {
-                obs.push_back(std::make_shared<TDistinctOp>());
+                obs.push_back(std::make_unique<TDistinctOp>());
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -130,10 +122,9 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kExtractMinute: {
-                obs.push_back(std::make_shared<TExtractMinuteOp>());
+                obs.push_back(std::make_unique<TExtractMinuteOp>());
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -144,10 +135,9 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kTruncMinute: {
-                obs.push_back(std::make_shared<TTruncMinuteOp>());
+                obs.push_back(std::make_unique<TTruncMinuteOp>());
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -158,10 +148,9 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kLength: {
-                obs.push_back(std::make_shared<TLengthOp>());
+                obs.push_back(std::make_unique<TLengthOp>());
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -172,10 +161,9 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kPlus: {
-                obs.push_back(std::make_shared<TPlusOp>());
+                obs.push_back(std::make_unique<TPlusOp>());
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -186,10 +174,9 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
                 break;
             }
             case ETokens::kMinus: {
-                obs.push_back(std::make_shared<TMinusOp>());
+                obs.push_back(std::make_unique<TMinusOp>());
 
                 if (!st.empty()) {
-                    // st.back()->AddArg(obs.size() - 1);
                     eds.emplace_back(st.back(), obs.size() - 1);
                 } else {
                     args.push_back(obs.size() - 1);
@@ -233,7 +220,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
         inv[topsort[i]] = i;
     }
 
-    std::vector<std::shared_ptr<IOa>> all(obs.size());
+    std::vector<std::unique_ptr<IOa>> all(obs.size());
 
     for (ui64 i = 0; i < all.size(); i++) {
         all[inv[i]] = std::move(obs[i]);
@@ -247,7 +234,7 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
     }
 
     boost::unordered_flat_map<std::string, ui64> alias;
-    std::vector<std::shared_ptr<IOa>> fin;
+    std::vector<std::unique_ptr<IOa>> fin;
     for (ui64 i = 0; i < all.size(); i++) {
         if (!alias.contains(all[i]->GetName())) {
             alias.emplace(all[i]->GetName(), fin.size());
@@ -270,14 +257,14 @@ TAoQuery ParseArgs(std::vector<std::shared_ptr<IToken>> inp, bool has_group_by) 
     };
 }
 
-Expected<ITableInput> TSelectToken::MakeWorker() {
+Expected<TTableInputPtr> TSelectToken::MakeWorker() {
     if (!is_id_) {
         auto args = ParseArgs(args_);
 
-        TIoFactory::GetTableIo(kCurTableInput).GetShared()->SetupColumnsScheme();
+        TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
 
         auto agr = std::make_shared<TAgregator>(
-            TIoFactory::GetTableIo(kCurTableInput).GetShared(),
+            TIoFactory::GetTableIo(kCurTableInput),
             std::move(args)
         );
 
@@ -288,15 +275,15 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
 
         eng.Setup(agr);
 
-        eng.WriteDataToCsv(TIoFactory::GetIo(kResultData).GetRes());
-        eng.WriteSchemeToCsv(TIoFactory::GetIo(kResultScheme).GetRes());
+        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
+        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
 
         return EError::NoError;
     } else {
-        TIoFactory::GetTableIo(kCurTableInput).GetShared()->SetupColumnsScheme();
+        TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
 
         auto agr = std::make_shared<TAgregator>(
-            TIoFactory::GetTableIo(kCurTableInput).GetShared()
+            TIoFactory::GetTableIo(kCurTableInput)
         );
 
         TEngine eng;
@@ -306,8 +293,8 @@ Expected<ITableInput> TSelectToken::MakeWorker() {
 
         eng.Setup(agr);
 
-        eng.WriteDataToCsv(TIoFactory::GetIo(kResultData).GetRes());
-        eng.WriteSchemeToCsv(TIoFactory::GetIo(kResultScheme).GetRes());
+        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
+        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
 
         return EError::NoError;
     }

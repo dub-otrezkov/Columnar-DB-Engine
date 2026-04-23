@@ -6,7 +6,7 @@ namespace JfEngine {
 
 struct OMin {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col) {
+    static inline Expected<TColumnPtr> Exec(TCol& col) {
         using T = typename TCol::ElemType;
         using TRo = typename TCol::ElemTypeRo;
 
@@ -20,7 +20,7 @@ struct OMin {
 
 struct OVerticalMin {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TCol& col1, TColumnPtr col2) {
         using T = typename TCol::ElemType;
 
         if (col1.GetSize() != col2->GetSize()) {
@@ -40,7 +40,7 @@ struct OVerticalMin {
 
 struct OMax {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col) {
+    static inline Expected<TColumnPtr> Exec(TCol& col) {
         using T = typename TCol::ElemType;
         using TRo = typename TCol::ElemTypeRo;
 
@@ -54,7 +54,7 @@ struct OMax {
 
 struct OVerticalMax {
     template <typename TCol>
-    static inline Expected<IColumn> Exec(TCol& col1, TColumnPtr col2) {
+    static inline Expected<TColumnPtr> Exec(TCol& col1, TColumnPtr col2) {
         using T = typename TCol::ElemType;
 
         if (col1.GetSize() != col2->GetSize()) {

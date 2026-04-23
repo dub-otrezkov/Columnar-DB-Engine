@@ -17,9 +17,9 @@ struct IOa {
 
     bool is_final = false;
 
-    virtual std::shared_ptr<IOa> Clone() = 0;
+    virtual std::unique_ptr<IOa> Clone() = 0;
     virtual Expected<void> ConsumeRowGroup(ITableInput* inp) = 0;
-    virtual Expected<IColumn> ThrowRowGroup() = 0;
+    virtual TColumnPtr ThrowRowGroup() = 0;
 
     virtual std::string GetName() const = 0;
 
@@ -41,10 +41,10 @@ struct TColumnOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline const std::string& GetColumn() const override {
         return name;
@@ -58,10 +58,10 @@ struct TPlusOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline void AddArg(IOa* arg) override {
         return args.push_back(arg);
@@ -79,10 +79,10 @@ struct TMinusOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline void AddArg(IOa* arg) override {
         args.push_back(arg);
@@ -100,10 +100,10 @@ struct TLengthOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -121,10 +121,10 @@ struct TExtractMinuteOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -142,10 +142,10 @@ struct TTruncMinuteOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -165,10 +165,10 @@ struct TDistinctOp : public IOa {
 
     std::string GetName() const override;
 
-    std::shared_ptr<IOa> Clone() override;
+    std::unique_ptr<IOa> Clone() override;
 
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    Expected<IColumn> ThrowRowGroup() override;
+    TColumnPtr ThrowRowGroup() override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;

@@ -30,19 +30,19 @@ beam,timestamp
         TIoFactory::RegisterSStreamIo("tmp1", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp2", ETypeFile::kJfFile);
 
-        TIoFactory::GetIo("scheme").GetRes() << scheme;
+        *TIoFactory::GetIo("scheme") << scheme;
         for (ui64 i = 0; i < iter; i++) {
-            TIoFactory::GetIo("data").GetRes() << data;
+            *TIoFactory::GetIo("data") << data;
         }
 
         TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
         TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
 
         out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultScheme).GetShared()
+            TIoFactory::GetIo(kResultScheme)
         );
         out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultData).GetShared()
+            TIoFactory::GetIo(kResultData)
         );
     }
 

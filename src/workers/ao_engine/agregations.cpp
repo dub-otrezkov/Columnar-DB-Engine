@@ -9,7 +9,7 @@
 namespace JfEngine {
 
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto [col, _] = arg->ThrowRowGroup();
+    auto col = arg->ThrowRowGroup();
 
     auto sum = Do<OSum>(col);
 
@@ -18,26 +18,26 @@ Expected<void> TSumAgr::ConsumeRowGroup(ITableInput* inp) {
     }
 
     if (!ans) {
-        ans = sum.GetShared();
+        ans = sum.GetRes();
     } else {
-        auto tmp = Do<OVerticalSum>(ans, sum.GetShared());
+        auto tmp = Do<OVerticalSum>(ans, sum.GetRes());
 
         if (tmp.HasError()) {
             return tmp.GetError();
         }
 
-        ans = tmp.GetShared();
+        ans = tmp.GetRes();
     }
 
     return EError::NoError;
 }
 
-Expected<IColumn> TSumAgr::ThrowRowGroup() {
+TColumnPtr TSumAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TSumAgr::Clone() {
-    auto r = std::make_shared<TSumAgr>();
+std::unique_ptr<IOa> TSumAgr::Clone() {
+    auto r = std::make_unique<TSumAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -47,19 +47,19 @@ std::string TSumAgr::GetName() const {
 }
 
 Expected<void> TCountAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto [t, _] = arg->ThrowRowGroup();
+    auto t = arg->ThrowRowGroup();
 
     ans += t->GetSize();
 
     return EError::NoError;
 }
 
-Expected<IColumn> TCountAgr::ThrowRowGroup() {
+TColumnPtr TCountAgr::ThrowRowGroup() {
     return std::make_shared<Ti64Column>(std::vector<i64>{ans});
 }
 
-std::shared_ptr<IOa> TCountAgr::Clone() {
-    auto r = std::make_shared<TCountAgr>();
+std::unique_ptr<IOa> TCountAgr::Clone() {
+    auto r = std::make_unique<TCountAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -69,7 +69,7 @@ std::string TCountAgr::GetName() const {
 }
 
 Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto [col, _] = arg->ThrowRowGroup();
+    auto col = arg->ThrowRowGroup();
 
     auto sum = Do<OMin>(col);
     if (sum.HasError()) {
@@ -77,26 +77,26 @@ Expected<void> TMinAgr::ConsumeRowGroup(ITableInput* inp) {
     }
 
     if (!ans) {
-        ans = sum.GetShared();
+        ans = sum.GetRes();
     } else {
-        auto tmp = Do<OVerticalMin>(ans, sum.GetShared());
+        auto tmp = Do<OVerticalMin>(ans, sum.GetRes());
 
         if (tmp.HasError()) {
             return tmp.GetError();
         }
 
-        ans = tmp.GetShared();
+        ans = tmp.GetRes();
     }
 
     return EError::NoError;
 }
 
-Expected<IColumn> TMinAgr::ThrowRowGroup() {
+TColumnPtr TMinAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TMinAgr::Clone() {
-    auto r = std::make_shared<TMinAgr>();
+std::unique_ptr<IOa> TMinAgr::Clone() {
+    auto r = std::make_unique<TMinAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -106,7 +106,7 @@ std::string TMinAgr::GetName() const {
 }
 
 Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
-    auto [col, _] = arg->ThrowRowGroup();
+    auto col = arg->ThrowRowGroup();
 
     auto sum = Do<OMax>(col);
     if (sum.HasError()) {
@@ -114,26 +114,26 @@ Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput* inp) {
     }
 
     if (!ans) {
-        ans = sum.GetShared();
+        ans = sum.GetRes();
     } else {
-        auto tmp = Do<OVerticalMax>(ans, sum.GetShared());
+        auto tmp = Do<OVerticalMax>(ans, sum.GetRes());
 
         if (tmp.HasError()) {
             return tmp.GetError();
         }
 
-        ans = tmp.GetShared();
+        ans = tmp.GetRes();
     }
 
     return EError::NoError;
 }
 
-Expected<IColumn> TMaxAgr::ThrowRowGroup() {
+TColumnPtr TMaxAgr::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IOa> TMaxAgr::Clone() {
-    auto r = std::make_shared<TMaxAgr>();
+std::unique_ptr<IOa> TMaxAgr::Clone() {
+    auto r = std::make_unique<TMaxAgr>();
     r->is_final = is_final;
     return r;
 }
@@ -160,24 +160,24 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-Expected<IColumn> TAvgAgr::ThrowRowGroup() {
+TColumnPtr TAvgAgr::ThrowRowGroup() {
     i128 avg = 0;
-    auto [col, _] = sum.ThrowRowGroup();
+    auto col = sum.ThrowRowGroup();
     if (col->GetType() == EColumn::ki128Column) {
         avg = static_cast<Ti128Column*>(col.get())->GetData()[0];
     } else if (col->GetType() == EColumn::kDoubleColumn) {
         avg = static_cast<TDoubleColumn*>(col.get())->GetData()[0];
     } else {
-        return MakeError<EError::BadArgsErr>("not an int column");
+        return nullptr;
     }
 
-    avg /= static_cast<i128>(static_cast<Ti64Column*>(cnt.ThrowRowGroup().GetShared().get())->GetData()[0]);
+    avg /= static_cast<i128>(static_cast<Ti64Column*>(cnt.ThrowRowGroup().get())->GetData()[0]);
 
     return std::make_shared<Ti128Column>(std::vector<i128>{avg});
 }
 
-std::shared_ptr<IOa> TAvgAgr::Clone() {
-    auto r = std::make_shared<TAvgAgr>();
+std::unique_ptr<IOa> TAvgAgr::Clone() {
+    auto r = std::make_unique<TAvgAgr>();
     r->is_final = is_final;
     return r;
 }
