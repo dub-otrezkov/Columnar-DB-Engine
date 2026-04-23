@@ -33,7 +33,7 @@ public:
         auto run = true;
 
         for (; run; in_->MoveCursor()) {
-            auto [block_ptr, err] = in_->ReadRowGroup();
+            auto [block, err] = in_->ReadRowGroup();
 
             if (err != EError::NoError) {
                 if (Is<EError::EofErr>(err)) {
@@ -42,11 +42,6 @@ public:
                     return err;
                 }
             }
-
-            if (!block_ptr) {
-                continue;
-            }
-            auto block = *block_ptr;
             if (block.empty()) {
                 continue;
             }

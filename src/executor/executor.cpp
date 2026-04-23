@@ -24,7 +24,7 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         return err1;
     }
 
-    auto& tokens = t->cmds;
+    auto& tokens = t.cmds;
 
     TEngine eng;
     {
