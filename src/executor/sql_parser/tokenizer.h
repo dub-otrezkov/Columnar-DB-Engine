@@ -28,6 +28,7 @@ enum class ETokens {
     kExtractMinute,
     kTruncMinute,
     kLength,
+    kConstInt,
     kPlus,
     kMinus,
     kOpenBracket,
@@ -66,6 +67,7 @@ static const std::unordered_map<std::string, ETokens> operators = {
     {"DISTINCT", ETokens::kDistinct},
     {"EXTRACT_MINUTE", ETokens::kExtractMinute},
     {"TRUNC_MINUTE", ETokens::kTruncMinute},
+    {"CONST_INT", ETokens::kConstInt},
 };
 
 struct IToken {
@@ -215,6 +217,10 @@ public:
 class TLengthToken : public IoperatorCommand {
 public:
     inline ETokens GetType() const override { return ETokens::kLength; }
+};
+
+struct TConstIntToken : public IoperatorCommand {
+    inline ETokens GetType() const override { return ETokens::kConstInt; }
 };
 
 class TPlusToken : public IoperatorCommand {

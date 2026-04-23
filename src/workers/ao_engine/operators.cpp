@@ -149,6 +149,32 @@ std::unique_ptr<IOa> TTruncMinuteOp::Clone() {
 std::string TTruncMinuteOp::GetName() const {
     return "TRUNC_MINUTE(" + arg->GetName() + ")";
 }
+Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp) {
+    if (!ans) {
+        auto t = arg->GetName();
+
+        auto [tans, err] = MakeColumn(std::vector<std::string>{std::move(t)}, EColumn::ki64Column);
+
+        ans = std::move(tans);
+
+        return err;
+    }
+    return EError::NoError;
+}
+
+TColumnPtr TConstIntOp::ThrowRowGroup() {
+    return ans;
+}
+
+std::unique_ptr<IOa> TConstIntOp::Clone() {
+    auto r = std::make_unique<TConstIntOp>();
+    r->is_final = is_final;
+    return r;
+}
+
+std::string TConstIntOp::GetName() const {
+    return "CONST_INT(" + arg->GetName() + ")";
+}
 
 TColumnOp::TColumnOp(std::string name_) :
     name(std::move(name_))

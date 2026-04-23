@@ -160,6 +160,19 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
                 break;
             }
+            case ETokens::kConstInt: {
+                obs.push_back(std::make_unique<TConstIntOp>());
+
+                if (!st.empty()) {
+                    eds.emplace_back(st.back(), obs.size() - 1);
+                } else {
+                    args.push_back(obs.size() - 1);
+                }
+
+                st.push_back(obs.size() - 1);
+
+                break;
+            }
             case ETokens::kPlus: {
                 obs.push_back(std::make_unique<TPlusOp>());
 

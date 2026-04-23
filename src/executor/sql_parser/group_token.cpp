@@ -57,7 +57,7 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
     ui64 jrank = 0;
     for (ui64 i = 0; i < selects_.args.size(); i++) {
         auto& col = selects_.args[i];
-        if (!col->is_final && !in_op_subtree[i]) {
+        if (!col->is_final && !in_op_subtree[i] || col->IsConst()) {
             continue;
         }
         if (col->GetType() == EAoType::kOperator) {
@@ -96,7 +96,7 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
 
     for (auto& agr : query.cols) {
         auto name = agr->GetName();
-        if (as.contains(name) || used.contains(name) || name == "*") {
+        if (as.contains(name) || used.contains(name) || name == "*" || agr->IsConst()) {
             continue;
         }
         qop.args.push_back(std::make_unique<TColumnOp>(name));

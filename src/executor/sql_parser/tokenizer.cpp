@@ -87,6 +87,8 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
         return std::make_unique<TTruncMinuteToken>();
     } else if (token == "LIMIT") {
         return std::make_unique<TLimitToken>();
+    } else if (token == "CONST_INT") {
+        return std::make_unique<TConstIntToken>();
     } else if (token == "OFFSET") {
         return std::make_unique<TOffsetToken>();
     } else if (token == "+") {

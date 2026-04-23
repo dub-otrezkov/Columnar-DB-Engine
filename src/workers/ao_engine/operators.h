@@ -29,6 +29,10 @@ struct IOa {
         return EAoType::kOperator;
     }
 
+    virtual inline bool IsConst() const {
+        return false;
+    }
+
     virtual inline const std::string& GetColumn() const = 0;
 };
 
@@ -153,6 +157,31 @@ struct TTruncMinuteOp : public IOa {
 
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
+    }
+};
+
+struct TConstIntOp : public IOa {
+    std::shared_ptr<IColumn> ans;
+
+    IOa* arg;
+
+    std::string GetName() const override;
+
+    std::unique_ptr<IOa> Clone() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    TColumnPtr ThrowRowGroup() override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
+    }
+
+    inline bool IsConst() const override {
+        return true;
     }
 };
 
