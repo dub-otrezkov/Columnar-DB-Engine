@@ -89,10 +89,15 @@ public:
     Expected(PtrType res, EError err = EError::NoError)
         : res_(std::move(res)), err_(err) {}
 
-    // Derived-type constructor — only meaningful for shared_ptr variant
+    // Derived-type constructors
     template<typename R>
     Expected(std::shared_ptr<R> res, EError err = EError::NoError)
         requires (kShared)
+        : res_(std::move(res)), err_(err) {}
+
+    template<typename R>
+    Expected(std::unique_ptr<R> res, EError err = EError::NoError)
+        requires (!kShared)
         : res_(std::move(res)), err_(err) {}
 
     Expected(EError err) : err_(err) {}
