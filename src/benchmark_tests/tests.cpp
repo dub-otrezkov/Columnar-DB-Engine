@@ -71,6 +71,8 @@ beam,timestamp
 
         TIoFactory::UnregisterIo(kResultData);
         TIoFactory::UnregisterIo(kResultScheme);
+
+        TMemoryArena::Instance().Reset();
     }
 };
 
