@@ -126,11 +126,11 @@ TEST_F(BenchTest, _3) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int128
 COUNT(*),int64
-AVG(once),double
+AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), "1600000,400000,5.125\n");
+    EXPECT_EQ(out_data->str(), "1600000,400000,5\n");
 }
 
 TEST_F(BenchTest, _4) {
@@ -145,9 +145,9 @@ TEST_F(BenchTest, _4) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(AVG(once),double
+    EXPECT_EQ(out_scheme->str(), R"(AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), "5.125\n");
+    EXPECT_EQ(out_data->str(), "5\n");
 }
 
 TEST_F(BenchTest, _5) {
@@ -264,12 +264,12 @@ TEST_F(BenchTest, _10) {
     }
 
     EXPECT_EQ(out_scheme->str(), R"(hers,string
-SUM(what),int64
+SUM(what),int128
 c,int64
-AVG(once),double
+AVG(once),int128
 COUNT(DISTINCT(was)),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(forever,800000,200000,4.75,3
+    EXPECT_EQ(out_data->str(), R"(forever,800000,200000,4,3
 rip,200000,100000,3,2
 )");
 }
@@ -446,27 +446,38 @@ john,1,50000
 }
 
 TEST_F(BenchTest, _18) {
-    
+    // EXTRACT_MINUTE в GROUP BY.
+
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) FROM josh GROUP BY was, getaway ORDER BY was, getaway LIMIT 3");
+        auto err = exec.ExecQuery(
+            "SELECT what, EXTRACT_MINUTE(beam) AS m, was, COUNT(*) AS c "
+            "FROM josh "
+            "GROUP BY what, m, was "
+            "ORDER BY c, what, m, was DESC LIMIT 10"
+        );
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
-
-    EXPECT_EQ(out_scheme->str(), R"(was,string
-getaway,int8
-COUNT(*),int64
+    // Все 8 (what, m, was) тройки уникальны, c=iter=50000 каждая.
+    // ORDER BY c, what, m, was DESC (все DESC): ties по c, сортируем what DESC, m DESC, was DESC.
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+m,int64
+was,string
+c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,2,100000
-john,1,50000
-josh,1,100000
+    EXPECT_EQ(out_data->str(), R"(7,52,klinghoffer,50000
+7,15,frusciante,50000
+5,40,john,50000
+5,18,frusciante,50000
+3,45,john,50000
+3,8,josh,50000
+1,33,klinghoffer,50000
+1,30,josh,50000
 )");
 }
 
@@ -569,12 +580,12 @@ TEST_F(BenchTest, _23) {
 
     EXPECT_EQ(out_scheme->str(), R"(was,string
 MIN(what),int64
-MIN(once),int64
+MIN(once),int32
 c,int64
 COUNT(DISTINCT(what)),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,1,2,5000,2
-john,3,4,5000,2
+    EXPECT_EQ(out_data->str(), R"(josh,1,2,100000,2
+john,3,4,100000,2
 )");
 }
 
@@ -583,25 +594,29 @@ TEST_F(BenchTest, _24) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was FROM josh WHERE was LIKE '%o%' ORDER BY low LIMIT 10");
+        auto err = exec.ExecQuery("SELECT what, was, low FROM josh WHERE was LIKE '%o%' ORDER BY low LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    // Earliest `low` among rows matching LIKE '%o%' is 2020-09-12 (row 4: klinghoffer, what=7).
+    // Повторяется iter раз подряд, LIMIT 10 все попадают в эту группу.
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+was,string
+low,date
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
-klinghoffer
+    EXPECT_EQ(out_data->str(), R"(7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
+7,klinghoffer,2020-09-12
 )");
 }
 
@@ -652,8 +667,7 @@ TEST_F(BenchTest, _26) {
 
     EXPECT_EQ(out_scheme->str(), R"(empty,string
 )");
-    EXPECT_EQ(out_data->str(), R"(dolores
-dolores1
+    EXPECT_EQ(out_data->str(), R"(dolores1
 dolores
 dolores1
 dolores
@@ -662,6 +676,7 @@ dolores
 dolores1
 dolores
 dolores1
+dolores
 )");
 }
 
@@ -708,17 +723,53 @@ TEST_F(BenchTest, _28) {
     }
 
     EXPECT_EQ(out_scheme->str(), R"(ste,int16
-l,double
+l,int128
 COUNT(*),int64
 )");
     EXPECT_EQ(out_data->str(), R"(6,10,50000
-1,8.333333,150000
+1,8,150000
 )");
+}
+
+TEST_F(BenchTest, _29) {
+    constexpr ui64 its = 31;
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    std::string q = "SELECT SUM(what), ";
+    for (i64 i = 1; i < its; i++) {
+        q += "SUM(+(what, " + std::to_string(i) + ")), ";
+    }
+    q.pop_back();
+    q.pop_back();
+    q += " FROM josh";
+
+    {
+        auto err = exec.ExecQuery(q);
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    std::string ans_scheme = "SUM(what),int128\n";
+    for (ui64 i = 1; i < its; i++) {
+        ans_scheme += "SUM(+(what " + std::to_string(i) + ")),int128\n";
+    }
+
+    std::string ans_data;
+    for (i64 i = 0; i < its; i++) {
+        ans_data += std::to_string(1600000 + static_cast<i64>(i * iter * 8)) + ",";
+    }
+    ans_data.back() = '\n';
+
+    EXPECT_EQ(out_scheme->str(), ans_scheme);
+    EXPECT_EQ(out_data->str(), ans_data);
 }
 
 TEST_F(BenchTest, _30) {
     constexpr ui64 its = 31;
-    
+
     JfEngine::TExecutor exec;
     prolog(exec);
     std::string q = "SELECT SUM(what), ";
@@ -737,9 +788,9 @@ TEST_F(BenchTest, _30) {
         ASSERT_FALSE(err.HasError());
     }
 
-    std::string ans_scheme = "SUM(what),int64\n";
+    std::string ans_scheme = "SUM(what),int128\n";
     for (ui64 i = 1; i < its; i++) {
-        ans_scheme += "SUM(-(what " + std::to_string(i) + ")),int64\n";
+        ans_scheme += "SUM(-(what " + std::to_string(i) + ")),int128\n";
     }
 
     std::string ans_data;
@@ -772,13 +823,13 @@ TEST_F(BenchTest, _31) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 getaway,int8
 c,int64
-SUM(what),int64
-AVG(once),double
+SUM(what),int128
+AVG(once),int128
 )");
     EXPECT_EQ(out_data->str(), R"(klinghoffer,2,50000,350000,8
 john,2,50000,250000,8
-josh,1,100000,200000,4.5
 klinghoffer,4,50000,50000,4
+josh,1,100000,200000,4
 john,1,50000,150000,4
 frusciante,2,100000,600000,4
 )");
@@ -802,8 +853,8 @@ TEST_F(BenchTest, _32) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 getaway,int8
 c,int64
-SUM(what),int64
-AVG(once),double
+SUM(what),int128
+AVG(once),int128
 )");
     EXPECT_EQ(out_data->str(), R"(josh,1,50000,150000,7
 klinghoffer,4,50000,50000,4
@@ -830,40 +881,46 @@ TEST_F(BenchTest, _33) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 getaway,int8
 c,int64
-SUM(what),int64
-AVG(once),double
+SUM(what),int128
+AVG(once),int128
 )");
     EXPECT_EQ(out_data->str(), R"(klinghoffer,2,50000,350000,8
 john,2,50000,250000,8
-josh,1,100000,200000,4.5
 klinghoffer,4,50000,50000,4
+josh,1,100000,200000,4
 john,1,50000,150000,4
 frusciante,2,100000,600000,4
 )");
 }
 
 TEST_F(BenchTest, _34) {
-    
+    // CONST_INT в SELECT и GROUP BY.
+
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT empty, COUNT(*) AS c FROM josh GROUP BY was ORDER BY c DESC, was LIMIT 10");
+        auto err = exec.ExecQuery(
+            "SELECT CONST_INT(1), was, COUNT(*) AS c "
+            "FROM josh "
+            "GROUP BY CONST_INT(1), was "
+            "ORDER BY c, was DESC LIMIT 10"
+        );
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
-
-    EXPECT_EQ(out_scheme->str(), R"(empty,string
+    // CONST_INT(1) даёт одинаковую константу во всех строках; группировка сводится к GROUP BY was.
+    // 4 группы, каждая c = 2*iter = 100000. ORDER BY c, was DESC → все DESC.
+    EXPECT_EQ(out_scheme->str(), R"(1,int64
+was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(,100000
-,100000
-dolores,100000
-dolores,100000
+    EXPECT_EQ(out_data->str(), R"(1,klinghoffer,100000
+1,josh,100000
+1,john,100000
+1,frusciante,100000
 )");
 }
 
@@ -935,46 +992,6 @@ john,50000
 )");
 }
 
-TEST_F(BenchTest, _40) {
-
-    JfEngine::TExecutor exec;
-    prolog(exec);
-    {
-        auto err = exec.ExecQuery(
-            "SELECT what, low, COUNT(*) AS c "
-            "FROM josh "
-            "WHERE what IN (1, 3, 5) AND low >= '2022-01-01' AND low <= '2023-12-31' "
-            "AND empty <> '' "
-            "GROUP BY what, low "
-            "ORDER BY c DESC, what, low LIMIT 10"
-        );
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-
-    // Rows matching per block: row 2 (3, 2022-11-08, dolores),
-    //   row 3 (5, 2022-03-27, dolores),
-    //   row 6 (1, 2022-07-19, dolores2),
-    //   row 8 (3, 2022-06-21, dolores1)
-    // 4 groups, each with count = iter = 50000.
-    // Sort by c DESC then (what, low) DESC (single direction):
-    //   5, 2022-03-27
-    //   3, 2022-11-08
-    //   3, 2022-06-21
-    //   1, 2022-07-19
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
-low,date
-c,int64
-)");
-    EXPECT_EQ(out_data->str(), R"(5,2022-03-27,50000
-3,2022-11-08,50000
-3,2022-06-21,50000
-1,2022-07-19,50000
-)");
-}
-
 TEST_F(BenchTest, _37) {
     
     JfEngine::TExecutor exec;
@@ -1000,26 +1017,194 @@ frusciante,50000
 }
 
 TEST_F(BenchTest, _38) {
-    
+
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt DESC, was LIMIT 10");
+        // CLI 38 — аналог с OFFSET
+        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt, was DESC LIMIT 10 OFFSET 1");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
-
+    // Те же 3 группы, что в _37, но после OFFSET 1 отбрасываем klinghoffer.
     EXPECT_EQ(out_scheme->str(), R"(was,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,50000
-josh,50000
+    EXPECT_EQ(out_data->str(), R"(josh,50000
 frusciante,50000
+)");
+}
+
+TEST_F(BenchTest, _39) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT IF (was = josh THEN hers ELSE other) AS label FROM josh"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(label,string
+)");
+    // Per 8-row block: "rip\n" (was=josh, hers=rip) + 6 × "other\n"
+    //                  + "forever\n" (was=josh, hers=forever)
+    // Sizes: 4 + 6*6 + 8 = 48 bytes per block.
+    EXPECT_EQ(out_data->str().size(), iter * 48);
+    EXPECT_EQ(out_data->str().substr(0, 4), "rip\n");
+}
+
+TEST_F(BenchTest, _40) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT what, low, COUNT(*) AS c "
+            "FROM josh "
+            "WHERE what IN (1, 3, 5) AND low >= '2022-01-01' AND low <= '2023-12-31' "
+            "AND empty <> '' "
+            "GROUP BY what, low "
+            "ORDER BY c DESC, what, low LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // Rows matching per block: row 2 (3, 2022-11-08, dolores),
+    //   row 3 (5, 2022-03-27, dolores),
+    //   row 6 (1, 2022-07-19, dolores2),
+    //   row 8 (3, 2022-06-21, dolores1)
+    // 4 groups, each with count = iter = 50000.
+    // Sort by c DESC then (what, low) DESC (single direction):
+    //   5, 2022-03-27; 3, 2022-11-08; 3, 2022-06-21; 1, 2022-07-19
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+low,date
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(5,2022-03-27,50000
+3,2022-11-08,50000
+3,2022-06-21,50000
+1,2022-07-19,50000
+)");
+}
+
+TEST_F(BenchTest, _41) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT once, what, COUNT(*) AS c "
+            "FROM josh "
+            "WHERE ste >= 1 AND ste <= 10 AND empty <> '' "
+            "GROUP BY once, what "
+            "ORDER BY c, once, what DESC LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // Rows matching per block (ste in [1,10] AND empty<>''):
+    //   row 2 (once=4, what=3, ste=5, empty=dolores)
+    //   row 3 (once=6, what=5, ste=6, empty=dolores)
+    //   row 6 (once=4, what=1, ste=1, empty=dolores2)
+    //   row 7 (once=2, what=7, ste=1, empty=dolores1)
+    //   row 8 (once=7, what=3, ste=1, empty=dolores1)
+    // 5 groups, each c = iter = 50000.
+    // ORDER BY c, once, what DESC (все DESC):
+    //   once=7 → (7, 3); once=6 → (6, 5); once=4 ties → what DESC: (4, 3), (4, 1); once=2 → (2, 7)
+    EXPECT_EQ(out_scheme->str(), R"(once,int32
+what,int64
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(7,3,50000
+6,5,50000
+4,3,50000
+4,1,50000
+2,7,50000
+)");
+}
+
+TEST_F(BenchTest, _42) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT TRUNC_MINUTE(beam) AS M, COUNT(*) AS c "
+            "FROM josh "
+            "GROUP BY M "
+            "ORDER BY M LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // All 8 beam values distinct; TRUNC_MINUTE zeroes the seconds.
+    // 8 groups, each c = iter = 50000.
+    // ORDER BY M (ASC — no DESC keyword): chronological.
+    EXPECT_EQ(out_scheme->str(), R"(M,timestamp
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(2019-07-19 11:33:00,50000
+2020-09-12 07:52:00,50000
+2021-11-08 09:45:00,50000
+2022-03-27 23:18:00,50000
+2022-06-21 05:08:00,50000
+2023-05-15 14:30:00,50000
+2023-12-03 20:15:00,50000
+2024-01-30 16:40:00,50000
+)");
+}
+
+TEST_F(BenchTest, _43) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT TRUNC_MINUTE(beam) AS M, COUNT(*) AS c "
+            "FROM josh "
+            "WHERE low >= '2022-01-01' AND low <= '2023-12-31' AND getaway <> 0 "
+            "GROUP BY M "
+            "ORDER BY M LIMIT 10 OFFSET 1"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // Matching rows per block (low in [2022,2023], getaway != 0):
+    //   row 1 (beam=2023-05-15 14:30:22 → 2023-05-15 14:30:00)
+    //   row 2 (beam=2021-11-08 09:45:17 → 2021-11-08 09:45:00)
+    //   row 3 (beam=2022-03-27 23:18:43 → 2022-03-27 23:18:00)
+    //   row 6 (beam=2019-07-19 11:33:41 → 2019-07-19 11:33:00)
+    //   row 7 (beam=2023-12-03 20:15:28 → 2023-12-03 20:15:00)
+    //   row 8 (beam=2022-06-21 05:08:14 → 2022-06-21 05:08:00)
+    // 6 groups, each c = iter = 50000. ORDER BY M ASC, OFFSET 1 skips 2019-07-19.
+    EXPECT_EQ(out_scheme->str(), R"(M,timestamp
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(2021-11-08 09:45:00,50000
+2022-03-27 23:18:00,50000
+2022-06-21 05:08:00,50000
+2023-05-15 14:30:00,50000
+2023-12-03 20:15:00,50000
 )");
 }
 
