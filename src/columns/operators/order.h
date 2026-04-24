@@ -1,3 +1,5 @@
+#pragma once
+
 #include "operators.h"
 
 #include <algorithm>

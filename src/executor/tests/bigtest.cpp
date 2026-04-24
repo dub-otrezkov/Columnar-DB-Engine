@@ -272,7 +272,7 @@ TEST_F(BigTest, GroupBySimple) {
 COUNT(*),int64
 SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(rip,400000,1600000
+    EXPECT_EQ(out_data->str(), R"(rip,4000000,16000000
 )");
 }
 
@@ -286,7 +286,7 @@ TEST_F(BigTest, GroupByWithWhere) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) FROM josh WHERE was IN ('josh','john') GROUP BY was");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) FROM josh WHERE was IN ('josh','john') GROUP BY was ORDER BY was");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -297,10 +297,9 @@ TEST_F(BigTest, GroupByWithWhere) {
 COUNT(*),int64
 SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,100000,100000
-john,100000,300000
+    EXPECT_EQ(out_data->str(), R"(john,1000000,3000000
+josh,1000000,1000000
 )");
-    // std::cout << out_data->str() << std::endl;
 }
 
 TEST_F(BigTest, GroupBySeveral) {
@@ -313,7 +312,7 @@ TEST_F(BigTest, GroupBySeveral) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT was, hers, COUNT(*) AS cnt FROM josh GROUP BY hers, was");
+        auto err = exec.ExecQuery("SELECT was, hers, COUNT(*) AS cnt FROM josh GROUP BY hers, was ORDER BY was, hers");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -324,10 +323,10 @@ TEST_F(BigTest, GroupBySeveral) {
 hers,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(john,rip,100000
-frusciante,rip,100000
-josh,rip,100000
-klinghoffer,rip,100000
+    EXPECT_EQ(out_data->str(), R"(frusciante,rip,1000000
+john,rip,1000000
+josh,rip,1000000
+klinghoffer,rip,1000000
 )");
 }
 
@@ -397,7 +396,7 @@ TEST_F(BigTest, WhereGroupOrder) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh WHERE was IN ('josh','john') GROUP BY was ORDER BY sum");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh WHERE was IN ('josh','john') GROUP BY was ORDER BY sum, was");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -408,10 +407,9 @@ TEST_F(BigTest, WhereGroupOrder) {
 COUNT(*),int64
 sum,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,100000,100000
-john,100000,300000
+    EXPECT_EQ(out_data->str(), R"(josh,1000000,1000000
+john,1000000,3000000
 )");
-    // std::cout << out_data->str() << std::endl;
 }
 
 TEST_F(BigTest, GroupByTimestamp) {
@@ -434,9 +432,9 @@ TEST_F(BigTest, GroupByTimestamp) {
     EXPECT_EQ(out_scheme->str(), R"(beam,timestamp
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(2022-02-24 00:00:04,100000
-2022-02-24 00:00:03,100000
-2022-02-24 00:00:00,200000
+    EXPECT_EQ(out_data->str(), R"(2022-02-24 00:00:04,1000000
+2022-02-24 00:00:03,1000000
+2022-02-24 00:00:00,2000000
 )");
     // std::cout << out_data->str() << std::endl;
 }
@@ -451,7 +449,7 @@ TEST_F(BigTest, GroupOrderWhere) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh GROUP BY was HAVING sum <> 300000 ORDER BY sum");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh GROUP BY was HAVING sum <> 3000000 ORDER BY sum, was");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -462,9 +460,9 @@ TEST_F(BigTest, GroupOrderWhere) {
 COUNT(*),int64
 sum,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,100000,100000
-frusciante,100000,500000
-klinghoffer,100000,700000
+    EXPECT_EQ(out_data->str(), R"(josh,1000000,1000000
+frusciante,1000000,5000000
+klinghoffer,1000000,7000000
 )");
 }
 
@@ -478,7 +476,7 @@ TEST_F(BigTest, GroupOrderLimit) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh GROUP BY was ORDER BY sum DESC LIMIT 2");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*), SUM(what) AS sum FROM josh GROUP BY was ORDER BY sum DESC, was LIMIT 2");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -489,9 +487,55 @@ TEST_F(BigTest, GroupOrderLimit) {
 COUNT(*),int64
 sum,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,100000,700000
-frusciante,100000,500000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,1000000,7000000
+frusciante,1000000,5000000
 )");
+}
+
+TEST_F(BigTest, IfElseSimple) {
+    JfEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT IF (was = josh THEN hers ELSE other) AS label FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(label,string
+)");
+    EXPECT_EQ(out_data->str().size(), iter * 22);
+    EXPECT_EQ(out_data->str().substr(0, 22), "rip\nother\nother\nother\n");
+}
+
+TEST_F(BigTest, IfElseAllFalse) {
+    JfEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT IF (was = nobody THEN hers ELSE fallback) AS label FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(label,string
+)");
+    EXPECT_EQ(out_data->str().size(), iter * 4 * std::string("fallback\n").size());
+    EXPECT_EQ(out_data->str().substr(0, 9), "fallback\n");
 }
 
 } // namespace JfEngine::Testing

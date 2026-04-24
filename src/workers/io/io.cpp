@@ -41,9 +41,7 @@ Expected<std::vector<TColumnPtr>> TCsvTableInput::LoadRowGroup() {
 
     auto is_eof = false;
 
-    static TVectorString2d tmp;
-
-    tmp.Clear();
+    TVectorString2d tmp;
 
     // std::vector<std::vector<std::string>> tmp;
     for (ui64 i = 0; i < row_group_len_; i++) {
@@ -200,19 +198,6 @@ void TJfTableInput::Reset() {
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
-    static auto name_to_index = [this]() -> auto {
-        std::unordered_map<std::string, ui64> poses;
-        for (size_t i = 0; i < scheme_.size(); i++) {
-            poses[scheme_[i].name_] = i;
-        }
-        return poses;
-    };
-
-    static auto inds = name_to_index();
-    if (name != "*" && inds.count(name) == 0) {
-        return MakeError<EError::NoSuchColumnsErr>("no such column " + name);
-    }
-
     if (current_block_ >= blocks_pos_.size()) {
         return MakeError<EError::EofErr>();
     }
@@ -221,7 +206,12 @@ Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
         return ReadIthColumn(0);
     }
 
-    return ReadIthColumn(inds[name]);
+    for (size_t i = 0; i < scheme_.size(); i++) {
+        if (scheme_[i].name_ == name) {
+            return ReadIthColumn(i);
+        }
+    }
+    return MakeError<EError::NoSuchColumnsErr>("no such column " + name);
 }
 
 

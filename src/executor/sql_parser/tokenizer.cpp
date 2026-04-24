@@ -3,6 +3,7 @@
 #include "engine/engine.h"
 #include "ios_factory/ios_factory.h"
 #include "utils/errors/errors_templates.h"
+#include "workers/global_agregations/agregator.h"
 
 #include <optional>
 
@@ -87,6 +88,16 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
         return std::make_unique<TTruncMinuteToken>();
     } else if (token == "LIMIT") {
         return std::make_unique<TLimitToken>();
+    } else if (token == "CONST_INT") {
+        return std::make_unique<TConstIntToken>();
+    } else if (token == "IF") {
+        return std::make_unique<TIfToken>();
+    } else if (token == "COND") {
+        return std::make_unique<TCondToken>();
+    } else if (token == "THEN") {
+        return std::make_unique<TThenToken>();
+    } else if (token == "ELSE") {
+        return std::make_unique<TElseToken>();
     } else if (token == "OFFSET") {
         return std::make_unique<TOffsetToken>();
     } else if (token == "+") {
@@ -112,6 +123,41 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
     } else {
         return std::make_unique<TNameToken>(token);
     }
+}
+
+Expected<std::vector<std::unique_ptr<IOa>>> ParseIf(std::vector<IToken*>& tkz) {
+    std::vector<std::unique_ptr<IOa>> ans;
+    std::vector<IToken*> cond;
+    for (ui64 i = 0; i < tkz.size(); i++) {
+        auto raw = tkz[i];
+        if (raw->GetType() == ETokens::kCloseBracket) {
+            break;
+        } else if (raw->GetType() == ETokens::kThen) {
+            ans.push_back(
+                std::make_unique<TColumnOp>(
+                    static_cast<TNameToken*>(tkz[i + 1])->GetName()
+                )
+            );
+            i++;
+        } else if (raw->GetType() == ETokens::kElse) {
+            ans.push_back(
+                std::make_unique<TColumnOp>(
+                    static_cast<TNameToken*>(tkz[i + 1])->GetName()
+                )
+            );
+            i++;
+        } else {
+            cond.push_back(raw);
+        }
+    }
+    auto [fils, err] = ParseWhereConfig(cond);
+    if (err) {
+        return err;
+    }
+    auto ift = std::make_unique<TIfOp>();
+    ift->cond = std::move(TFilterQuery{fils});
+    ans.push_back(std::move(ift));
+    return std::move(ans);
 }
 
 Expected<TParsedCommand> ParseCommand(const std::string& cmd) {

@@ -3,6 +3,7 @@
 #include "columns/operators/dates.h"
 #include "columns/operators/min_max.h"
 #include "columns/operators/operators.h"
+#include "columns/operators/filter.h"
 
 #include <cassert>
 
@@ -150,6 +151,51 @@ std::string TTruncMinuteOp::GetName() const {
     return "TRUNC_MINUTE(" + arg->GetName() + ")";
 }
 
+Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp) {
+    if (!ans) {
+        auto t = arg->GetName();
+
+        auto [tans, err] = MakeColumn(std::vector<std::string>{std::move(t)}, EColumn::ki64Column);
+
+        ans = std::move(tans);
+
+        return err;
+    }
+    return EError::NoError;
+}
+
+TColumnPtr TConstIntOp::ThrowRowGroup() {
+    return ans;
+}
+
+std::unique_ptr<IOa> TConstIntOp::Clone() {
+    auto r = std::make_unique<TConstIntOp>();
+    r->is_final = is_final;
+    return r;
+}
+
+std::string TConstIntOp::GetName() const {
+    return "CONST_INT(" + arg->GetName() + ")";
+}
+
+Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp) {
+    return EError::NoError;
+}
+
+TColumnPtr TConstStrOp::ThrowRowGroup() {
+    return nullptr;
+}
+
+std::unique_ptr<IOa> TConstStrOp::Clone() {
+    auto r = std::make_unique<TConstIntOp>();
+    r->is_final = is_final;
+    return r;
+}
+
+std::string TConstStrOp::GetName() const {
+    return arg->GetName();
+}
+
 TColumnOp::TColumnOp(std::string name_) :
     name(std::move(name_))
 {}
@@ -192,6 +238,48 @@ std::unique_ptr<IOa> TDistinctOp::Clone() {
 
 std::string TDistinctOp::GetName() const {
     return "DISTINCT(" + arg->GetName() + ")";
+}
+
+Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
+    
+    // ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
+    std::vector<bool> mask;
+    for (auto& f : cond.fils) {
+        auto [col, err_read] = inp->ReadColumn(f.column_name);
+        if (err_read) {
+            return err_read;
+        }
+        auto [res, err] = Do<OFilterCheck>(col, f.op, f.value);
+        if (mask.empty()) {
+            mask = std::move(res);
+        } else {
+            assert(mask.size() == res.size());
+            for (i64 i = 0; i < res.size(); i++) {
+                mask[i] = (mask[i] & res[i]);
+            }
+        }
+    }
+
+    auto [tans, err] = Do<OIfElse>(arg[0]->ThrowRowGroup(), arg[1]->GetName(), mask);
+
+    ans = std::move(tans);
+
+    return err;
+}
+
+TColumnPtr TIfOp::ThrowRowGroup() {
+    return ans;
+}
+
+std::unique_ptr<IOa> TIfOp::Clone() {
+    auto r = std::make_unique<TIfOp>();
+    r->cond = cond;
+    r->is_final = is_final;
+    return r;
+}
+
+std::string TIfOp::GetName() const {
+    return "IF";
 }
 
 } // namespace JfEngine

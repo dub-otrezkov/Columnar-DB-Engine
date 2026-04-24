@@ -58,8 +58,8 @@ struct OPrintIth {
     }
 
     static inline std::string Exec(TStringColumn& col, ui64 i) {
-        std::string res(col.GetData()[i].length(), '.');
-        memcpy(res.data(), col.GetData()[i].data(), res.size());
+        std::string res(col.GetData().at(i).length(), '.');
+        memcpy(res.data(), col.GetData().at(i).data(), res.size());
         return res;
     }
 };

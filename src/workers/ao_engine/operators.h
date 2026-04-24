@@ -4,6 +4,7 @@
 #include "columns/operators/operators.h"
 #include "utils/faster_hashmap/hashset.h"
 #include "workers/io/io.h"
+#include "workers/filters/filter.h"
 
 namespace JfEngine {
 
@@ -27,6 +28,10 @@ struct IOa {
 
     virtual EAoType GetType() const {
         return EAoType::kOperator;
+    }
+
+    virtual inline bool IsConst() const {
+        return false;
     }
 
     virtual inline const std::string& GetColumn() const = 0;
@@ -156,6 +161,54 @@ struct TTruncMinuteOp : public IOa {
     }
 };
 
+struct TConstIntOp : public IOa {
+    std::shared_ptr<IColumn> ans;
+
+    IOa* arg;
+
+    std::string GetName() const override;
+
+    std::unique_ptr<IOa> Clone() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    TColumnPtr ThrowRowGroup() override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
+    }
+
+    inline bool IsConst() const override {
+        return true;
+    }
+};
+
+struct TConstStrOp : public IOa {
+    IOa* arg;
+
+    std::string GetName() const override;
+
+    std::unique_ptr<IOa> Clone() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    TColumnPtr ThrowRowGroup() override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
+    }
+
+    inline bool IsConst() const override {
+        return true;
+    }
+};
+
 struct TDistinctOp : public IOa {
     TColumnPtr ans;
 
@@ -176,6 +229,30 @@ struct TDistinctOp : public IOa {
 
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
+    }
+};
+
+struct TIfOp : public IOa {
+    TColumnPtr ans;
+
+    TDistinctSets cur_sets;
+
+    TFilterQuery cond;
+    std::vector<IOa*> arg;
+
+    std::string GetName() const override;
+
+    std::unique_ptr<IOa> Clone() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    TColumnPtr ThrowRowGroup() override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg.push_back(to_agr);
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg[0]->GetColumn();
     }
 };
 
