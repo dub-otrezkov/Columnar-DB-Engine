@@ -52,13 +52,19 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
                 obs.push_back(std::move(if_token[2]));
                 eds.emplace_back(obs.size() - 1, obs.size() - 3);
                 eds.emplace_back(obs.size() - 1, obs.size() - 2);
+                if (!st.empty()) {
+                    eds.emplace_back(st.back(), obs.size() - 1);
+                } else {
+                    args.push_back(obs.size() - 1);
+                }
                 for_if.clear();
                 if_flag = false;
-                break;
+                continue;
             } else if (token->GetType() == ETokens::kOpenBracket) {
                 continue;
             } else {
                 for_if.push_back(std::move(token));
+                continue;
             }
         }
         switch (token->GetType()) {
@@ -199,19 +205,7 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
                 break;
             }
             case ETokens::kIf: {
-                // obs.push_back(std::make_unique<TConstIntOp>());
-
-
-                if (!st.empty()) {
-                    eds.emplace_back(st.back(), obs.size() - 1);
-                } else {
-                    args.push_back(obs.size() - 1);
-                }
-
-                // st.push_back(obs.size() - 1);
-
-
-
+                if_flag = true;
                 break;
             }
             case ETokens::kPlus: {

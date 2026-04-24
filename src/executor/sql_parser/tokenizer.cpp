@@ -138,12 +138,14 @@ Expected<std::vector<std::unique_ptr<IOa>>> ParseIf(std::vector<IToken*>& tkz) {
                     static_cast<TNameToken*>(tkz[i + 1])->GetName()
                 )
             );
+            i++;
         } else if (raw->GetType() == ETokens::kElse) {
             ans.push_back(
                 std::make_unique<TColumnOp>(
                     static_cast<TNameToken*>(tkz[i + 1])->GetName()
                 )
             );
+            i++;
         } else {
             cond.push_back(raw);
         }

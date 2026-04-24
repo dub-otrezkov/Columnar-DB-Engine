@@ -494,4 +494,50 @@ frusciante,100000,500000
 )");
 }
 
+TEST_F(BigTest, IfElseSimple) {
+    JfEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT IF (was = josh THEN hers ELSE other) AS label FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(label,string
+)");
+    EXPECT_EQ(out_data->str().size(), iter * 22);
+    EXPECT_EQ(out_data->str().substr(0, 22), "rip\nother\nother\nother\n");
+}
+
+TEST_F(BigTest, IfElseAllFalse) {
+    JfEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT IF (was = nobody THEN hers ELSE fallback) AS label FROM josh");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(label,string
+)");
+    EXPECT_EQ(out_data->str().size(), iter * 4 * std::string("fallback\n").size());
+    EXPECT_EQ(out_data->str().substr(0, 9), "fallback\n");
+}
+
 } // namespace JfEngine::Testing

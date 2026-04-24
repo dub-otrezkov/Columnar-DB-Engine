@@ -211,7 +211,7 @@ TEST_F(BenchTest, _8) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT once, COUNT(*) FROM josh WHERE once <> 2 GROUP BY once ORDER BY 'COUNT(*)' DESC");
+        auto err = exec.ExecQuery("SELECT once, COUNT(*) FROM josh WHERE once <> 2 GROUP BY once ORDER BY 'COUNT(*)' DESC, once");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -221,10 +221,10 @@ TEST_F(BenchTest, _8) {
     EXPECT_EQ(out_scheme->str(), R"(once,int32
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(4,100000
-8,100000
-6,50000
+    EXPECT_EQ(out_data->str(), R"(8,100000
+4,100000
 7,50000
+6,50000
 )");
 }
 
@@ -233,7 +233,7 @@ TEST_F(BenchTest, _9) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(what)) AS u FROM josh GROUP BY hers ORDER BY u DESC LIMIT 2");
+        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(what)) AS u FROM josh GROUP BY hers ORDER BY u DESC, hers LIMIT 2");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -247,7 +247,7 @@ TEST_F(BenchTest, _9) {
 u,int64
 )");
     EXPECT_EQ(out_data->str(), R"(forever,4
-alive,2
+rip,2
 )");
 }
 
@@ -256,7 +256,7 @@ TEST_F(BenchTest, _10) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT hers, SUM(what), COUNT(*) AS c, AVG(once), COUNT(DISTINCT(was)) FROM josh GROUP BY hers ORDER BY c DESC LIMIT 2");
+        auto err = exec.ExecQuery("SELECT hers, SUM(what), COUNT(*) AS c, AVG(once), COUNT(DISTINCT(was)) FROM josh GROUP BY hers ORDER BY c DESC, hers LIMIT 2");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -270,7 +270,7 @@ AVG(once),double
 COUNT(DISTINCT(was)),int64
 )");
     EXPECT_EQ(out_data->str(), R"(forever,800000,200000,4.75,3
-alive,600000,100000,8,2
+rip,200000,100000,3,2
 )");
 }
 
@@ -279,7 +279,7 @@ TEST_F(BenchTest, _11) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(was)) AS u FROM josh WHERE hers <> 'rip' GROUP BY hers ORDER BY u DESC LIMIT 1");
+        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(was)) AS u FROM josh WHERE hers <> 'rip' GROUP BY hers ORDER BY u DESC, hers LIMIT 1");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -298,7 +298,7 @@ TEST_F(BenchTest, _12) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, hers, COUNT(DISTINCT(what)) AS u FROM josh WHERE what <> 3 GROUP BY was, hers ORDER BY u DESC LIMIT 4");
+        auto err = exec.ExecQuery("SELECT was, hers, COUNT(DISTINCT(what)) AS u FROM josh WHERE what <> 3 GROUP BY was, hers ORDER BY u DESC, was, hers LIMIT 4");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -313,9 +313,9 @@ hers,string
 u,int64
 )");
     EXPECT_EQ(out_data->str(), R"(frusciante,forever,2
-john,alive,1
-josh,rip,1
+klinghoffer,forever,1
 klinghoffer,alive,1
+josh,rip,1
 )");
 }
 
@@ -324,7 +324,7 @@ TEST_F(BenchTest, _13) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS c FROM josh WHERE was <> '' GROUP BY was ORDER BY c DESC LIMIT 5");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS c FROM josh WHERE was <> '' GROUP BY was ORDER BY c DESC, was LIMIT 5");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -337,10 +337,10 @@ TEST_F(BenchTest, _13) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,100000
-john,100000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,100000
 josh,100000
-klinghoffer,100000
+john,100000
+frusciante,100000
 )");
 }
 
@@ -349,7 +349,7 @@ TEST_F(BenchTest, _14) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(DISTINCT(was)) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, COUNT(DISTINCT(was)) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -362,9 +362,9 @@ TEST_F(BenchTest, _14) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 u,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,1
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,1
 john,1
-klinghoffer,1
+frusciante,1
 )");
 }
 
@@ -373,7 +373,7 @@ TEST_F(BenchTest, _15) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT getaway, was, COUNT(*) AS c FROM josh WHERE was <> 'josh' GROUP BY getaway, was ORDER BY c DESC LIMIT 3");
+        auto err = exec.ExecQuery("SELECT getaway, was, COUNT(*) AS c FROM josh WHERE was <> 'josh' GROUP BY getaway, was ORDER BY c DESC, getaway, was LIMIT 3");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -388,8 +388,8 @@ was,string
 c,int64
 )");
     EXPECT_EQ(out_data->str(), R"(2,frusciante,100000
-1,john,50000
-2,john,50000
+4,klinghoffer,50000
+2,klinghoffer,50000
 )");
 }
 
@@ -398,7 +398,7 @@ TEST_F(BenchTest, _16) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT getaway, COUNT(*) FROM josh GROUP BY getaway ORDER BY 'COUNT(*)' DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT getaway, COUNT(*) FROM josh GROUP BY getaway ORDER BY 'COUNT(*)' DESC, getaway LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -422,7 +422,7 @@ TEST_F(BenchTest, _17) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) FROM josh GROUP BY was, getaway ORDER BY 'COUNT(*)' DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) FROM josh GROUP BY was, getaway ORDER BY 'COUNT(*)' DESC, was, getaway LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -436,12 +436,12 @@ TEST_F(BenchTest, _17) {
 getaway,int8
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,2,100000
-josh,1,100000
-john,1,50000
-john,2,50000
-klinghoffer,2,50000
+    EXPECT_EQ(out_data->str(), R"(josh,1,100000
+frusciante,2,100000
 klinghoffer,4,50000
+klinghoffer,2,50000
+john,2,50000
+john,1,50000
 )");
 }
 
@@ -450,7 +450,7 @@ TEST_F(BenchTest, _18) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) FROM josh GROUP BY was, getaway LIMIT 3");
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) FROM josh GROUP BY was, getaway ORDER BY was, getaway LIMIT 3");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -468,6 +468,24 @@ COUNT(*),int64
 john,1,50000
 josh,1,100000
 )");
+}
+
+TEST_F(BenchTest, _19) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery("SELECT what FROM josh WHERE what = 5");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+)");
+    // 2 rows per block match (rows with what=5), output "5\n" each
+    EXPECT_EQ(out_data->str().size(), iter * 2 * 2);
 }
 
 TEST_F(BenchTest, _20) {
@@ -515,7 +533,7 @@ TEST_F(BenchTest, _22) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, MIN(hers), COUNT(*) AS c FROM josh WHERE was LIKE '%f%' AND was <> '' GROUP BY was ORDER BY c DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, MIN(hers), COUNT(*) AS c FROM josh WHERE was LIKE '%f%' AND was <> '' GROUP BY was ORDER BY c DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -539,7 +557,7 @@ TEST_F(BenchTest, _23) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, MIN(what), MIN(once), COUNT(*) AS c, COUNT(DISTINCT(what)) FROM josh WHERE was LIKE '%o%' AND was NOT LIKE 'k%' AND was <> '' GROUP BY was ORDER BY c DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, MIN(what), MIN(once), COUNT(*) AS c, COUNT(DISTINCT(what)) FROM josh WHERE was LIKE '%o%' AND was NOT LIKE 'k%' AND was <> '' GROUP BY was ORDER BY c DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -555,8 +573,8 @@ MIN(once),int64
 c,int64
 COUNT(DISTINCT(what)),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(john,3,4,5000,2
-josh,1,2,5000,2
+    EXPECT_EQ(out_data->str(), R"(josh,1,2,5000,2
+john,3,4,5000,2
 )");
 }
 
@@ -682,7 +700,7 @@ TEST_F(BenchTest, _28) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT ste, AVG(LENGTH(was)) AS l, COUNT(*) FROM josh WHERE empty <> '' GROUP BY ste  HAVING l > 5 ORDER BY l DESC");
+        auto err = exec.ExecQuery("SELECT ste, AVG(LENGTH(was)) AS l, COUNT(*) FROM josh WHERE empty <> '' GROUP BY ste  HAVING l > 5 ORDER BY l DESC, ste");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -741,7 +759,7 @@ TEST_F(BenchTest, _31) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh WHERE was <> '' GROUP BY was, getaway ORDER BY 'AVG(once)' DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh WHERE was <> '' GROUP BY was, getaway ORDER BY 'AVG(once)' DESC, was, getaway LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -757,12 +775,12 @@ c,int64
 SUM(what),int64
 AVG(once),double
 )");
-    EXPECT_EQ(out_data->str(), R"(john,2,50000,250000,8
-klinghoffer,2,50000,350000,8
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,2,50000,350000,8
+john,2,50000,250000,8
 josh,1,100000,200000,4.5
-frusciante,2,100000,600000,4
-john,1,50000,150000,4
 klinghoffer,4,50000,50000,4
+john,1,50000,150000,4
+frusciante,2,100000,600000,4
 )");
 }
 
@@ -771,7 +789,7 @@ TEST_F(BenchTest, _32) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh WHERE empty <> '' GROUP BY was, getaway ORDER BY 'AVG(once)' DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh WHERE empty <> '' GROUP BY was, getaway ORDER BY 'AVG(once)' DESC, was, getaway LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -788,9 +806,9 @@ SUM(what),int64
 AVG(once),double
 )");
     EXPECT_EQ(out_data->str(), R"(josh,1,50000,150000,7
-frusciante,2,100000,600000,4
-john,1,50000,150000,4
 klinghoffer,4,50000,50000,4
+john,1,50000,150000,4
+frusciante,2,100000,600000,4
 )");
 }
 
@@ -799,7 +817,7 @@ TEST_F(BenchTest, _33) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh GROUP BY was, getaway ORDER BY 'AVG(once)' DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, getaway, COUNT(*) AS c, SUM(what), AVG(once) FROM josh GROUP BY was, getaway ORDER BY 'AVG(once)' DESC, was, getaway LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -815,12 +833,12 @@ c,int64
 SUM(what),int64
 AVG(once),double
 )");
-    EXPECT_EQ(out_data->str(), R"(john,2,50000,250000,8
-klinghoffer,2,50000,350000,8
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,2,50000,350000,8
+john,2,50000,250000,8
 josh,1,100000,200000,4.5
-frusciante,2,100000,600000,4
-john,1,50000,150000,4
 klinghoffer,4,50000,50000,4
+john,1,50000,150000,4
+frusciante,2,100000,600000,4
 )");
 }
 
@@ -829,7 +847,7 @@ TEST_F(BenchTest, _34) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT empty, COUNT(*) AS c FROM josh GROUP BY was ORDER BY c DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT empty, COUNT(*) AS c FROM josh GROUP BY was ORDER BY c DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -842,10 +860,118 @@ TEST_F(BenchTest, _34) {
     EXPECT_EQ(out_scheme->str(), R"(empty,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(dolores,100000
+    EXPECT_EQ(out_data->str(), R"(,100000
+,100000
 dolores,100000
-,100000
-,100000
+dolores,100000
+)");
+}
+
+TEST_F(BenchTest, _35) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT what, -(what, 1), -(what, 2), COUNT(*) AS c "
+            "FROM josh "
+            "GROUP BY what, -(what, 1), -(what, 2) "
+            "ORDER BY c DESC, what LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+-(what 1),int64
+-(what 2),int64
+c,int64
+)");
+    // 4 groups (what ∈ {1,3,5,7}), each with count = 2 * iter = 100000.
+    // Engine uses single direction: ORDER BY c DESC, what ⇒ both DESC.
+    // So expect what descending: 7, 5, 3, 1.
+    EXPECT_EQ(out_data->str(), R"(7,6,5,100000
+5,4,3,100000
+3,2,1,100000
+1,0,-1,100000
+)");
+}
+
+TEST_F(BenchTest, _36) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT was, COUNT(*) AS c "
+            "FROM josh "
+            "WHERE low >= '2022-01-01' AND low <= '2022-12-31' "
+            "AND getaway <> 0 AND empty <> '' "
+            "GROUP BY was ORDER BY c DESC, was LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // Rows matching filters per block:
+    //   row 2 (john, dolores,  2022-11-08)
+    //   row 3 (frusciante, dolores, 2022-03-27)
+    //   row 6 (klinghoffer, dolores2, 2022-07-19)
+    //   row 7 (frusciante, dolores1, ...): beam is 2023-12-03 but low is 2022-12-03 — YES
+    //   row 8 (josh, dolores1, 2022-06-21)
+    // Row 7: low=2022-12-03 matches; empty=dolores1 matches; getaway=2 matches. YES.
+    // Groups: frusciante×2=100000, john×1=50000, josh×1=50000, klinghoffer×1=50000
+    EXPECT_EQ(out_scheme->str(), R"(was,string
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(frusciante,100000
+klinghoffer,50000
+josh,50000
+john,50000
+)");
+}
+
+TEST_F(BenchTest, _40) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT what, low, COUNT(*) AS c "
+            "FROM josh "
+            "WHERE what IN (1, 3, 5) AND low >= '2022-01-01' AND low <= '2023-12-31' "
+            "AND empty <> '' "
+            "GROUP BY what, low "
+            "ORDER BY c DESC, what, low LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // Rows matching per block: row 2 (3, 2022-11-08, dolores),
+    //   row 3 (5, 2022-03-27, dolores),
+    //   row 6 (1, 2022-07-19, dolores2),
+    //   row 8 (3, 2022-06-21, dolores1)
+    // 4 groups, each with count = iter = 50000.
+    // Sort by c DESC then (what, low) DESC (single direction):
+    //   5, 2022-03-27
+    //   3, 2022-11-08
+    //   3, 2022-06-21
+    //   1, 2022-07-19
+    EXPECT_EQ(out_scheme->str(), R"(what,int64
+low,date
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(5,2022-03-27,50000
+3,2022-11-08,50000
+3,2022-06-21,50000
+1,2022-07-19,50000
 )");
 }
 
@@ -854,7 +980,7 @@ TEST_F(BenchTest, _37) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -867,9 +993,9 @@ TEST_F(BenchTest, _37) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,50000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,50000
 josh,50000
-klinghoffer,50000
+frusciante,50000
 )");
 }
 
@@ -878,7 +1004,7 @@ TEST_F(BenchTest, _38) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt DESC LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -891,9 +1017,9 @@ TEST_F(BenchTest, _38) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,50000
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,50000
 josh,50000
-klinghoffer,50000
+frusciante,50000
 )");
 }
 

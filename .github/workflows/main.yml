@@ -19,7 +19,9 @@ jobs:
           sudo apt-get install -y \
             cmake \
             ninja-build \
-            libgtest-dev
+            libgtest-dev \
+            libboost-dev \
+            libgoogle-perftools-dev
 
       - name: Configure
         run: cmake -S src -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
@@ -41,6 +43,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtest-dev \
+            libboost-dev \
+            libgoogle-perftools-dev
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -50,9 +60,35 @@ jobs:
       - name: Fix permissions
         run: chmod +x build/**/*_test
 
-      - name: Run unit tests
-        run: |
-          ctest --test-dir build \
-            --output-on-failure \
-            --parallel $(nproc) \
-            -R "operators_test|groupby_test|orderby_test|agregator_test|exec_test|exec_big_test"
+      - name: Run operators_test
+        run: ./build/columns/tests/operators_test
+
+      - name: Run sort_test
+        run: ./build/columns/tests/sort_test
+
+      - name: Run groupby_test
+        run: ./build/workers/groupby/tests/groupby_test
+
+      - name: Run orderby_test
+        run: ./build/workers/orderby/tests/orderby_test
+
+      - name: Run agregator_test
+        run: ./build/workers/global_agregations/tests/agregator_test
+
+      - name: Run filters_test
+        run: ./build/workers/filters/filters_test
+
+      - name: Run csvio_test
+        run: ./build/csvio/csvio_test
+
+      - name: Run engine_test
+        run: ./build/engine/engine_test
+
+      - name: Run exec_test
+        run: ./build/executor/tests/exec_test
+
+      - name: Run exec_big_test
+        run: ./build/executor/tests/exec_big_test
+
+      - name: Run bench_test
+        run: ./build/benchmark_tests/bench_test
