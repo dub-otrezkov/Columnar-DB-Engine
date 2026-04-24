@@ -3,6 +3,7 @@
 #include "engine/engine.h"
 #include "utils/errors/errors_templates.h"
 #include "workers/ao_engine/engine.h"
+#include "workers/filters/filter.h"
 
 #include <memory>
 #include <sstream>
@@ -34,6 +35,10 @@ enum class ETokens {
     kOpenBracket,
     kCloseBracket,
     kComa, // misc (
+    kIf,
+    kCond,
+    kThen, // misc (
+    kElse, // misc (
     kWhere,
     kBy, // misc (
     kGroup,
@@ -68,6 +73,8 @@ static const std::unordered_map<std::string, ETokens> operators = {
     {"EXTRACT_MINUTE", ETokens::kExtractMinute},
     {"TRUNC_MINUTE", ETokens::kTruncMinute},
     {"CONST_INT", ETokens::kConstInt},
+    {"IF", ETokens::kIf},
+    {"COND", ETokens::kCond},
 };
 
 struct IToken {
@@ -266,6 +273,26 @@ public:
     inline ETokens GetType() const override { return ETokens::kComa; }
 };
 
+class TIfToken : public IToken {
+public:
+    inline ETokens GetType() const override { return ETokens::kIf; }
+};
+
+class TCondToken : public IToken {
+public:
+    inline ETokens GetType() const override { return ETokens::kCond; }
+};
+
+class TThenToken : public IToken {
+public:
+    inline ETokens GetType() const override { return ETokens::kElse; }
+};
+
+class TElseToken : public IToken {
+public:
+    inline ETokens GetType() const override { return ETokens::kElse; }
+};
+
 class TCloseBracketToken : public IToken {
 public:
     inline ETokens GetType() const override { return ETokens::kCloseBracket; }
@@ -281,6 +308,8 @@ private:
     std::stringstream ss;
 };
 
+Expected<std::vector<TFilterOp>> ParseWhereConfig(const std::vector<JfEngine::IToken *>& args);
+
 struct TParsedCommand {
     std::vector<std::unique_ptr<IToken>> all;
     std::vector<ICommand*> cmds;
@@ -289,5 +318,6 @@ struct TParsedCommand {
 TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by = false);
 
 Expected<TParsedCommand> ParseCommand(const std::string& cmd);
+Expected<std::vector<std::unique_ptr<IOa>>> ParseIf(std::vector<IToken*>& cmd);
 
 } // namespace JfEngine

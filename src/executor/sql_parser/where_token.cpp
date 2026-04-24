@@ -2,47 +2,46 @@
 
 #include "ios_factory/ios_factory.h"
 #include "utils/errors/errors.h"
-#include "workers/filters/filter.h"
 
 namespace JfEngine {
 
-Expected<TTableInputPtr> TWhereToken::MakeWorker() {
+Expected<std::vector<TFilterOp>> ParseWhereConfig(const std::vector<JfEngine::IToken *>& args) {
     std::vector<TFilterOp> config;
     ui64 i = 0;
-    while (i < args_.size()) {
-        if (i + 3 > args_.size()) {
+    while (i < args.size()) {
+        if (i + 3 > args.size()) {
             return MakeError<EError::BadCmdErr>();
         }
-        if (args_[i]->GetType() != ETokens::kNameToken && args_[i]->GetType() != ETokens::kAnd) {
+        if (args[i]->GetType() != ETokens::kNameToken && args[i]->GetType() != ETokens::kAnd) {
             return MakeError<EError::BadCmdErr>();
         }
-        if (args_[i]->GetType() == ETokens::kAnd) {
+        if (args[i]->GetType() == ETokens::kAnd) {
             i++;
             continue;
         }
-        auto a1 = static_cast<TNameToken*>(args_[i]);
-        if (args_[i + 1]->GetType() != ETokens::kNameToken) {
+        auto a1 = static_cast<TNameToken*>(args[i]);
+        if (args[i + 1]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a2 = static_cast<TNameToken*>(args_[i + 1]);
+        auto a2 = static_cast<TNameToken*>(args[i + 1]);
         if (a2->GetName() == "IN" || (a2->GetName() == "NOT" &&
-            args_[i + 2]->GetType() == ETokens::kNameToken &&
-            static_cast<TNameToken*>(args_[i + 2])->GetName() == "IN"))
+            args[i + 2]->GetType() == ETokens::kNameToken &&
+            static_cast<TNameToken*>(args[i + 2])->GetName() == "IN"))
         {
             bool rev = (a2->GetName() == "NOT");
 
             i = i + 2 + rev;
 
-            if (args_.size() < i + 1) {
+            if (args.size() < i + 1) {
                 return MakeError<EError::BadCmdErr>();
             }
 
             std::vector<std::string> args_for_in;
 
-            while (i < args_.size() && args_[i]->GetType() != ETokens::kCloseBracket) {
-                if (args_[i]->GetType() == ETokens::kNameToken) {
+            while (i < args.size() && args[i]->GetType() != ETokens::kCloseBracket) {
+                if (args[i]->GetType() == ETokens::kNameToken) {
                     args_for_in.push_back(
-                        static_cast<TNameToken*>(args_[i])->GetName()
+                        static_cast<TNameToken*>(args[i])->GetName()
                     );
                 }
                 i++;
@@ -57,23 +56,23 @@ Expected<TTableInputPtr> TWhereToken::MakeWorker() {
             );
             continue;
         }
-        if (args_[i + 2]->GetType() != ETokens::kNameToken) {
+        if (args[i + 2]->GetType() != ETokens::kNameToken) {
             return MakeError<EError::BadCmdErr>();
         }
-        auto a3 = static_cast<TNameToken*>(args_[i + 2]);
+        auto a3 = static_cast<TNameToken*>(args[i + 2]);
 
 
         if (a2->GetName() == "NOT") {
-            if (i + 4 > args_.size()) {
+            if (i + 4 > args.size()) {
                 return MakeError<EError::BadCmdErr>();
             }
-            if (args_[i + 3]->GetType() != ETokens::kNameToken) {
+            if (args[i + 3]->GetType() != ETokens::kNameToken) {
                 return MakeError<EError::BadCmdErr>();
             }
             if (a3->GetName() != "LIKE") {
                 return MakeError<EError::BadCmdErr>();
             }
-            auto a4 = static_cast<TNameToken*>(args_[i + 3]);
+            auto a4 = static_cast<TNameToken*>(args[i + 3]);
             config.emplace_back(
                 a1->GetName(),
                 EFilterType::kNLike,
@@ -110,6 +109,14 @@ Expected<TTableInputPtr> TWhereToken::MakeWorker() {
         }
     }
 
+    return std::move(config);
+}
+
+Expected<TTableInputPtr> TWhereToken::MakeWorker() {
+    auto [config, err] = ParseWhereConfig(args_);
+    if (err) {
+        return err;
+    }
     return std::make_shared<TFilter>(
         TIoFactory::GetTableIo(kCurTableInput),
         TFilterQuery{std::move(config)}

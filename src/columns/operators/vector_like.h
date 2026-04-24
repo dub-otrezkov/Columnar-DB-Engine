@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../types/types.h"
 #include "operators.h"
 

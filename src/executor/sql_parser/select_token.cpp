@@ -5,6 +5,7 @@
 
 #include <boost/unordered/unordered_flat_map.hpp>
 
+#include <cassert>
 #include <functional>
 
 namespace JfEngine {
@@ -14,6 +15,7 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
     std::vector<std::pair<ui64, std::string>> aliases;
 
     bool next_alias = false;
+    bool if_flag = false;
 
     std::vector<std::unique_ptr<IOa>> obs;
     std::vector<ui64> args;
@@ -25,6 +27,8 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
     std::string last_col = "";
 
+    std::vector<IToken*> for_if;
+
     for (auto token : inp) {
         if (next_alias) {
             next_alias = false;
@@ -34,6 +38,27 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
                     static_cast<TNameToken*>(token)->GetName()
                 );
                 continue;
+            }
+        }
+        if (if_flag) {
+            if (token->GetType() == ETokens::kCloseBracket) {
+                auto [if_token, err] = ParseIf(for_if);
+                if (err) {
+                    throw "??????";
+                }
+                assert(if_token.size() == 3);
+                obs.push_back(std::move(if_token[0]));
+                obs.push_back(std::move(if_token[1]));
+                obs.push_back(std::move(if_token[2]));
+                eds.emplace_back(obs.size() - 1, obs.size() - 3);
+                eds.emplace_back(obs.size() - 1, obs.size() - 2);
+                for_if.clear();
+                if_flag = false;
+                break;
+            } else if (token->GetType() == ETokens::kOpenBracket) {
+                continue;
+            } else {
+                for_if.push_back(std::move(token));
             }
         }
         switch (token->GetType()) {
@@ -170,6 +195,22 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
                 }
 
                 st.push_back(obs.size() - 1);
+
+                break;
+            }
+            case ETokens::kIf: {
+                // obs.push_back(std::make_unique<TConstIntOp>());
+
+
+                if (!st.empty()) {
+                    eds.emplace_back(st.back(), obs.size() - 1);
+                } else {
+                    args.push_back(obs.size() - 1);
+                }
+
+                // st.push_back(obs.size() - 1);
+
+
 
                 break;
             }

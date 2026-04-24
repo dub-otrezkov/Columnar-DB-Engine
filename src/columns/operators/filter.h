@@ -1,4 +1,8 @@
+#pragma once
+
 #include "operators.h"
+
+#include "utils/errors/errors.h"
 
 namespace JfEngine {
 
@@ -233,6 +237,41 @@ struct OFilter {
             }
         }
         return std::make_shared<TCol>(std::move(vals));
+    }
+
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<bool>& mask) {
+        StringVector vals;
+        if (col.GetData().size() != mask.size()) {
+            return MakeError<EError::BadArgsErr>();
+        }
+        for (ui64 i = 0; i < col.GetData().size(); i++) {
+            if (mask[i]) {
+                vals.push_back(col.GetData()[i]);
+            }
+        }
+        return std::make_shared<TStringColumn>(std::move(vals));
+    }
+};
+
+struct OIfElse {
+    template <typename TCol>
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& els, const std::vector<bool>& mask) {
+        return MakeError<EError::UnimplementedErr>("im lazyyyy");
+    }
+
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& els, const std::vector<bool>& mask) {
+        StringVector vals;
+        if (col.GetData().size() != mask.size()) {
+            return MakeError<EError::BadArgsErr>();
+        }
+        for (ui64 i = 0; i < col.GetData().size(); i++) {
+            if (mask[i]) {
+                vals.push_back(col.GetData().at(i));
+            } else {
+                vals.push_back(els);
+            }
+        }
+        return std::make_shared<TStringColumn>(std::move(vals));
     }
 };
 
