@@ -61,6 +61,8 @@ beam,timestamp
     }
 
     void TearDown() override {
+        TIoFactory::Clear();
+
         TIoFactory::UnregisterIo("scheme");
         TIoFactory::UnregisterIo("data");
         TIoFactory::UnregisterIo("josh");
@@ -966,7 +968,7 @@ TEST_F(BenchTest, _36) {
             "FROM josh "
             "WHERE low >= '2022-01-01' AND low <= '2022-12-31' "
             "AND getaway <> 0 AND empty <> '' "
-            "GROUP BY was ORDER BY c DESC, was LIMIT 10"
+            "GROUP BY was ORDER BY c, was DESC LIMIT 10"
         );
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
