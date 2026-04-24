@@ -19,7 +19,11 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
     }
 
     TGroupByQuery query;
-    query.cols = std::move(q.args);
+    for (auto& col : q.args) {
+        if (!col->IsConst()) {
+            query.cols.push_back(std::move(col));
+        }
+    }
 
     if (limit_) {
         query.limit = limit_->GetLimit();

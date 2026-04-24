@@ -175,7 +175,7 @@ std::unique_ptr<IOa> TConstIntOp::Clone() {
 }
 
 std::string TConstIntOp::GetName() const {
-    return arg->GetName();
+    return "CONST_INT(" + arg->GetName() + ")";
 }
 
 Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp) {

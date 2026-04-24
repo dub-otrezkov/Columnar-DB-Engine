@@ -917,7 +917,7 @@ TEST_F(BenchTest, _34) {
 
     // CONST_INT(1) даёт одинаковую константу во всех строках; группировка сводится к GROUP BY was.
     // 4 группы, каждая c = 2*iter = 100000. ORDER BY c, was DESC → все DESC.
-    EXPECT_EQ(out_scheme->str(), R"(1,int64
+    EXPECT_EQ(out_scheme->str(), R"(CONST_INT(1),int64
 was,string
 c,int64
 )");
