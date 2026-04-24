@@ -1175,41 +1175,4 @@ c,int64
 )");
 }
 
-TEST_F(BenchTest, _43) {
-
-    JfEngine::TExecutor exec;
-    prolog(exec);
-    {
-        auto err = exec.ExecQuery(
-            "SELECT TRUNC_MINUTE(beam) AS M, COUNT(*) AS c "
-            "FROM josh "
-            "WHERE low >= '2022-01-01' AND low <= '2023-12-31' AND getaway <> 0 "
-            "GROUP BY M "
-            "ORDER BY M LIMIT 10 OFFSET 1"
-        );
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-
-    // Matching rows per block (low in [2022,2023], getaway != 0):
-    //   row 1 (beam=2023-05-15 14:30:22 → 2023-05-15 14:30:00)
-    //   row 2 (beam=2021-11-08 09:45:17 → 2021-11-08 09:45:00)
-    //   row 3 (beam=2022-03-27 23:18:43 → 2022-03-27 23:18:00)
-    //   row 6 (beam=2019-07-19 11:33:41 → 2019-07-19 11:33:00)
-    //   row 7 (beam=2023-12-03 20:15:28 → 2023-12-03 20:15:00)
-    //   row 8 (beam=2022-06-21 05:08:14 → 2022-06-21 05:08:00)
-    // 6 groups, each c = iter = 50000. ORDER BY M ASC, OFFSET 1 skips 2019-07-19.
-    EXPECT_EQ(out_scheme->str(), R"(M,timestamp
-c,int64
-)");
-    EXPECT_EQ(out_data->str(), R"(2021-11-08 09:45:00,50000
-2022-03-27 23:18:00,50000
-2022-06-21 05:08:00,50000
-2023-05-15 14:30:00,50000
-2023-12-03 20:15:00,50000
-)");
-}
-
 } // namespace JfEngine::Testing

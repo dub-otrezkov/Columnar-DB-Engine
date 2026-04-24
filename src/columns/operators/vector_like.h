@@ -10,6 +10,10 @@ struct OPushBack {
     static inline void Exec(TCol& col, typename TCol::ElemTypeRo value) {
         col.GetData().push_back(value);
     }
+
+    static inline void Exec(TStringColumn& col, std::string_view value) {
+        col.GetData().push_back(value);
+    }
 };
 
 // from, to, i
@@ -19,7 +23,7 @@ struct OPushBackFrom {
         if (to->GetType() != from.GetType()) {
             throw "bad arg";
         }
-        OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData()[i]);
+        OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData().at(i));
     }
 };
 
@@ -33,7 +37,7 @@ struct OPushBackFromBatch {
         t.GetData().reserve(t.GetData().size() + is.size());
         for (const auto& i : is) {
             assert(i < from.GetData().size());
-            OPushBack::Exec(t, from.GetData()[i]);
+            OPushBack::Exec(t, from.GetData().at(i));
         }
     }
 };
