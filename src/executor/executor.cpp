@@ -34,19 +34,6 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         }
         TIoFactory::RegisterTableInput(kCurTableInput, inp.GetRes());
     }
-    {
-        TIoFactory::RegisterFileIo(
-            kTmp1,
-            ETypeFile::kJfFile
-        );
-        TIoFactory::RegisterFileIo(
-            kTmp2,
-            ETypeFile::kJfFile
-        );
-    }
-
-    auto cur_t1 = kTmp1;
-    auto cur_t2 = kTmp2;
 
     for (ui64 i = 2; i < tokens.size(); i++) {
         if (tokens[i]->GetType() == ETokens::kGroup) {
@@ -66,8 +53,6 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
         }
 
         TIoFactory::RegisterTableInput(kCurTableInput, inp.GetRes());
-
-        std::swap(cur_t1, cur_t2);
     }
 
     auto [_, err3] = tokens[0]->MakeWorker();

@@ -34,16 +34,14 @@ void TCsvWriter::WriteRow(const std::vector<std::string>& row) {
     if (row.empty()) {
         return;
     }
-    static std::vector<ui64> lns;
-    lns.assign(row.size(), 0);
+    std::vector<ui64> lns(row.size(), 0);
 
     ui64 total = row.size();
     for (ui64 i = 0; i < row.size(); i++) {
         lns[i] = PrepareString(row[i]);
         total += lns[i];
     }
-    static std::vector<char> tot;
-    tot.resize(total);
+    std::vector<char> tot(total);
     ui64 cur = 0;
     for (ui64 i = 0; i < row.size(); i++) {
         if (lns[i] == row[i].size()) {
@@ -74,8 +72,7 @@ void TCsvWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
         return;
     }
     ui64 total = 0;
-    static std::vector<ui64> lns;
-    lns.assign(group.size() * group[0].size(), 0);
+    std::vector<ui64> lns(group.size() * group[0].size(), 0);
     for (ui64 i = 0; i < group.size(); i++) {
         for (ui64 j = 0; j < group[i].size(); j++) {
             lns[i * group[0].size() + j] = PrepareString(group[i][j]);
@@ -83,8 +80,7 @@ void TCsvWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
         }
     }
 
-    static std::vector<char> tot;
-    tot.resize(total);
+    std::vector<char> tot(total);
 
     ui64 cur = 0;
     for (ui64 j = 0; j < group[0].size(); j++) {
