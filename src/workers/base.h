@@ -43,7 +43,7 @@ protected:
     std::vector<TRowScheme> scheme_;
     ui64 row_group_len_;
 
-    std::unordered_map<std::string, ui64> name_to_i_;
+    boost::unordered_flat_map<std::string, ui64> name_to_i_;
 };
 
 } // namespace JfEngine

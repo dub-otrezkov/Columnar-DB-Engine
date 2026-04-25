@@ -4,7 +4,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 project(columnar_eng)
 
-add_compile_options(-O3 -march=native -Wno-unused -fno-omit-frame-pointer)
+add_compile_options(-O3 -march=native -Wno-unused -fno-omit-frame-pointer -g)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
