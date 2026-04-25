@@ -46,7 +46,7 @@ struct TDistinctSets {
             }
             return *i64_set;
         } else if constexpr (std::is_same_v<T, i128>) {
-            if (!i64_set) {
+            if (!i128_set) {
                 i128_set = TSet<i128>{};
             }
             return *i128_set;

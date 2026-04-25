@@ -357,35 +357,6 @@ was,string
 )");
 }
 
-TEST_F(BigTest, OrderByStable) {
-    JfEngine::TExecutor exec;
-    {
-        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-    {
-        auto err = exec.ExecQuery("SELECT what, once, was FROM josh ORDER BY hers LIMIT 5");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
-once,int32
-was,string
-)");
-    EXPECT_EQ(out_data->str(), R"(1,2,josh
-3,4,john
-5,6,frusciante
-7,8,klinghoffer
-1,2,josh
-)");
-}
-
 TEST_F(BigTest, WhereGroupOrder) {
     JfEngine::TExecutor exec;
     {

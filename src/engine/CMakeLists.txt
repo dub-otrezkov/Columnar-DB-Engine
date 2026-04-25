@@ -12,6 +12,7 @@ target_link_libraries(
     csv_writer_lib
     errors_lib
     nodes_lib
+    vectors_lib
     iworkers_lib
     io_worker_lib
 )

@@ -98,6 +98,8 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
         return std::make_unique<TThenToken>();
     } else if (token == "ELSE") {
         return std::make_unique<TElseToken>();
+    } else if (token == "REGEXP_REPLACE") {
+        return std::make_unique<TRegexpReplaceToken>();
     } else if (token == "OFFSET") {
         return std::make_unique<TOffsetToken>();
     } else if (token == "+") {

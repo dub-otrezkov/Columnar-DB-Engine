@@ -165,6 +165,19 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
                 break;
             }
+            case ETokens::kRegexpReplace: {
+                obs.push_back(std::make_unique<TRegexpReplaceOp>());
+
+                if (!st.empty()) {
+                    eds.emplace_back(st.back(), obs.size() - 1);
+                } else {
+                    args.push_back(obs.size() - 1);
+                }
+
+                st.push_back(obs.size() - 1);
+
+                break;
+            }
             case ETokens::kTruncMinute: {
                 obs.push_back(std::make_unique<TTruncMinuteOp>());
 

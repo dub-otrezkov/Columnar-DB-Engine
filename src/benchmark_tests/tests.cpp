@@ -84,7 +84,7 @@ void prolog(JfEngine::TExecutor& exec) {
     ASSERT_FALSE(err.HasError());
 }
 
-TEST_F(BenchTest, _1) {
+TEST_F(BenchTest, _0) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -101,7 +101,7 @@ TEST_F(BenchTest, _1) {
     EXPECT_EQ(out_data->str(), "400000\n");
 }
 
-TEST_F(BenchTest, _2) {
+TEST_F(BenchTest, _1) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -118,7 +118,7 @@ TEST_F(BenchTest, _2) {
     EXPECT_EQ(out_data->str(), "300000\n");
 }
 
-TEST_F(BenchTest, _3) {
+TEST_F(BenchTest, _2) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -137,7 +137,7 @@ AVG(once),int128
     EXPECT_EQ(out_data->str(), "1600000,400000,5\n");
 }
 
-TEST_F(BenchTest, _4) {
+TEST_F(BenchTest, _3) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -154,7 +154,7 @@ TEST_F(BenchTest, _4) {
     EXPECT_EQ(out_data->str(), "5\n");
 }
 
-TEST_F(BenchTest, _5) {
+TEST_F(BenchTest, _4) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -171,7 +171,7 @@ TEST_F(BenchTest, _5) {
     EXPECT_EQ(out_data->str(), "5\n");
 }
 
-TEST_F(BenchTest, _6) {
+TEST_F(BenchTest, _5) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -188,7 +188,7 @@ TEST_F(BenchTest, _6) {
     EXPECT_EQ(out_data->str(), "4\n");
 }
 
-TEST_F(BenchTest, _7) {
+TEST_F(BenchTest, _6) {
 
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -210,7 +210,7 @@ MAX(low),date
 )");
 }
 
-TEST_F(BenchTest, _8) {
+TEST_F(BenchTest, _7) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -232,7 +232,7 @@ COUNT(*),int64
 )");
 }
 
-TEST_F(BenchTest, _9) {
+TEST_F(BenchTest, _8) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -255,7 +255,7 @@ rip,2
 )");
 }
 
-TEST_F(BenchTest, _10) {
+TEST_F(BenchTest, _9) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -278,7 +278,7 @@ rip,200000,100000,3,2
 )");
 }
 
-TEST_F(BenchTest, _11) {
+TEST_F(BenchTest, _10) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -297,7 +297,7 @@ u,int64
 )");
 }
 
-TEST_F(BenchTest, _12) {
+TEST_F(BenchTest, _11) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -323,7 +323,7 @@ josh,rip,1
 )");
 }
 
-TEST_F(BenchTest, _13) {
+TEST_F(BenchTest, _12) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -348,7 +348,7 @@ frusciante,100000
 )");
 }
 
-TEST_F(BenchTest, _14) {
+TEST_F(BenchTest, _13) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -372,7 +372,7 @@ frusciante,1
 )");
 }
 
-TEST_F(BenchTest, _15) {
+TEST_F(BenchTest, _14) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -397,7 +397,7 @@ c,int64
 )");
 }
 
-TEST_F(BenchTest, _16) {
+TEST_F(BenchTest, _15) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -421,7 +421,7 @@ COUNT(*),int64
 )");
 }
 
-TEST_F(BenchTest, _17) {
+TEST_F(BenchTest, _16) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -449,7 +449,7 @@ john,1,50000
 )");
 }
 
-TEST_F(BenchTest, _18) {
+TEST_F(BenchTest, _17) {
     // EXTRACT_MINUTE в GROUP BY.
 
     JfEngine::TExecutor exec;
@@ -485,7 +485,7 @@ c,int64
 )");
 }
 
-TEST_F(BenchTest, _19) {
+TEST_F(BenchTest, _18) {
 
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -503,7 +503,7 @@ TEST_F(BenchTest, _19) {
     EXPECT_EQ(out_data->str().size(), iter * 2 * 2);
 }
 
-TEST_F(BenchTest, _20) {
+TEST_F(BenchTest, _19) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -523,7 +523,7 @@ TEST_F(BenchTest, _20) {
     EXPECT_EQ(out_data->str().size(), 400000);
 }
 
-TEST_F(BenchTest, _21) {
+TEST_F(BenchTest, _20) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -543,7 +543,7 @@ TEST_F(BenchTest, _21) {
     EXPECT_EQ(out_data->str(), "200000\n");
 }
 
-TEST_F(BenchTest, _22) {
+TEST_F(BenchTest, _21) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -567,7 +567,7 @@ frusciante,forever,100000
 )");
 }
 
-TEST_F(BenchTest, _23) {
+TEST_F(BenchTest, _22) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -593,7 +593,7 @@ john,3,4,100000,2
 )");
 }
 
-TEST_F(BenchTest, _24) {
+TEST_F(BenchTest, _23) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -624,7 +624,7 @@ low,date
 )");
 }
 
-TEST_F(BenchTest, _25) {
+TEST_F(BenchTest, _24) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -654,7 +654,7 @@ dolores2
 )");
 }
 
-TEST_F(BenchTest, _26) {
+TEST_F(BenchTest, _25) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -684,7 +684,7 @@ dolores
 )");
 }
 
-TEST_F(BenchTest, _27) {
+TEST_F(BenchTest, _26) {
     
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -714,8 +714,8 @@ dolores
 )");
 }
 
-TEST_F(BenchTest, _28) {
-    
+TEST_F(BenchTest, _27) {
+
     JfEngine::TExecutor exec;
     prolog(exec);
     {
@@ -1172,6 +1172,36 @@ c,int64
 2023-05-15 14:30:00,50000
 2023-12-03 20:15:00,50000
 2024-01-30 16:40:00,50000
+)");
+}
+
+TEST_F(BenchTest, _28) {
+
+    JfEngine::TExecutor exec;
+    prolog(exec);
+    {
+        auto err = exec.ExecQuery(
+            "SELECT REGEXP_REPLACE(was, '^j', 'J') AS k, COUNT(*) AS c "
+            "FROM josh "
+            "GROUP BY k ORDER BY k LIMIT 10"
+        );
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    // was values: josh(×2), john(×2), frusciante(×2), klinghoffer(×2) per block.
+    // REGEXP_REPLACE('^j','J'): josh→Josh, john→John, others unchanged.
+    // 4 groups × 2 rows × iter = 100000 each.
+    // ORDER BY k ASC: 'J'(74) < 'f'(102) < 'k'(107) → John, Josh, frusciante, klinghoffer.
+    EXPECT_EQ(out_scheme->str(), R"(k,string
+c,int64
+)");
+    EXPECT_EQ(out_data->str(), R"(John,100000
+Josh,100000
+frusciante,100000
+klinghoffer,100000
 )");
 }
 

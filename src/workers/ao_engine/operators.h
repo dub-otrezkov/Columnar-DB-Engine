@@ -256,4 +256,35 @@ struct TIfOp : public IOa {
     }
 };
 
+
+struct TRegexpReplaceOp : public IOa {
+    std::shared_ptr<IColumn> ans;
+
+    std::vector<IOa*> arg;
+
+    std::string arg1_p;
+    std::string arg2_p;
+
+    std::string GetName() const override;
+
+    std::unique_ptr<IOa> Clone() override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    TColumnPtr ThrowRowGroup() override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg.push_back(to_agr);
+        if (arg.size() == 2) {
+            arg1_p = to_agr->GetName();
+        }
+        if (arg.size() == 3) {
+            arg2_p = to_agr->GetName();
+        }
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg[0]->GetColumn();
+    }
+};
+
 } // namespace JfEngine

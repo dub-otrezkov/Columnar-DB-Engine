@@ -52,7 +52,7 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int128
 SUM(red),string
 )");
     EXPECT_EQ(out_data->str(), R"(95,"joshjohnstadiumi,could,have,liedcantthedotdotdot"
@@ -93,13 +93,32 @@ TEST_F(AgregationsTest, GetAvgTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(AVG(what),double
-AVG(once),double
-AVG(was),double
-ddd,double
+    EXPECT_EQ(out_scheme->str(), R"(AVG(what),int128
+AVG(once),int128
+AVG(was),int128
+ddd,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(21.777778,19,11.075,10.555556
+    EXPECT_EQ(out_data->str(), R"(21,19,11,10
 )");
+}
+
+TEST_F(SumOverflowTest, Int64Overflow) {
+    JfEngine::TExecutor exec;
+    {
+        auto err = exec.ExecQuery("CREATE ovf FROM scheme, data");
+        ASSERT_FALSE(err.HasError());
+    }
+    {
+        auto err = exec.ExecQuery("SELECT SUM(val) FROM ovf");
+        if (err.HasError()) {
+            std::cout << err.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err.HasError());
+    }
+
+    EXPECT_EQ(out_scheme->str(), "SUM(val),int128\n");
+    // 2 * 4611686018427387904 = 9223372036854775808 > INT64_MAX (9223372036854775807)
+    EXPECT_EQ(out_data->str(), "9223372036854775808\n");
 }
 
 }
