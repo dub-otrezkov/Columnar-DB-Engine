@@ -113,7 +113,7 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<TColumnPtr> TJfTableInput::ReadIthColumn(ui64 i) {
+Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     if (!poses_of_cols_) {
         std::vector<ui64> p(scheme_.size());
         auto start = blocks_pos_[current_block_];

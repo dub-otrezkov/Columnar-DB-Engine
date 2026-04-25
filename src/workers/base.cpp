@@ -47,6 +47,38 @@ Expected<TColumnPtr> ITableInput::ReadColumn(const std::string& name) {
     return Expected<TColumnPtr>{(*current_rg_)[name_to_i_[name]], current_rg_err_};
 }
 
+
+i64 ITableInput::GetColumnInd(const std::string& name) {
+    if (name == "*") {
+        return 0;
+    }
+
+    if (name_to_i_.empty()) {
+        SetupColumnsScheme();
+        for (const auto& [n, _] : scheme_) {
+            name_to_i_[n] = name_to_i_.size();
+        }
+    }
+
+    if (!name_to_i_.contains(name)) {
+        return -1;
+    }
+
+    return name_to_i_.at(name);
+}
+
+
+Expected<TColumnPtr> ITableInput::ReadIthColumn(i64 i) {
+    if (!current_rg_) {
+        auto result = LoadRowGroup();
+        current_rg_err_ = result.GetError();
+        if (result.HasValue()) {
+            current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
+        }
+    }
+    return Expected<TColumnPtr>{(*current_rg_)[i], current_rg_err_};
+}
+
 ui64 ITableInput::GetRowGroupLen() const {
     return row_group_len_;
 }

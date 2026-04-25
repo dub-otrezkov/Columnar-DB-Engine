@@ -4,6 +4,8 @@
 
 #include "utils/errors/errors.h"
 
+#include <boost/dynamic_bitset/dynamic_bitset.hpp>
+
 namespace JfEngine {
 
 enum EFilterType {
@@ -21,7 +23,7 @@ enum EFilterType {
 
 struct OFilterCheck {
     template<typename T>
-    static inline Expected<std::vector<bool>> Exec(T& col, EFilterType op, const std::string& value) {
+    static inline Expected<boost::dynamic_bitset<>> Exec(T& col, EFilterType op, const std::string& value) {
         switch (op) {
             case EFilterType::kEq: {
                 return ExecInner(col, EFilterType::kEq, value);
@@ -53,9 +55,12 @@ struct OFilterCheck {
     }
 
     template <typename TCol>
-    static inline Expected<std::vector<bool>> ExecInner(TCol& col, EFilterType op, const std::string& value, bool inv = false) {
+    static inline Expected<boost::dynamic_bitset<>> ExecInner(TCol& col, EFilterType op, const std::string& value, bool inv = false) {
         using T = typename TCol::ElemType;
-        std::vector<bool> ans(col.GetSize(), inv);
+        boost::dynamic_bitset<> ans(col.GetSize());
+        if (inv) {
+            ans.set();
+        }
         T target;
         try {
             if constexpr (std::is_same_v<TCol, TDateColumn>) {
@@ -76,19 +81,19 @@ struct OFilterCheck {
         switch (op) {
             case EFilterType::kEq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] == target));
+                    ans[i] ^= (col.GetData()[i] == target);
                 }
                 break;
             }
             case EFilterType::kLess: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] < target));
+                    ans[i] ^= (col.GetData()[i] < target);
                 }
                 break;
             }
             case EFilterType::kLeq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData()[i] <= target));
+                    ans[i] ^= (col.GetData()[i] <= target);
                 }
                 break;
             }
@@ -96,35 +101,38 @@ struct OFilterCheck {
         return ans;
     }
 
-    static inline Expected<std::vector<bool>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        std::vector<bool> ans(col.GetSize(), inv);
+    static inline Expected<boost::dynamic_bitset<>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {
+        boost::dynamic_bitset<> ans(col.GetSize());
+        if (inv) {
+            ans.set();
+        }
         switch (op) {
             case EFilterType::kEq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData().ro_at(i) == value));
+                    ans[i] ^= (col.GetData().ro_at(i) == value);
                 }
                 break;
             }
             case EFilterType::kLess: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData().ro_at(i) < value));
+                    ans[i] ^= (col.GetData().ro_at(i) < value);
                 }
                 break;
             }
             case EFilterType::kLeq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] = (ans[i] ^ (col.GetData().ro_at(i) <= value));
+                    ans[i] ^= (col.GetData().ro_at(i) <= value);
                 }
                 break;
             }
             case EFilterType::kLike: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
                     if (value.empty()) {
-                        ans[i] = ans[i] ^ 1;
+                        ans[i] ^= 1;
                         continue;
                     }
                     if (value == "%") {
-                        ans[i] = ans[i] ^ 1;
+                        ans[i] ^= 1;
                         continue;
                     }
                     auto s = col.GetData().ro_at(i);
@@ -212,7 +220,7 @@ struct OFilterCheck {
                         }
                     }
 
-                    ans[i] = (ans[i] ^ ans_c);
+                    ans[i] ^= ans_c;
                 }
                 break;
             }
@@ -225,7 +233,7 @@ struct OFilterCheck {
 
 struct OFilter {
     template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<bool>& mask) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const boost::dynamic_bitset<>& mask) {
         using T = typename TCol::ElemTypeRo;
         std::vector<T> vals;
         if (col.GetData().size() != mask.size()) {
@@ -239,14 +247,14 @@ struct OFilter {
         return std::make_shared<TCol>(std::move(vals));
     }
 
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<bool>& mask) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const boost::dynamic_bitset<>& mask) {
         StringVector vals;
         if (col.GetData().size() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
         for (ui64 i = 0; i < col.GetData().size(); i++) {
             if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
+                vals.push_back(col.GetData().at(i));
             }
         }
         return std::make_shared<TStringColumn>(std::move(vals));
@@ -255,11 +263,11 @@ struct OFilter {
 
 struct OIfElse {
     template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& els, const std::vector<bool>& mask) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& els, const boost::dynamic_bitset<>& mask) {
         return MakeError<EError::UnimplementedErr>("im lazyyyy");
     }
 
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& els, const std::vector<bool>& mask) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& els, const boost::dynamic_bitset<>& mask) {
         StringVector vals;
         if (col.GetData().size() != mask.size()) {
             return MakeError<EError::BadArgsErr>();

@@ -202,6 +202,9 @@ TColumnOp::TColumnOp(std::string name_) :
 {}
 
 Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp) {
+    // if (aind == -1) {
+    //     aind = inp->GetColumnInd(name);
+    // }
     auto [ans_, err] = inp->ReadColumn(name);
     ans = ans_;
     return err;
@@ -264,7 +267,7 @@ std::string TRegexpReplaceOp::GetName() const {
 Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
     
     // ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
-    std::vector<bool> mask;
+    boost::dynamic_bitset<> mask;
     for (auto& f : cond.fils) {
         auto [col, err_read] = inp->ReadColumn(f.column_name);
         if (err_read) {
@@ -275,9 +278,7 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
             mask = std::move(res);
         } else {
             assert(mask.size() == res.size());
-            for (i64 i = 0; i < res.size(); i++) {
-                mask[i] = (mask[i] & res[i]);
-            }
+            mask &= res;
         }
     }
 

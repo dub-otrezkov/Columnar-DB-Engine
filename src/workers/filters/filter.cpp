@@ -35,10 +35,11 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
         return {col, err};
     }
 
-    std::vector<bool> keep(col[0]->GetSize(), 1);
+    boost::dynamic_bitset<> keep(col[0]->GetSize());
+    keep.set();
     for (const auto& [name, op, target, opt_args] : query_.fils) {
         if (op == EFilterType::kIn || op == EFilterType::kNIn) {
-            std::vector<bool> al;
+            boost::dynamic_bitset<> al;
             if (!opt_args) {
                 return EError::BadCmdErr;
             }
@@ -55,21 +56,19 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
                 }
 
                 if (al.empty()) {
-                    al = orr;
+                    al = std::move(orr);
                 } else {
-                    for (ui64 i = 0; i < orr.size(); i++) {
-                        if (op == EFilterType::kIn) {
-                            al[i] = (al[i] | orr.at(i));
-                        } else {
-                            al[i] = (al[i] & orr.at(i));
-                        }
+                    if (op == EFilterType::kIn) {
+                        al |= orr;
+                    } else {
+                        al = std::move(orr);
                     }
                 }
             }
-
-            for (ui64 i = 0; i < keep.size(); i++) {
-                keep[i] = (keep[i] & al[i]);
-            }
+            keep &= al;
+            // for (ui64 i = 0; i < keep.size(); i++) {
+            //     keep[i] = (keep[i] & al[i]);
+            // }
         } else {
             auto [bl, err] = Do<OFilterCheck>(col[name_to_i_[name]], op, target);
 
@@ -77,9 +76,10 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
                 return err;
             }
 
-            for (ui64 i = 0; i < keep.size(); i++) {
-                keep[i] = (keep[i] & bl[i]);
-            }
+            keep &= bl;
+            // for (ui64 i = 0; i < keep.size(); i++) {
+            //     keep[i] = (keep[i] & bl[i]);
+            // }
         }
     }
 
@@ -90,9 +90,7 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
         if (res.HasError()) {
             return res.GetError();
         }
-        if (!ans[i]) {
-        }
-        ans[i] = res.GetRes();
+        ans[i] = std::move(res.GetRes());
     }
 
     assert(ans.size() == GetScheme().size());
