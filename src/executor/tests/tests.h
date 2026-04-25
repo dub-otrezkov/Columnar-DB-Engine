@@ -61,4 +61,36 @@ dot,19,hacker,-10,-10,-1,-1.125
     }
 };
 
+struct SumOverflowTest : testing::Test {
+    std::string scheme = "val,int64\n";
+    // 2 * 2^62 = 2^63 = INT64_MAX + 1, overflows int64 but fits in int128
+    std::string data = "4611686018427387904\n4611686018427387904\n";
+
+    std::shared_ptr<std::stringstream> out_scheme;
+    std::shared_ptr<std::stringstream> out_data;
+
+    void SetUp() override {
+        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo("ovf", ETypeFile::kJfFile);
+
+        *TIoFactory::GetIo("scheme") << scheme;
+        *TIoFactory::GetIo("data") << data;
+
+        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
+
+        out_scheme = std::dynamic_pointer_cast<std::stringstream>(TIoFactory::GetIo(kResultScheme));
+        out_data = std::dynamic_pointer_cast<std::stringstream>(TIoFactory::GetIo(kResultData));
+    }
+
+    void TearDown() override {
+        TIoFactory::UnregisterIo("scheme");
+        TIoFactory::UnregisterIo("data");
+        TIoFactory::UnregisterIo("ovf");
+        TIoFactory::UnregisterIo(kResultData);
+        TIoFactory::UnregisterIo(kResultScheme);
+    }
+};
+
 } // namespace JfEngine::Testing
