@@ -39,6 +39,7 @@ enum class ETokens {
     kCond,
     kThen, // misc (
     kElse, // misc (
+    kRegexpReplace,
     kWhere,
     kBy, // misc (
     kGroup,
@@ -75,6 +76,7 @@ static const std::unordered_map<std::string, ETokens> operators = {
     {"CONST_INT", ETokens::kConstInt},
     {"IF", ETokens::kIf},
     {"COND", ETokens::kCond},
+    {"REGEXP_REPLACE", ETokens::kRegexpReplace},
 };
 
 struct IToken {
@@ -291,6 +293,11 @@ public:
 class TElseToken : public IToken {
 public:
     inline ETokens GetType() const override { return ETokens::kElse; }
+};
+
+struct TRegexpReplaceToken : public IToken {
+public:
+    inline ETokens GetType() const override { return ETokens::kRegexpReplace; }
 };
 
 class TCloseBracketToken : public IToken {

@@ -4,6 +4,7 @@
 #include "columns/operators/min_max.h"
 #include "columns/operators/operators.h"
 #include "columns/operators/filter.h"
+#include "columns/operators/vector_like.h"
 
 #include <cassert>
 
@@ -238,6 +239,26 @@ std::unique_ptr<IOa> TDistinctOp::Clone() {
 
 std::string TDistinctOp::GetName() const {
     return "DISTINCT(" + arg->GetName() + ")";
+}
+
+Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp) {
+    auto col = arg[0]->ThrowRowGroup();
+    ans = Do<ORegexpReplace>(col, arg1_p, arg2_p).GetRes();
+    return EError::NoError;
+}
+
+TColumnPtr TRegexpReplaceOp::ThrowRowGroup() {
+    return ans;
+}
+
+std::unique_ptr<IOa> TRegexpReplaceOp::Clone() {
+    auto r = std::make_unique<TRegexpReplaceOp>();
+    r->is_final = is_final;
+    return r;
+}
+
+std::string TRegexpReplaceOp::GetName() const {
+    return "REGEXP_REPLACE(" + arg[0]->GetName() + ", '" + arg1_p + "', '" + arg2_p + "')";
 }
 
 Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {

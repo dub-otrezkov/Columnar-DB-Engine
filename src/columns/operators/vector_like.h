@@ -3,6 +3,8 @@
 #include "../types/types.h"
 #include "operators.h"
 
+#include <regex>
+
 namespace JfEngine {
 
 struct OPushBack {
@@ -139,6 +141,26 @@ struct OClear {
     static inline Expected<void> Exec(TCol& col) {
         col.GetData().clear();
         return EError::NoError;
+    }
+};
+
+struct ORegexpReplace {
+    template <typename TCol>
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& arg1, const std::string& arg2) {
+        return MakeError<EError::UnimplementedErr>("regexp only 4 str");
+    }
+
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& arg1, const std::string& arg2) {
+        StringVector vals;
+        
+        std::regex re(arg1);
+        for (ui64 i = 0; i < col.GetData().size(); i++) {
+            auto t = col.GetData().at(i);
+            std::string res;
+            std::regex_replace(std::back_inserter(res), t.begin(), t.end(), re, arg2);
+            vals.push_back(std::move(res));
+        }
+        return std::make_shared<TStringColumn>(std::move(vals));
     }
 };
 
