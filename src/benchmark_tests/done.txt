@@ -26,7 +26,6 @@ ok
 ok
 ok
 ok
-no regexp
 ok
 ok
 ok
@@ -37,7 +36,8 @@ ok
 ok
 ok
 ok
-no if
+ok
+ok
 ok
 ok
 ok
