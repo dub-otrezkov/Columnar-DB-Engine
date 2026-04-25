@@ -54,7 +54,6 @@ i64 ITableInput::GetColumnInd(const std::string& name) {
     }
 
     if (name_to_i_.empty()) {
-        SetupColumnsScheme();
         for (const auto& [n, _] : scheme_) {
             name_to_i_[n] = name_to_i_.size();
         }
@@ -67,7 +66,6 @@ i64 ITableInput::GetColumnInd(const std::string& name) {
     return name_to_i_.at(name);
 }
 
-
 Expected<TColumnPtr> ITableInput::ReadIthColumn(i64 i) {
     if (!current_rg_) {
         auto result = LoadRowGroup();
@@ -75,6 +73,12 @@ Expected<TColumnPtr> ITableInput::ReadIthColumn(i64 i) {
         if (result.HasValue()) {
             current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
         }
+    }
+    if (!current_rg_) {
+        return current_rg_err_;
+    }
+    if (i < 0 || i >= current_rg_->size()) {
+        return MakeError<EError::NoSuchColumnsErr>();
     }
     return Expected<TColumnPtr>{(*current_rg_)[i], current_rg_err_};
 }

@@ -202,9 +202,6 @@ TColumnOp::TColumnOp(std::string name_) :
 {}
 
 Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp) {
-    // if (aind == -1) {
-    //     aind = inp->GetColumnInd(name);
-    // }
     auto [ans_, err] = inp->ReadColumn(name);
     ans = ans_;
     return err;
