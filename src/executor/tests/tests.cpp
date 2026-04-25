@@ -52,7 +52,7 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int64
+    EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int128
 SUM(red),string
 )");
     EXPECT_EQ(out_data->str(), R"(95,"joshjohnstadiumi,could,have,liedcantthedotdotdot"
@@ -93,12 +93,12 @@ TEST_F(AgregationsTest, GetAvgTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(AVG(what),double
-AVG(once),double
-AVG(was),double
-ddd,double
+    EXPECT_EQ(out_scheme->str(), R"(AVG(what),int128
+AVG(once),int128
+AVG(was),int128
+ddd,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(21.777778,19,11.075,10.555556
+    EXPECT_EQ(out_data->str(), R"(21,19,11,10
 )");
 }
 
