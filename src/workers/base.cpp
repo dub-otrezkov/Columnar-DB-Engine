@@ -1,5 +1,9 @@
 #include "base.h"
 
+#include "utils/perf_stats/perf_stats.h"
+
+#include <chrono>
+
 namespace JfEngine {
 
 ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
@@ -7,7 +11,14 @@ ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
 
 Expected<std::vector<TColumnPtr>> ITableInput::ReadRowGroup() {
     if (!current_rg_) {
+        auto t0 = TQueryStats::instance ? std::chrono::steady_clock::now()
+                                        : std::chrono::steady_clock::time_point{};
         auto result = LoadRowGroup();
+        if (TQueryStats::instance) {
+            auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now() - t0).count();
+            TQueryStats::instance->Record(GetTypeName(), static_cast<uint64_t>(ns));
+        }
         current_rg_err_ = result.GetError();
         if (result.HasValue()) {
             current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));

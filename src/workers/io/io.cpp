@@ -2,8 +2,10 @@
 
 #include "csvio/csv_reader.h"
 #include "utils/errors/errors_templates.h"
+#include "utils/perf_stats/perf_stats.h"
 
 #include <cassert>
+#include <chrono>
 #include <unordered_map>
 
 namespace JfEngine {
@@ -202,16 +204,28 @@ Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
         return MakeError<EError::EofErr>();
     }
 
+    i64 idx = -1;
     if (name == "*") {
-        return ReadIthColumn(0);
-    }
-
-    for (size_t i = 0; i < scheme_.size(); i++) {
-        if (scheme_[i].name_ == name) {
-            return ReadIthColumn(i);
+        idx = 0;
+    } else {
+        for (size_t i = 0; i < scheme_.size(); i++) {
+            if (scheme_[i].name_ == name) { idx = i; break; }
         }
     }
-    return MakeError<EError::NoSuchColumnsErr>("no such column " + name);
+
+    if (idx < 0) {
+        return MakeError<EError::NoSuchColumnsErr>("no such column " + name);
+    }
+
+    auto t0 = TQueryStats::instance ? std::chrono::steady_clock::now()
+                                    : std::chrono::steady_clock::time_point{};
+    auto result = ReadIthColumn(idx);
+    if (TQueryStats::instance) {
+        TQueryStats::instance->Record(GetTypeName(),
+            static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now() - t0).count()));
+    }
+    return result;
 }
 
 

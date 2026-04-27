@@ -39,6 +39,7 @@ struct IOa {
 
 struct TColumnOp : public IOa {
     std::string name;
+    i64 col_idx = -1;
 
     std::shared_ptr<IColumn> ans;
 

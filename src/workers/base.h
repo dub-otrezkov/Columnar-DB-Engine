@@ -32,6 +32,7 @@ public:
 
     virtual Expected<void> SetupColumnsScheme() = 0;
     virtual Expected<std::vector<TColumnPtr>> LoadRowGroup() = 0;
+    virtual const char* GetTypeName() const { return "Unknown"; }
 
     virtual ui64 GetRowGroupLen() const;
     virtual void MoveCursor();

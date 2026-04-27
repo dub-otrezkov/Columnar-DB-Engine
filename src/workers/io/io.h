@@ -18,6 +18,7 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    const char* GetTypeName() const override { return "CsvTable"; }
 
 private:
     std::shared_ptr<std::istream> scheme_in_;
@@ -37,6 +38,7 @@ public:
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<TColumnPtr> ReadColumn(const std::string& name) override;
     Expected<TColumnPtr> ReadIthColumn(i64 i) override;
+    const char* GetTypeName() const override { return "JfTable"; }
 
     void MoveCursor() override;
     void Reset() override;
@@ -61,6 +63,7 @@ public:
     std::vector<TRowScheme>& GetScheme() override;
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    const char* GetTypeName() const override { return "JfNecessaryOnly"; }
 
 private:
     std::string query_;

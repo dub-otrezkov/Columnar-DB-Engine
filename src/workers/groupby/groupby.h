@@ -30,6 +30,7 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    const char* GetTypeName() const override { return "GroupBy"; }
 
 private:
     TGroupByQuery group_q_;
