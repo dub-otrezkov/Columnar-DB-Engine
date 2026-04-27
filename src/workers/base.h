@@ -27,6 +27,8 @@ public:
     virtual std::vector<TRowScheme>& GetScheme();
     virtual Expected<std::vector<TColumnPtr>> ReadRowGroup();
     virtual Expected<TColumnPtr> ReadColumn(const std::string& name);
+    virtual Expected<TColumnPtr> ReadIthColumn(i64 i);
+    virtual i64 GetColumnInd(const std::string& name);
 
     virtual Expected<void> SetupColumnsScheme() = 0;
     virtual Expected<std::vector<TColumnPtr>> LoadRowGroup() = 0;
@@ -41,7 +43,7 @@ protected:
     std::vector<TRowScheme> scheme_;
     ui64 row_group_len_;
 
-    std::unordered_map<std::string, ui64> name_to_i_;
+    boost::unordered_flat_map<std::string, ui64> name_to_i_;
 };
 
 } // namespace JfEngine
