@@ -15,6 +15,7 @@ public:
     void UploadRowGroup(std::vector<TColumnPtr>& row_group, std::vector<ui64>& row_i);
 
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    const char* GetTypeName() const override { return "NarrowIO"; }
 
 private:
     std::shared_ptr<std::vector<TColumnPtr>> buf_;

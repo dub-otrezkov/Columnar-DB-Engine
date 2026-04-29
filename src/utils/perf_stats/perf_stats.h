@@ -58,12 +58,14 @@ struct TQueryStats {
         std::sort(sorted.begin(), sorted.end(), [](const TEntry& a, const TEntry& b) {
             return a.total_ns > b.total_ns;
         });
-        out << "  worker                ms       calls\n";
+        out << "  " << std::left << std::setw(22) << "worker"
+            << std::right << std::setw(12) << "ms" << "  "
+            << std::setw(10) << "calls" << '\n';
         for (const auto& e : sorted) {
-            out << "  " << e.name;
-            for (int i = static_cast<int>(e.name.size()); i < 22; ++i) out << ' ';
             double ms = static_cast<double>(e.total_ns) / 1e6;
-            out << std::fixed << std::setprecision(3) << ms << "ms\t" << e.count << '\n';
+            out << "  " << std::left << std::setw(22) << e.name
+                << std::right << std::fixed << std::setprecision(3) << std::setw(10) << ms << "ms  "
+                << std::setw(10) << e.count << '\n';
         }
     }
 };
