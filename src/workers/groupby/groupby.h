@@ -119,6 +119,17 @@ private:
             return a == b;
         }
 
+        static bool Cmp(const RowView& view, const VectorStringHashed& key) {
+            if (view.hash != key.hash) return false;
+            if (view.cols->size() != key.vals.size()) return false;
+            for (ui64 c = 0; c < view.cols->size(); c++) {
+                if (!Do<OEqualRow>((*view.cols)[c], view.row, key.vals, c)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         bool operator()(const RowView& view, const VectorStringHashed& key) const {
             if (view.hash != key.hash) return false;
             if (view.cols->size() != key.vals.size()) return false;
@@ -149,7 +160,7 @@ private:
         VectorStringEqual
     >;
 
-    THashMap<std::vector<ui64>> keys;
+    // THashMap<std::vector<ui64>> keys;
     THashMap<TGroup> groups_;
     std::optional<TNarrowTableInput> inp_;
     std::vector<StringVector> printed_;

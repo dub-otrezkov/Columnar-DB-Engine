@@ -13,6 +13,7 @@ public:
     void MoveCursor() override;
 
     void UploadRowGroup(std::vector<TColumnPtr>& row_group, std::vector<ui64>& row_i);
+    void UploadRowGroup(std::vector<TColumnPtr>& row_group, std::pair<i64, i64>& row_i);
 
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
 

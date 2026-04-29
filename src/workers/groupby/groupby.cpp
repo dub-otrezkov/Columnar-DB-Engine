@@ -1,6 +1,7 @@
 #include "groupby.h"
 
 #include "columns/operators/vector_like.h"
+#include "columns/operators/order.h"
 #include "columns/types/types.h"
 
 #include <algorithm>
@@ -67,6 +68,19 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         auto& rg = g;
         const ui64 sz = rg[0]->GetSize();
 
+        std::vector<i64> ids(sz);
+        for (i64 i = 0; i < sz; i++) {
+            ids[i] = i;
+        }
+
+        for (i64 k = 0; k < g.size(); k++) {
+            Do<OSortBy>(g.at(k), ids);
+        }
+
+        for (auto& i : ag) {
+            Do<OApplyOrder>(i, ids);
+        }
+
         row_hashes_.assign(sz, 0);
         for (ui64 c = 0; c < rg.size(); c++) {
             Do<OHashInto>(rg[c], row_hashes_);
@@ -75,13 +89,15 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             row_hashes_[i] = Finalize(row_hashes_[i]);
         }
 
-        keys.clear();
+        // keys.clear();
 
-        for (ui64 i = 0; i < sz; i++) {
+        std::vector<std::pair<VectorStringHashed, std::pair<i64, i64>>> keys;
+
+        for (i64 i = 0; i < sz; i++) {
             RowView view{&rg, i, row_hashes_[i]};
-            auto it = keys.find(view);
+            // auto it = keys.find(view);
 
-            if (it == keys.end()) {
+            if (keys.empty() || !VectorStringEqual::Cmp(view, keys.back().first)) {
                 if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
                     continue;
                 }
@@ -92,9 +108,11 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                     Do<OJfPrintRow>(rg[c], i, key_data);
                 }
                 VectorStringHashed key(std::move(key_data), row_hashes_[i]);
-                it = keys.emplace(std::move(key), std::vector<ui64>(0)).first;
+                // it = keys.emplace(std::move(key), std::vector<ui64>(0)).first;
+                keys.emplace_back(std::move(key), std::pair<i64, i64>{i, i});
             }
-            it->second.push_back(i);
+            keys.back().second.second++;
+            // it->second.push_back(i);
             // inp_->MoveCursor();
             // inp_->UploadRowGroup(*ag, i);
             // it->second.eng->ConsumeRowGroup(&inp_.value());

@@ -144,6 +144,52 @@ struct OClear {
     }
 };
 
+struct OPushBackFromRange {
+    template<typename TCol>
+    static inline void Exec(TCol& from, TColumnPtr to, ui64 l, ui64 r) {
+        using T = typename TCol::ElemType;
+        if (to->GetType() != from.GetType()) {
+            throw "bad arg";
+        }
+        auto& t = *static_cast<TCol*>(to.get());
+        ui64 old_size = t.GetData().size();
+        t.GetData().resize(old_size + (r - l + 1));
+        std::memcpy(
+            reinterpret_cast<char*>(t.GetData().data() + old_size),
+            reinterpret_cast<char*>(from.GetData().data() + l),
+            (r - l + 1) * sizeof(T)
+        );
+    }
+
+    static inline void Exec(TStringColumn& from, TColumnPtr to, ui64 l, ui64 r) {
+        if (to->GetType() != from.GetType()) {
+            throw "bad arg";
+        }
+        auto target = static_cast<TStringColumn*>(to.get());
+        ui64 dl = target->GetData().data_size();
+        ui64 prev_sz = target->GetData().size();
+        ui64 copy_bytes = from.GetData().get_pos(r + 1) - from.GetData().get_pos(l);
+        target->GetData().resize_both(
+            dl + copy_bytes,
+            prev_sz + (r - l + 1)
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().data() + dl),
+            reinterpret_cast<char*>(from.GetData().data() + from.GetData().get_pos(l)),
+            copy_bytes
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().offsets_data() + prev_sz),
+            reinterpret_cast<char*>(from.GetData().offsets_data() + l),
+            (r - l + 1) * sizeof(ui64)
+        );
+        ui64 base = from.GetData().get_pos(l);
+        for (ui64 i = 0; i < r - l + 1; i++) {
+            target->GetData().offsets_data()[prev_sz + i] += dl - base;
+        }
+    }
+};
+
 struct ORegexpReplace {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& arg1, const std::string& arg2) {

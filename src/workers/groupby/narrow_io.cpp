@@ -36,6 +36,14 @@ Expected<std::vector<TColumnPtr>> TNarrowTableInput::LoadRowGroup() {
     return std::vector<TColumnPtr>(*buf_);
 }
 
+void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, std::pair<i64, i64>& row_i) {
+    ui64 i = 0;
+    for (auto& col : row_group) {
+        Do<OPushBackFromRange>(col, buf_->at(i++), row_i.first, row_i.second - 1);
+    }
+
+}
+
 void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, std::vector<ui64>& row_i) {
     ui64 i = 0;
     for (auto& col : row_group) {

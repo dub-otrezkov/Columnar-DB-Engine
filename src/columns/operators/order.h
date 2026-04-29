@@ -6,6 +6,16 @@
 
 namespace JfEngine {
 
+struct OSortBy {
+    template <typename TCol>
+    static inline void Exec(TCol& col, std::vector<i64>& ans) {
+        using T = typename TCol::ElemType;
+        std::stable_sort(ans.begin(), ans.end(), [&col](i64 i, i64 j) -> bool {
+            return (col.GetData().at(i) < col.GetData().at(j));
+        });
+    }
+};
+
 struct OSort {
     template <typename TCol>
     static inline std::vector<i64> Exec(TCol& col, bool rev = false) {
@@ -108,7 +118,7 @@ struct OApply2 {
 
 struct OApplyOrder {
     template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<ui64>& order) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<i64>& order) {
         using T = typename TCol::ElemType;
         if (order.size() != col.GetSize()) {
             return EError::BadArgsErr;
@@ -120,7 +130,7 @@ struct OApplyOrder {
         return std::make_shared<TCol>(std::move(ans));
     }
 
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<ui64>& order) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<i64>& order) {
         if (order.size() != col.GetSize()) {
             return EError::BadArgsErr;
         }
