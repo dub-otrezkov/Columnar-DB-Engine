@@ -108,8 +108,9 @@ struct OApply2 {
 
 struct OApplyOrder {
     template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<ui64>& order) {
+    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<i64>& order) {
         using T = typename TCol::ElemType;
+        assert(order.size() == col.GetSize());
         if (order.size() != col.GetSize()) {
             return EError::BadArgsErr;
         }
@@ -120,7 +121,7 @@ struct OApplyOrder {
         return std::make_shared<TCol>(std::move(ans));
     }
 
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<ui64>& order) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<i64>& order) {
         if (order.size() != col.GetSize()) {
             return EError::BadArgsErr;
         }
@@ -135,6 +136,7 @@ struct OApplyOrder {
 struct OCmp {
     template <typename TCol>
     static inline i64 Exec(TCol& self, i64 i1, i64 i2) {
+        // std::cout << i1 << " " << i2 << " " << self.GetSize() << std::endl;
         if (self.GetData().at(i1) < self.GetData().at(i2)) {
             return 1;
         } else if (self.GetData().at(i1) == self.GetData().at(i2)) {

@@ -33,6 +33,7 @@ struct OPushBackFromBatch {
     template<typename TCol>
     static inline void Exec(TCol& from, TColumnPtr to, std::vector<ui64>& is) {
         if (to->GetType() != from.GetType()) {
+            std::cout << "!!? " << to->GetType() << " " << from.GetType() << std::endl;
             throw "bad arg";
         }
         auto& t = *static_cast<TCol*>(to.get());
@@ -40,6 +41,55 @@ struct OPushBackFromBatch {
         for (const auto& i : is) {
             assert(i < from.GetData().size());
             OPushBack::Exec(t, from.GetData().at(i));
+        }
+    }
+};
+
+struct OPushBackFromRange {
+    template<typename TCol>
+    static inline void Exec(TCol& from, TColumnPtr to, ui64 l, ui64 r) {
+        using T = typename TCol::ElemType;
+        if (to->GetType() != from.GetType()) {
+            std::cout << "!!? " << to->GetType() << " " << from.GetType() << std::endl;
+            throw "bad arg";
+        }
+        auto& t = *static_cast<TCol*>(to.get());
+        t.GetData().resize(t.GetData().size() + (r - l + 1) * sizeof(T));
+        std::memcpy(
+            reinterpret_cast<char*>(t.GetData().data()),
+            reinterpret_cast<char*>(from.GetData().data() + l),
+            (r - l + 1) * sizeof(T)
+        );
+        // for (const auto& i : is) {
+        //     // assert(i < from.GetData().size());
+        //     // OPushBack::Exec(t, from.GetData().at(i));
+        // }
+    }
+
+
+    static inline void Exec(TStringColumn& from, TColumnPtr to, ui64 l, ui64 r) {
+        if (to->GetType() != from.GetType()) {
+            throw "bad arg";
+        }
+        auto target = static_cast<TStringColumn*>(to.get());
+        ui64 dl = target->GetData().data_size();
+        ui64 prev_sz = target->GetData().size();
+        target->GetData().resize_both(
+            from.GetData().data_size() + target->GetData().get_pos(r + 1) - target->GetData().get_pos(l),
+            from.GetData().size() + r - l + 1
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().data() + dl),
+            reinterpret_cast<char*>(from.GetData().data() + from.GetData().get_pos(l)),
+            from.GetData().get_pos(r + 1) - from.GetData().get_pos(l)
+        );
+        std::memcpy(
+            reinterpret_cast<char*>(target->GetData().offsets_data() + prev_sz),
+            reinterpret_cast<char*>(from.GetData().offsets_data() + l),
+            (r - l + 1) * sizeof(ui64)
+        );
+        for (ui64 i = 0; i < r - l + 1; i++) {
+            target->GetData().offsets_data()[prev_sz + i] += dl;
         }
     }
 };

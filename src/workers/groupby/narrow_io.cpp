@@ -43,4 +43,11 @@ void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, std::
     }
 }
 
+void TNarrowTableInput::UploadRowGroup(std::vector<TColumnPtr>& row_group, ui64 l, ui64 r) {
+    ui64 i = 0;
+    for (auto& col : row_group) {
+        Do<OPushBackFromRange>(col, buf_->at(i++), l, r);
+    }
+}
+
 } // namespace JfEngine

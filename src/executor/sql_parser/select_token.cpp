@@ -343,16 +343,12 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
     } else {
         TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
 
-        auto agr = std::make_shared<TAgregator>(
-            TIoFactory::GetTableIo(kCurTableInput)
-        );
-
         TEngine eng;
 
         TIoFactory::RegisterFileIo(kResultScheme, ETypeFile::kCsvFile);
         TIoFactory::RegisterFileIo(kResultData, ETypeFile::kCsvFile);
 
-        eng.Setup(agr);
+        eng.Setup(TIoFactory::GetTableIo(kCurTableInput));
 
         eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
         eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));

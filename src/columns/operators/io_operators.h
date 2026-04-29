@@ -120,6 +120,11 @@ struct OHashInto {
         const ui64 sz = col.GetSize();
 
         for (ui64 i = 0; i < sz; i++) {
+            if (i > 0 && col.GetData().at(i - 1) == col.GetData().at(i)) {
+                hashes[i] = hashes[i - 1];
+                continue;
+            }
+
             const char* p = reinterpret_cast<const char*>(data + i);
             size_t len = sizeof(T);
             ui64 h = hashes[i];

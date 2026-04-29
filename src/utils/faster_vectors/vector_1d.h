@@ -31,6 +31,9 @@ public:
     }
 
     inline ui64 get_pos(ui64 i) const {
+        if (i >= offsets_.size()) {
+            return data_.size();
+        }
         return offsets_.at(i);
     }
 

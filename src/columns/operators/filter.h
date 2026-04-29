@@ -126,22 +126,34 @@ struct OFilterCheck {
                 break;
             }
             case EFilterType::kLike: {
-                for (ui64 i = 0; i < col.GetSize(); i++) {
-                    if (value.empty()) {
-                        ans[i] ^= 1;
-                        continue;
-                    }
-                    if (value == "%") {
-                        ans[i] ^= 1;
-                        continue;
-                    }
-                    auto s = col.GetData().ro_at(i);
-                    std::vector<i64> pf(value.size(), 0);
-                    i64 st = 0;
+                if (value.empty() || value == "%") {
+                    ans.set();
+                    break;
+                }
 
-                    static auto eq = [](char a, char b) -> bool {
-                        return (a == b || a == '_' || b == '_');
-                    };
+                static auto eq = [](char a, char b) -> bool {
+                    return (a == b || a == '_' || b == '_');
+                };
+
+                std::vector<i64> pf_base(value.size(), 0);
+                i64 st_base = 0;
+                while (st_base < value.size() && value[st_base] == '%') {
+                    st_base++;
+                }
+                for (ui64 t = st_base + 1; t < value.size() && value[t] != '%'; t++) {
+                    pf_base[t] = pf_base[t - 1];
+                    while (pf_base[t] > 0 && !eq(value[pf_base[t] + st_base], value[t])) {
+                        pf_base[t] = pf_base[pf_base[t] + st_base - 1];
+                    }
+                    if (eq(value[t], value[st_base + pf_base[t]])) {
+                        pf_base[t]++;
+                    }
+                }
+
+                for (ui64 i = 0; i < col.GetSize(); i++) {
+                    auto s = col.GetData().ro_at(i);
+                    std::vector<i64> pf = pf_base;
+                    i64 st = st_base;
 
                     auto recalc_pf = [&pf, &st, &value]() -> void {
                         while (st < value.size() && value[st] == '%') {
@@ -157,7 +169,7 @@ struct OFilterCheck {
                             }
                         }
                     };
-                    recalc_pf();
+
                     ui64 curpf = 0;
                     for (ui64 k = 0; k < s.size(); k++) {
                         if (st == value.size()) {
@@ -179,23 +191,10 @@ struct OFilterCheck {
                         }
                     }
 
-
                     bool ans_c = 1;
 
                     if (st != value.size()) {
                         ans_c = 0;
-                    }
-
-                    if (value[0] != '%') {
-                        for (ui64 k = 0; k < value.size(); k++) {
-                            if (value[k] == '%') {
-                                break;
-                            }
-                            if (!eq(value[k], s[k])) {
-                                ans_c = 0;
-                                break;
-                            }
-                        }
                     }
 
                     if (value[0] != '%') {
