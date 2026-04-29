@@ -84,8 +84,9 @@ struct OPushBackFromRange {
             reinterpret_cast<char*>(from.GetData().offsets_data() + l),
             (r - l + 1) * sizeof(ui64)
         );
+        ui64 base = from.GetData().get_pos(l);
         for (ui64 i = 0; i < r - l + 1; i++) {
-            target->GetData().offsets_data()[prev_sz + i] += dl;
+            target->GetData().offsets_data()[prev_sz + i] += dl - base;
         }
     }
 };
