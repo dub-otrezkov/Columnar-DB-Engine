@@ -89,20 +89,16 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         return true;
     };
 
-    auto sort_rg = [&](std::vector<TColumnPtr>& input) -> void {
+    auto compute_order = [&](std::vector<TColumnPtr>& input) -> std::vector<i64> {
         std::vector<i64> ids(input[0]->GetSize());
-        for (i64 i = 0; i < ids.size(); i++) {
-            ids[i] = i;
-        }
+        for (i64 i = 0; i < (i64)ids.size(); i++) ids[i] = i;
+        std::sort(ids.begin(), ids.end(), [&](i64 i, i64 j) { return cmp(input, i, j); });
+        return ids;
+    };
 
-        std::sort(ids.begin(), ids.end(), [&](i64 i, i64 j) -> bool {
-            return cmp(input, i, j);
-        });
-
-        // std::cout << "sorted" << std::endl;
-        for (auto& i : input) {
-            i = Do<OApplyOrder>(i, ids).GetRes();
-        }
+    auto apply_order = [&](std::vector<TColumnPtr>& cols, const std::vector<i64>& ids) {
+        for (auto& col : cols)
+            col = Do<OApplyOrder>(col, ids).GetRes();
     };
 
     for (; run; jf_in_->MoveCursor()) {
@@ -123,10 +119,14 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             }
         }
 
-        sort_rg(ag);
-
         if (ag.empty() || ag.at(0)->GetSize() == 0) {
             continue;
+        }
+
+        {
+            auto ids = compute_order(ag);
+            apply_order(ag, ids);
+            apply_order(g, ids);
         }
 
         if (!inp_) {
@@ -137,16 +137,6 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         auto& rg = g;
         const ui64 sz = rg[0]->GetSize();
 
-        row_hashes_.assign(sz, 0);
-        for (ui64 c = 0; c < rg.size(); c++) {
-            Do<OHashInto>(rg[c], row_hashes_);
-        }
-        for (ui64 i = 0; i < sz; i++) {
-            row_hashes_[i] = Finalize(row_hashes_[i]);
-        }
-
-        keys.clear();
-
         ui64 lst = 0;
 
         for (ui64 i = 0; i < sz; i++) {
@@ -154,14 +144,12 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                 inp_->MoveCursor();
                 inp_->UploadRowGroup(ag, lst, i);
 
-                lst = i;
-
                 StringVector key_data;
                 key_data.reserve(rg.size());
                 for (ui64 c = 0; c < rg.size(); c++) {
                     Do<OJfPrintRow>(rg[c], i, key_data);
                 }
-                VectorStringHashed key(std::move(key_data), row_hashes_[i]);
+                VectorStringHashed key(std::move(key_data));
 
                 auto it = groups_.find(key);
                 if (it == groups_.end()) {
@@ -169,11 +157,10 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                 }
                 TAoEngineTimer t(per_group_eng_name);
                 it->second.eng->ConsumeRowGroup(&inp_.value());
+
+                lst = i + 1;
             }
-
         }
-
-        std::cout << "iter" << std::endl;
 
         // for (ui64 i = 0; i < sz; i++) {
         //     RowView view{&rg, i, row_hashes_[i]};

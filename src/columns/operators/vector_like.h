@@ -54,18 +54,14 @@ struct OPushBackFromRange {
             throw "bad arg";
         }
         auto& t = *static_cast<TCol*>(to.get());
-        t.GetData().resize(t.GetData().size() + (r - l + 1) * sizeof(T));
+        ui64 old_size = t.GetData().size();
+        t.GetData().resize(old_size + (r - l + 1));
         std::memcpy(
-            reinterpret_cast<char*>(t.GetData().data()),
+            reinterpret_cast<char*>(t.GetData().data() + old_size),
             reinterpret_cast<char*>(from.GetData().data() + l),
             (r - l + 1) * sizeof(T)
         );
-        // for (const auto& i : is) {
-        //     // assert(i < from.GetData().size());
-        //     // OPushBack::Exec(t, from.GetData().at(i));
-        // }
     }
-
 
     static inline void Exec(TStringColumn& from, TColumnPtr to, ui64 l, ui64 r) {
         if (to->GetType() != from.GetType()) {
@@ -75,8 +71,8 @@ struct OPushBackFromRange {
         ui64 dl = target->GetData().data_size();
         ui64 prev_sz = target->GetData().size();
         target->GetData().resize_both(
-            from.GetData().data_size() + target->GetData().get_pos(r + 1) - target->GetData().get_pos(l),
-            from.GetData().size() + r - l + 1
+            dl + (from.GetData().get_pos(r + 1) - from.GetData().get_pos(l)),
+            prev_sz + (r - l + 1)
         );
         std::memcpy(
             reinterpret_cast<char*>(target->GetData().data() + dl),
