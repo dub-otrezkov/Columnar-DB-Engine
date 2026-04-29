@@ -45,6 +45,9 @@ protected:
     ui64 row_group_len_;
 
     boost::unordered_flat_map<std::string, ui64> name_to_i_;
+
+private:
+    void EnsureLoaded();
 };
 
 } // namespace JfEngine

@@ -2,6 +2,7 @@
 
 #include "columns/operators/vector_like.h"
 #include "columns/types/types.h"
+#include "utils/perf_stats/perf_stats.h"
 
 #include <algorithm>
 
@@ -41,9 +42,17 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         }
     }
 
+    const char* gc_eng_name = "AgregEngine";
+    const char* per_group_eng_name = agr_q_.tp == EAoEngineType::kAgregation
+        ? "AgregEngine" : "OperEngine";
+
     for (; run; jf_in_->MoveCursor()) {
-        auto err = gc_eng->ConsumeRowGroup(jf_in_.get()).GetError();
-        auto g = gc_eng->ThrowRowGroup();
+        std::vector<TColumnPtr> g;
+        {
+            TAoEngineTimer t(gc_eng_name);
+            (void)gc_eng->ConsumeRowGroup(jf_in_.get());
+            g = gc_eng->ThrowRowGroup();
+        }
 
         auto [ag, err2] = jf_in_->ReadRowGroup();
 
@@ -108,6 +117,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             if (it == groups_.end()) {
                 it = groups_.emplace(key, TGroup{agr_q_.Clone()}).first;
             }
+            TAoEngineTimer t(per_group_eng_name);
             it->second.eng->ConsumeRowGroup(&inp_.value());
         }
     }
@@ -115,13 +125,20 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     std::vector<TColumnPtr> ans(scheme_.size());
     for (auto& [_, value] : groups_) {
         if (!ans[0]) {
-            ans = value.eng->ThrowRowGroup();
+            {
+                TAoEngineTimer t(per_group_eng_name);
+                ans = value.eng->ThrowRowGroup();
+            }
             for (ui64 i = 0; i < ans.size(); i++) {
                 Do<OResize>(ans[i], 1);
                 scheme_[i].type_ = ans[i]->GetType();
             }
         } else {
-            auto gars = value.eng->ThrowRowGroup();
+            std::vector<TColumnPtr> gars;
+            {
+                TAoEngineTimer t(per_group_eng_name);
+                gars = value.eng->ThrowRowGroup();
+            }
             for (ui64 i = 0; i < gars.size(); i++) {
                 Do<OPushBackFrom>(gars[i], ans[i], 0);
             }

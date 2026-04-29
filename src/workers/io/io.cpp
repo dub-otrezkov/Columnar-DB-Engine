@@ -221,9 +221,10 @@ Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
                                     : std::chrono::steady_clock::time_point{};
     auto result = ReadIthColumn(idx);
     if (TQueryStats::instance) {
-        TQueryStats::instance->Record(GetTypeName(),
-            static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::steady_clock::now() - t0).count()));
+        auto ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now() - t0).count());
+        TQueryStats::instance->Record(GetTypeName(), ns);
+        AddToParentChildTime(ns);
     }
     return result;
 }

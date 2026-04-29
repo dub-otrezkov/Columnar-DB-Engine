@@ -9,21 +9,32 @@ namespace JfEngine {
 ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
 }
 
-Expected<std::vector<TColumnPtr>> ITableInput::ReadRowGroup() {
-    if (!current_rg_) {
-        auto t0 = TQueryStats::instance ? std::chrono::steady_clock::now()
-                                        : std::chrono::steady_clock::time_point{};
+void ITableInput::EnsureLoaded() {
+    if (current_rg_) return;
+    if (!TQueryStats::instance) {
         auto result = LoadRowGroup();
-        if (TQueryStats::instance) {
-            auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::steady_clock::now() - t0).count();
-            TQueryStats::instance->Record(GetTypeName(), static_cast<uint64_t>(ns));
-        }
         current_rg_err_ = result.GetError();
         if (result.HasValue()) {
             current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
         }
+        return;
     }
+    auto t0 = std::chrono::steady_clock::now();
+    PushChildFrame();
+    auto result = LoadRowGroup();
+    auto ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now() - t0).count());
+    uint64_t child_ns = PopChildFrame();
+    TQueryStats::instance->Record(GetTypeName(), ns > child_ns ? ns - child_ns : 0);
+    AddToParentChildTime(ns);
+    current_rg_err_ = result.GetError();
+    if (result.HasValue()) {
+        current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
+    }
+}
+
+Expected<std::vector<TColumnPtr>> ITableInput::ReadRowGroup() {
+    EnsureLoaded();
     if (current_rg_) {
         return {std::vector<TColumnPtr>(*current_rg_), current_rg_err_};
     }
@@ -31,13 +42,7 @@ Expected<std::vector<TColumnPtr>> ITableInput::ReadRowGroup() {
 }
 
 Expected<TColumnPtr> ITableInput::ReadColumn(const std::string& name) {
-    if (!current_rg_) {
-        auto result = LoadRowGroup();
-        current_rg_err_ = result.GetError();
-        if (result.HasValue()) {
-            current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
-        }
-    }
+    EnsureLoaded();
     if (!current_rg_) {
         return current_rg_err_;
     }
@@ -78,13 +83,7 @@ i64 ITableInput::GetColumnInd(const std::string& name) {
 }
 
 Expected<TColumnPtr> ITableInput::ReadIthColumn(i64 i) {
-    if (!current_rg_) {
-        auto result = LoadRowGroup();
-        current_rg_err_ = result.GetError();
-        if (result.HasValue()) {
-            current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
-        }
-    }
+    EnsureLoaded();
     if (!current_rg_) {
         return current_rg_err_;
     }
