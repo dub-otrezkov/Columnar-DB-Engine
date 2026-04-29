@@ -1,11 +1,11 @@
 #include "groupby.h"
 
-#include "columns/operators/order.h"
 #include "columns/operators/vector_like.h"
 #include "columns/types/types.h"
 #include "utils/perf_stats/perf_stats.h"
 
 #include <algorithm>
+#include <numeric>
 
 namespace JfEngine {
 
@@ -37,69 +37,9 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
 Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     bool run = true;
 
-    if (name_to_i_.empty()) {
-        for (const auto& k : jf_in_->GetScheme()) {
-            name_to_i_[k.name_] = name_to_i_.size();
-        }
-    }
-
     const char* gc_eng_name = "AgregEngine";
     const char* per_group_eng_name = agr_q_.tp == EAoEngineType::kAgregation
         ? "AgregEngine" : "OperEngine";
-    
-    
-    boost::unordered_flat_map<std::string, i64> in_name_to_i;
-    // std::cout << "start -------------" << std::endl;
-    for (i64 i = 0; i < jf_in_->GetScheme().size(); i++) {
-        // std::cout << jf_in_->GetScheme()[i].name_ << std::endl;
-        in_name_to_i[jf_in_->GetScheme()[i].name_] = i;
-    }
-    // std::cout << "split -------------" << std::endl;
-    auto n = gc_eng->GetNames();
-    std::vector<i64> is(n.size());
-    for (ui64 i = 0; i < n.size(); i++) {
-        // std::cout << n.at(i) << std::endl;
-        is.at(i) = in_name_to_i.at(n.at(i));
-    }
-    // std::cout << "end ---------------" << std::endl;
-
-    auto cmp = [&](std::vector<TColumnPtr>& input, i64 i, i64 j) -> bool {
-
-        for (i64 k = 0; k < n.size(); k++) {
-            auto t1 = Do<OCmp>(input.at(is[k]), i, j);
-            if (t1 == 1) {
-                return true;
-            }
-            if (t1 == 0) {
-                continue;
-            }
-            return false;
-        }
-        return false;
-    };
-
-    auto equ = [&](std::vector<TColumnPtr>& input, i64 i, i64 j) -> bool {
-
-        for (i64 k = 0; k < n.size(); k++) {
-            auto t1 = Do<OCmp>(input.at(is[k]), i, j);
-            if (t1 != 0) {
-                return false;
-            }
-        }
-        return true;
-    };
-
-    auto compute_order = [&](std::vector<TColumnPtr>& input) -> std::vector<i64> {
-        std::vector<i64> ids(input[0]->GetSize());
-        for (i64 i = 0; i < (i64)ids.size(); i++) ids[i] = i;
-        std::sort(ids.begin(), ids.end(), [&](i64 i, i64 j) { return cmp(input, i, j); });
-        return ids;
-    };
-
-    auto apply_order = [&](std::vector<TColumnPtr>& cols, const std::vector<i64>& ids) {
-        for (auto& col : cols)
-            col = Do<OApplyOrder>(col, ids).GetRes();
-    };
 
     for (; run; jf_in_->MoveCursor()) {
         std::vector<TColumnPtr> g;
@@ -123,79 +63,59 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             continue;
         }
 
-        {
-            auto ids = compute_order(ag);
-            apply_order(ag, ids);
-            apply_order(g, ids);
-        }
+        // Sort indices by group-by columns (g), no in-place column copies
+        const ui64 sz = g[0]->GetSize();
+        std::vector<ui64> ids(sz);
+        std::iota(ids.begin(), ids.end(), 0);
+        std::sort(ids.begin(), ids.end(), [&](ui64 a, ui64 b) {
+            for (auto& col : g) {
+                auto t = Do<OCmp>(col, static_cast<i64>(a), static_cast<i64>(b));
+                if (t == 1) return true;
+                if (t == 0) continue;
+                return false;
+            }
+            return false;
+        });
 
         if (!inp_) {
             inp_ = TNarrowTableInput();
             inp_->Update(jf_in_->GetScheme());
         }
 
-        auto& rg = g;
-        const ui64 sz = rg[0]->GetSize();
-
         ui64 lst = 0;
 
         for (ui64 i = 0; i < sz; i++) {
-            if (i + 1 == sz || !equ(ag, i, i + 1)) {
-                inp_->MoveCursor();
-                inp_->UploadRowGroup(ag, lst, i);
-
-                StringVector key_data;
-                key_data.reserve(rg.size());
-                for (ui64 c = 0; c < rg.size(); c++) {
-                    Do<OJfPrintRow>(rg[c], i, key_data);
+            bool last_in_group = (i + 1 == sz);
+            if (!last_in_group) {
+                bool same = true;
+                for (auto& col : g) {
+                    auto t = Do<OCmp>(col, static_cast<i64>(ids[i]), static_cast<i64>(ids[i + 1]));
+                    if (t != 0) { same = false; break; }
                 }
-                VectorStringHashed key(std::move(key_data));
-
-                auto it = groups_.find(key);
-                if (it == groups_.end()) {
-                    it = groups_.emplace(key, TGroup{agr_q_.Clone()}).first;
-                }
-                TAoEngineTimer t(per_group_eng_name);
-                it->second.eng->ConsumeRowGroup(&inp_.value());
-
-                lst = i + 1;
+                if (same) continue;
             }
+
+            std::vector<ui64> group_rows(ids.begin() + lst, ids.begin() + i + 1);
+            inp_->MoveCursor();
+            inp_->UploadRowGroup(ag, group_rows);
+
+            StringVector key_data;
+            key_data.reserve(g.size());
+            for (ui64 c = 0; c < g.size(); c++) {
+                Do<OJfPrintRow>(g[c], static_cast<i64>(ids[i]), key_data);
+            }
+            VectorStringHashed key(std::move(key_data));
+
+            auto it = groups_.find(key);
+            if (it == groups_.end()) {
+                it = groups_.emplace(key, TGroup{agr_q_.Clone()}).first;
+            }
+            TAoEngineTimer t(per_group_eng_name);
+            it->second.eng->ConsumeRowGroup(&inp_.value());
+
+            lst = i + 1;
         }
 
-        // for (ui64 i = 0; i < sz; i++) {
-        //     RowView view{&rg, i, row_hashes_[i]};
-        //     auto it = keys.find(view);
-
-        //     if (it == keys.end()) {
-        //         if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
-        //             continue;
-        //         }
-
-        //         StringVector key_data;
-        //         key_data.reserve(rg.size());
-        //         for (ui64 c = 0; c < rg.size(); c++) {
-        //             Do<OJfPrintRow>(rg[c], i, key_data);
-        //         }
-        //         VectorStringHashed key(std::move(key_data), row_hashes_[i]);
-        //         it = keys.emplace(std::move(key), std::vector<ui64>(0)).first;
-        //     }
-        //     it->second.push_back(i);
-        //     // inp_->MoveCursor();
-        //     // inp_->UploadRowGroup(*ag, i);
-        //     // it->second.eng->ConsumeRowGroup(&inp_.value());
-        // }
-
-        // for (auto& [key, is] : keys) {
-        //     inp_->MoveCursor();
-        //     inp_->UploadRowGroup(ag, is);
-
-        //     auto it = groups_.find(key);
-        //     if (it == groups_.end()) {
-        //         it = groups_.emplace(key, TGroup{agr_q_.Clone()}).first;
-        //     }
-        //     TAoEngineTimer t(per_group_eng_name);
-        //     it->second.eng->ConsumeRowGroup(&inp_.value());
-        // }
     }
 
     std::vector<TColumnPtr> ans(scheme_.size());
