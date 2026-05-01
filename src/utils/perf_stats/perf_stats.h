@@ -20,8 +20,6 @@ class TQueryStats {
 public:
     static TQueryStats* instance;
 
-    TQueryStats() : instance(this) {}
-
     void Record(const char* name, uint64_t ns) {
         auto& stat = stats_[name];
         stat.name = name;
