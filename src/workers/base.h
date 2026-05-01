@@ -36,6 +36,10 @@ public:
     virtual ui64 GetRowGroupLen() const;
     virtual void MoveCursor();
     virtual void Reset();
+    virtual const char* GetTypeName() const { return "Unknown"; }
+
+private:
+    void EnsureLoaded();
 
 protected:
     std::shared_ptr<std::vector<TColumnPtr>> current_rg_;

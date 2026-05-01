@@ -1,5 +1,6 @@
 #include "executor/executor.h"
 #include "ios_factory/ios_factory.h"
+#include "utils/perf_stats/perf_stats.h"
 
 #include <chrono>
 #include <fstream>
@@ -22,6 +23,9 @@ echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
 // AI GENERATED CODE WARNING
 
 int main() {
+    JfEngine::TQueryStats stats;
+    JfEngine::TQueryStats::instance = &stats;
+
     JfEngine::TExecutor exec;
 
     // Список всех запросов (включая CREATE и помеченные как "ok")
@@ -79,11 +83,13 @@ int main() {
     std::cout << std::string(100, '-') << std::endl;
 
     for (const auto& q : queries) {
+        stats.Reset();
+
         // Замер времени начала
         auto start = std::chrono::high_resolution_clock::now();
-        
+
         auto err = exec.ExecQuery(q);
-        
+
         // Замер времени окончания
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> elapsed = end - start;
@@ -99,6 +105,7 @@ int main() {
 
         // Вывод результата
         std::cout << std::left << std::setw(15) << std::fixed << std::setprecision(3) << current_ms << "| " << q << std::endl;
+        stats.Print(std::cout);
 
         if (err.HasError()) {
             std::cerr << "   ^-- ERROR: " << err.GetError() << std::endl;
