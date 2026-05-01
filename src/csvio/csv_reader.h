@@ -37,7 +37,7 @@ private:
     std::istream& in_;
     char sep_;
 
-    static const ui64 kIBufSize = (1 << 20);
+    static const ui64 kIBufSize = (1 << 21);
 
     char buf_[kIBufSize];
     i64 cpos_ = 0;

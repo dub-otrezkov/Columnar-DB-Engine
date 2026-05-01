@@ -11,6 +11,7 @@
 
 // (cd ../../build/benchmark_tests/clickbench; make clickbench)
 // >hits.jf; >tmp1.jf; >tmp2.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
+// >hits.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
 // >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/executor/debug/debug_exec
 
 // >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
@@ -30,7 +31,7 @@ int main() {
 
     // Список всех запросов (включая CREATE и помеченные как "ok")
     std::vector<std::string> queries = {
-        // "CREATE hits FROM scheme, dorothy",
+        "CREATE hits FROM scheme, dorothy",
         "SELECT COUNT(*) FROM hits",
         "SELECT COUNT(*) FROM hits WHERE AdvEngineID <> 0",
         "SELECT SUM(AdvEngineID), COUNT(AdvEngineID), AVG(ResolutionWidth) FROM hits",
