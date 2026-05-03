@@ -20,6 +20,8 @@ public:
     std::vector<TRowScheme>& GetScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     void MoveCursor() override;
+    const char* GetTypeName() const override { return "Agregator"; }
+
 private:
     TTableInputPtr jf_in_;
 

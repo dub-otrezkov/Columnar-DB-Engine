@@ -14,7 +14,7 @@ struct TRowScheme {
     EColumn type_;
 };
 
-const ui64 kRowGroupLen = 100000;
+const ui64 kRowGroupLen = 2048;
 
 class ITableInput;
 using TTableInputPtr = std::shared_ptr<ITableInput>;
@@ -36,6 +36,10 @@ public:
     virtual ui64 GetRowGroupLen() const;
     virtual void MoveCursor();
     virtual void Reset();
+    virtual const char* GetTypeName() const { return "Unknown"; }
+
+private:
+    void EnsureLoaded();
 
 protected:
     std::shared_ptr<std::vector<TColumnPtr>> current_rg_;
