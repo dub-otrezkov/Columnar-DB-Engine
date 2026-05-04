@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gstring.h"
+
 #include <utils/cint/int.h>
 
 #include <cassert>
@@ -212,7 +214,7 @@ private:
 
 template <>
 struct FlatVectorImpl<std::string> {
-    using Type = StringVector;
+    using Type = JStringVector;
 };
 
 std::string operator+(std::string_view a, std::string_view b);
@@ -234,5 +236,5 @@ std::vector<T> Unserialize(const std::vector<char>& a) {
     return res;
 }
 
-std::vector<char> Serialize(const StringVector& a);
-StringVector UnserializeString(const std::vector<char>& a);
+std::vector<char> Serialize(const FlatVector<std::string>& a);
+FlatVector<std::string> UnserializeString(const std::vector<char>& a);

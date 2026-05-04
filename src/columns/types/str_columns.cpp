@@ -11,7 +11,7 @@ TStringColumn::TStringColumn(std::vector<std::string> data) {
     }
 }
 
-TStringColumn::TStringColumn(StringVector data) {
+TStringColumn::TStringColumn(FlatVector<std::string> data) {
     cols_ = std::move(data);
 }
 

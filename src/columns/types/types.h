@@ -145,7 +145,7 @@ public:
     // using ElemTypeRo = std::string_view;
 
     TStringColumn() {}
-    TStringColumn(StringVector data);
+    TStringColumn(FlatVector<std::string> data);
     TStringColumn(std::vector<std::string> data);
     TStringColumn(std::vector<std::string_view> data);
 
