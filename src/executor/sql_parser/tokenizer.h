@@ -287,7 +287,7 @@ public:
 
 class TThenToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kElse; }
+    inline ETokens GetType() const override { return ETokens::kThen; }
 };
 
 class TElseToken : public IToken {

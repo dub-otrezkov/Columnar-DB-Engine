@@ -243,7 +243,14 @@ std::string TDistinctOp::GetName() const {
 
 Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp) {
     auto col = arg[0]->ThrowRowGroup();
-    ans = Do<ORegexpReplace>(col, arg1_p, arg2_p).GetRes();
+    if (!col) {
+        return MakeError<EError::BadArgsErr>("REGEXP_REPLACE: source column is null");
+    }
+    auto res = Do<ORegexpReplace>(col, arg1_p, arg2_p);
+    if (res.HasError()) {
+        return res.GetError();
+    }
+    ans = res.GetRes();
     return EError::NoError;
 }
 

@@ -20,7 +20,7 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
 
     TGroupByQuery query;
     for (auto& col : q.args) {
-        if (!col->IsConst()) {
+        if (!col->IsConst() && col->is_final) {
             query.cols.push_back(std::move(col));
         }
     }
@@ -89,9 +89,12 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
                 jrank++;
             }
         } else {
-            qop.args.push_back(std::make_unique<TColumnOp>(col->GetColumn()));
-            qop.args.back()->is_final = col->is_final;
-            used.insert(qop.args.back()->GetName());
+            auto col_name = col->GetColumn();
+            if (!used.contains(col_name)) {
+                qop.args.push_back(std::make_unique<TColumnOp>(col_name));
+                qop.args.back()->is_final = col->is_final;
+                used.insert(col_name);
+            }
             if (col->is_final) {
                 jrank++;
             }
