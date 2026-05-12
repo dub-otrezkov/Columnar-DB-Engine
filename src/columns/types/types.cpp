@@ -256,7 +256,7 @@ Expected<TColumnPtr> MakeColumnJf(std::vector<char> data, EColumn type) {
             return std::make_shared<TTimestampColumn>(Unserialize<TTimestamp>(data));
         }
         case kStringColumn: {
-            return std::make_shared<TStringColumn>(UnserializeString(data));
+            return std::make_shared<TStringColumn>(Unserialize<JString>(data));
         }
         default: {
             throw "wtf???";

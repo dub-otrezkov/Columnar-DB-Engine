@@ -58,28 +58,7 @@ struct OPrintIth {
     }
 
     static inline std::string Exec(TStringColumn& col, ui64 i) {
-        std::string res(col.GetData().at(i).length(), '.');
-        memcpy(res.data(), col.GetData().at(i).data(), res.size());
-        return res;
-    }
-};
-
-struct OJfPrint {
-    template <typename TCol>
-    static inline void Exec(TCol& col, std::vector<StringVector>& out) {
-        using T = typename TCol::ElemType;
-        assert(col.GetSize() == out.size() && "cant print column");
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            out[i].push_back_mcpy(col.GetData().data() + i, sizeof(T));
-        }
-    }
-
-    static inline void Exec(TStringColumn& col, std::vector<StringVector>& out) {
-        assert(col.GetSize() == out.size() && "cant print column");
-
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            out[i].push_back_mcpy(col.GetData().data() + col.GetData().get_pos(i), col.GetData().get_len(i));
-        }
+        return col.GetData().at(i).to_string();
     }
 };
 
@@ -98,17 +77,8 @@ struct OEqualRow {
         return (lhs == rhs);
     }
 
-    static inline bool Exec(TStringColumn& col, ui64 row, const StringVector& key, ui64 col_idx) {
-        ui64 len = col.GetData().get_len(row);
-        if (len != key.get_len(col_idx)) {
-            return false;
-        }
-
-        return std::memcmp(
-            col.GetData().data() + col.GetData().get_pos(row),
-            key.data() + key.get_pos(col_idx),
-            len
-        ) == 0;
+    static inline bool Exec(TStringColumn& col, ui64 row, const std::vector<JString>& key, ui64 col_idx) {
+        return col.GetData().at(row) == key.at(col_idx);
     }
 };
 
@@ -139,15 +109,13 @@ struct OHashInto {
     }
 
     static inline void Exec(TStringColumn& col, std::vector<ui64>& hashes) {
-        const auto& sv = col.GetData();
+        const JString* data = col.GetData().data();
         const ui64 sz = col.GetSize();
 
         for (ui64 i = 0; i < sz; i++) {
-            const char* p = sv.data() + sv.get_pos(i);
-            ui64 len = sv.get_len(i);
+            const char* p = reinterpret_cast<const char*>(data + i);
+            size_t len = sizeof(JString);
             ui64 h = hashes[i];
-
-            h = _mm_crc32_u64(h, len);
 
             while (len >= 8) {
                 ui64 chunk;
@@ -169,13 +137,6 @@ struct OJfPrintRow {
     static inline void Exec(TCol& col, ui64 row, StringVector& out) {
         using T = typename TCol::ElemType;
         out.push_back_mcpy(col.GetData().data() + row, sizeof(T));
-    }
-
-    static inline void Exec(TStringColumn& col, ui64 row, StringVector& out) {
-        out.push_back_mcpy(
-            col.GetData().data() + col.GetData().get_pos(row),
-            col.GetData().get_len(row)
-        );
     }
 };
 

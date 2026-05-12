@@ -109,19 +109,19 @@ struct OFilterCheck {
         switch (op) {
             case EFilterType::kEq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData().ro_at(i) == value);
+                    ans[i] ^= (col.GetData().at(i) == value);
                 }
                 break;
             }
             case EFilterType::kLess: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData().ro_at(i) < value);
+                    ans[i] ^= (col.GetData().at(i) < value);
                 }
                 break;
             }
             case EFilterType::kLeq: {
                 for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData().ro_at(i) <= value);
+                    ans[i] ^= (col.GetData().at(i) <= value);
                 }
                 break;
             }
@@ -135,7 +135,7 @@ struct OFilterCheck {
                         ans[i] ^= 1;
                         continue;
                     }
-                    auto s = col.GetData().ro_at(i);
+                    auto& s = col.GetData().at(i);
                     std::vector<i64> pf(value.size(), 0);
                     i64 st = 0;
 
@@ -248,7 +248,7 @@ struct OFilter {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const boost::dynamic_bitset<>& mask) {
-        StringVector vals;
+        std::vector<JString> vals;
         if (col.GetData().size() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
@@ -268,15 +268,15 @@ struct OIfElse {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& els, const boost::dynamic_bitset<>& mask) {
-        StringVector vals;
+        std::vector<JString> vals;
         if (col.GetData().size() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
         for (ui64 i = 0; i < col.GetData().size(); i++) {
             if (mask[i]) {
-                vals.push_back(col.GetData().at(i));
+                vals.emplace_back(col.GetData().at(i));
             } else {
-                vals.push_back(els);
+                vals.emplace_back(std::string_view(els));
             }
         }
         return std::make_shared<TStringColumn>(std::move(vals));

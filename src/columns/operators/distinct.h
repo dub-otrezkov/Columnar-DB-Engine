@@ -21,7 +21,7 @@ struct TDistinctSets {
     std::optional<TSet<i64>> i64_set;
     std::optional<TSet<i128>> i128_set;
     std::optional<TSet<ld>> ld_set;
-    std::optional<TSet<std::string>> string_set;
+    std::optional<TSet<JString>> string_set;
 
     template<typename T>
     TSet<T>& GetSet() {
@@ -57,7 +57,7 @@ struct TDistinctSets {
             return *ld_set;
         } else {
             if (!string_set) {
-                string_set = TSet<std::string>{};
+                string_set = TSet<JString>{};
             }
             return *string_set;
         }
@@ -70,8 +70,8 @@ struct ODistinctStreamV {
         using T = typename TCol::ElemTypeRo;
         std::vector<T> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            if (st.GetSet<T>().insert(col1.GetData()[i]).second) {
-                ans.push_back(col1.GetData()[i]);
+            if (st.GetSet<T>().insert(col1.GetData().at(i)).second) {
+                ans.push_back(col1.GetData().at(i));
             }
         }
         return std::make_shared<TCol>(std::move(ans));

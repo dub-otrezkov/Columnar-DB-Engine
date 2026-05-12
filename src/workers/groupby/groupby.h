@@ -48,108 +48,26 @@ private:
         {}
     };
 
-    // Хранится в map — владеет данными
-    struct VectorStringHashed {
-        StringVector vals;
-        ui64 hash;
-
-        VectorStringHashed() : hash(0) {}
-
-        VectorStringHashed(StringVector vals_, ui64 precomputed_hash)
-            : vals(std::move(vals_)), hash(precomputed_hash) {}
-
-        explicit VectorStringHashed(StringVector vals_)
-            : vals(std::move(vals_)), hash(0)
-        {
-            const char* data = vals.data();
-            size_t size = vals.data_size();
-            while (size >= 8) {
-                ui64 chunk;
-                std::memcpy(&chunk, data, 8);
-                hash = _mm_crc32_u64(hash, chunk);
-                data += 8; size -= 8;
-            }
-            while (size > 0) {
-                hash = _mm_crc32_u8(static_cast<unsigned int>(hash), *data++);
-                size--;
-            }
-            const ui64* offs = vals.offsets_data();
-            size_t offs_size = vals.size() * sizeof(ui64);
-            while (offs_size >= 8) {
-                ui64 chunk;
-                std::memcpy(&chunk, offs, 8);
-                hash = _mm_crc32_u64(hash, chunk);
-                offs = reinterpret_cast<const ui64*>(
-                    reinterpret_cast<const char*>(offs) + 8
-                );
-                offs_size -= 8;
-            }
-            hash ^= hash >> 33;
-            hash *= 0xff51afd7ed558ccdULL;
-            hash ^= hash >> 33;
-        }
-
-        bool operator==(const VectorStringHashed& other) const {
-            if (hash != other.hash) return false;
-            return vals == other.vals;
-        }
-    };
-
-    // Лёгкий view на строку батча — не владеет данными, не аллоцирует
-    struct RowView {
-        const std::vector<TColumnPtr>* cols;
-        ui64 row;
-        ui64 hash;
-    };
-
     struct VectorStringHasher {
         using is_transparent = void;
 
-        ui64 operator()(const VectorStringHashed& a) const {
-            return a.hash;
-        }
-        ui64 operator()(const RowView& r) const {
-            return r.hash;
-        }
-    };
-
-    struct VectorStringEqual {
-        using is_transparent = void;
-
-        bool operator()(const VectorStringHashed& a, const VectorStringHashed& b) const {
-            return a == b;
-        }
-
-        bool operator()(const RowView& view, const VectorStringHashed& key) const {
-            if (view.hash != key.hash) return false;
-            if (view.cols->size() != key.vals.size()) return false;
-            for (ui64 c = 0; c < view.cols->size(); c++) {
-                if (!Do<OEqualRow>((*view.cols)[c], view.row, key.vals, c)) {
-                    return false;
-                }
+        ui64 operator()(const std::vector<JString>& a) const {
+            ui64 h = 0;
+            for (ui64 i = 0; i < a.size(); i++) {
+                h ^= hash_value(a.at(i)) ^ (h << 13);
             }
-            return true;
-        }
-
-        bool operator()(const VectorStringHashed& key, const RowView& view) const {
-            return (*this)(view, key);
+            return h;
         }
     };
-
-    static inline ui64 Finalize(ui64 h) {
-        h ^= h >> 33;
-        h *= 0xff51afd7ed558ccdULL;
-        h ^= h >> 33;
-        return h;
-    }
 
     template<typename T>
     using THashMap = boost::unordered_flat_map<
-        VectorStringHashed, T,
-        VectorStringHasher,
-        VectorStringEqual
+        std::vector<JString>, T,
+        VectorStringHasher
     >;
 
+    boost::unordered_flat_map<std::string, ui64> name_to_i_in_;
+    std::vector<std::string> group_col_names_;
     THashMap<std::vector<ui64>> keys;
     THashMap<TGroup> groups_;
     std::optional<TNarrowTableInput> inp_;

@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-template <typename T>
-struct FlatVectorImpl {
-    using Type = std::vector<T>;
-};
+// template <typename T>
+// struct std::vectorImpl {
+//     using Type = std::vector<T>;
+// };
 
 class StringVector {
 public:
@@ -169,9 +169,6 @@ public:
         return {this, size()};
     }
 
-    friend std::vector<char> Serialize(const StringVector& a);
-    friend StringVector UnserializeString(const std::vector<char>& a);
-
     inline char* data() {
         return data_.data();
     }
@@ -212,29 +209,35 @@ private:
     std::vector<ui64> offsets_;
 };
 
-template <>
-struct FlatVectorImpl<std::string> {
-    using Type = JStringVector;
-};
+// template <>
+// struct std::vectorImpl<JString> {
+//     using Type = JStringVector;
+// };
 
 std::string operator+(std::string_view a, std::string_view b);
 
-template <typename T>
-using FlatVector = typename FlatVectorImpl<T>::Type;
+// template <typename T>
+// using std::vector = typename std::vectorImpl<T>::Type;
 
 template <typename T>
-std::vector<char> Serialize(const std::vector<T>& a) {
+inline std::vector<char> Serialize(const std::vector<T>& a) {
     std::vector<char> res(a.size() * sizeof(T));
     std::memcpy(res.data(), reinterpret_cast<const char*>(a.data()), res.size());
     return res;
 }
 
+template<>
+inline std::vector<char> Serialize<JString>(const std::vector<JString>& a) {
+    return JStringVector::Serialize(a);
+}
+
 template <typename T>
-std::vector<T> Unserialize(const std::vector<char>& a) {
+inline std::vector<T> Unserialize(const std::vector<char>& a) {
     std::vector<T> res(a.size() / sizeof(T));
     std::memcpy(res.data(), a.data(), a.size());
     return res;
 }
-
-std::vector<char> Serialize(const FlatVector<std::string>& a);
-FlatVector<std::string> UnserializeString(const std::vector<char>& a);
+template<>
+inline std::vector<JString> Unserialize<JString>(const std::vector<char>& a) {
+    return JStringVector::Unserialize(a);
+}

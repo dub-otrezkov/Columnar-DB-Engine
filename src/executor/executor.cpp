@@ -12,11 +12,13 @@ static const std::string kTmp1 = "tmp1";
 static const std::string kTmp2 = "tmp2";
 
 TExecutor::~TExecutor() {
+    TStringHeap::Free();
     TIoFactory::Clear();
 }
 
 Expected<void> TExecutor::ExecQuery(const std::string& query) {
     TIoFactory::Clear();
+
     TMemoryArena::Instance().Reset();
 
     auto [t, err1] = ParseCommand(query);
@@ -59,6 +61,8 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
     if (err3 != EError::NoError) {
         return err3;
     }
+
+    TStringHeap::Free();
 
     return EError::NoError;
 }

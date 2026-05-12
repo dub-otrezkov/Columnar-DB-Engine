@@ -10,9 +10,13 @@ namespace JfEngine {
 TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
     group_q_(std::move(query)),
-    agr_q_(std::move(selects)),
-    gc_eng(MakeAoEngine(TAoQuery{{}, std::move(group_q_.cols), {}, EAoEngineType::kAgregation}))
+    agr_q_(std::move(selects))
+    // gc_eng(MakeAoEngine(TAoQuery{{}, std::move(group_q_.cols), {}, EAoEngineType::kAgregation}))
 {
+    for (auto& c : group_q_.cols) {
+        group_col_names_.push_back(c->GetName());
+    }
+    gc_eng = MakeAoEngine(TAoQuery{{}, std::move(group_q_.cols), {}, EAoEngineType::kAgregation});
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
@@ -67,19 +71,21 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         auto& rg = g;
         const ui64 sz = rg[0]->GetSize();
 
-        row_hashes_.assign(sz, 0);
-        for (ui64 c = 0; c < rg.size(); c++) {
-            Do<OHashInto>(rg[c], row_hashes_);
-        }
-        for (ui64 i = 0; i < sz; i++) {
-            row_hashes_[i] = Finalize(row_hashes_[i]);
-        }
-
         keys.clear();
 
+        std::vector<std::vector<JString>> printed;
+        printed.reserve(group_col_names_.size());
+        for (auto& c : group_col_names_) {
+            printed.push_back(Do<OToJStrings>(rg.at(jf_in_->GetColumnInd(c))));
+        }
+
+        std::vector<JString> key;
         for (ui64 i = 0; i < sz; i++) {
-            RowView view{&rg, i, row_hashes_[i]};
-            auto it = keys.find(view);
+            key.resize(group_col_names_.size());
+            for (ui64 j = 0; j < key.size(); j++) {
+                key[j] = printed[j][i];
+            }
+            auto it = keys.find(key);
 
             if (it == keys.end()) {
                 if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
@@ -91,8 +97,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
                 for (ui64 c = 0; c < rg.size(); c++) {
                     Do<OJfPrintRow>(rg[c], i, key_data);
                 }
-                VectorStringHashed key(std::move(key_data), row_hashes_[i]);
-                it = keys.emplace(std::move(key), std::vector<ui64>(0)).first;
+                it = keys.emplace(key, std::vector<ui64>(0)).first;
             }
             it->second.push_back(i);
             // inp_->MoveCursor();

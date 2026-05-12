@@ -23,6 +23,20 @@ public:
         return EError::NoError;
     }
 
+    inline Expected<std::pair<const char*, ui32>> AtRaw(ui64 i, ui64 j) const {
+        ui64 k = i * width_ + j;
+        if (k >= pos_.size() || width_ == 0) {
+            return MakeError<EError::OutOfRangeErr>();
+        }
+        ui32 len;
+        if (k + 1 == pos_.size()) {
+            len = buf_.size() - pos_[k];
+        } else {
+            len = pos_[k + 1] - pos_[k];
+        }
+        return std::make_pair(reinterpret_cast<const char*>(buf_.data() + pos_[k]), len);
+    }
+
     inline void NewCol() {
         pos_.push_back(buf_.size());
     }

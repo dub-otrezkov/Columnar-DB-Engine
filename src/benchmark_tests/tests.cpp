@@ -1048,7 +1048,7 @@ TEST_F(BenchTest, _39) {
     prolog(exec);
     {
         auto err = exec.ExecQuery(
-            "SELECT IF (was = josh THEN hers ELSE other) AS label FROM josh"
+            "SELECT IF (was = 'josh' THEN hers ELSE 'other') AS label FROM josh"
         );
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
