@@ -51,11 +51,7 @@ TEST_F(GroupByTest, Basic) {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq;
-        {
-            auto c = std::make_unique<TColumnOp>("red");
-            c->is_final = true;
-            gq.cols.push_back(std::move(c));
-        }
+        gq.cols.push_back("red");
 
         TAoQuery aq;
         aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
@@ -128,11 +124,7 @@ TEST_F(GroupByTest, Stress) {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq;
-        {
-            auto c = std::make_unique<TColumnOp>("red");
-            c->is_final = true;
-            gq.cols.push_back(std::move(c));
-        }
+        gq.cols.push_back("red");
 
         TAoQuery aq;
         aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0

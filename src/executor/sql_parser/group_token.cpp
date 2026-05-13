@@ -21,7 +21,7 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
     TGroupByQuery query;
     for (auto& col : q.args) {
         if (!col->IsConst() && col->is_final) {
-            query.cols.push_back(std::move(col));
+            query.cols.push_back(col->GetName());
         }
     }
 
@@ -101,13 +101,13 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         }
     }
 
-    for (auto& agr : query.cols) {
-        auto name = agr->GetName();
-        if (as.contains(name) || used.contains(name) || name == "*" || agr->IsConst()) {
+    for (auto& name : query.cols) {
+        if (as.contains(name) || used.contains(name) || name == "*") {
             continue;
         }
         qop.args.push_back(std::make_unique<TColumnOp>(name));
-        used.insert(qop.args.back()->GetName());
+        qop.args.back()->is_final = true;
+        used.insert(name);
     }
 
     return std::make_shared<TGroupBy>(

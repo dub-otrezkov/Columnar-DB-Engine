@@ -19,7 +19,7 @@ namespace JfEngine {
 constexpr ui64 kUnlimited = -1;
 
 struct TGroupByQuery {
-    std::vector<std::unique_ptr<IOa>> cols;
+    std::vector<std::string> cols;
     ui64 limit = kUnlimited;
     bool is_id = false;
 };
@@ -37,7 +37,6 @@ private:
     TAoQuery agr_q_;
 
     TTableInputPtr jf_in_;
-    std::shared_ptr<IAoEngine> gc_eng;
 
     struct TGroup {
         std::shared_ptr<IAoEngine> eng;
@@ -66,13 +65,9 @@ private:
         VectorStringHasher
     >;
 
-    boost::unordered_flat_map<std::string, ui64> name_to_i_in_;
-    std::vector<std::string> group_col_names_;
     THashMap<std::vector<ui64>> keys;
     THashMap<TGroup> groups_;
     std::optional<TNarrowTableInput> inp_;
-    std::vector<StringVector> printed_;
-    std::vector<ui64> row_hashes_;
 };
 
 } // namespace JfEngine

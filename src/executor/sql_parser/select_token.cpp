@@ -322,8 +322,6 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
     if (!is_id_) {
         auto args = ParseArgs(args_);
 
-        TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
-
         auto agr = std::make_shared<TAgregator>(
             TIoFactory::GetTableIo(kCurTableInput),
             std::move(args)
@@ -341,8 +339,6 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
 
         return EError::NoError;
     } else {
-        // TIoFactory::GetTableIo(kCurTableInput)->SetupColumnsScheme();
-
         TEngine eng;
 
         TIoFactory::RegisterFileIo(kResultScheme, ETypeFile::kCsvFile);
