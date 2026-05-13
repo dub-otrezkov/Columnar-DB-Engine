@@ -59,7 +59,11 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         }
     }
 
-    boost::unordered_flat_set<std::string> used;
+    // Names that qop will OUTPUT in its schema (= narrow's scheme).
+    // - For kOp: NEW TColumnOp's name after swap (alias if matched, else original).
+    // - For kAg: name of the TColumnOp pushed for the underlying column.
+    boost::unordered_flat_set<std::string> qop_output_names;
+
     ui64 jrank = 0;
     for (ui64 i = 0; i < selects_.args.size(); i++) {
         auto& col = selects_.args[i];
@@ -85,20 +89,16 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
             col_n->is_final = col->is_final;
 
             col.swap(col_n);
-            used.insert(col_n->GetName());
+            // col (in selects_) is now NEW TColumnOp with the qop-output name.
+            qop_output_names.insert(col->GetName());
             qop.args.push_back(std::move(col_n));
             if (col->is_final) {
                 jrank++;
             }
         } else {
-            auto col_name = col->GetColumn();
-            // JF_LOG(nullptr, "need column:" << " " << col_name << std::endl);
-            if (!used.contains(col_name)) {
-                // JF_LOG(nullptr, "took column:" << " " << col_name << std::endl);
-                qop.args.push_back(std::make_unique<TColumnOp>(col_name));
-                qop.args.back()->is_final = col->is_final;
-                used.insert(col_name);
-            }
+            qop.args.push_back(std::make_unique<TColumnOp>(col->GetColumn()));
+            qop.args.back()->is_final = col->is_final;
+            qop_output_names.insert(qop.args.back()->GetName());
             if (col->is_final) {
                 jrank++;
             }
@@ -106,12 +106,12 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
     }
 
     for (auto& name : query.cols) {
-        if (as.contains(name) || used.contains(name) || name == "*") {
+        if (as.contains(name) || qop_output_names.contains(name) || name == "*") {
             continue;
         }
         qop.args.push_back(std::make_unique<TColumnOp>(name));
         qop.args.back()->is_final = true;
-        used.insert(name);
+        qop_output_names.insert(name);
     }
 
     return std::make_shared<TGroupBy>(
