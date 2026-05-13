@@ -83,7 +83,7 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
             col_n->is_final = col->is_final;
 
             col.swap(col_n);
-            used.insert(col_n->GetName());
+            used.insert(col->GetName());
             qop.args.push_back(std::move(col_n));
             if (col->is_final) {
                 jrank++;
