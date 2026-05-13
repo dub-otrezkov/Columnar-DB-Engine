@@ -97,68 +97,68 @@ the,2,36
     }
 }
 
-// TEST_F(GroupByTest, Stress) {
-//     auto jf_table = std::make_shared<std::stringstream>();
-//     {
-//         constexpr ui64 iter = 500000;
-//         auto scheme_in = std::make_shared<std::stringstream>(scheme);
-//         auto data_in = std::make_shared<std::stringstream>();
+TEST_F(GroupByTest, Stress) {
+    auto jf_table = std::make_shared<std::stringstream>();
+    {
+        constexpr ui64 iter = 500000;
+        auto scheme_in = std::make_shared<std::stringstream>(scheme);
+        auto data_in = std::make_shared<std::stringstream>();
 
-//         for (ui64 i = 0; i < iter; i++) {
-//             (*data_in) << data;
-//         }
+        for (ui64 i = 0; i < iter; i++) {
+            (*data_in) << data;
+        }
 
-//         auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
 
-//         if (err) {
-//             std::cout << "! " << err << std::endl;
-//         }
-//         ASSERT_FALSE(err);
+        if (err) {
+            std::cout << "! " << err << std::endl;
+        }
+        ASSERT_FALSE(err);
 
-//         auto err2 = eng.WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(*jf_table);
 
-//         if (err2.HasError()) {
-//             std::cout << "! " << err2.GetError() << std::endl;
-//         }
-//         ASSERT_FALSE(err2.HasError());
-//     }
+        if (err2.HasError()) {
+            std::cout << "! " << err2.GetError() << std::endl;
+        }
+        ASSERT_FALSE(err2.HasError());
+    }
 
-//     {
-//         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    {
+        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
-//         TGroupByQuery gq;
-//         gq.cols.push_back("red");
+        TGroupByQuery gq;
+        gq.cols.push_back("red");
 
-//         TAoQuery aq;
-//         aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
-//         aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
-//         aq.args.push_back(std::make_unique<TCountAgr>());          // 2
-//         aq.args.push_back(std::make_unique<TSumAgr>());            // 3
-//         aq.edges = {
-//             {2, 0},
-//             {3, 0}
-//         };
-//         aq.args[1]->is_final = true;
-//         aq.args[2]->is_final = true;
-//         aq.args[3]->is_final = true;
-//         for (const auto& [i, j] : aq.edges) {
-//             aq.args[i]->AddArg(aq.args[j].get());
-//         }
+        TAoQuery aq;
+        aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
+        aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
+        aq.args.push_back(std::make_unique<TCountAgr>());          // 2
+        aq.args.push_back(std::make_unique<TSumAgr>());            // 3
+        aq.edges = {
+            {2, 0},
+            {3, 0}
+        };
+        aq.args[1]->is_final = true;
+        aq.args[2]->is_final = true;
+        aq.args[3]->is_final = true;
+        for (const auto& [i, j] : aq.edges) {
+            aq.args[i]->AddArg(aq.args[j].get());
+        }
 
-//         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
+        auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
-//         agr->SetupColumnsScheme();
+        agr->SetupColumnsScheme();
 
-//         auto [engine, err] = MakeEngineFromWorker(agr);
+        auto [engine, err] = MakeEngineFromWorker(agr);
 
-//         ASSERT_FALSE(err);
+        ASSERT_FALSE(err);
 
-//         std::stringstream data;
+        std::stringstream data;
 
-//         auto res = engine.WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
-//         ASSERT_FALSE(res.HasError());
-//     }
-// }
+        ASSERT_FALSE(res.HasError());
+    }
+}
 
 } // namespace JfEngine::Testing

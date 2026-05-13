@@ -12,7 +12,6 @@ namespace JfEngine {
 
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
     auto v = Do<OSum>(arg->ThrowRowGroup());
-    JF_LOG(nullptr, ":" << idx << " " << v.GetError() << " " << v.GetRes());
     if (v.HasError()) return v.GetError();
     CombineAt<OAddAtIdx>(idx, v.GetRes());
     return EError::NoError;

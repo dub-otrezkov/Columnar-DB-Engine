@@ -95,7 +95,6 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             auto it = groups_.find(key);
 
             if (it == groups_.end()) {
-                JF_LOG(nullptr, "new group " << groups_.size());
                 it = groups_.emplace(key, groups_.size()).first;
             }
             eng_->ConsumeRowGroup(&inp_.value(), it->second);
