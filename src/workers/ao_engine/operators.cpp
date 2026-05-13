@@ -5,6 +5,7 @@
 #include "columns/operators/operators.h"
 #include "columns/operators/filter.h"
 #include "columns/operators/vector_like.h"
+#include "utils/logger/logger.h"
 
 #include <cassert>
 
@@ -243,7 +244,14 @@ std::string TDistinctOp::GetName() const {
 
 Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp) {
     auto col = arg[0]->ThrowRowGroup();
-    ans = Do<ORegexpReplace>(col, arg1_p, arg2_p).GetRes();
+    if (!col) {
+        return MakeError<EError::BadArgsErr>("REGEXP_REPLACE: source column is null");
+    }
+    auto res = Do<ORegexpReplace>(col, arg1_p, arg2_p);
+    if (res.HasError()) {
+        return res.GetError();
+    }
+    ans = res.GetRes();
     return EError::NoError;
 }
 
@@ -262,15 +270,24 @@ std::string TRegexpReplaceOp::GetName() const {
 }
 
 Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
-    
-    // ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
     boost::dynamic_bitset<> mask;
+    EError ret_err = EError::NoError;
     for (auto& f : cond.fils) {
         auto [col, err_read] = inp->ReadColumn(f.column_name);
-        if (err_read) {
+        if (err_read != EError::NoError) {
+            if (err_read == EError::EofErr) {
+                ret_err = err_read;
+            } else {
+                return err_read;
+            }
+        }
+        if (!col) {
             return err_read;
         }
         auto [res, err] = Do<OFilterCheck>(col, f.op, f.value);
+        if (err) {
+            return err;
+        }
         if (mask.empty()) {
             mask = std::move(res);
         } else {
@@ -279,11 +296,20 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
         }
     }
 
-    auto [tans, err] = Do<OIfElse>(arg[0]->ThrowRowGroup(), arg[1]->GetName(), mask);
+    auto then_col = arg[0]->ThrowRowGroup();
+    auto els = arg[1]->GetName();
+    if (!then_col) {
+        return ret_err;
+    }
+
+    auto [tans, err] = Do<OIfElse>(then_col, els, mask);
+    if (err != EError::NoError) {
+        return err;
+    }
 
     ans = std::move(tans);
 
-    return err;
+    return ret_err;
 }
 
 TColumnPtr TIfOp::ThrowRowGroup() {

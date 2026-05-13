@@ -85,7 +85,7 @@ struct OApply2 {
         if (col.GetType() != other->GetType()) {
             return MakeError<EError::BadArgsErr>("cant merge different columns");
         }
-        FlatVector<T> ans;
+        std::vector<T> ans;
         ans.reserve(ids.size());
 
         auto& data1 = col.GetData();
@@ -118,17 +118,6 @@ struct OApplyOrder {
             ans[i] = col.GetData().at(order[i]);
         }
         return std::make_shared<TCol>(std::move(ans));
-    }
-
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::vector<ui64>& order) {
-        if (order.size() != col.GetSize()) {
-            return EError::BadArgsErr;
-        }
-        StringVector ans;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans.push_back_mcpy(col.GetData().data() + col.GetData().get_pos(order[i]), col.GetData().get_len(order[i]));
-        }
-        return std::make_shared<TStringColumn>(std::move(ans));
     }
 };
 

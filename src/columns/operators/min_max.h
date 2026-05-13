@@ -10,9 +10,9 @@ struct OMin {
         using T = typename TCol::ElemType;
         using TRo = typename TCol::ElemTypeRo;
 
-        TRo res = col.GetData()[0];
+        TRo res = col.GetData().at(0);
         for (ui64 i = 1; i < col.GetSize(); i++) {
-            res = std::min(res, col.GetData()[i]);
+            res = std::min(res, col.GetData().at(i));
         }
         return std::make_shared<TCol>(std::vector<T>{res});
     }
@@ -32,7 +32,7 @@ struct OVerticalMin {
         auto col2_i = static_cast<TCol*>(col2.get());
         std::vector<T> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(std::min(col1.GetData()[i], col2_i->GetData()[i]));
+            ans.push_back(std::min(col1.GetData().at(i), col2_i->GetData().at(i)));
         }
         return std::make_shared<TCol>(std::move(ans));
     }
@@ -46,7 +46,7 @@ struct OMax {
 
         TRo res = col.GetData()[0];
         for (ui64 i = 1; i < col.GetSize(); i++) {
-            res = std::max(res, col.GetData()[i]);
+            res = std::max(res, col.GetData().at(i));
         }
         return std::make_shared<TCol>(std::vector<T>{res});
     }
@@ -66,7 +66,7 @@ struct OVerticalMax {
         auto col2_i = static_cast<TCol*>(col2.get());
         std::vector<T> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(std::max(col1.GetData()[i], col2_i->GetData()[i]));
+            ans.push_back(std::max(col1.GetData().at(i), col2_i->GetData().at(i)));
         }
         return std::make_shared<TCol>(std::move(ans));
     }

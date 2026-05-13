@@ -31,11 +31,7 @@ struct OSum {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
-        std::string res;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData()[i];
-        }
-        return std::make_shared<TStringColumn>(std::vector<std::string>{res});
+        return MakeError<EError::UnsupportedErr>();
     }
 };
 
@@ -81,18 +77,7 @@ struct OVerticalSum {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col1, TColumnPtr col2) {
-        if (col1.GetSize() != col2->GetSize()) {
-            return MakeError<EError::BadArgsErr>("wrong size");
-        }
-        if (col2->GetType() != EColumn::kStringColumn) {
-            return MakeError<EError::BadArgsErr>("no addition between string and other type");
-        }
-        auto col2_i = static_cast<TStringColumn*>(col2.get());
-        std::vector<std::string> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
-        }
-        return std::make_shared<TStringColumn>(ans);
+        return MakeError<EError::UnsupportedErr>();
     }
 };
 
@@ -145,7 +130,7 @@ struct OLength {
     static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
         std::vector<i64> ans(col.GetSize());
         for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = col.GetData()[i].size();
+            ans[i] = col.GetData().at(i).size();
         }
         return std::make_shared<Ti64Column>(std::move(ans));
     }
@@ -186,12 +171,7 @@ struct OAddConst {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
-        auto res = std::static_pointer_cast<TStringColumn>(MakeEmptyColumn(col.GetType()).GetRes());
-        res->GetData().reserve(col.GetData().size());
-        for (auto v : col.GetData()) {
-            res->GetData().push_back(v + s);
-        }
-        return res;
+        return MakeError<EError::UnsupportedErr>();
     }
 };
 

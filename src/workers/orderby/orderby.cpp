@@ -14,7 +14,6 @@ TOrderBy::TOrderBy(TTableInputPtr jf_in, TOrderByQuery query) :
     if (order_q_.limit != kUnlimited) {
         order_q_.limit += order_q_.offset;
     }
-    jf_in_->SetupColumnsScheme();
 }
 
 Expected<void> TOrderBy::SetupColumnsScheme() {

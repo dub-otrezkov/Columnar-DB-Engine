@@ -24,6 +24,7 @@ public:
 
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    const char* GetTypeName() const override { return "OrderBy"; }
 
 private:
     void SortRowGroup(std::vector<TColumnPtr>& rg, std::vector<TColumnPtr>& other);

@@ -15,9 +15,12 @@ Expected<TTableInputPtr> TCreateToken::MakeWorker() {
     if (err.HasError()) {
         return err.GetError();
     }
-    TIoFactory::RegisterFileIo(name, ETypeFile::kJfFile);
 
-    eng.WriteTableToJf(*TIoFactory::GetIo(name));
+    std::shared_ptr<std::iostream> io = TIoFactory::GetIo(name);
+    if (!io) {
+        io = std::make_shared<std::fstream>(name + ".jf");
+    }
+    eng.WriteTableToJf(*io);
 
     return EError::NoError;
 }

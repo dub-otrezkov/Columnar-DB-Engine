@@ -66,11 +66,11 @@ public:
         return cols_.size();
     }
 
-    FlatVector<T>& GetData() {
+    std::vector<T>& GetData() {
         return cols_;
     }
 
-    Expected<void> Setup(FlatVector<T> data) {
+    Expected<void> Setup(std::vector<T> data) {
         cols_ = std::move(data);
         return EError::NoError;
     };
@@ -78,7 +78,7 @@ public:
     virtual Expected<void> Setup(const TVectorString2d& data, ui64 column_i) = 0;
 
 protected:
-    FlatVector<T> cols_;
+    std::vector<T> cols_;
 };
 
 // colums
@@ -140,12 +140,12 @@ private:
     static from_chars_result_128 from_chars(const char* first, const char* last, i128& value, int base = 10);
 };
 
-class TStringColumn : public TStorage<std::string> {
+class TStringColumn : public TStorage<JString> {
 public:
     // using ElemTypeRo = std::string_view;
 
     TStringColumn() {}
-    TStringColumn(StringVector data);
+    TStringColumn(std::vector<JString> data);
     TStringColumn(std::vector<std::string> data);
     TStringColumn(std::vector<std::string_view> data);
 

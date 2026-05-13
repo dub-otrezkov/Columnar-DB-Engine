@@ -51,11 +51,7 @@ TEST_F(GroupByTest, Basic) {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq;
-        {
-            auto c = std::make_unique<TColumnOp>("red");
-            c->is_final = true;
-            gq.cols.push_back(std::move(c));
-        }
+        gq.cols.push_back("red");
 
         TAoQuery aq;
         aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
@@ -69,6 +65,9 @@ TEST_F(GroupByTest, Basic) {
         aq.args[1]->is_final = true;
         aq.args[2]->is_final = true;
         aq.args[3]->is_final = true;
+        for (const auto& [i, j] : aq.edges) {
+            aq.args[i]->AddArg(aq.args[j].get());
+        }
 
         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
@@ -80,7 +79,7 @@ TEST_F(GroupByTest, Basic) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         std::string a = data.str();
         std::cout << a << std::endl;
@@ -128,11 +127,7 @@ TEST_F(GroupByTest, Stress) {
         auto jf_in = std::make_shared<TJfTableInput>(jf_table);
 
         TGroupByQuery gq;
-        {
-            auto c = std::make_unique<TColumnOp>("red");
-            c->is_final = true;
-            gq.cols.push_back(std::move(c));
-        }
+        gq.cols.push_back("red");
 
         TAoQuery aq;
         aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
@@ -146,6 +141,9 @@ TEST_F(GroupByTest, Stress) {
         aq.args[1]->is_final = true;
         aq.args[2]->is_final = true;
         aq.args[3]->is_final = true;
+        for (const auto& [i, j] : aq.edges) {
+            aq.args[i]->AddArg(aq.args[j].get());
+        }
 
         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
@@ -157,7 +155,7 @@ TEST_F(GroupByTest, Stress) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         ASSERT_FALSE(res.HasError());
     }

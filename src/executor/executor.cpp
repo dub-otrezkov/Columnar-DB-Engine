@@ -3,6 +3,9 @@
 #include "engine/engine.h"
 #include "executor/sql_parser/tokenizer.h"
 #include "ios_factory/ios_factory.h"
+#include "memory/arena.h"
+#include "utils/defer/defer.h"
+#include "utils/faster_vectors/string_heap.h"
 
 #include <fstream>
 
@@ -12,12 +15,16 @@ static const std::string kTmp1 = "tmp1";
 static const std::string kTmp2 = "tmp2";
 
 TExecutor::~TExecutor() {
+    TStringHeap::Free();
     TIoFactory::Clear();
 }
 
 Expected<void> TExecutor::ExecQuery(const std::string& query) {
-    TIoFactory::Clear();
-    TMemoryArena::Instance().Reset();
+    TDefer cleanup{[]() {
+        TIoFactory::Clear();
+        TMemoryArena::Instance().Reset();
+        TStringHeap::Free();
+    }};
 
     auto [t, err1] = ParseCommand(query);
     if (err1 != EError::NoError) {

@@ -5,6 +5,8 @@
 #include "workers/global_agregations/agregator.h"
 #include "workers/groupby/groupby.h"
 
+#include "utils/logger/logger.h"
+
 #include <boost/unordered/unordered_flat_set.hpp>
 
 namespace JfEngine {
@@ -20,8 +22,8 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
 
     TGroupByQuery query;
     for (auto& col : q.args) {
-        if (!col->IsConst()) {
-            query.cols.push_back(std::move(col));
+        if (!col->IsConst() && col->is_final) {
+            query.cols.push_back(col->GetName());
         }
     }
 
@@ -57,7 +59,11 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         }
     }
 
-    boost::unordered_flat_set<std::string> used;
+    // Names that qop will OUTPUT in its schema (= narrow's scheme).
+    // - For kOp: NEW TColumnOp's name after swap (alias if matched, else original).
+    // - For kAg: name of the TColumnOp pushed for the underlying column.
+    boost::unordered_flat_set<std::string> qop_output_names;
+
     ui64 jrank = 0;
     for (ui64 i = 0; i < selects_.args.size(); i++) {
         auto& col = selects_.args[i];
@@ -83,7 +89,8 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
             col_n->is_final = col->is_final;
 
             col.swap(col_n);
-            used.insert(col_n->GetName());
+            // col (in selects_) is now NEW TColumnOp with the qop-output name.
+            qop_output_names.insert(col->GetName());
             qop.args.push_back(std::move(col_n));
             if (col->is_final) {
                 jrank++;
@@ -91,20 +98,20 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         } else {
             qop.args.push_back(std::make_unique<TColumnOp>(col->GetColumn()));
             qop.args.back()->is_final = col->is_final;
-            used.insert(qop.args.back()->GetName());
+            qop_output_names.insert(qop.args.back()->GetName());
             if (col->is_final) {
                 jrank++;
             }
         }
     }
 
-    for (auto& agr : query.cols) {
-        auto name = agr->GetName();
-        if (as.contains(name) || used.contains(name) || name == "*" || agr->IsConst()) {
+    for (auto& name : query.cols) {
+        if (as.contains(name) || qop_output_names.contains(name) || name == "*") {
             continue;
         }
         qop.args.push_back(std::make_unique<TColumnOp>(name));
-        used.insert(qop.args.back()->GetName());
+        qop.args.back()->is_final = true;
+        qop_output_names.insert(name);
     }
 
     return std::make_shared<TGroupBy>(
