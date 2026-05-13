@@ -43,19 +43,19 @@ Expected<void> TEngine::WriteDataToCsv(std::ostream& out) {
         }
         total_rows += batch_rows;
         total_chars += batch_chars;
-        JF_LOG(this, "batch=" << batch_idx
-            << " rows=" << batch_rows
-            << " chars=" << batch_chars
-            << " total_rows=" << total_rows
-            << " total_chars=" << total_chars);
+        // JF_LOG(this, "batch=" << batch_idx
+        //     << " rows=" << batch_rows
+        //     << " chars=" << batch_chars
+        //     << " total_rows=" << total_rows
+        //     << " total_chars=" << total_chars);
         batch_idx++;
         return nullptr;
     };
 
     auto res = RunCommand(f);
-    JF_LOG(this, "DONE total_rows=" << total_rows
-        << " total_chars=" << total_chars
-        << " batches=" << batch_idx);
+    // JF_LOG(this, "DONE total_rows=" << total_rows
+    //     << " total_chars=" << total_chars
+    //     << " batches=" << batch_idx);
     return res;
 }
 

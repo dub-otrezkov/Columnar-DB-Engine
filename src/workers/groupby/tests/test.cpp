@@ -79,7 +79,7 @@ TEST_F(GroupByTest, Basic) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         std::string a = data.str();
         std::cout << a << std::endl;
@@ -155,7 +155,7 @@ TEST_F(GroupByTest, Stress) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         ASSERT_FALSE(res.HasError());
     }

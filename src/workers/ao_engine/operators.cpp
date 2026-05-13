@@ -288,11 +288,6 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
         if (err) {
             return err;
         }
-        JF_LOG(this, "filter col=" << f.column_name
-            << " val=" << f.value
-            << " col_size=" << col->GetSize()
-            << " mask_size=" << res.size()
-            << " mask_set=" << res.count());
         if (mask.empty()) {
             mask = std::move(res);
         } else {
@@ -306,18 +301,11 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
     if (!then_col) {
         return ret_err;
     }
-    JF_LOG(this, "then_col_size=" << then_col->GetSize()
-        << " els='" << els << "' els_len=" << els.size()
-        << " mask_size=" << mask.size()
-        << " mask_set=" << mask.count());
 
     auto [tans, err] = Do<OIfElse>(then_col, els, mask);
     if (err != EError::NoError) {
         return err;
     }
-
-    JF_LOG(this, "out_size=" << (tans ? tans->GetSize() : 0)
-        << " ret_err=" << ret_err);
 
     ans = std::move(tans);
 

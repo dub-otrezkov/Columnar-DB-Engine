@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include "utils/logger/logger.h"
+
 #include "columns/operators/vector_like.h"
 
 namespace JfEngine {
@@ -69,8 +71,11 @@ TAgregationEngine::TAgregationEngine(
 
 Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
     bool is_eof = false;
+
     for (auto& c : q_.cols) {
+        // JF_LOG(this, "processing... " << c->GetName() << " " << c->GetColumn() << std::endl);
         auto err = c->ConsumeRowGroup(inp);
+        // JF_LOG(this, "got error: " << err.GetError() << " " << c->GetName() << " " << c->GetColumn() << std::endl);
         if (err.HasError()) {
             if (err.GetError() == EError::EofErr) {
                 is_eof = true;

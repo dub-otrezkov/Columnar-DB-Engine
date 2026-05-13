@@ -25,7 +25,11 @@ public:
 
 } // namespace JfEngine
 
+// #define HAND_NDEBUG 1
+
 #ifdef NDEBUG
+    #define JF_LOG(obj, msg) ((void)0)
+#elif HAND_NDEBUG
     #define JF_LOG(obj, msg) ((void)0)
 #else
     #define JF_LOG(obj, msg)                                            \

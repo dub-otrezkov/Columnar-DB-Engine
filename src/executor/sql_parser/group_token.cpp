@@ -5,6 +5,8 @@
 #include "workers/global_agregations/agregator.h"
 #include "workers/groupby/groupby.h"
 
+#include "utils/logger/logger.h"
+
 #include <boost/unordered/unordered_flat_set.hpp>
 
 namespace JfEngine {
@@ -83,14 +85,16 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
             col_n->is_final = col->is_final;
 
             col.swap(col_n);
-            used.insert(col->GetName());
+            used.insert(col_n->GetName());
             qop.args.push_back(std::move(col_n));
             if (col->is_final) {
                 jrank++;
             }
         } else {
             auto col_name = col->GetColumn();
+            // JF_LOG(nullptr, "need column:" << " " << col_name << std::endl);
             if (!used.contains(col_name)) {
+                // JF_LOG(nullptr, "took column:" << " " << col_name << std::endl);
                 qop.args.push_back(std::make_unique<TColumnOp>(col_name));
                 qop.args.back()->is_final = col->is_final;
                 used.insert(col_name);
