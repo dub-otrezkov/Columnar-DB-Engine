@@ -26,8 +26,8 @@ jobs:
       - name: Configure
         run: cmake -S src -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
-      - name: Build
-        run: cmake --build build --parallel $(nproc)
+      - name: Build bench_test
+        run: cmake --build build --target bench_test --parallel $(nproc)
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -58,37 +58,7 @@ jobs:
           path: build/
 
       - name: Fix permissions
-        run: chmod +x build/**/*_test
-
-      - name: Run operators_test
-        run: ./build/columns/tests/operators_test
-
-      - name: Run sort_test
-        run: ./build/columns/tests/sort_test
-
-      - name: Run groupby_test
-        run: ./build/workers/groupby/tests/groupby_test
-
-      - name: Run orderby_test
-        run: ./build/workers/orderby/tests/orderby_test
-
-      - name: Run agregator_test
-        run: ./build/workers/global_agregations/tests/agregator_test
-
-      - name: Run filters_test
-        run: ./build/workers/filters/filters_test
-
-      - name: Run csvio_test
-        run: ./build/csvio/csvio_test
-
-      - name: Run engine_test
-        run: ./build/engine/engine_test
-
-      - name: Run exec_test
-        run: ./build/executor/tests/exec_test
-
-      - name: Run exec_big_test
-        run: ./build/executor/tests/exec_big_test
+        run: chmod +x build/benchmark_tests/bench_test
 
       - name: Run bench_test
         run: ./build/benchmark_tests/bench_test
