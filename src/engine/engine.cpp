@@ -2,6 +2,7 @@
 
 #include "columns/operators/operators.h"
 #include "csvio/csv_writer.h"
+#include "utils/logger/logger.h"
 
 #include <cassert>
 #include <iostream>
@@ -25,19 +26,37 @@ Expected<void> TEngine::WriteSchemeToCsv(std::ostream& out) {
 Expected<void> TEngine::WriteDataToCsv(std::ostream& out) {
     TCsvWriter w(out);
 
-    auto f = [&w](std::vector<TColumnPtr> block) -> Expected<void> {
-        for (ui64 i = 0; i < block[0]->GetSize(); i++) {
+    ui64 total_rows = 0;
+    ui64 total_chars = 0;
+    ui64 batch_idx = 0;
+
+    auto f = [&](std::vector<TColumnPtr> block) -> Expected<void> {
+        ui64 batch_chars = 0;
+        ui64 batch_rows = block[0]->GetSize();
+        for (ui64 i = 0; i < batch_rows; i++) {
             std::vector<std::string> row(block.size());
             for (ui64 j = 0; j < block.size(); j++) {
                 row[j] = Do<OPrintIth>(block[j], i);
+                batch_chars += row[j].size();
             }
             w.WriteRow(row);
         }
-
+        total_rows += batch_rows;
+        total_chars += batch_chars;
+        JF_LOG(this, "batch=" << batch_idx
+            << " rows=" << batch_rows
+            << " chars=" << batch_chars
+            << " total_rows=" << total_rows
+            << " total_chars=" << total_chars);
+        batch_idx++;
         return nullptr;
     };
 
-    return RunCommand(f);
+    auto res = RunCommand(f);
+    JF_LOG(this, "DONE total_rows=" << total_rows
+        << " total_chars=" << total_chars
+        << " batches=" << batch_idx);
+    return res;
 }
 
 Expected<void> TEngine::WriteTableToJf(std::ostream& out) {

@@ -5,6 +5,7 @@
 #include "columns/operators/operators.h"
 #include "columns/operators/filter.h"
 #include "columns/operators/vector_like.h"
+#include "utils/logger/logger.h"
 
 #include <cassert>
 
@@ -269,8 +270,6 @@ std::string TRegexpReplaceOp::GetName() const {
 }
 
 Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
-    
-    // ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
     boost::dynamic_bitset<> mask;
     for (auto& f : cond.fils) {
         auto [col, err_read] = inp->ReadColumn(f.column_name);
@@ -278,6 +277,11 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
             return err_read;
         }
         auto [res, err] = Do<OFilterCheck>(col, f.op, f.value);
+        JF_LOG(this, "filter col=" << f.column_name
+            << " val=" << f.value
+            << " col_size=" << col->GetSize()
+            << " mask_size=" << res.size()
+            << " mask_set=" << res.count());
         if (mask.empty()) {
             mask = std::move(res);
         } else {
@@ -286,7 +290,17 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
         }
     }
 
-    auto [tans, err] = Do<OIfElse>(arg[0]->ThrowRowGroup(), arg[1]->GetName(), mask);
+    auto then_col = arg[0]->ThrowRowGroup();
+    auto els = arg[1]->GetName();
+    JF_LOG(this, "then_col_size=" << (then_col ? then_col->GetSize() : 0)
+        << " els='" << els << "' els_len=" << els.size()
+        << " mask_size=" << mask.size()
+        << " mask_set=" << mask.count());
+
+    auto [tans, err] = Do<OIfElse>(then_col, els, mask);
+
+    JF_LOG(this, "out_size=" << (tans ? tans->GetSize() : 0)
+        << " err=" << err);
 
     ans = std::move(tans);
 
