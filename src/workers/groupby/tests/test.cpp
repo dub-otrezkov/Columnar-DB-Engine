@@ -65,6 +65,9 @@ TEST_F(GroupByTest, Basic) {
         aq.args[1]->is_final = true;
         aq.args[2]->is_final = true;
         aq.args[3]->is_final = true;
+        for (const auto& [i, j] : aq.edges) {
+            aq.args[i]->AddArg(aq.args[j].get());
+        }
 
         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
@@ -138,6 +141,9 @@ TEST_F(GroupByTest, Stress) {
         aq.args[1]->is_final = true;
         aq.args[2]->is_final = true;
         aq.args[3]->is_final = true;
+        for (const auto& [i, j] : aq.edges) {
+            aq.args[i]->AddArg(aq.args[j].get());
+        }
 
         auto agr = std::make_shared<TGroupBy>(jf_in, std::move(gq), std::move(aq));
 
