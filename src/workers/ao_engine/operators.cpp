@@ -271,12 +271,23 @@ std::string TRegexpReplaceOp::GetName() const {
 
 Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
     boost::dynamic_bitset<> mask;
+    EError ret_err = EError::NoError;
     for (auto& f : cond.fils) {
         auto [col, err_read] = inp->ReadColumn(f.column_name);
-        if (err_read) {
+        if (err_read != EError::NoError) {
+            if (err_read == EError::EofErr) {
+                ret_err = err_read;
+            } else {
+                return err_read;
+            }
+        }
+        if (!col) {
             return err_read;
         }
         auto [res, err] = Do<OFilterCheck>(col, f.op, f.value);
+        if (err) {
+            return err;
+        }
         JF_LOG(this, "filter col=" << f.column_name
             << " val=" << f.value
             << " col_size=" << col->GetSize()
@@ -292,19 +303,25 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
 
     auto then_col = arg[0]->ThrowRowGroup();
     auto els = arg[1]->GetName();
-    JF_LOG(this, "then_col_size=" << (then_col ? then_col->GetSize() : 0)
+    if (!then_col) {
+        return ret_err;
+    }
+    JF_LOG(this, "then_col_size=" << then_col->GetSize()
         << " els='" << els << "' els_len=" << els.size()
         << " mask_size=" << mask.size()
         << " mask_set=" << mask.count());
 
     auto [tans, err] = Do<OIfElse>(then_col, els, mask);
+    if (err != EError::NoError) {
+        return err;
+    }
 
     JF_LOG(this, "out_size=" << (tans ? tans->GetSize() : 0)
-        << " err=" << err);
+        << " ret_err=" << ret_err);
 
     ans = std::move(tans);
 
-    return err;
+    return ret_err;
 }
 
 TColumnPtr TIfOp::ThrowRowGroup() {
