@@ -83,7 +83,7 @@ public:
     IAoEngine() = default;
     IAoEngine(std::vector<std::pair<ui64, std::string>> aliases);
 
-    virtual Expected<void> ConsumeRowGroup(ITableInput* inp) = 0;
+    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i = 0) = 0;
     virtual std::vector<TColumnPtr> ThrowRowGroup() = 0;
 
     virtual EAoEngineType GetType() const = 0;
@@ -106,7 +106,7 @@ public:
 
     EAoEngineType GetType() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i) override;
     std::vector<TColumnPtr> ThrowRowGroup() override;
     std::vector<std::string>& GetNames() override;
 
@@ -124,7 +124,7 @@ public:
 
     EAoEngineType GetType() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i) override;
     std::vector<TColumnPtr> ThrowRowGroup() override;
     std::vector<std::string>& GetNames() override;
 

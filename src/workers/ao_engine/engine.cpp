@@ -36,12 +36,12 @@ TAgregationEngine::TAgregationEngine(
     q_(std::move(q))
 {}
 
-Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
     bool is_eof = false;
 
     for (auto& c : q_.cols) {
-        // JF_LOG(this, "processing... " << c->GetName() << " " << c->GetColumn() << std::endl);
-        auto err = c->ConsumeRowGroup(inp);
+        JF_LOG(this, "processing... " << c->GetName() << " " << c->GetColumn() << " " << i << std::endl);
+        auto err = c->ConsumeRowGroup(inp, i);
         // JF_LOG(this, "got error: " << err.GetError() << " " << c->GetName() << " " << c->GetColumn() << std::endl);
         if (err.HasError()) {
             if (err.GetError() == EError::EofErr) {
@@ -64,10 +64,10 @@ std::vector<TColumnPtr> TAgregationEngine::ThrowRowGroup() {
     return ans;
 }
 
-Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
     bool is_eof = false;
     for (auto& c : q_.cols) {
-        auto err = c->ConsumeRowGroup(inp);
+        auto err = c->ConsumeRowGroup(inp, i);
         if (err.HasError()) {
             if (err.GetError() == EError::EofErr) {
                 is_eof = true;

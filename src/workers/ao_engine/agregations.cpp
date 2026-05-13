@@ -4,12 +4,15 @@
 #include "columns/operators/min_max.h"
 #include "columns/operators/operators.h"
 
+#include "utils/logger/logger.h"
+
 #include <cassert>
 
 namespace JfEngine {
 
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
     auto v = Do<OSum>(arg->ThrowRowGroup());
+    JF_LOG(nullptr, ":" << idx << " " << v.GetError() << " " << v.GetRes());
     if (v.HasError()) return v.GetError();
     CombineAt<OAddAtIdx>(idx, v.GetRes());
     return EError::NoError;
@@ -33,8 +36,10 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
     if (!ans) {
         ans = std::make_shared<Ti64Column>(std::vector<i64>(used.size(), 0));
     }
+    if (ans->GetSize() <= idx) {
+        Do<OResize>(ans, idx + 1);
+    }
     static_cast<Ti64Column*>(ans.get())->GetData().at(idx) += arg->ThrowRowGroup()->GetSize();
-    used[idx] = true;
     return EError::NoError;
 }
 
@@ -43,6 +48,7 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
         count.resize(idx + 1, 0);
     }
     count.at(idx) += arg->ThrowRowGroup()->GetSize();
+    sum.ConsumeRowGroup(inp, idx);
     return EError::NoError;
 }
 

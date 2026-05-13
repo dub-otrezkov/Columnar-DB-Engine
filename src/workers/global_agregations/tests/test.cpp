@@ -40,7 +40,7 @@ TEST_F(AgregationsTest, FullTableTest) {
 
         std::stringstream data_;
 
-        auto res = engine->WriteDataToCsv(data_);
+        auto res = engine.WriteDataToCsv(data_);
 
         // std::cout << data.str() << std::endl;
         EXPECT_EQ(data_.str(), data);
@@ -88,7 +88,7 @@ TEST_F(AgregationsTest, SelectTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         EXPECT_EQ(data.str(), R"(1
 -10
@@ -141,6 +141,11 @@ TEST_F(AgregationsTest, SumTest) {
         q.edges = {
             {1, 0}
         };
+
+        for (auto [u, v] : q.edges) {
+            q.args.at(u)->AddArg(q.args.at(v).get());
+        }
+
         auto agr = std::make_shared<TAgregator>(jf_in, std::move(q));
 
         auto [engine, err] = MakeEngineFromWorker(agr);
@@ -149,7 +154,7 @@ TEST_F(AgregationsTest, SumTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         EXPECT_EQ(data.str(), "196\n");
     }
@@ -195,6 +200,10 @@ TEST_F(AgregationsTest, CountTest) {
         };
         q.tp = EAoEngineType::kAgregation;
 
+        for (auto [u, v] : q.edges) {
+            q.args.at(u)->AddArg(q.args.at(v).get());
+        }
+
         auto agr = std::make_shared<TAgregator>(jf_in, std::move(q));
 
         auto [engine, err] = MakeEngineFromWorker(agr);
@@ -203,7 +212,7 @@ TEST_F(AgregationsTest, CountTest) {
 
         std::stringstream data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(data);
 
         EXPECT_EQ(data.str(), "9\n");
     }

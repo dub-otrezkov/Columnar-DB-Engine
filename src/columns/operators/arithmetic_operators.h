@@ -127,6 +127,18 @@ struct OVerticalSub {
 };
 
 struct OMakeAvg {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, const std::vector<ui64>& col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, const std::vector<ui64>& col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, const std::vector<ui64>& col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
     template<typename T>
     static inline Expected<TColumnPtr> Exec(T& col1, const std::vector<ui64>& col2) {
         if (col1.GetSize() != col2.size()) {
@@ -138,18 +150,6 @@ struct OMakeAvg {
             ans.emplace_back(col1.GetData().at(i) / col2.at(i));
         }
         return std::make_shared<Ti128Column>(ans);
-    }
-
-    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TColumnPtr col2) {
-        return MakeError<EError::UnsupportedErr>();
-    }
-
-    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TColumnPtr col2) {
-        return MakeError<EError::UnsupportedErr>();
-    }
-
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, TColumnPtr col2) {
-        return MakeError<EError::UnsupportedErr>();
     }
 };
 
@@ -204,29 +204,27 @@ struct OAddConst {
 
 struct OAddAtIdx {
     template<typename TCol>
-    static inline Expected<void> Exec(TCol& col, ui64 idx, const std::string& s) {
-        typename TCol::ElemType add;
-        try {
-            if constexpr (std::is_same_v<TCol, TStringColumn>) {
-                add = s;
-            } else {
-                add = static_cast<typename TCol::ElemType>(std::stoi(s));
-            }
-        } catch (...) {
-            return EError::BadArgsErr;
+    static inline Expected<void> Exec(TCol& col, ui64 idx, TColumnPtr s) {
+        if (col.GetType() != s->GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
         }
-        col.GetData().at(idx) += add;
+        if (s->GetSize() != 1) {
+            return MakeError<EError::BadArgsErr>("size not 1");
+        }
+        col.GetData().at(idx) += static_cast<TCol*>(s.get())->GetData().at(0);
+
+        return EError::NoError;
     }
 
-    static inline Expected<void> Exec(TTimestampColumn& col, ui64 idx, const std::string& s) {
+    static inline Expected<void> Exec(TTimestampColumn& col, ui64 idx, TColumnPtr s) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<void> Exec(TDateColumn& col, ui64 idx, const std::string& s) {
+    static inline Expected<void> Exec(TDateColumn& col, ui64 idx, TColumnPtr s) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<void> Exec(TStringColumn& col, ui64 idx, const std::string& s) {
+    static inline Expected<void> Exec(TStringColumn& col, ui64 idx, TColumnPtr s) {
         return MakeError<EError::UnsupportedErr>();
     }
 };

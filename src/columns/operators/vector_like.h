@@ -18,6 +18,21 @@ struct OPushBack {
     }
 };
 
+struct OSetAtIdx {
+    template <typename TCol>
+    static inline Expected<void> Exec(TCol& col, ui64 idx, TColumnPtr value) {
+        if (value->GetSize() != 1) {
+            return MakeError<EError::BadArgsErr>("not 1 size");
+        }
+        if (value->GetType() != col.GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+        auto casted = static_cast<TCol*>(value.get());
+        col.GetData().at(idx) = casted->GetData().at(0);
+        return EError::NoError;
+    }
+};
+
 struct OPushBackEmpty {
     template <typename TCol>
     static inline void Exec(TCol& col) {
@@ -73,7 +88,7 @@ struct OPushBackVector {
 struct OResize {
     template <typename T>
     static inline Expected<void> Exec(T& col, i64 len) {
-        col.GetData().resize(len);
+        col.GetData().resize(len, (typename T::ElemType){});
         return EError::NoError;
     }
 };

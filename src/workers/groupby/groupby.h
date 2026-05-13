@@ -34,18 +34,9 @@ public:
 
 private:
     TGroupByQuery group_q_;
-    TAoQuery agr_q_;
+    // TAoQuery agr_q_;
 
     TTableInputPtr jf_in_;
-
-    struct TGroup {
-        std::shared_ptr<IAoEngine> eng;
-
-        TGroup() = default;
-        TGroup(TAoQuery agr_q) :
-            eng(MakeAoEngine(std::move(agr_q)))
-        {}
-    };
 
     struct VectorStringHasher {
         using is_transparent = void;
@@ -65,8 +56,9 @@ private:
         VectorStringHasher
     >;
 
+    std::shared_ptr<IAoEngine> eng_;
     THashMap<std::vector<ui64>> keys;
-    THashMap<TGroup> groups_;
+    THashMap<ui64> groups_;
     std::optional<TNarrowTableInput> inp_;
 };
 

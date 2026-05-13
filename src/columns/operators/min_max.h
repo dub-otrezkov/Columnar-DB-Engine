@@ -30,7 +30,7 @@ struct OMinAtIdx {
             return EError::BadArgsErr;
         }
         auto col_f = static_cast<TCol*>(col2.get());
-        col1.GetData().at(i) = std::min(col1.GetData().at(i), col_f->GetData().at(i));
+        col1.GetData().at(idx) = std::min(col1.GetData().at(idx), col_f->GetData().at(idx));
 
         return EError::NoError;
     }
@@ -62,7 +62,7 @@ struct OMaxAtIdx {
             return EError::BadArgsErr;
         }
         auto col_f = static_cast<TCol*>(col2.get());
-        col1.GetData().at(i) = std::max(col1.GetData().at(i), col_f->GetData().at(i));
+        col1.GetData().at(idx) = std::max(col1.GetData().at(idx), col_f->GetData().at(idx));
 
         return EError::NoError;
     }

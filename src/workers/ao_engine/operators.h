@@ -50,7 +50,13 @@ struct IOa {
     void CombineAt(ui64 idx, TColumnPtr value) {
         if (!ans) {
             ans = value;
-            return ;
+            return;
+        }
+        if (used.size() < idx + 1) {
+            used.resize(idx + 1, false);
+        }
+        if (ans->GetSize() < idx + 1) {
+            Do<OResize>(ans, idx + 1);
         }
         if (used[idx]) {
             Do<Combine>(ans, idx, value);
