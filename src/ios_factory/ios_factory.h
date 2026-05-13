@@ -41,6 +41,8 @@ public:
 
     static void Clear();
 
+    static void ClearAll();
+
 private:
     std::unordered_map<std::string, std::shared_ptr<std::iostream>> ios_;
     std::unordered_map<std::string, TTableInputPtr> iotables_;

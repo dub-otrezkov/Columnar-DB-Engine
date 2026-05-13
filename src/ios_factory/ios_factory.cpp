@@ -56,4 +56,10 @@ void TIoFactory::Clear() {
     i->iotables_.clear();
 }
 
+void TIoFactory::ClearAll() {
+    auto i = Instance();
+    i->iotables_.clear();
+    i->ios_.clear();
+}
+
 } // namespace JfEngine

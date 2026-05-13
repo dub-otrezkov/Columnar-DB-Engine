@@ -14,19 +14,25 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
     if (args_.size() == 1) {
         auto name = static_cast<TNameToken*>(args_[0])->GetName();
 
-        TIoFactory::RegisterFileIo(name, ETypeFile::kJfFile);
-        return std::make_shared<TJfNeccessaryOnly>(TIoFactory::GetIo(name), query_);
+        std::shared_ptr<std::iostream> io = TIoFactory::GetIo(name);
+        if (!io) {
+            io = std::make_shared<std::fstream>(name + ".jf");
+        }
+        return std::make_shared<TJfNeccessaryOnly>(io, query_);
     } else if (args_.size() == 2) {
         auto scheme = static_cast<TNameToken*>(args_[0])->GetName();
         auto data = static_cast<TNameToken*>(args_[1])->GetName();
 
-        TIoFactory::RegisterFileIo(scheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterFileIo(data, ETypeFile::kCsvFile);
+        std::shared_ptr<std::iostream> scheme_io = TIoFactory::GetIo(scheme);
+        if (!scheme_io) {
+            scheme_io = std::make_shared<std::fstream>(scheme + ".csv");
+        }
+        std::shared_ptr<std::iostream> data_io = TIoFactory::GetIo(data);
+        if (!data_io) {
+            data_io = std::make_shared<std::fstream>(data + ".csv");
+        }
 
-        return std::make_shared<TCsvTableInput>(
-            TIoFactory::GetIo(scheme),
-            TIoFactory::GetIo(data)
-        );
+        return std::make_shared<TCsvTableInput>(scheme_io, data_io);
     } else {
         return MakeError<EError::BadCmdErr>("bad from command args cnt");
     }
