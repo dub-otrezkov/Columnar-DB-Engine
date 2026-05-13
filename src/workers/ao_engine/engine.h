@@ -74,8 +74,6 @@ struct TAoQuery {
 
     TAoQuery(TAoQuery&&) = default;
     TAoQuery& operator=(TAoQuery&&) = default;
-
-    TAoQuery Clone();
 };
 
 class IAoEngine {
@@ -87,7 +85,6 @@ public:
 
     virtual Expected<void> ConsumeRowGroup(ITableInput* inp) = 0;
     virtual std::vector<TColumnPtr> ThrowRowGroup() = 0;
-    virtual std::shared_ptr<IAoEngine> Clone() = 0;
 
     virtual EAoEngineType GetType() const = 0;
 
@@ -112,7 +109,6 @@ public:
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     std::vector<TColumnPtr> ThrowRowGroup() override;
     std::vector<std::string>& GetNames() override;
-    std::shared_ptr<IAoEngine> Clone() override;
 
 private:
     TOperatorQuery q_;
@@ -131,7 +127,6 @@ public:
     Expected<void> ConsumeRowGroup(ITableInput* inp) override;
     std::vector<TColumnPtr> ThrowRowGroup() override;
     std::vector<std::string>& GetNames() override;
-    std::shared_ptr<IAoEngine> Clone() override;
 
 private:
     TAgregationQuery q_;

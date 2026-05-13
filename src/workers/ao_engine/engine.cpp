@@ -89,24 +89,6 @@ std::vector<TColumnPtr> TOperatorEngine::ThrowRowGroup() {
     return ans;
 }
 
-std::shared_ptr<IAoEngine> TOperatorEngine::Clone() {
-    std::vector<std::pair<ui64, std::string>> cnames;
-    cnames.reserve(names.size());
-    for (ui64 i = 0; i < names.size(); i++) {
-        cnames.emplace_back(i, names[i]);
-    }
-    return std::make_shared<TOperatorEngine>(q_.Clone(), std::move(cnames));
-}
-
-std::shared_ptr<IAoEngine> TAgregationEngine::Clone() {
-    std::vector<std::pair<ui64, std::string>> cnames;
-    cnames.reserve(names.size());
-    for (ui64 i = 0; i < names.size(); i++) {
-        cnames.emplace_back(i, names[i]);
-    }
-    return std::make_shared<TAgregationEngine>(q_.Clone(), std::move(cnames));
-}
-
 std::vector<std::string>& TAgregationEngine::GetNames() {
     names.resize(q_.cols.size());
     ui64 j = 0;
