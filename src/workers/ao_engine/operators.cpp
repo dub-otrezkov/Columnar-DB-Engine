@@ -134,7 +134,17 @@ TColumnOp::TColumnOp(std::string name_) :
 
 Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto [ans_, err] = inp->ReadColumn(name);
-    ans = ans_;
+    if (is_group_key && ans_ && ans_->GetSize() > 0) {
+        if (!ans) {
+            ans = MakeEmptyColumn(ans_->GetType()).GetRes();
+        }
+        if (ans->GetSize() < idx + 1) {
+            Do<OResize>(ans, idx + 1);
+        }
+        Do<OSetCellFrom>(ans, idx, ans_, ui64{0});
+    } else {
+        ans = ans_;
+    }
     return err;
 }
 

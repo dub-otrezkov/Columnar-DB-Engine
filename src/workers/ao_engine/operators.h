@@ -69,6 +69,7 @@ struct IOa {
 
 struct TColumnOp : public IOa {
     std::string name;
+    bool is_group_key = false;
 
     TColumnOp(std::string name_);
 

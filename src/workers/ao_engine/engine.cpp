@@ -34,7 +34,15 @@ TAgregationEngine::TAgregationEngine(
 ) :
     IAoEngine(std::move(aliases)),
     q_(std::move(q))
-{}
+{
+    for (auto& c : q_.cols) {
+        if (c->is_final) {
+            if (auto* col_op = dynamic_cast<TColumnOp*>(c.get())) {
+                col_op->is_group_key = true;
+            }
+        }
+    }
+}
 
 Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
     bool is_eof = false;

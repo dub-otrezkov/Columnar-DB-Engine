@@ -33,6 +33,18 @@ struct OSetAtIdx {
     }
 };
 
+struct OSetCellFrom {
+    template <typename TCol>
+    static inline Expected<void> Exec(TCol& to, ui64 to_idx, TColumnPtr from, ui64 from_idx) {
+        if (to.GetType() != from->GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+        auto src = static_cast<TCol*>(from.get());
+        to.GetData().at(to_idx) = src->GetData().at(from_idx);
+        return EError::NoError;
+    }
+};
+
 struct OPushBackEmpty {
     template <typename TCol>
     static inline void Exec(TCol& col) {
