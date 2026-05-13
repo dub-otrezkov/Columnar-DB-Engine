@@ -19,39 +19,6 @@ std::vector<std::string>& IAoEngine::GetNames() {
     return names;
 }
 
-TAgregationQuery TAgregationQuery::Clone() {
-    std::vector<std::unique_ptr<IOa>> ans(cols.size());
-    for (ui64 i = 0; i < cols.size(); i++) {
-        ans[i] = cols[i]->Clone();
-    }
-    for (const auto& [i, j] : edges) {
-        ans[i]->AddArg(ans[j].get());
-    }
-    return TAgregationQuery{std::move(ans), edges};
-}
-
-TOperatorQuery TOperatorQuery::Clone() {
-    std::vector<std::unique_ptr<IOa>> ans(cols.size());
-    for (ui64 i = 0; i < cols.size(); i++) {
-        ans[i] = cols[i]->Clone();
-    }
-    for (const auto& [i, j] : edges) {
-        ans[i]->AddArg(ans[j].get());
-    }
-    return TOperatorQuery{std::move(ans), {}};
-}
-
-TAoQuery TAoQuery::Clone() {
-    std::vector<std::unique_ptr<IOa>> ans(args.size());
-    for (ui64 i = 0; i < ans.size(); i++) {
-        ans[i] = args[i]->Clone();
-    }
-    for (const auto& [i, j] : edges) {
-        ans[i]->AddArg(ans[j].get());
-    }
-    return TAoQuery{{}, std::move(ans), aliases, tp};
-}
-
 TOperatorEngine::
     TOperatorEngine(
         TOperatorQuery q,

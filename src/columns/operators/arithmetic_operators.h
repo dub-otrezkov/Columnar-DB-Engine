@@ -126,6 +126,33 @@ struct OVerticalSub {
     }
 };
 
+struct OMakeAvg {
+    template<typename T>
+    static inline Expected<TColumnPtr> Exec(T& col1, const std::vector<ui64>& col2) {
+        if (col1.GetSize() != col2.size()) {
+            return MakeError<EError::BadArgsErr>("wrong size");
+        }
+        std::vector<i128> ans;
+        ans.reserve(col2.size());
+        for (ui64 i = 0; i < col1.GetSize(); i++) {
+            ans.emplace_back(col1.GetData().at(i) / col2.at(i));
+        }
+        return std::make_shared<Ti128Column>(ans);
+    }
+
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TColumnPtr col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TColumnPtr col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, TColumnPtr col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+};
+
 struct OLength {
     static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
         std::vector<i64> ans(col.GetSize());
@@ -171,6 +198,35 @@ struct OAddConst {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+};
+
+struct OAddAtIdx {
+    template<typename TCol>
+    static inline Expected<void> Exec(TCol& col, ui64 idx, const std::string& s) {
+        typename TCol::ElemType add;
+        try {
+            if constexpr (std::is_same_v<TCol, TStringColumn>) {
+                add = s;
+            } else {
+                add = static_cast<typename TCol::ElemType>(std::stoi(s));
+            }
+        } catch (...) {
+            return EError::BadArgsErr;
+        }
+        col.GetData().at(idx) += add;
+    }
+
+    static inline Expected<void> Exec(TTimestampColumn& col, ui64 idx, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<void> Exec(TDateColumn& col, ui64 idx, const std::string& s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<void> Exec(TStringColumn& col, ui64 idx, const std::string& s) {
         return MakeError<EError::UnsupportedErr>();
     }
 };

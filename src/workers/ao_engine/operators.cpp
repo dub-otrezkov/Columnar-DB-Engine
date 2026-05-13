@@ -11,7 +11,7 @@
 
 namespace JfEngine {
 
-Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
@@ -24,16 +24,6 @@ Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-TColumnPtr TPlusOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TPlusOp::Clone() {
-    auto r = std::make_unique<TPlusOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TPlusOp::GetName() const {
     std::string ans = "+(";
     for (auto& arg : args) {
@@ -43,11 +33,7 @@ std::string TPlusOp::GetName() const {
     return ans;
 }
 
-TColumnPtr TMinusOp::ThrowRowGroup() {
-    return ans;
-}
-
-Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
@@ -60,12 +46,6 @@ Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-std::unique_ptr<IOa> TMinusOp::Clone() {
-    auto r = std::make_unique<TMinusOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TMinusOp::GetName() const {
     std::string ans = "-(";
     for (auto& arg : args) {
@@ -75,7 +55,7 @@ std::string TMinusOp::GetName() const {
     return ans;
 }
 
-Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OLength>(t);
@@ -87,21 +67,11 @@ Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-TColumnPtr TLengthOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TLengthOp::Clone() {
-    auto r = std::make_unique<TLengthOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TLengthOp::GetName() const {
     return "LENGTH(" + arg->GetName() + ")";
 }
 
-Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OExtractMinute>(t);
@@ -113,21 +83,11 @@ Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-TColumnPtr TExtractMinuteOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TExtractMinuteOp::Clone() {
-    auto r = std::make_unique<TExtractMinuteOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TExtractMinuteOp::GetName() const {
     return "EXTRACT_MINUTE(" + arg->GetName() + ")";
 }
 
-Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OTruncMinute>(t);
@@ -139,21 +99,11 @@ Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-TColumnPtr TTruncMinuteOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TTruncMinuteOp::Clone() {
-    auto r = std::make_unique<TTruncMinuteOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TTruncMinuteOp::GetName() const {
     return "TRUNC_MINUTE(" + arg->GetName() + ")";
 }
 
-Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     if (!ans) {
         auto t = arg->GetName();
 
@@ -166,32 +116,12 @@ Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-TColumnPtr TConstIntOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TConstIntOp::Clone() {
-    auto r = std::make_unique<TConstIntOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TConstIntOp::GetName() const {
     return "CONST_INT(" + arg->GetName() + ")";
 }
 
-Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     return EError::NoError;
-}
-
-TColumnPtr TConstStrOp::ThrowRowGroup() {
-    return nullptr;
-}
-
-std::unique_ptr<IOa> TConstStrOp::Clone() {
-    auto r = std::make_unique<TConstIntOp>();
-    r->is_final = is_final;
-    return r;
 }
 
 std::string TConstStrOp::GetName() const {
@@ -202,47 +132,27 @@ TColumnOp::TColumnOp(std::string name_) :
     name(std::move(name_))
 {}
 
-Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto [ans_, err] = inp->ReadColumn(name);
     ans = ans_;
     return err;
-}
-
-TColumnPtr TColumnOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TColumnOp::Clone() {
-    auto r = std::make_unique<TColumnOp>(name);
-    r->is_final = is_final;
-    return r;
 }
 
 std::string TColumnOp::GetName() const {
     return name;
 }
 
-Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto col = arg->ThrowRowGroup();
     ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
     return EError::NoError;
-}
-
-TColumnPtr TDistinctOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TDistinctOp::Clone() {
-    auto r = std::make_unique<TDistinctOp>();
-    r->is_final = is_final;
-    return r;
 }
 
 std::string TDistinctOp::GetName() const {
     return "DISTINCT(" + arg->GetName() + ")";
 }
 
-Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto col = arg[0]->ThrowRowGroup();
     if (!col) {
         return MakeError<EError::BadArgsErr>("REGEXP_REPLACE: source column is null");
@@ -255,21 +165,11 @@ Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp) {
     return EError::NoError;
 }
 
-TColumnPtr TRegexpReplaceOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TRegexpReplaceOp::Clone() {
-    auto r = std::make_unique<TRegexpReplaceOp>();
-    r->is_final = is_final;
-    return r;
-}
-
 std::string TRegexpReplaceOp::GetName() const {
     return "REGEXP_REPLACE(" + arg[0]->GetName() + ", '" + arg1_p + "', '" + arg2_p + "')";
 }
 
-Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     boost::dynamic_bitset<> mask;
     EError ret_err = EError::NoError;
     for (auto& f : cond.fils) {
@@ -310,17 +210,6 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp) {
     ans = std::move(tans);
 
     return ret_err;
-}
-
-TColumnPtr TIfOp::ThrowRowGroup() {
-    return ans;
-}
-
-std::unique_ptr<IOa> TIfOp::Clone() {
-    auto r = std::make_unique<TIfOp>();
-    r->cond = cond;
-    r->is_final = is_final;
-    return r;
 }
 
 std::string TIfOp::GetName() const {

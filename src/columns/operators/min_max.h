@@ -18,9 +18,9 @@ struct OMin {
     }
 };
 
-struct OVerticalMin {
+struct OMinAtIdx {
     template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col1, TColumnPtr col2) {
+    static inline Expected<void> Exec(TCol& col1, ui64 idx, TColumnPtr col2) {
         using T = typename TCol::ElemType;
 
         if (col1.GetSize() != col2->GetSize()) {
@@ -29,12 +29,10 @@ struct OVerticalMin {
         if (col2->GetType() != col1.GetType()) {
             return EError::BadArgsErr;
         }
-        auto col2_i = static_cast<TCol*>(col2.get());
-        std::vector<T> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(std::min(col1.GetData().at(i), col2_i->GetData().at(i)));
-        }
-        return std::make_shared<TCol>(std::move(ans));
+        auto col_f = static_cast<TCol*>(col2.get());
+        col1.GetData().at(i) = std::min(col1.GetData().at(i), col_f->GetData().at(i));
+
+        return EError::NoError;
     }
 };
 
@@ -44,7 +42,7 @@ struct OMax {
         using T = typename TCol::ElemType;
         using TRo = typename TCol::ElemTypeRo;
 
-        TRo res = col.GetData()[0];
+        TRo res = col.GetData().at(0);
         for (ui64 i = 1; i < col.GetSize(); i++) {
             res = std::max(res, col.GetData().at(i));
         }
@@ -52,9 +50,9 @@ struct OMax {
     }
 };
 
-struct OVerticalMax {
+struct OMaxAtIdx {
     template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col1, TColumnPtr col2) {
+    static inline Expected<void> Exec(TCol& col1, ui64 idx, TColumnPtr col2) {
         using T = typename TCol::ElemType;
 
         if (col1.GetSize() != col2->GetSize()) {
@@ -63,12 +61,10 @@ struct OVerticalMax {
         if (col2->GetType() != col1.GetType()) {
             return EError::BadArgsErr;
         }
-        auto col2_i = static_cast<TCol*>(col2.get());
-        std::vector<T> ans;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(std::max(col1.GetData().at(i), col2_i->GetData().at(i)));
-        }
-        return std::make_shared<TCol>(std::move(ans));
+        auto col_f = static_cast<TCol*>(col2.get());
+        col1.GetData().at(i) = std::max(col1.GetData().at(i), col_f->GetData().at(i));
+
+        return EError::NoError;
     }
 };
 

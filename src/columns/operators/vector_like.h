@@ -18,6 +18,13 @@ struct OPushBack {
     }
 };
 
+struct OPushBackEmpty {
+    template <typename TCol>
+    static inline void Exec(TCol& col) {
+        col.GetData().emplace_back();
+    }
+};
+
 // from, to, i
 struct OPushBackFrom {
     template<typename TCol>

@@ -23,8 +23,6 @@ struct TAgregationQuery {
     TAgregationQuery& operator=(const TAgregationQuery&) = delete;
     TAgregationQuery(TAgregationQuery&&) = default;
     TAgregationQuery& operator=(TAgregationQuery&&) = default;
-
-    TAgregationQuery Clone();
 };
 
 struct TOperatorQuery {
@@ -45,8 +43,6 @@ struct TOperatorQuery {
     TOperatorQuery& operator=(const TOperatorQuery&) = delete;
     TOperatorQuery(TOperatorQuery&&) = default;
     TOperatorQuery& operator=(TOperatorQuery&&) = default;
-
-    TOperatorQuery Clone();
 };
 
 enum class EAoEngineType {
