@@ -28,7 +28,7 @@ struct TDistinctSets {
 
     template<typename T>
     TSet<T>& GetSet(ui64 idx) {
-        auto& vec = std::get<std::vector<TSet<T>>>(slots);
+        auto& vec = std::get<std::vector<TSet<T>>>(sets);
         if (vec.size() <= idx) {
             vec.resize(idx + 1);
         }
@@ -60,9 +60,10 @@ struct TDistinctSets {
 
 struct ODistinctCountDelta {
     template <typename TCol>
-    static inline Expected<ui64> Exec(TCol& col1, TSet<typename TCol::ElemType>& st) {
+    static inline Expected<ui64> Exec(TCol& col1, TDistinctSets& sts, ui64 idx) {
         using T = typename TCol::ElemType;
         ui64 ans = 0;
+        auto& st = sts.GetSet<T>(idx);
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             if (st.insert(col1.GetData().at(i)).second) {
                 ans++;
@@ -71,11 +72,11 @@ struct ODistinctCountDelta {
         return ans;
     }
 
-    static inline Expected<ui64> Exec(TDateColumn& col, TDistinctSets& st) {
+    static inline Expected<ui64> Exec(TDateColumn& col1, TDistinctSets& sts, ui64 idx) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<ui64> Exec(TTimestampColumn& col1, TDistinctSets& st) {
+    static inline Expected<ui64> Exec(TTimestampColumn& col1, TDistinctSets& sts, ui64 idx) {
         return EError::UnsupportedErr;
     }
 };

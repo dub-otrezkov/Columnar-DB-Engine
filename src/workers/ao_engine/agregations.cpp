@@ -60,7 +60,11 @@ Expected<void> TCountDistinctAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
         Do<OResize>(ans, idx + 1);
     }
 
-    static_cast<Ti64Column*>(ans.get())->GetData().at(idx) += Do<ODistinctCountDelta>(arg->ThrowRowGroup(), cur_sets.at(idx)).GetRes();
+    static_cast<Ti64Column*>(ans.get())->GetData().at(idx) += Do<ODistinctCountDelta>(
+        arg->ThrowRowGroup(),
+        cur_sets,
+        idx
+    ).GetRes();
     return EError::NoError;
 }
 

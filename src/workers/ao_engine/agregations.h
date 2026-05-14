@@ -82,7 +82,7 @@ struct TAvgAgr : public IAgregationOnly {
 };
 
 struct TCountDistinctAgr : public IAgregationOnly {
-    std::vector<TDistinctSets> cur_sets;
+    TDistinctSets cur_sets;
 
     IOa* arg;
 
