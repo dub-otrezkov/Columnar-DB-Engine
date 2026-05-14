@@ -69,11 +69,38 @@ struct TAvgAgr : public IAgregationOnly {
         sum.AddArg(arg);
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+        sum.ClearArgs();
+    }
+
     bool inited = false;
 
     std::string GetName() const override;
     Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
     TColumnPtr ThrowRowGroup() override;
+};
+
+struct TCountDistinctAgr : public IAgregationOnly {
+    std::vector<TDistinctSets> cur_sets;
+
+    IOa* arg;
+
+    std::string GetName() const override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
+    }
 };
 
 } // namespace JfEngine

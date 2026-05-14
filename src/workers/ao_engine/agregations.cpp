@@ -52,6 +52,18 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     return EError::NoError;
 }
 
+Expected<void> TCountDistinctAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
+    if (!ans) {
+        ans = std::make_shared<Ti64Column>(std::vector<i64>(used.size(), 0));
+    }
+    if (ans->GetSize() <= idx) {
+        Do<OResize>(ans, idx + 1);
+    }
+
+    static_cast<Ti64Column*>(ans.get())->GetData().at(idx) += Do<ODistinctCountDelta>(arg->ThrowRowGroup(), cur_sets.at(idx)).GetRes();
+    return EError::NoError;
+}
+
 TColumnPtr TAvgAgr::ThrowRowGroup() {
     if (!ans) {
         ans = Do<OMakeAvg>(sum.ThrowRowGroup(), count).GetRes();
@@ -77,6 +89,10 @@ std::string TMaxAgr::GetName() const {
 
 std::string TAvgAgr::GetName() const {
     return "AVG(" + arg->GetName() + ")";
+}
+
+std::string TCountDistinctAgr::GetName() const {
+    return "COUNT_DISTINCT(" + arg->GetName() + ")";
 }
 
 } // namespace JfEngine

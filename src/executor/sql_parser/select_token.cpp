@@ -139,8 +139,8 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
                 break;
             }
-            case ETokens::kDistinct: {
-                obs.push_back(std::make_unique<TDistinctOp>());
+            case ETokens::kCountDistinct: {
+                obs.push_back(std::make_unique<TCountDistinctAgr>());
 
                 if (!st.empty()) {
                     eds.emplace_back(st.back(), obs.size() - 1);

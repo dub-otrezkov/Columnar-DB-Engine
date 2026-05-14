@@ -116,6 +116,10 @@ struct TMinusOp : public IOa {
         args.push_back(arg);
     }
 
+    inline void ClearArgs() override {
+        args.clear();
+    }
+
     inline const std::string& GetColumn() const override {
         return args[0]->GetColumn();
     }
@@ -172,6 +176,10 @@ struct TTruncMinuteOp : public IOa {
         arg = to_agr;
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
     }
@@ -222,28 +230,6 @@ struct TConstStrOp : public IOa {
 
     inline bool IsConst() const override {
         return true;
-    }
-};
-
-struct TDistinctOp : public IOa {
-    TDistinctSets cur_sets;
-
-    IOa* arg;
-
-    std::string GetName() const override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
-
-    inline void AddArg(IOa* to_agr) override {
-        arg = to_agr;
-    }
-
-    inline void ClearArgs() override {
-        arg = nullptr;
-    }
-
-    inline const std::string& GetColumn() const override {
-        return arg->GetColumn();
     }
 };
 

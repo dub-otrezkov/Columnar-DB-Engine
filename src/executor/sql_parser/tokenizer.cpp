@@ -78,8 +78,8 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
         return std::make_unique<TMinToken>();
     } else if (token == "MAX") {
         return std::make_unique<TMaxToken>();
-    } else if (token == "DISTINCT") {
-        return std::make_unique<TDistinctToken>();
+    } else if (token == "COUNT_DISTINCT") {
+        return std::make_unique<TDistinctCountToken>();
     } else if (token == "LENGTH") {
         return std::make_unique<TLengthToken>();
     } else if (token == "EXTRACT_MINUTE") {

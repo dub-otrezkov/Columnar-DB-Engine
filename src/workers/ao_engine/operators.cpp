@@ -152,16 +152,6 @@ std::string TColumnOp::GetName() const {
     return name;
 }
 
-Expected<void> TDistinctOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
-    auto col = arg->ThrowRowGroup();
-    ans = Do<ODistinctStreamV>(col, cur_sets).GetRes();
-    return EError::NoError;
-}
-
-std::string TDistinctOp::GetName() const {
-    return "DISTINCT(" + arg->GetName() + ")";
-}
-
 Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
     auto col = arg[0]->ThrowRowGroup();
     if (!col) {
