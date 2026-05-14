@@ -28,6 +28,9 @@ struct TDistinctSets {
 
     template<typename T>
     TSet<T>& GetSet(ui64 idx) {
+        if (!std::holds_alternative<std::vector<TSet<T>>>(sets)) {
+            sets.emplace<std::vector<TSet<T>>>();
+        }
         auto& vec = std::get<std::vector<TSet<T>>>(sets);
         if (vec.size() <= idx) {
             vec.resize(idx + 1);
