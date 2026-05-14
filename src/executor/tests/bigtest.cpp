@@ -18,7 +18,7 @@ beam,timestamp
 7,8,klinghoffer,rip,2025-02-24,"2022-02-24 00:00:00"
 )";
 
-    static constexpr ui64 iter = kRowGroupLen * 10;
+    static constexpr ui64 iter = kRowGroupLen * 50;
 
     std::shared_ptr<std::stringstream> out_scheme;
     std::shared_ptr<std::stringstream> out_data;

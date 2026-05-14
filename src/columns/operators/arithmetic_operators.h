@@ -2,6 +2,8 @@
 
 #include "../types/types.h"
 
+#include "utils/logger/logger.h"
+
 namespace JfEngine {
 
 struct OSum {
@@ -11,6 +13,7 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += static_cast<i128>(col.GetData()[i]);
         }
+        // JF_LOG(nullptr, "sum " << static_cast<i64>(res) << " of size " << col.GetSize() << std::endl);
         return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
 
@@ -205,6 +208,9 @@ struct OAddConst {
 struct OAddAtIdx {
     template<typename TCol>
     static inline Expected<void> Exec(TCol& col, ui64 idx, TColumnPtr s) {
+
+        // JF_LOG(nullptr, "addition at " << idx << std::endl);
+
         if (col.GetType() != s->GetType()) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }

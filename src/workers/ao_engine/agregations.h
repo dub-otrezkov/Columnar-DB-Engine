@@ -21,6 +21,10 @@ struct IAgregationOnly : public IOa {
         arg = to_agr;
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
     }
@@ -58,7 +62,12 @@ struct TAvgAgr : public IAgregationOnly {
         count.push_back(0);
         used.push_back(false);
         return used.size() - 1;
-    } 
+    }
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+        sum.AddArg(arg);
+    }
 
     bool inited = false;
 

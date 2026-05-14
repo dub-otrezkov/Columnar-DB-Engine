@@ -35,6 +35,7 @@ struct IOa {
     virtual std::string GetName() const = 0;
 
     virtual void AddArg(IOa*) {}
+    virtual void ClearArgs() {}
 
     virtual EAoType GetType() const {
         return EAoType::kOperator;
@@ -48,12 +49,14 @@ struct IOa {
 
     template<typename Combine>
     void CombineAt(ui64 idx, TColumnPtr value) {
-        if (!ans) {
-            ans = value;
-            return;
-        }
         if (used.size() < idx + 1) {
             used.resize(idx + 1, false);
+        }
+        if (!ans) {
+            assert(idx == 0);
+            ans = value;
+            used[idx] = true;
+            return;
         }
         if (ans->GetSize() < idx + 1) {
             Do<OResize>(ans, idx + 1);
@@ -93,6 +96,10 @@ struct TPlusOp : public IOa {
         return args.push_back(arg);
     }
 
+    inline void ClearArgs() override {
+        args.clear();
+    }
+
     inline const std::string& GetColumn() const override {
         return args[0]->GetColumn();
     }
@@ -125,6 +132,10 @@ struct TLengthOp : public IOa {
         arg = to_agr;
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
     }
@@ -139,6 +150,10 @@ struct TExtractMinuteOp : public IOa {
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -173,6 +188,10 @@ struct TConstIntOp : public IOa {
         arg = to_agr;
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
     }
@@ -191,6 +210,10 @@ struct TConstStrOp : public IOa {
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -215,6 +238,10 @@ struct TDistinctOp : public IOa {
         arg = to_agr;
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
     }
@@ -230,6 +257,10 @@ struct TIfOp : public IOa {
 
     inline void AddArg(IOa* to_agr) override {
         arg.push_back(to_agr);
+    }
+
+    inline void ClearArgs() override {
+        arg.clear();
     }
 
     inline const std::string& GetColumn() const override {
@@ -256,6 +287,12 @@ struct TRegexpReplaceOp : public IOa {
         if (arg.size() == 3) {
             arg2_p = to_agr->GetName();
         }
+    }
+
+    inline void ClearArgs() override {
+        arg.clear();
+        arg1_p = "";
+        arg2_p = "";
     }
 
     inline const std::string& GetColumn() const override {

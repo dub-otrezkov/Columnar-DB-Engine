@@ -47,6 +47,7 @@ TAgregationEngine::TAgregationEngine(
 Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
     bool is_eof = false;
 
+    // JF_LOG(this, "neww iter" << std::endl);
     for (auto& c : q_.cols) {
         auto err = c->ConsumeRowGroup(inp, i);
         // JF_LOG(this, "got error: " << err.GetError() << " " << c->GetName() << " " << c->GetColumn() << std::endl);

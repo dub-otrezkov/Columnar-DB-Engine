@@ -306,6 +306,7 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
     for (ui64 i = 0; i < all.size(); i++) {
         if (!alias.contains(all_names[i])) {
             alias.emplace(all_names[i], fin.size());
+            all[i]->ClearArgs();
             fin.push_back(std::move(all[i]));
         }
     }
