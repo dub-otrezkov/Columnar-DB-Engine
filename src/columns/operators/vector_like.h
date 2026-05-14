@@ -128,6 +128,15 @@ struct OClear {
     }
 };
 
+struct OCloneConst {
+    template <typename TCol>
+    static inline Expected<void> Exec(TCol& col, ui64 new_size) {
+        auto& data = col.GetData();
+        data.assign(new_size, data.at(0));
+        return EError::NoError;
+    }
+};
+
 struct OToJStrings {
     template <typename TCol>
     static inline std::vector<JString> Exec(TCol& col) {

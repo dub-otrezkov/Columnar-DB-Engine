@@ -64,9 +64,23 @@ Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
 
 std::vector<TColumnPtr> TAgregationEngine::ThrowRowGroup() {
     std::vector<TColumnPtr> ans;
+    ui64 sz = 0;
     for (auto& c : q_.cols) {
         if (c->is_final) {
             ans.push_back(c->ThrowRowGroup());
+            sz = std::max(sz, ans.back()->GetSize());
+            // JF_LOG(nullptr, "res column size " << ans.back()->GetSize() << std::endl);
+        }
+    }
+    ui64 i = 0;
+    for (auto& c : q_.cols) {
+        if (c->is_final) {
+            if (c->IsConst()) {
+                // ans.push_back(nullptr);
+                Do<OCloneConst>(ans.at(i), sz);
+            }
+            i++;
+            // JF_LOG(nullptr, "res column size " << ans.back()->GetSize() << std::endl);
         }
     }
     return ans;
