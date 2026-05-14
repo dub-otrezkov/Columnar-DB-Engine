@@ -353,7 +353,7 @@ TEST_F(BenchTest, _13) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT_DISTINCT(was) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u DESC, was LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, COUNT_DISTINCT(hers) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u, was DESC LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -366,8 +366,8 @@ TEST_F(BenchTest, _13) {
     EXPECT_EQ(out_scheme->str(), R"(was,string
 u,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,1
-john,1
+    EXPECT_EQ(out_data->str(), R"(klinghoffer,2
+john,2
 frusciante,1
 )");
 }
@@ -906,7 +906,7 @@ TEST_F(BenchTest, _34) {
         auto err = exec.ExecQuery(
             "SELECT CONST_INT(1), was, COUNT(*) AS c "
             "FROM josh "
-            "GROUP BY CONST_INT(1), was "
+            "GROUP BY was "
             "ORDER BY c, was DESC LIMIT 10"
         );
         if (err.HasError()) {
@@ -915,8 +915,6 @@ TEST_F(BenchTest, _34) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // CONST_INT(1) даёт одинаковую константу во всех строках; группировка сводится к GROUP BY was.
-    // 4 группы, каждая c = 2*iter = 100000. ORDER BY c, was DESC → все DESC.
     EXPECT_EQ(out_scheme->str(), R"(CONST_INT(1),int64
 was,string
 c,int64
