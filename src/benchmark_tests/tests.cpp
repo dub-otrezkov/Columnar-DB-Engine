@@ -159,14 +159,14 @@ TEST_F(BenchTest, _4) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(once)) FROM josh");
+        auto err = exec.ExecQuery("SELECT COUNT_DISTINCT(once) FROM josh");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(DISTINCT(once)),int64
+    EXPECT_EQ(out_scheme->str(), R"(COUNT_DISTINCT(once),int64
 )");
     EXPECT_EQ(out_data->str(), "5\n");
 }
@@ -176,14 +176,14 @@ TEST_F(BenchTest, _5) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(was)) FROM josh");
+        auto err = exec.ExecQuery("SELECT COUNT_DISTINCT(was) FROM josh");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(DISTINCT(was)),int64
+    EXPECT_EQ(out_scheme->str(), R"(COUNT_DISTINCT(was),int64
 )");
     EXPECT_EQ(out_data->str(), "4\n");
 }
@@ -237,7 +237,7 @@ TEST_F(BenchTest, _8) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(what)) AS u FROM josh GROUP BY hers ORDER BY u DESC, hers LIMIT 2");
+        auto err = exec.ExecQuery("SELECT hers, COUNT_DISTINCT(what) AS u FROM josh GROUP BY hers ORDER BY u DESC, hers LIMIT 2");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -260,7 +260,7 @@ TEST_F(BenchTest, _9) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT hers, SUM(what), COUNT(*) AS c, AVG(once), COUNT(DISTINCT(was)) FROM josh GROUP BY hers ORDER BY c DESC, hers LIMIT 2");
+        auto err = exec.ExecQuery("SELECT hers, SUM(what), COUNT(*) AS c, AVG(once), COUNT_DISTINCT(was) FROM josh GROUP BY hers ORDER BY c DESC, hers LIMIT 2");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -271,7 +271,7 @@ TEST_F(BenchTest, _9) {
 SUM(what),int128
 c,int64
 AVG(once),int128
-COUNT(DISTINCT(was)),int64
+COUNT_DISTINCT(was),int64
 )");
     EXPECT_EQ(out_data->str(), R"(forever,800000,200000,4,3
 rip,200000,100000,3,2
@@ -283,7 +283,7 @@ TEST_F(BenchTest, _10) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT hers, COUNT(DISTINCT(was)) AS u FROM josh WHERE hers <> 'rip' GROUP BY hers ORDER BY u DESC, hers LIMIT 1");
+        auto err = exec.ExecQuery("SELECT hers, COUNT_DISTINCT(was) AS u FROM josh WHERE hers <> 'rip' GROUP BY hers ORDER BY u DESC, hers LIMIT 1");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -302,7 +302,7 @@ TEST_F(BenchTest, _11) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, hers, COUNT(DISTINCT(what)) AS u FROM josh WHERE what <> 3 GROUP BY was, hers ORDER BY u DESC, was, hers LIMIT 4");
+        auto err = exec.ExecQuery("SELECT was, hers, COUNT_DISTINCT(what) AS u FROM josh WHERE what <> 3 GROUP BY was, hers ORDER BY u DESC, was, hers LIMIT 4");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -353,7 +353,7 @@ TEST_F(BenchTest, _13) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, COUNT(DISTINCT(was)) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u DESC, was LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, COUNT_DISTINCT(was) AS u FROM josh WHERE was <> 'josh' GROUP BY was ORDER BY u DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -572,7 +572,7 @@ TEST_F(BenchTest, _22) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        auto err = exec.ExecQuery("SELECT was, MIN(what), MIN(once), COUNT(*) AS c, COUNT(DISTINCT(what)) FROM josh WHERE was LIKE '%o%' AND was NOT LIKE 'k%' AND was <> '' GROUP BY was ORDER BY c DESC, was LIMIT 10");
+        auto err = exec.ExecQuery("SELECT was, MIN(what), MIN(once), COUNT(*) AS c, COUNT_DISTINCT(what) FROM josh WHERE was LIKE '%o%' AND was NOT LIKE 'k%' AND was <> '' GROUP BY was ORDER BY c DESC, was LIMIT 10");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
@@ -586,7 +586,7 @@ TEST_F(BenchTest, _22) {
 MIN(what),int64
 MIN(once),int32
 c,int64
-COUNT(DISTINCT(what)),int64
+COUNT_DISTINCT(what),int64
 )");
     EXPECT_EQ(out_data->str(), R"(josh,1,2,100000,2
 john,3,4,100000,2

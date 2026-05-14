@@ -339,30 +339,27 @@ TEST_F(AgregationsTest, ComplexAgrTest) {
     auto sum_plus = std::make_unique<TSumAgr>();
     sum_plus->is_final = true;
 
-    auto red_for_distinct = std::make_unique<TColumnOp>("red");
-    auto distinct = std::make_unique<TDistinctOp>();
-    auto count_distinct = std::make_unique<TCountAgr>();
+    auto red_for_count_distinct = std::make_unique<TColumnOp>("red");
+    auto count_distinct = std::make_unique<TCountDistinctAgr>();
     count_distinct->is_final = true;
 
     TAoQuery q;
-    q.args.push_back(std::move(red_for_len));       // 0
-    q.args.push_back(std::move(length));            // 1
-    q.args.push_back(std::move(avg_len));           // 2
-    q.args.push_back(std::move(what_arg));          // 3
-    q.args.push_back(std::move(const_1));           // 4
-    q.args.push_back(std::move(plus));              // 5
-    q.args.push_back(std::move(sum_plus));          // 6
-    q.args.push_back(std::move(red_for_distinct));  // 7
-    q.args.push_back(std::move(distinct));          // 8
-    q.args.push_back(std::move(count_distinct));    // 9
+    q.args.push_back(std::move(red_for_len));            // 0
+    q.args.push_back(std::move(length));                 // 1
+    q.args.push_back(std::move(avg_len));                // 2
+    q.args.push_back(std::move(what_arg));               // 3
+    q.args.push_back(std::move(const_1));                // 4
+    q.args.push_back(std::move(plus));                   // 5
+    q.args.push_back(std::move(sum_plus));               // 6
+    q.args.push_back(std::move(red_for_count_distinct)); // 7
+    q.args.push_back(std::move(count_distinct));         // 8
     q.edges = {
         {1, 0},
         {2, 1},
         {5, 3},
         {5, 4},
         {6, 5},
-        {8, 7},
-        {9, 8}
+        {8, 7}
     };
     q.tp = EAoEngineType::kAgregation;
 

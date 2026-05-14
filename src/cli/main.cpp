@@ -26,25 +26,25 @@ static const std::vector<std::string> kQueries = {
     // 3: ok
     "SELECT AVG(UserID) FROM hits",
     // 4: ok
-    "SELECT COUNT(DISTINCT(UserID)) FROM hits",
+    "SELECT COUNT_DISTINCT(UserID) FROM hits",
     // 5: ok
-    "SELECT COUNT(DISTINCT(SearchPhrase)) FROM hits",
+    "SELECT COUNT_DISTINCT(SearchPhrase) FROM hits",
     // 6: ok
     "SELECT MIN(EventDate), MAX(EventDate) FROM hits",
     // 7: ok
     "SELECT AdvEngineID, COUNT(*) FROM hits WHERE AdvEngineID <> 0 GROUP BY AdvEngineID ORDER BY 'COUNT(*)' DESC",
     // 8: ok
-    "SELECT RegionID, COUNT(DISTINCT(UserID)) AS u FROM hits GROUP BY RegionID ORDER BY u DESC LIMIT 10",
+    "SELECT RegionID, COUNT_DISTINCT(UserID) AS u FROM hits GROUP BY RegionID ORDER BY u DESC LIMIT 10",
     // 9: ok
-    "SELECT RegionID, SUM(AdvEngineID), COUNT(AdvEngineID) AS c, AVG(ResolutionWidth), COUNT(DISTINCT(UserID)) FROM hits GROUP BY RegionID ORDER BY c DESC LIMIT 10",
+    "SELECT RegionID, SUM(AdvEngineID), COUNT(AdvEngineID) AS c, AVG(ResolutionWidth), COUNT_DISTINCT(UserID) FROM hits GROUP BY RegionID ORDER BY c DESC LIMIT 10",
     // 10: ok
-    "SELECT MobilePhoneModel, COUNT(DISTINCT(UserID)) AS u FROM hits WHERE MobilePhoneModel <> '' GROUP BY MobilePhoneModel ORDER BY u DESC LIMIT 10",
+    "SELECT MobilePhoneModel, COUNT_DISTINCT(UserID) AS u FROM hits WHERE MobilePhoneModel <> '' GROUP BY MobilePhoneModel ORDER BY u DESC LIMIT 10",
     // 11: ok
-    "SELECT MobilePhone, MobilePhoneModel, COUNT(DISTINCT(UserID)) AS u FROM hits WHERE MobilePhoneModel <> '' GROUP BY MobilePhone, MobilePhoneModel ORDER BY u DESC LIMIT 10",
+    "SELECT MobilePhone, MobilePhoneModel, COUNT_DISTINCT(UserID) AS u FROM hits WHERE MobilePhoneModel <> '' GROUP BY MobilePhone, MobilePhoneModel ORDER BY u DESC LIMIT 10",
     // 12: ok
     "SELECT SearchPhrase, COUNT(*) AS c FROM hits WHERE SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
     // 13: ok
-    "SELECT SearchPhrase, COUNT(DISTINCT(UserID)) AS u FROM hits WHERE SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY u DESC LIMIT 10",
+    "SELECT SearchPhrase, COUNT_DISTINCT(UserID) AS u FROM hits WHERE SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY u DESC LIMIT 10",
     // 14: ok
     "SELECT SearchEngineID, SearchPhrase, COUNT(*) AS c FROM hits WHERE SearchPhrase <> '' GROUP BY SearchEngineID, SearchPhrase ORDER BY c DESC LIMIT 10",
     // 15: ok
@@ -62,7 +62,7 @@ static const std::vector<std::string> kQueries = {
     // 21: ok
     "SELECT SearchPhrase, MIN(URL), COUNT(URL) AS c FROM hits WHERE URL LIKE '%google%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
     // 22: ok
-    "SELECT SearchPhrase, MIN(URL), MIN(Title), COUNT(URL) AS c, COUNT(DISTINCT(UserID)) FROM hits WHERE Title LIKE '%Google%' AND URL NOT LIKE '%.google.%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
+    "SELECT SearchPhrase, MIN(URL), MIN(Title), COUNT(URL) AS c, COUNT_DISTINCT(UserID) FROM hits WHERE Title LIKE '%Google%' AND URL NOT LIKE '%.google.%' AND SearchPhrase <> '' GROUP BY SearchPhrase ORDER BY c DESC LIMIT 10",
     // 23: ok (SELECT * replaced with explicit column list)
     "SELECT WatchID, JavaEnable, Title, GoodEvent, EventTime, EventDate, CounterID, ClientIP, RegionID, UserID, CounterClass, OS, UserAgent, URL, Referer, IsRefresh, RefererCategoryID, RefererRegionID, URLCategoryID, URLRegionID, ResolutionWidth, ResolutionHeight, ResolutionDepth, FlashMajor, FlashMinor, FlashMinor2, NetMajor, NetMinor, UserAgentMajor, UserAgentMinor, CookieEnable, JavascriptEnable, IsMobile, MobilePhone, MobilePhoneModel, Params, IPNetworkID, TraficSourceID, SearchEngineID, SearchPhrase, AdvEngineID, IsArtifical, WindowClientWidth, WindowClientHeight, ClientTimeZone, ClientEventTime, SilverlightVersion1, SilverlightVersion2, SilverlightVersion3, SilverlightVersion4, PageCharset, CodeVersion, IsLink, IsDownload, IsNotBounce, FUniqID, OriginalURL, HID, IsOldCounter, IsEvent, IsParameter, DontCountHits, WithHash, HitColor, LocalEventTime, Age, Sex, Income, Interests, Robotness, RemoteIP, WindowName, OpenerName, HistoryLength, BrowserLanguage, BrowserCountry, SocialNetwork, SocialAction, HTTPError, SendTiming, DNSTiming, ConnectTiming, ResponseStartTiming, ResponseEndTiming, FetchTiming, SocialSourceNetworkID, SocialSourcePage, ParamPrice, ParamOrderID, ParamCurrency, ParamCurrencyID, OpenstatServiceName, OpenstatCampaignID, OpenstatAdID, OpenstatSourceID, UTMSource, UTMMedium, UTMCampaign, UTMContent, UTMTerm, FromTag, HasGCLID, RefererHash, URLHash, CLID FROM hits ORDER BY EventTime LIMIT 10",
     // 24: ok

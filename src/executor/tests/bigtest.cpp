@@ -154,33 +154,6 @@ MIN(was),string
     EXPECT_EQ(out_data->str(), "1,7,klinghoffer,frusciante\n");
 }
 
-TEST_F(BigTest, DistinctGetter) {
-    
-    JfEngine::TExecutor exec;
-    {
-        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-    {
-        auto err = exec.ExecQuery("SELECT DISTINCT(was) AS c FROM josh");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-
-    EXPECT_EQ(out_scheme->str(), R"(c,string
-)");
-    EXPECT_EQ(out_data->str(), R"(josh
-john
-frusciante
-klinghoffer
-)");
-}
-
 TEST_F(BigTest, CountDistinctGetter) {
     
     JfEngine::TExecutor exec;
@@ -192,7 +165,7 @@ TEST_F(BigTest, CountDistinctGetter) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(was)) AS c FROM josh");
+        auto err = exec.ExecQuery("SELECT COUNT_DISTINCT(was) AS c FROM josh");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }
