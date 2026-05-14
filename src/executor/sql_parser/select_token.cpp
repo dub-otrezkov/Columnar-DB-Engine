@@ -139,14 +139,11 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
 
                 break;
             }
-            case ETokens::kDistinct: {
-                obs.push_back(std::make_unique<TDistinctOp>());
+            case ETokens::kCountDistinct: {
+                obs.push_back(std::make_unique<TCountDistinctAgr>());
+                etype = EAoEngineType::kAgregation;
 
-                if (!st.empty()) {
-                    eds.emplace_back(st.back(), obs.size() - 1);
-                } else {
-                    args.push_back(obs.size() - 1);
-                }
+                args.push_back(obs.size() - 1);
 
                 st.push_back(obs.size() - 1);
 
@@ -294,18 +291,26 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
         all[i]->AddArg(all[j].get());
     }
 
+    // Cache names before moving — needed for the edge remap below since
+    // the moved-from unique_ptrs become null.
+    std::vector<std::string> all_names(all.size());
+    for (ui64 i = 0; i < all.size(); i++) {
+        all_names[i] = all[i]->GetName();
+    }
+
     boost::unordered_flat_map<std::string, ui64> alias;
     std::vector<std::unique_ptr<IOa>> fin;
     for (ui64 i = 0; i < all.size(); i++) {
-        if (!alias.contains(all[i]->GetName())) {
-            alias.emplace(all[i]->GetName(), fin.size());
-            fin.push_back(all[i]->Clone());
+        if (!alias.contains(all_names[i])) {
+            alias.emplace(all_names[i], fin.size());
+            all[i]->ClearArgs();
+            fin.push_back(std::move(all[i]));
         }
     }
 
     for (auto& [i, j] : eds) {
-        i = alias.at(all[i]->GetName());
-        j = alias.at(all[j]->GetName());
+        i = alias.at(all_names[i]);
+        j = alias.at(all_names[j]);
 
         fin[i]->AddArg(fin[j].get());
     }

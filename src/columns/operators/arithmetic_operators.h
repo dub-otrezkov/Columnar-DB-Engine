@@ -2,6 +2,8 @@
 
 #include "../types/types.h"
 
+#include "utils/logger/logger.h"
+
 namespace JfEngine {
 
 struct OSum {
@@ -11,6 +13,7 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += static_cast<i128>(col.GetData()[i]);
         }
+        // JF_LOG(nullptr, "sum " << static_cast<i64>(res) << " of size " << col.GetSize() << std::endl);
         return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
 
@@ -126,6 +129,33 @@ struct OVerticalSub {
     }
 };
 
+struct OMakeAvg {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, const std::vector<ui64>& col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, const std::vector<ui64>& col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, const std::vector<ui64>& col2) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    template<typename T>
+    static inline Expected<TColumnPtr> Exec(T& col1, const std::vector<ui64>& col2) {
+        if (col1.GetSize() != col2.size()) {
+            return MakeError<EError::BadArgsErr>("wrong size");
+        }
+        std::vector<i128> ans;
+        ans.reserve(col2.size());
+        for (ui64 i = 0; i < col1.GetSize(); i++) {
+            ans.emplace_back(col1.GetData().at(i) / col2.at(i));
+        }
+        return std::make_shared<Ti128Column>(ans);
+    }
+};
+
 struct OLength {
     static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
         std::vector<i64> ans(col.GetSize());
@@ -171,6 +201,36 @@ struct OAddConst {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+};
+
+struct OAddAtIdx {
+    template<typename TCol>
+    static inline Expected<void> Exec(TCol& col, ui64 idx, TColumnPtr s) {
+
+        // JF_LOG(nullptr, "addition at " << idx << std::endl);
+
+        if (col.GetType() != s->GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+        if (s->GetSize() != 1) {
+            return MakeError<EError::BadArgsErr>("size not 1");
+        }
+        col.GetData().at(idx) += static_cast<TCol*>(s.get())->GetData().at(0);
+
+        return EError::NoError;
+    }
+
+    static inline Expected<void> Exec(TTimestampColumn& col, ui64 idx, TColumnPtr s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<void> Exec(TDateColumn& col, ui64 idx, TColumnPtr s) {
+        return EError::UnsupportedErr;
+    }
+
+    static inline Expected<void> Exec(TStringColumn& col, ui64 idx, TColumnPtr s) {
         return MakeError<EError::UnsupportedErr>();
     }
 };

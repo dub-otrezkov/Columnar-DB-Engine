@@ -25,7 +25,7 @@ enum class ETokens {
     kMax,
     kMin,
     kAnd,
-    kDistinct,
+    kCountDistinct,
     kExtractMinute,
     kTruncMinute,
     kLength,
@@ -65,12 +65,12 @@ static const std::unordered_map<std::string, ETokens> agregations = {
     {"AVG",      ETokens::kAvg},
     {"MIN",      ETokens::kMin},
     {"MAX",      ETokens::kMax},
+    {"DISTINCT_COUNT", ETokens::kCountDistinct},
 };
 
 static const std::unordered_map<std::string, ETokens> operators = {
     {"+",        ETokens::kPlus},
     {"-",        ETokens::kMinus},
-    {"DISTINCT", ETokens::kDistinct},
     {"EXTRACT_MINUTE", ETokens::kExtractMinute},
     {"TRUNC_MINUTE", ETokens::kTruncMinute},
     {"CONST_INT", ETokens::kConstInt},
@@ -205,9 +205,9 @@ public:
     inline ETokens GetType() const override { return ETokens::kCount; }
 };
 
-class TDistinctToken : public IoperatorCommand {
+class TCountDistinctToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kDistinct; }
+    inline ETokens GetType() const override { return ETokens::kCountDistinct; }
 };
 
 struct TExtractMinuteToken : public IoperatorCommand {

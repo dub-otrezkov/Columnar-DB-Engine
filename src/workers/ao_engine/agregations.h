@@ -21,66 +21,86 @@ struct IAgregationOnly : public IOa {
         arg = to_agr;
     }
 
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
     inline const std::string& GetColumn() const override {
         return arg->GetColumn();
     }
 };
 
 struct TSumAgr : public IAgregationOnly {
-    std::shared_ptr<IColumn> ans;
-
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 };
 
 struct TMinAgr : public IAgregationOnly {
-    std::shared_ptr<IColumn> ans;
-
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 };
 
 struct TMaxAgr : public IAgregationOnly {
-    std::shared_ptr<IColumn> ans;
-
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 };
 
 struct TCountAgr : public IAgregationOnly {
-    i64 ans = 0;
-
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 };
 
 struct TAvgAgr : public IAgregationOnly {
     TSumAgr sum;
-    TCountAgr cnt;
+    std::vector<ui64> count;
+
+    ui64 RegisterResult() override {
+        count.push_back(0);
+        used.push_back(false);
+        return used.size() - 1;
+    }
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+        sum.AddArg(arg);
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
+        sum.ClearArgs();
+    }
 
     bool inited = false;
 
     std::string GetName() const override;
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
     TColumnPtr ThrowRowGroup() override;
+};
+
+struct TCountDistinctAgr : public IAgregationOnly {
+    TDistinctSets cur_sets;
+
+    IOa* arg;
+
+    std::string GetName() const override;
+
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+
+    inline void AddArg(IOa* to_agr) override {
+        arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
+    }
+
+    inline const std::string& GetColumn() const override {
+        return arg->GetColumn();
+    }
 };
 
 } // namespace JfEngine

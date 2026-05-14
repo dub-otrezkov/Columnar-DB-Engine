@@ -7,6 +7,8 @@
 namespace JfEngine::Testing {
 
 struct AgregationsTest : testing::Test {
+    std::shared_ptr<TJfTableInput> MakeJfIn();
+
     std::string scheme = R"(red,string
 hot,int64
 chili,string

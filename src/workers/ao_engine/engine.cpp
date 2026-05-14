@@ -19,39 +19,6 @@ std::vector<std::string>& IAoEngine::GetNames() {
     return names;
 }
 
-TAgregationQuery TAgregationQuery::Clone() {
-    std::vector<std::unique_ptr<IOa>> ans(cols.size());
-    for (ui64 i = 0; i < cols.size(); i++) {
-        ans[i] = cols[i]->Clone();
-    }
-    for (const auto& [i, j] : edges) {
-        ans[i]->AddArg(ans[j].get());
-    }
-    return TAgregationQuery{std::move(ans), edges};
-}
-
-TOperatorQuery TOperatorQuery::Clone() {
-    std::vector<std::unique_ptr<IOa>> ans(cols.size());
-    for (ui64 i = 0; i < cols.size(); i++) {
-        ans[i] = cols[i]->Clone();
-    }
-    for (const auto& [i, j] : edges) {
-        ans[i]->AddArg(ans[j].get());
-    }
-    return TOperatorQuery{std::move(ans), {}};
-}
-
-TAoQuery TAoQuery::Clone() {
-    std::vector<std::unique_ptr<IOa>> ans(args.size());
-    for (ui64 i = 0; i < ans.size(); i++) {
-        ans[i] = args[i]->Clone();
-    }
-    for (const auto& [i, j] : edges) {
-        ans[i]->AddArg(ans[j].get());
-    }
-    return TAoQuery{{}, std::move(ans), aliases, tp};
-}
-
 TOperatorEngine::
     TOperatorEngine(
         TOperatorQuery q,
@@ -67,14 +34,22 @@ TAgregationEngine::TAgregationEngine(
 ) :
     IAoEngine(std::move(aliases)),
     q_(std::move(q))
-{}
+{
+    for (auto& c : q_.cols) {
+        if (c->is_final) {
+            if (auto* col_op = dynamic_cast<TColumnOp*>(c.get())) {
+                col_op->is_group_key = true;
+            }
+        }
+    }
+}
 
-Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
     bool is_eof = false;
 
+    // JF_LOG(this, "neww iter" << std::endl);
     for (auto& c : q_.cols) {
-        // JF_LOG(this, "processing... " << c->GetName() << " " << c->GetColumn() << std::endl);
-        auto err = c->ConsumeRowGroup(inp);
+        auto err = c->ConsumeRowGroup(inp, i);
         // JF_LOG(this, "got error: " << err.GetError() << " " << c->GetName() << " " << c->GetColumn() << std::endl);
         if (err.HasError()) {
             if (err.GetError() == EError::EofErr) {
@@ -89,18 +64,32 @@ Expected<void> TAgregationEngine::ConsumeRowGroup(ITableInput* inp) {
 
 std::vector<TColumnPtr> TAgregationEngine::ThrowRowGroup() {
     std::vector<TColumnPtr> ans;
+    ui64 sz = 0;
     for (auto& c : q_.cols) {
         if (c->is_final) {
             ans.push_back(c->ThrowRowGroup());
+            sz = std::max(sz, ans.back()->GetSize());
+            // JF_LOG(nullptr, "res column size " << ans.back()->GetSize() << std::endl);
+        }
+    }
+    ui64 i = 0;
+    for (auto& c : q_.cols) {
+        if (c->is_final) {
+            if (c->IsConst()) {
+                // ans.push_back(nullptr);
+                Do<OCloneConst>(ans.at(i), sz);
+            }
+            i++;
+            // JF_LOG(nullptr, "res column size " << ans.back()->GetSize() << std::endl);
         }
     }
     return ans;
 }
 
-Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp) {
+Expected<void> TOperatorEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
     bool is_eof = false;
     for (auto& c : q_.cols) {
-        auto err = c->ConsumeRowGroup(inp);
+        auto err = c->ConsumeRowGroup(inp, i);
         if (err.HasError()) {
             if (err.GetError() == EError::EofErr) {
                 is_eof = true;
@@ -120,24 +109,6 @@ std::vector<TColumnPtr> TOperatorEngine::ThrowRowGroup() {
         }
     }
     return ans;
-}
-
-std::shared_ptr<IAoEngine> TOperatorEngine::Clone() {
-    std::vector<std::pair<ui64, std::string>> cnames;
-    cnames.reserve(names.size());
-    for (ui64 i = 0; i < names.size(); i++) {
-        cnames.emplace_back(i, names[i]);
-    }
-    return std::make_shared<TOperatorEngine>(q_.Clone(), std::move(cnames));
-}
-
-std::shared_ptr<IAoEngine> TAgregationEngine::Clone() {
-    std::vector<std::pair<ui64, std::string>> cnames;
-    cnames.reserve(names.size());
-    for (ui64 i = 0; i < names.size(); i++) {
-        cnames.emplace_back(i, names[i]);
-    }
-    return std::make_shared<TAgregationEngine>(q_.Clone(), std::move(cnames));
 }
 
 std::vector<std::string>& TAgregationEngine::GetNames() {

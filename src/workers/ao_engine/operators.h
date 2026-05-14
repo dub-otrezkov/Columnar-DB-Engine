@@ -2,6 +2,7 @@
 
 #include "columns/operators/distinct.h"
 #include "columns/operators/operators.h"
+#include "columns/operators/vector_like.h"
 #include "utils/faster_hashmap/hashset.h"
 #include "workers/io/io.h"
 #include "workers/filters/filter.h"
@@ -14,17 +15,27 @@ enum class EAoType {
 };
 
 struct IOa {
+    TColumnPtr ans;
+    boost::dynamic_bitset<> used;
+
     virtual ~IOa() = default;
 
     bool is_final = false;
 
-    virtual std::unique_ptr<IOa> Clone() = 0;
-    virtual Expected<void> ConsumeRowGroup(ITableInput* inp) = 0;
-    virtual TColumnPtr ThrowRowGroup() = 0;
+    virtual ui64 RegisterResult() {
+        used.push_back(false);
+        return used.size() - 1;
+    }
+
+    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx = 0) = 0;
+    virtual TColumnPtr ThrowRowGroup() {
+        return ans;
+    }
 
     virtual std::string GetName() const = 0;
 
     virtual void AddArg(IOa*) {}
+    virtual void ClearArgs() {}
 
     virtual EAoType GetType() const {
         return EAoType::kOperator;
@@ -35,21 +46,39 @@ struct IOa {
     }
 
     virtual inline const std::string& GetColumn() const = 0;
+
+    template<typename Combine>
+    void CombineAt(ui64 idx, TColumnPtr value) {
+        if (used.size() < idx + 1) {
+            used.resize(idx + 1, false);
+        }
+        if (!ans) {
+            assert(idx == 0);
+            ans = value;
+            used[idx] = true;
+            return;
+        }
+        if (ans->GetSize() < idx + 1) {
+            Do<OResize>(ans, idx + 1);
+        }
+        if (used[idx]) {
+            Do<Combine>(ans, idx, value);
+        } else {
+            Do<OSetAtIdx>(ans, idx, value);
+            used[idx] = true;
+        }
+    }
 };
 
 struct TColumnOp : public IOa {
     std::string name;
-
-    std::shared_ptr<IColumn> ans;
+    bool is_group_key = false;
 
     TColumnOp(std::string name_);
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline const std::string& GetColumn() const override {
         return name;
@@ -57,19 +86,18 @@ struct TColumnOp : public IOa {
 };
 
 struct TPlusOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     std::vector<IOa*> args;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* arg) override {
         return args.push_back(arg);
+    }
+
+    inline void ClearArgs() override {
+        args.clear();
     }
 
     inline const std::string& GetColumn() const override {
@@ -78,19 +106,18 @@ struct TPlusOp : public IOa {
 };
 
 struct TMinusOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     std::vector<IOa*> args;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* arg) override {
         args.push_back(arg);
+    }
+
+    inline void ClearArgs() override {
+        args.clear();
     }
 
     inline const std::string& GetColumn() const override {
@@ -99,19 +126,18 @@ struct TMinusOp : public IOa {
 };
 
 struct TLengthOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     IOa* arg;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -120,19 +146,18 @@ struct TLengthOp : public IOa {
 };
 
 struct TExtractMinuteOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     IOa* arg;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -141,19 +166,18 @@ struct TExtractMinuteOp : public IOa {
 };
 
 struct TTruncMinuteOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     IOa* arg;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -162,19 +186,18 @@ struct TTruncMinuteOp : public IOa {
 };
 
 struct TConstIntOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     IOa* arg;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -191,13 +214,14 @@ struct TConstStrOp : public IOa {
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
+    }
+
+    inline void ClearArgs() override {
+        arg = nullptr;
     }
 
     inline const std::string& GetColumn() const override {
@@ -209,46 +233,20 @@ struct TConstStrOp : public IOa {
     }
 };
 
-struct TDistinctOp : public IOa {
-    TColumnPtr ans;
-
-    TDistinctSets cur_sets;
-
-    IOa* arg;
-
-    std::string GetName() const override;
-
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
-
-    inline void AddArg(IOa* to_agr) override {
-        arg = to_agr;
-    }
-
-    inline const std::string& GetColumn() const override {
-        return arg->GetColumn();
-    }
-};
-
 struct TIfOp : public IOa {
-    TColumnPtr ans;
-
-    TDistinctSets cur_sets;
-
     TFilterQuery cond;
     std::vector<IOa*> arg;
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg.push_back(to_agr);
+    }
+
+    inline void ClearArgs() override {
+        arg.clear();
     }
 
     inline const std::string& GetColumn() const override {
@@ -258,8 +256,6 @@ struct TIfOp : public IOa {
 
 
 struct TRegexpReplaceOp : public IOa {
-    std::shared_ptr<IColumn> ans;
-
     std::vector<IOa*> arg;
 
     std::string arg1_p;
@@ -267,10 +263,7 @@ struct TRegexpReplaceOp : public IOa {
 
     std::string GetName() const override;
 
-    std::unique_ptr<IOa> Clone() override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp) override;
-    TColumnPtr ThrowRowGroup() override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg.push_back(to_agr);
@@ -280,6 +273,12 @@ struct TRegexpReplaceOp : public IOa {
         if (arg.size() == 3) {
             arg2_p = to_agr->GetName();
         }
+    }
+
+    inline void ClearArgs() override {
+        arg.clear();
+        arg1_p = "";
+        arg2_p = "";
     }
 
     inline const std::string& GetColumn() const override {

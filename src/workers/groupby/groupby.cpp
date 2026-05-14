@@ -3,6 +3,8 @@
 #include "columns/operators/vector_like.h"
 #include "columns/types/types.h"
 
+#include "utils/logger/logger.h"
+
 #include <algorithm>
 
 namespace JfEngine {
@@ -10,8 +12,9 @@ namespace JfEngine {
 TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
     group_q_(std::move(query)),
-    agr_q_(std::move(selects))
-{}
+    eng_(MakeAoEngine(std::move(selects)))
+{
+}
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
     if (!scheme_.empty()) {
@@ -19,13 +22,8 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     }
     jf_in_->SetupColumnsScheme();
     groups_.clear();
-    for (ui64 i = 0; i < agr_q_.args.size(); i++) {
-        if (agr_q_.args[i]->is_final) {
-            scheme_.emplace_back(agr_q_.args[i]->GetName(), EColumn::kUnitialized);
-        }
-    }
-    for (auto& [i, name] : agr_q_.aliases) {
-        scheme_[i].name_ = name;
+    for (auto name : eng_->GetNames()) {
+        scheme_.emplace_back(name, EColumn::kUnitialized);
     }
     return EError::NoError;
 }
@@ -95,28 +93,29 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             inp_->UploadRowGroup(ag, is);
 
             auto it = groups_.find(key);
+
             if (it == groups_.end()) {
-                it = groups_.emplace(key, TGroup{agr_q_.Clone()}).first;
+                it = groups_.emplace(key, groups_.size()).first;
             }
-            it->second.eng->ConsumeRowGroup(&inp_.value());
+            eng_->ConsumeRowGroup(&inp_.value(), it->second);
         }
     }
 
-    std::vector<TColumnPtr> ans(scheme_.size());
-    for (auto& [_, value] : groups_) {
-        if (!ans[0]) {
-            ans = value.eng->ThrowRowGroup();
-            for (ui64 i = 0; i < ans.size(); i++) {
-                Do<OResize>(ans[i], 1);
-                scheme_[i].type_ = ans[i]->GetType();
-            }
-        } else {
-            auto gars = value.eng->ThrowRowGroup();
-            for (ui64 i = 0; i < gars.size(); i++) {
-                Do<OPushBackFrom>(gars[i], ans[i], 0);
-            }
-        }
-    }
+    std::vector<TColumnPtr> ans = eng_->ThrowRowGroup();
+    // for (auto& [_, value] : groups_) {
+    //     if (!ans[0]) {
+    //         ans = value.eng->ThrowRowGroup();
+    //         for (ui64 i = 0; i < ans.size(); i++) {
+    //             Do<OResize>(ans[i], 1);
+    //             scheme_[i].type_ = ans[i]->GetType();
+    //         }
+    //     } else {
+    //         auto gars = value.eng->ThrowRowGroup();
+    //         for (ui64 i = 0; i < gars.size(); i++) {
+    //             Do<OPushBackFrom>(gars[i], ans[i], 0);
+    //         }
+    //     }
+    // }
 
     assert(ans.size() == GetScheme().size());
     return {std::move(ans), EError::EofErr};

@@ -18,7 +18,7 @@ beam,timestamp
 7,8,klinghoffer,rip,2025-02-24,"2022-02-24 00:00:00"
 )";
 
-    static constexpr ui64 iter = kRowGroupLen * 10;
+    static constexpr ui64 iter = kRowGroupLen * 50;
 
     std::shared_ptr<std::stringstream> out_scheme;
     std::shared_ptr<std::stringstream> out_data;
@@ -154,33 +154,6 @@ MIN(was),string
     EXPECT_EQ(out_data->str(), "1,7,klinghoffer,frusciante\n");
 }
 
-TEST_F(BigTest, DistinctGetter) {
-    
-    JfEngine::TExecutor exec;
-    {
-        auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-    {
-        auto err = exec.ExecQuery("SELECT DISTINCT(was) AS c FROM josh");
-        if (err.HasError()) {
-            std::cout << err.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err.HasError());
-    }
-
-    EXPECT_EQ(out_scheme->str(), R"(c,string
-)");
-    EXPECT_EQ(out_data->str(), R"(josh
-john
-frusciante
-klinghoffer
-)");
-}
-
 TEST_F(BigTest, CountDistinctGetter) {
     
     JfEngine::TExecutor exec;
@@ -192,7 +165,7 @@ TEST_F(BigTest, CountDistinctGetter) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT COUNT(DISTINCT(was)) AS c FROM josh");
+        auto err = exec.ExecQuery("SELECT COUNT_DISTINCT(was) AS c FROM josh");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
         }

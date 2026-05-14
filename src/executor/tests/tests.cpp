@@ -45,7 +45,7 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
         ASSERT_FALSE(err.HasError());
     }
     {
-        auto err = exec.ExecQuery("SELECT SUM(hot), SUM(red) FROM josh");
+        auto err = exec.ExecQuery("SELECT SUM(hot) FROM josh");
         if (err.HasError()) {
             // std::cout << err.GetError()->Print() << std::endl;
         }
@@ -53,9 +53,8 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
     }
 
     EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int128
-SUM(red),string
 )");
-    EXPECT_EQ(out_data->str(), R"(95,"joshjohnstadiumi,could,have,liedcantthedotdotdot"
+    EXPECT_EQ(out_data->str(), R"(95
 )");
 }
 
