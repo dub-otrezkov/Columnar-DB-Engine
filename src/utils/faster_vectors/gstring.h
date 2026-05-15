@@ -26,9 +26,9 @@ struct JString {
             std::memcpy(&prefix, data, size);
         } else {
             std::memcpy(&prefix, data, sizeof(prefix));
-            auto extra_size = size - sizeof(prefix);
+            auto extra_size = size;
             extra = TStringHeap::Allocate(extra_size);
-            std::memcpy(extra, data + sizeof(prefix), extra_size);
+            std::memcpy(extra, data, extra_size);
         }
     }
 

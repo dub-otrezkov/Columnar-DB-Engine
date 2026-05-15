@@ -4,6 +4,8 @@
 
 #include <sys/mman.h>
 
+constexpr ui64 kPadding = 16;
+
 class TStringHeap {
 public:
     inline static TStringHeap& Instance() {
@@ -54,7 +56,7 @@ private:
         madvise(mem, kHugePageSize, MADV_HUGEPAGE);
 
         page* p = new page;
-        p->capacity = kHugePageSize;
+        p->capacity = kHugePageSize - kPadding;
         p->addr = static_cast<char*>(mem);
         p->base = mem;
         p->next = heap.pages_;
@@ -65,6 +67,8 @@ private:
         std::cout << "doesnt fit in huge page - requested " << size << " bytes" << std::endl;
         auto& heap = Instance();
 
+        size += kPadding;
+
         void* mem = malloc(size);
         if (!mem) {
             throw std::runtime_error("oom");
@@ -72,7 +76,7 @@ private:
         madvise(mem, size, MADV_HUGEPAGE);
 
         page* p = new page;
-        p->capacity = size;
+        p->capacity = size - kPadding;
         p->base = mem;
         p->addr = static_cast<char*>(mem);
         if (heap.pages_) {

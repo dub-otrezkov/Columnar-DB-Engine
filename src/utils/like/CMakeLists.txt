@@ -1,0 +1,1 @@
+add_library(like_lib INTERFACE kmp_stupid.h sse_stupid.h combined.h)
