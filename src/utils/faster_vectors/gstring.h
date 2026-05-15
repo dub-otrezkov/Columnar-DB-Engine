@@ -35,12 +35,6 @@ struct JString {
     explicit JString(std::string_view data) : JString(data.size(), data.data()) {
     }
 
-    explicit JString(std::string data) : JString(data.size(), data.data()) {
-    }
-
-    explicit JString(const std::string& data) : JString(data.size(), data.data()) {
-    }
-
     template<typename T>
     explicit JString(const T& data) : JString(sizeof(T), reinterpret_cast<const char*>(&data)) {
     }

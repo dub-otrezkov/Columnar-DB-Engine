@@ -31,7 +31,7 @@ int main() {
 
     // Список всех запросов (включая CREATE и помеченные как "ok")
     std::vector<std::string> queries = {
-        "CREATE hits FROM scheme, dorothy",
+        // "CREATE hits FROM scheme, dorothy",
         "SELECT COUNT(*) FROM hits",
         "SELECT COUNT(*) FROM hits WHERE AdvEngineID <> 0",
         "SELECT SUM(AdvEngineID), COUNT(AdvEngineID), AVG(ResolutionWidth) FROM hits",
