@@ -166,7 +166,7 @@ struct ORegexpReplace {
         boost::regex re(arg1);
         std::string res;
         for (ui64 i = 0; i < col.GetData().size(); i++) {
-            auto t = col.GetData().at(i).to_string();
+            auto& t = col.GetData().at(i);
             res.clear();
             boost::regex_replace(std::back_inserter(res), t.begin(), t.end(), re, arg2);
             vals.emplace_back(std::string_view(res));

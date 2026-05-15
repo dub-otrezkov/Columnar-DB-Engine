@@ -32,6 +32,18 @@ struct JString {
         }
     }
 
+    char* begin() {
+        if (is_small()) {
+            return reinterpret_cast<char*>(&prefix);
+        } else {
+            return extra;
+        }
+    }
+
+    char* end() {
+        return begin() + len;
+    }
+
     explicit JString(std::string_view data) : JString(data.size(), data.data()) {
     }
 
