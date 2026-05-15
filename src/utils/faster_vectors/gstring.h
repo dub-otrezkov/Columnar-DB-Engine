@@ -79,34 +79,29 @@ struct JString {
         if (i >= len) {
             throw std::runtime_error("bad idx");
         }
-        if (i < sizeof(prefix)) {
+        if (is_small()) {
             return *(reinterpret_cast<char*>(&prefix) + i);
         }
-        if (is_small()) {
-            return *(reinterpret_cast<char*>(&extra) + i - sizeof(prefix));
-        }
-        return extra[i - sizeof(prefix)];
+        return extra[i];
     }
 
     std::string to_string() const {
-        std::string out(len, '\0');
         if (len == 0) {
-            return out;
+            return {};
         }
-
-        ui32 head = std::min<ui32>(len, sizeof(prefix));
-        std::memcpy(out.data(), &prefix, head);
-
-        if (len > sizeof(prefix)) {
-            const char* tail = is_small()
-                ? reinterpret_cast<const char*>(&extra)
-                : extra;
-            std::memcpy(out.data() + sizeof(prefix), tail, len - sizeof(prefix));
+        if (is_small()) {
+            return std::string(reinterpret_cast<const char*>(&prefix), len);
         }
-        return out;
+        return std::string(extra, len);
     }
 };
 static_assert(sizeof(JString) == 16);
+
+inline const char* JStringBytes(const JString& s) {
+    return s.is_small()
+        ? reinterpret_cast<const char*>(&s.prefix)
+        : s.extra;
+}
 
 inline bool operator== (const JString& i, const JString& j) {
     if (i.size() != j.size()) {
@@ -118,10 +113,9 @@ inline bool operator== (const JString& i, const JString& j) {
     if (i.size() <= sizeof(i.prefix)) {
         return true;
     }
-    if (i.is_small()) {
-        return i.extra == j.extra;
-    }
-    return (memcmp(i.extra, j.extra, i.size() - sizeof(i.prefix)) == 0);
+    return std::memcmp(JStringBytes(i) + sizeof(i.prefix),
+                       JStringBytes(j) + sizeof(j.prefix),
+                       i.size() - sizeof(i.prefix)) == 0;
 }
 
 inline bool operator< (const JString& i, const JString& j) {
@@ -134,9 +128,9 @@ inline bool operator< (const JString& i, const JString& j) {
     if (min_len <= sizeof(i.prefix)) {
         return i.size() < j.size();
     }
-    const char* i_rest = i.is_small() ? reinterpret_cast<const char*>(&i.extra) : i.extra;
-    const char* j_rest = j.is_small() ? reinterpret_cast<const char*>(&j.extra) : j.extra;
-    c = memcmp(i_rest, j_rest, min_len - sizeof(i.prefix));
+    c = memcmp(JStringBytes(i) + sizeof(i.prefix),
+               JStringBytes(j) + sizeof(j.prefix),
+               min_len - sizeof(i.prefix));
     if (c != 0) {
         return c < 0;
     }
@@ -150,10 +144,9 @@ inline int JStringCompare(const JString& a, std::string_view b) {
     if (c != 0) return c;
 
     if (min_len > sizeof(a.prefix)) {
-        const char* tail = a.is_small()
-            ? reinterpret_cast<const char*>(&a.extra)
-            : a.extra;
-        c = std::memcmp(tail, b.data() + sizeof(a.prefix), min_len - sizeof(a.prefix));
+        c = std::memcmp(JStringBytes(a) + sizeof(a.prefix),
+                        b.data() + sizeof(a.prefix),
+                        min_len - sizeof(a.prefix));
         if (c != 0) return c;
     }
     if (a.size() < b.size()) return -1;
@@ -224,15 +217,16 @@ struct JStringHasher {
             return _mm_crc32_u64(h, inline_tail);
         }
 
+        const char* tail = s.extra + sizeof(s.prefix);
         ui32 tail_size = s.size() - sizeof(s.prefix);
         ui64 h64 = h;
         ui32 i = 0;
         for (; i + 8 <= tail_size; i += 8) {
-            h64 = _mm_crc32_u64(h64, *reinterpret_cast<const ui64*>(s.extra + i));
+            h64 = _mm_crc32_u64(h64, *reinterpret_cast<const ui64*>(tail + i));
         }
         h = static_cast<ui32>(h64);
         for (; i < tail_size; i++) {
-            h = _mm_crc32_u8(h, static_cast<unsigned char>(s.extra[i]));
+            h = _mm_crc32_u8(h, static_cast<unsigned char>(tail[i]));
         }
         return h;
     }
@@ -324,25 +318,18 @@ public:
     inline static std::vector<char> Serialize(const std::vector<JString>& data) {
         std::vector<char> ans;
         for (ui64 i = 0; i < data.size(); i++) {
-            auto old_size = ans.size();
             auto& cur = data.at(i);
-            ans.resize(ans.size() + sizeof(cur.size()) + cur.size());
-            auto sz_to_copy = sizeof(cur.size()) + (cur.is_small() ? cur.size() : sizeof(cur.prefix));
-            memcpy(
-                ans.data() + old_size,
-                &cur,
-                sz_to_copy
-            );
-            old_size += sz_to_copy;
-            if (!cur.is_small()) {
-                std::memcpy(
-                    ans.data() + old_size,
-                    cur.extra,
-                    cur.size() - sizeof(cur.prefix)
-                );
+            ui32 sz = cur.size();
+            auto old_size = ans.size();
+            ans.resize(old_size + sizeof(sz) + sz);
+            std::memcpy(ans.data() + old_size, &sz, sizeof(sz));
+            old_size += sizeof(sz);
+            if (cur.is_small()) {
+                std::memcpy(ans.data() + old_size, &cur.prefix, sz);
+            } else {
+                std::memcpy(ans.data() + old_size, cur.extra, sz);
             }
         }
-
         return ans;
     }
 
