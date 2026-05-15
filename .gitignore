@@ -12,3 +12,5 @@
 *.data.old
 *report.txt
 .claude/
+*.folded
+*.svg
