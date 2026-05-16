@@ -2,7 +2,6 @@
 
 #include "columns/operators/filter.h"
 #include "csvio/csv_reader.h"
-#include "narrow_io.h"
 #include "utils/faster_hashmap/hashmap.h"
 #include "workers/ao_engine/engine.h"
 #include "workers/base.h"
@@ -34,7 +33,6 @@ public:
 
 private:
     TGroupByQuery group_q_;
-    // TAoQuery agr_q_;
 
     TTableInputPtr jf_in_;
 
@@ -57,9 +55,7 @@ private:
     >;
 
     std::shared_ptr<IAoEngine> eng_;
-    THashMap<std::vector<ui64>> keys;
     THashMap<ui64> groups_;
-    std::optional<TNarrowTableInput> inp_;
 };
 
 } // namespace JfEngine

@@ -89,11 +89,11 @@ TEST_F(AgregationsTest, SumTest) {
     TAoQuery q;
     q.args.push_back(std::move(column_name));
     q.args.push_back(std::move(sum_agr));
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {1, 0}
     };
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 
@@ -120,12 +120,12 @@ TEST_F(AgregationsTest, CountTest) {
     TAoQuery q;
     q.args.push_back(std::move(column_name));
     q.args.push_back(std::move(sum_agr));
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {1, 0}
     };
     q.tp = EAoEngineType::kAgregation;
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 
@@ -158,14 +158,14 @@ TEST_F(AgregationsTest, MultipleAgrTest) {
     q.args.push_back(std::move(sum_agr));
     q.args.push_back(std::move(count_agr));
     q.args.push_back(std::move(avg_agr));
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {1, 0},
         {2, 0},
         {3, 0}
     };
     q.tp = EAoEngineType::kAgregation;
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 
@@ -198,14 +198,14 @@ TEST_F(AgregationsTest, MultipleOpTest) {
     q.args.push_back(std::move(sum_agr));
     q.args.push_back(std::move(count_agr));
     q.args.push_back(std::move(avg_agr));
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {1, 0},
         {2, 0},
         {3, 0}
     };
     q.tp = EAoEngineType::kAgregation;
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 
@@ -237,13 +237,13 @@ TEST_F(AgregationsTest, PlusConstTest) {
     q.args.push_back(std::move(what_arg));
     q.args.push_back(std::move(const_1));
     q.args.push_back(std::move(plus));
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {3, 1},
         {3, 2}
     };
     q.tp = EAoEngineType::kOperator;
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 
@@ -291,7 +291,7 @@ TEST_F(AgregationsTest, StringOpsTest) {
     q.args.push_back(std::move(pattern));
     q.args.push_back(std::move(replacement));
     q.args.push_back(std::move(regex));
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {2, 1},
         {6, 3},
         {6, 4},
@@ -299,7 +299,7 @@ TEST_F(AgregationsTest, StringOpsTest) {
     };
     q.tp = EAoEngineType::kOperator;
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 
@@ -353,7 +353,7 @@ TEST_F(AgregationsTest, ComplexAgrTest) {
     q.args.push_back(std::move(sum_plus));               // 6
     q.args.push_back(std::move(red_for_count_distinct)); // 7
     q.args.push_back(std::move(count_distinct));         // 8
-    q.edges = {
+    std::vector<std::pair<ui64, ui64>> edges = {
         {1, 0},
         {2, 1},
         {5, 3},
@@ -363,7 +363,7 @@ TEST_F(AgregationsTest, ComplexAgrTest) {
     };
     q.tp = EAoEngineType::kAgregation;
 
-    for (auto [u, v] : q.edges) {
+    for (auto [u, v] : edges) {
         q.args.at(u)->AddArg(q.args.at(v).get());
     }
 

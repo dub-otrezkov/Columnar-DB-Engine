@@ -66,9 +66,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
                 }
             }
             keep &= al;
-            // for (ui64 i = 0; i < keep.size(); i++) {
-            //     keep[i] = (keep[i] & al[i]);
-            // }
         } else {
             auto [bl, err] = Do<OFilterCheck>(col[name_to_i_[name]], op, target);
 
@@ -77,9 +74,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             }
 
             keep &= bl;
-            // for (ui64 i = 0; i < keep.size(); i++) {
-            //     keep[i] = (keep[i] & bl[i]);
-            // }
         }
     }
 

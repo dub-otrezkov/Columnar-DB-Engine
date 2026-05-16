@@ -5,64 +5,39 @@
 
 namespace JfEngine {
 
-struct TAgregationQuery {
-    std::vector<std::unique_ptr<IOa>> cols;
-    std::vector<std::pair<ui64, ui64>> edges;
-
-    TAgregationQuery() {}
-
-    TAgregationQuery(
-        std::vector<std::unique_ptr<IOa>> cols_,
-        std::vector<std::pair<ui64, ui64>> edges_
-    ) :
-        cols(std::move(cols_)),
-        edges(std::move(edges_))
-    {}
-
-    TAgregationQuery(const TAgregationQuery&) = delete;
-    TAgregationQuery& operator=(const TAgregationQuery&) = delete;
-    TAgregationQuery(TAgregationQuery&&) = default;
-    TAgregationQuery& operator=(TAgregationQuery&&) = default;
-};
-
-struct TOperatorQuery {
-    std::vector<std::unique_ptr<IOa>> cols;
-    std::vector<std::pair<ui64, ui64>> edges;
-
-    TOperatorQuery() {}
-
-    TOperatorQuery(
-        std::vector<std::unique_ptr<IOa>> cols_,
-        std::vector<std::pair<ui64, ui64>> edges_
-    ) :
-        cols(std::move(cols_)),
-        edges(std::move(edges_))
-    {}
-
-    TOperatorQuery(const TOperatorQuery&) = delete;
-    TOperatorQuery& operator=(const TOperatorQuery&) = delete;
-    TOperatorQuery(TOperatorQuery&&) = default;
-    TOperatorQuery& operator=(TOperatorQuery&&) = default;
-};
-
 enum class EAoEngineType {
     kAgregation,
     kOperator
 };
 
+class IAoEngine {
+public:
+    virtual ~IAoEngine() = default;
+
+    IAoEngine() = default;
+    IAoEngine(std::vector<std::unique_ptr<IOa>> cols, std::vector<std::pair<ui64, std::string>> aliases);
+
+    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i = 0);
+    virtual std::vector<TColumnPtr> ThrowRowGroup() = 0;
+
+    virtual EAoEngineType GetType() const = 0;
+
+    virtual std::vector<std::string>& GetNames();
+protected:
+    std::vector<std::unique_ptr<IOa>> cols_;
+    std::vector<std::string> names_;
+};
+
 struct TAoQuery {
-    std::vector<std::pair<ui64, ui64>> edges;
     std::vector<std::unique_ptr<IOa>> args;
     std::vector<std::pair<ui64, std::string>> aliases;
     EAoEngineType tp;
 
     TAoQuery(
-        std::vector<std::pair<ui64, ui64>> e,
         std::vector<std::unique_ptr<IOa>> a,
         std::vector<std::pair<ui64, std::string>> b,
         EAoEngineType c
     ) :
-        edges(std::move(e)),
         args(std::move(a)),
         aliases(std::move(b)),
         tp(c)
@@ -76,60 +51,28 @@ struct TAoQuery {
     TAoQuery& operator=(TAoQuery&&) = default;
 };
 
-class IAoEngine {
-public:
-    virtual ~IAoEngine() = default;
-
-    IAoEngine() = default;
-    IAoEngine(std::vector<std::pair<ui64, std::string>> aliases);
-
-    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i = 0) = 0;
-    virtual std::vector<TColumnPtr> ThrowRowGroup() = 0;
-
-    virtual EAoEngineType GetType() const = 0;
-
-    virtual std::vector<std::string>& GetNames();
-
-protected:
-    std::vector<std::string> names;
-};
-
 std::shared_ptr<IAoEngine> MakeAoEngine(TAoQuery);
 
 class TOperatorEngine : public IAoEngine {
 public:
     TOperatorEngine() = default;
     TOperatorEngine(
-        TOperatorQuery qry,
-        std::vector<std::pair<ui64, std::string>> aliases = {}
+        std::vector<std::unique_ptr<IOa>> q,
+        std::vector<std::pair<ui64, std::string>> aliases
     );
 
     EAoEngineType GetType() const override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i) override;
-    std::vector<TColumnPtr> ThrowRowGroup() override;
-    std::vector<std::string>& GetNames() override;
-
-private:
-    TOperatorQuery q_;
 };
 
 class TAgregationEngine : public IAoEngine {
 public:
     TAgregationEngine() = default;
     TAgregationEngine(
-        TAgregationQuery q,
-        std::vector<std::pair<ui64, std::string>> aliases = {}
+        std::vector<std::unique_ptr<IOa>> q,
+        std::vector<std::pair<ui64, std::string>> aliases
     );
 
     EAoEngineType GetType() const override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i) override;
-    std::vector<TColumnPtr> ThrowRowGroup() override;
-    std::vector<std::string>& GetNames() override;
-
-private:
-    TAgregationQuery q_;
 };
 
 } // namespace JfEngine

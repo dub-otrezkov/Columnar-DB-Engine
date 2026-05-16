@@ -20,7 +20,7 @@ static const std::vector<std::string> kQueries = {
     // 0: ok
     "SELECT COUNT(*) FROM hits",
     // 1: ok
-    "SELECT COUNT(*) FROM hits WHERE AdvEngineID <> 0",
+    "SELECT COUNT(AdvEngineID) FROM hits WHERE AdvEngineID <> 0",
     // 2: ok
     "SELECT SUM(AdvEngineID), COUNT(AdvEngineID), AVG(ResolutionWidth) FROM hits",
     // 3: ok

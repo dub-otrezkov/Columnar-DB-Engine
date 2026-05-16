@@ -13,21 +13,27 @@ namespace JfEngine {
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
     // JF_LOG(this, "got arg: " << arg << std::endl);
     auto v = Do<OSum>(arg->ThrowRowGroup());
-    if (v.HasError()) return v.GetError();
+    if (v.HasError()) {
+        return v.GetError();
+    }
     CombineAt<OAddAtIdx>(idx, v.GetRes());
     return EError::NoError;
 }
 
 Expected<void> TMinAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
     auto v = Do<OMin>(arg->ThrowRowGroup());
-    if (v.HasError()) return v.GetError();
+    if (v.HasError()) {
+        return v.GetError();
+    }
     CombineAt<OMinAtIdx>(idx, v.GetRes());
     return EError::NoError;
 }
 
 Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
     auto v = Do<OMax>(arg->ThrowRowGroup());
-    if (v.HasError()) return v.GetError();
+    if (v.HasError()) {
+        return v.GetError();
+    }
     CombineAt<OMaxAtIdx>(idx, v.GetRes());
     return EError::NoError;
 }
