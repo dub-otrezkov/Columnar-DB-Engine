@@ -17,8 +17,12 @@ public:
     IAoEngine() = default;
     IAoEngine(std::vector<std::unique_ptr<IOa>> cols, std::vector<std::pair<ui64, std::string>> aliases);
 
+    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64> i) {
+        return MakeError<EError::UnsupportedErr>("no consume row group with vector arg");
+    }
+
     virtual Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 i = 0);
-    virtual std::vector<TColumnPtr> ThrowRowGroup() = 0;
+    virtual std::vector<TColumnPtr> ThrowRowGroup();
 
     virtual EAoEngineType GetType() const = 0;
 

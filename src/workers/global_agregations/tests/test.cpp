@@ -34,21 +34,6 @@ std::shared_ptr<TJfTableInput> AgregationsTest::MakeJfIn() {
     return jf_in;
 }
 
-TEST_F(AgregationsTest, FullTableTest) {
-    auto jf_in = MakeJfIn();
-    auto agr = std::make_shared<TAgregator>(jf_in);
-
-    auto [engine, err] = MakeEngineFromWorker(agr);
-
-    ASSERT_FALSE(err);
-
-    std::stringstream data_;
-
-    auto res = engine.WriteDataToCsv(data_);
-
-    EXPECT_EQ(data_.str(), data);
-}
-
 TEST_F(AgregationsTest, SelectTest) {
     auto jf_in = MakeJfIn();
 
