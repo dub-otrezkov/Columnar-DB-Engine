@@ -58,14 +58,14 @@ TEST_F(GroupByTest, Basic) {
         aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
         aq.args.push_back(std::make_unique<TCountAgr>());          // 2
         aq.args.push_back(std::make_unique<TSumAgr>());            // 3
-        aq.edges = {
+        std::vector<std::pair<ui64, ui64>> edges = {
             {2, 0},
             {3, 0}
         };
         aq.args[1]->is_final = true;
         aq.args[2]->is_final = true;
         aq.args[3]->is_final = true;
-        for (const auto& [i, j] : aq.edges) {
+        for (const auto& [i, j] : edges) {
             aq.args[i]->AddArg(aq.args[j].get());
         }
 
@@ -134,14 +134,14 @@ TEST_F(GroupByTest, Stress) {
         aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
         aq.args.push_back(std::make_unique<TCountAgr>());          // 2
         aq.args.push_back(std::make_unique<TSumAgr>());            // 3
-        aq.edges = {
+        std::vector<std::pair<ui64, ui64>> edges = {
             {2, 0},
             {3, 0}
         };
         aq.args[1]->is_final = true;
         aq.args[2]->is_final = true;
         aq.args[3]->is_final = true;
-        for (const auto& [i, j] : aq.edges) {
+        for (const auto& [i, j] : edges) {
             aq.args[i]->AddArg(aq.args[j].get());
         }
 

@@ -83,7 +83,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             idcs.at(i) = it->second;
         }
 
-        eng_->ConsumeRowGroup(jf_in_, idcs);
+        eng_->ConsumeRowGroup(jf_in_.get(), &idcs);
     }
 
     std::vector<TColumnPtr> ans = eng_->ThrowRowGroup();
