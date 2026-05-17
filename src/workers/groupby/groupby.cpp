@@ -11,9 +11,10 @@ namespace JfEngine {
 
 TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
-    group_q_(std::move(query)),
-    eng_(MakeAoEngine(std::move(selects)))
+    group_q_(std::move(query))
 {
+    selects.tp = EAoEngineType::kAgregation;
+    eng_ = MakeAoEngine(std::move(selects));
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
