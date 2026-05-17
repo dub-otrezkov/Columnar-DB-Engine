@@ -76,11 +76,17 @@ struct OMultipleMax {
         } else if (ans->GetType() != col.GetType()) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
-        if (!idx) {
-            auto t = OMax::Exec(col);
-            return Do<OMaxAtIdx>(ans, 0, t);
-        }
         auto& v = static_cast<TCol*>(ans.get())->GetData();
+        if (!idx) {
+            for (ui64 i = 0; i < col.GetSize(); i++) {
+                if (v.empty()) {
+                    v.emplace_back(col.GetData().at(i));
+                } else {
+                    v.at(0) = std::max(col.GetData().at(i), v.at(0));
+                }
+            }
+            return EError::NoError;
+        }
         auto& id = *idx;
         if (col.GetSize() != id.size()) {
             return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
@@ -106,11 +112,17 @@ struct OMultipleMin {
         } else if (ans->GetType() != col.GetType()) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
-        if (!idx) {
-            auto t = OMin::Exec(col);
-            return Do<OMinAtIdx>(ans, 0, t);
-        }
         auto& v = static_cast<TCol*>(ans.get())->GetData();
+        if (!idx) {
+            for (ui64 i = 0; i < col.GetSize(); i++) {
+                if (v.empty()) {
+                    v.emplace_back(col.GetData().at(i));
+                } else {
+                    v.at(0) = std::min(col.GetData().at(i), v.at(0));
+                }
+            }
+            return EError::NoError;
+        }
         auto& id = *idx;
         if (col.GetSize() != id.size()) {
             return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
