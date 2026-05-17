@@ -135,7 +135,7 @@ TColumnOp::TColumnOp(std::string name_) :
 Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) {
     auto [ans_, err] = inp->ReadColumn(name);
     if (is_group_key && ans_ && ans_->GetSize() > 0) {
-        Do<OSetColumnFrom>(ans, ans_, idx);
+        Do<OSetColumnFrom>(ans_, ans, idx);
     } else {
         ans = ans_;
     }
