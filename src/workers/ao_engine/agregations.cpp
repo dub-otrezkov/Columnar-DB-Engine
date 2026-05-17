@@ -40,7 +40,7 @@ Expected<void> TCountAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) 
     } else {
         auto& id = *idx;
         for (ui64 i = 0; i < col->GetSize(); i++) {
-            assert(v.size() <= id.at(i));
+            assert(id.at(i) <= v.size());
             if (v.size() == id.at(i)) {
                 v.push_back(0);
             }
