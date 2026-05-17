@@ -130,27 +130,28 @@ struct OVerticalSub {
 };
 
 struct OMakeAvg {
-    static inline Expected<TColumnPtr> Exec(TDateColumn& col, const std::vector<ui64>& col2) {
+    static inline Expected<TColumnPtr> Exec(TDateColumn& col, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, const std::vector<ui64>& col2) {
+    static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, const std::vector<ui64>& col2) {
+    static inline Expected<TColumnPtr> Exec(TStringColumn& col1, TColumnPtr col2) {
         return MakeError<EError::UnsupportedErr>();
     }
 
     template<typename T>
-    static inline Expected<TColumnPtr> Exec(T& col1, const std::vector<ui64>& col2) {
-        if (col1.GetSize() != col2.size()) {
+    static inline Expected<TColumnPtr> Exec(T& col1, TColumnPtr col2) {
+        if (col1.GetSize() != col2->GetSize()) {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
         std::vector<i128> ans;
-        ans.reserve(col2.size());
+        auto& cnt = static_cast<Ti64Column*>(col2.get())->GetData();
+        ans.reserve(cnt.size());
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.emplace_back(col1.GetData().at(i) / col2.at(i));
+            ans.emplace_back(col1.GetData().at(i) / cnt.at(i));
         }
         return std::make_shared<Ti128Column>(ans);
     }
@@ -232,6 +233,43 @@ struct OAddAtIdx {
 
     static inline Expected<void> Exec(TStringColumn& col, ui64 idx, TColumnPtr s) {
         return MakeError<EError::UnsupportedErr>();
+    }
+};
+
+struct OMultipleAdder {
+    template<CIntegralColumn TCol>
+    static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
+        if (!ans) {
+            ans = MakeEmptyColumn(EColumn::ki128Column);
+        } else if (ans->GetType() != EColumn::ki128Column) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+
+        if (!idx) {
+            auto t = OSum::Exec(col);
+            return Do<OVerticalSum>(t, ans);
+        }
+        if (col.GetSize() != idx->size()) {
+            return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
+        }
+        auto& v =  static_cast<Ti128Column*>(ans.get())->GetData();
+        auto& id = *idx;
+        for (ui64 i = 0; i < id.size(); i++) {
+            assert(id.at(i) <= v.size());
+            if (id.at(i) == v.size()) {
+                v.emplace_back(col.GetData().at(i));
+            } else {
+                v.at(id.at(i)) += col.GetData().at(i);
+            }
+        }
+
+        return EError::NoError;
+    }
+
+    template<typename TCol>
+    static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
+        assert(1 == 0);
+        return EError::NoError;
     }
 };
 

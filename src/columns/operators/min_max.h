@@ -68,4 +68,64 @@ struct OMaxAtIdx {
     }
 };
 
+struct OMultipleMax {
+    template<typename TCol>
+    static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
+        if (!ans) {
+            ans = MakeEmptyColumn(col.GetType()).GetRes();
+        } else if (ans->GetType() != col.GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+        if (!idx) {
+            auto t = OMax::Exec(col);
+            return Do<OMaxAtIdx>(ans, 0, t);
+        }
+        auto& v = static_cast<TCol*>(ans.get())->GetData();
+        auto& id = *idx;
+        if (col.GetSize() != id.size()) {
+            return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
+        }
+        for (ui64 i = 0; i < id.size(); i++) {
+            assert(id.at(i) <= v.size());
+            if (id.at(i) == v.size()) {
+                v.emplace_back(col.GetData().at(i));
+            } else {
+                v.at(id.at(i)) = std::max(col.GetData().at(i), v.at(id.at(i)));
+            }
+        }
+
+        return EError::NoError;
+    }
+};
+
+struct OMultipleMin {
+    template<typename TCol>
+    static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
+        if (!ans) {
+            ans = MakeEmptyColumn(col.GetType()).GetRes();
+        } else if (ans->GetType() != col.GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+        if (!idx) {
+            auto t = OMin::Exec(col);
+            return Do<OMinAtIdx>(ans, 0, t);
+        }
+        auto& v = static_cast<TCol*>(ans.get())->GetData();
+        auto& id = *idx;
+        if (col.GetSize() != id.size()) {
+            return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
+        }
+        for (ui64 i = 0; i < id.size(); i++) {
+            assert(id.at(i) <= v.size());
+            if (id.at(i) == v.size()) {
+                v.emplace_back(col.GetData().at(i));
+            } else {
+                v.at(id.at(i)) = std::min(col.GetData().at(i), v.at(id.at(i)));
+            }
+        }
+
+        return EError::NoError;
+    }
+};
+
 } // namespace JfEngine

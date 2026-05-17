@@ -11,7 +11,7 @@
 
 namespace JfEngine {
 
-Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TPlusOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
@@ -33,7 +33,7 @@ std::string TPlusOp::GetName() const {
     return ans;
 }
 
-Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TMinusOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     auto ans_ = args[0]->ThrowRowGroup();
 
     for (ui64 i = 1; i < args.size(); i++) {
@@ -55,7 +55,7 @@ std::string TMinusOp::GetName() const {
     return ans;
 }
 
-Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TLengthOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OLength>(t);
@@ -71,7 +71,7 @@ std::string TLengthOp::GetName() const {
     return "LENGTH(" + arg->GetName() + ")";
 }
 
-Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TExtractMinuteOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OExtractMinute>(t);
@@ -87,7 +87,7 @@ std::string TExtractMinuteOp::GetName() const {
     return "EXTRACT_MINUTE(" + arg->GetName() + ")";
 }
 
-Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TTruncMinuteOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     auto t = arg->ThrowRowGroup();
 
     auto [ans_, err] = Do<OTruncMinute>(t);
@@ -103,7 +103,7 @@ std::string TTruncMinuteOp::GetName() const {
     return "TRUNC_MINUTE(" + arg->GetName() + ")";
 }
 
-Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TConstIntOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     if (!ans) {
         auto t = arg->GetName();
 
@@ -120,7 +120,7 @@ std::string TConstIntOp::GetName() const {
     return "CONST_INT(" + arg->GetName() + ")";
 }
 
-Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     return EError::NoError;
 }
 
@@ -132,16 +132,10 @@ TColumnOp::TColumnOp(std::string name_) :
     name(std::move(name_))
 {}
 
-Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TColumnOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) {
     auto [ans_, err] = inp->ReadColumn(name);
     if (is_group_key && ans_ && ans_->GetSize() > 0) {
-        if (!ans) {
-            ans = MakeEmptyColumn(ans_->GetType()).GetRes();
-        }
-        if (ans->GetSize() < idx + 1) {
-            Do<OResize>(ans, idx + 1);
-        }
-        Do<OSetCellFrom>(ans, idx, ans_, ui64{0});
+        Do<OSetColumnFrom>(ans, ans_, idx);
     } else {
         ans = ans_;
     }
@@ -152,7 +146,7 @@ std::string TColumnOp::GetName() const {
     return name;
 }
 
-Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TRegexpReplaceOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     auto col = arg[0]->ThrowRowGroup();
     if (!col) {
         return MakeError<EError::BadArgsErr>("REGEXP_REPLACE: source column is null");
@@ -169,7 +163,7 @@ std::string TRegexpReplaceOp::GetName() const {
     return "REGEXP_REPLACE(" + arg[0]->GetName() + ", '" + arg1_p + "', '" + arg2_p + "')";
 }
 
-Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
+Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
     boost::dynamic_bitset<> mask;
     EError ret_err = EError::NoError;
     for (auto& f : cond.fils) {

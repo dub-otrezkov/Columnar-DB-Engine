@@ -47,22 +47,6 @@ TAgregationEngine::TAgregationEngine(
     }
 }
 
-Expected<void> IAoEngine::ConsumeRowGroup(ITableInput* inp, ui64 i) {
-    bool is_eof = false;
-    for (auto& c : cols_) {
-        auto err = c->ConsumeRowGroup(inp, i);
-        if (err.HasError()) {
-            if (err.GetError() == EError::EofErr) {
-                is_eof = true;
-            } else if (c->is_final) {
-                return err.GetError();
-            }
-        }
-    }
-    return (is_eof ? EError::EofErr : EError::NoError);
-}
-
-
 std::vector<std::string>& IAoEngine::GetNames() {
     names_.resize(cols_.size());
     ui64 j = 0;
@@ -76,6 +60,21 @@ std::vector<std::string>& IAoEngine::GetNames() {
     }
     names_.resize(j);
     return names_;
+}
+
+Expected<void> IAoEngine::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* i) {
+    bool is_eof = false;
+    for (auto& c : cols_) {
+        auto err = c->ConsumeRowGroup(inp, i);
+        if (err.HasError()) {
+            if (err.GetError() == EError::EofErr) {
+                is_eof = true;
+            } else if (c->is_final) {
+                return err.GetError();
+            }
+        }
+    }
+    return (is_eof ? EError::EofErr : EError::NoError);
 }
 
 std::vector<TColumnPtr> IAoEngine::ThrowRowGroup() {
