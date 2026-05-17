@@ -12,11 +12,10 @@ IAoEngine::IAoEngine(
 ) :
     cols_(std::move(cols))
 {
-    names_.reserve(cols_.size());
-    for (auto& c : cols_) {
-        names_.emplace_back(c->GetName());
-    }
     for (const auto& [i, name] : aliases) {
+        if (names_.size() <= i) {
+            names_.resize(i + 1);
+        }
         names_.at(i) = name;
     }
 }

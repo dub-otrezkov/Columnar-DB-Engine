@@ -32,7 +32,7 @@ struct TDistinctSets {
             sets.emplace<std::vector<TSet<T>>>();
         }
         auto& vec = std::get<std::vector<TSet<T>>>(sets);
-        assert(vec.size() <= idx);
+        assert(idx <= vec.size());
         if (vec.size() == idx) {
             vec.resize(idx + 1);
         }
