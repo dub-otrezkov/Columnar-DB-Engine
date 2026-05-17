@@ -1,0 +1,71 @@
+#pragma once
+
+#include "columns/types/types.h"
+#include "csvio/csv_reader.h"
+#include "utils/errors/errors.h"
+#include "workers/io/io.h"
+
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace JfEngine {
+
+class TEngine {
+    friend Expected<TEngine> MakeEngineFromCsv(
+        std::shared_ptr<std::istream> scheme,
+        std::shared_ptr<std::istream> data,
+        ui64 row_group_size
+    );
+    friend Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
+public:
+
+    Expected<void> WriteSchemeToCsv(std::ostream& out);
+    Expected<void> WriteDataToCsv(std::ostream& out);
+    Expected<void> WriteTableToJf(std::ostream& out);
+
+public:
+
+    template <typename F>
+    Expected<void> RunCommand(F func) {
+
+        auto run = true;
+
+        for (; run; in_->MoveCursor()) {
+            auto [block, err] = in_->ReadRowGroup();
+
+            if (err != EError::NoError) {
+                if (Is<EError::EofErr>(err)) {
+                    run = false;
+                } else {
+                    return err;
+                }
+            }
+            if (block.empty()) {
+                continue;
+            }
+
+            if (block[0]->GetSize() == 0) {
+                continue;
+            }
+            auto res = func(std::move(block));
+            if (!res) {
+                return res.GetError();
+            }
+        }
+        return nullptr;
+    }
+
+    Expected<void> Setup(TTableInputPtr in);
+
+    TTableInputPtr in_;
+};
+
+Expected<TEngine> MakeEngineFromCsv(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
+
+Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
+
+Expected<TEngine> MakeEngineFromWorker(TTableInputPtr worker);
+
+} // namespace JfEngine
