@@ -57,19 +57,11 @@ Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx
 }
 
 Expected<void> TCountDistinctAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
-    if (!ans) {
-        ans = std::make_shared<Ti64Column>(std::vector<i64>(1, 0));
+    auto col = arg->ThrowRowGroup();
+    if (!col) {
+        return EError::NoError;
     }
-    if (!idx) {
-        static_cast<Ti64Column*>(ans.get())->GetData().at(0) += Do<ODistinctCountDelta>(
-            arg->ThrowRowGroup(),
-            cur_sets,
-            0
-        ).GetRes();
-    } else {
-        
-    }
-    return EError::NoError;
+    return Do<OMultipleDistinctCountDelta>(col, ans, cur_sets, idx);
 }
 
 TColumnPtr TAvgAgr::ThrowRowGroup() {
