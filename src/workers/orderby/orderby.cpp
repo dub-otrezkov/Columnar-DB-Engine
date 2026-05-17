@@ -53,7 +53,11 @@ void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, std::vector<TColumnPtr>
         }
         return true;
     };
-    std::stable_sort(ids.begin(), ids.end(), cmp);
+    if (order_q_.limit == kUnlimited) {
+        std::stable_sort(ids.begin(), ids.end(), cmp);
+    } else {
+        std::partial_sort(ids.begin(), std::min(ids.end(), ids.begin() + order_q_.limit), ids.end(), cmp);
+    }
     
     auto cmp2 = [&](i64 i, i64 j) -> bool {
         for (i64 k = 0; k < order_q_.cols.size(); k++) {

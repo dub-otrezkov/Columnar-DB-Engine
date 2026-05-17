@@ -42,7 +42,7 @@ private:
         ui64 operator()(const std::vector<JString>& a) const {
             ui64 h = 0;
             for (ui64 i = 0; i < a.size(); i++) {
-                h ^= hash_value(a.at(i)) ^ (h << 13);
+                h = _mm_crc32_u64(h, hash_value(a.at(i)));
             }
             return h;
         }

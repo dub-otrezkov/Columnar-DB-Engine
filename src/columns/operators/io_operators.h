@@ -82,55 +82,55 @@ struct OEqualRow {
     }
 };
 
-struct OHashInto {
-    template <typename TCol>
-    static inline void Exec(TCol& col, std::vector<ui64>& hashes) {
-        using T = typename TCol::ElemType;
-        const T* data = col.GetData().data();
-        const ui64 sz = col.GetSize();
+// struct OHashInto {
+//     template <typename TCol>
+//     static inline void Exec(TCol& col, std::vector<ui64>& hashes) {
+//         using T = typename TCol::ElemType;
+//         const T* data = col.GetData().data();
+//         const ui64 sz = col.GetSize();
 
-        for (ui64 i = 0; i < sz; i++) {
-            const char* p = reinterpret_cast<const char*>(data + i);
-            size_t len = sizeof(T);
-            ui64 h = hashes[i];
+//         for (ui64 i = 0; i < sz; i++) {
+//             const char* p = reinterpret_cast<const char*>(data + i);
+//             size_t len = sizeof(T);
+//             ui64 h = hashes[i];
 
-            while (len >= 8) {
-                ui64 chunk;
-                std::memcpy(&chunk, p, 8);
-                h = _mm_crc32_u64(h, chunk);
-                p += 8; len -= 8;
-            }
-            while (len > 0) {
-                h = _mm_crc32_u8((ui32)h, *p++);
-                len--;
-            }
-            hashes[i] = h;
-        }
-    }
+//             while (len >= 8) {
+//                 ui64 chunk;
+//                 std::memcpy(&chunk, p, 8);
+//                 h = _mm_crc32_u64(h, chunk);
+//                 p += 8; len -= 8;
+//             }
+//             while (len > 0) {
+//                 h = _mm_crc32_u8((ui32)h, *p++);
+//                 len--;
+//             }
+//             hashes[i] = h;
+//         }
+//     }
 
-    static inline void Exec(TStringColumn& col, std::vector<ui64>& hashes) {
-        const JString* data = col.GetData().data();
-        const ui64 sz = col.GetSize();
+//     static inline void Exec(TStringColumn& col, std::vector<ui64>& hashes) {
+//         const JString* data = col.GetData().data();
+//         const ui64 sz = col.GetSize();
 
-        for (ui64 i = 0; i < sz; i++) {
-            const char* p = reinterpret_cast<const char*>(data + i);
-            size_t len = sizeof(JString);
-            ui64 h = hashes[i];
+//         for (ui64 i = 0; i < sz; i++) {
+//             const char* p = reinterpret_cast<const char*>(data + i);
+//             size_t len = sizeof(JString);
+//             ui64 h = hashes[i];
 
-            while (len >= 8) {
-                ui64 chunk;
-                std::memcpy(&chunk, p, 8);
-                h = _mm_crc32_u64(h, chunk);
-                p += 8; len -= 8;
-            }
-            while (len > 0) {
-                h = _mm_crc32_u8((ui32)h, *p++);
-                len--;
-            }
-            hashes[i] = h;
-        }
-    }
-};
+//             while (len >= 8) {
+//                 ui64 chunk;
+//                 std::memcpy(&chunk, p, 8);
+//                 h = _mm_crc32_u64(h, chunk);
+//                 p += 8; len -= 8;
+//             }
+//             while (len > 0) {
+//                 h = _mm_crc32_u8((ui32)h, *p++);
+//                 len--;
+//             }
+//             hashes[i] = h;
+//         }
+//     }
+// };
 
 struct OJfPrintRow {
     template <typename TCol>
