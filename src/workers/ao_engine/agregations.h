@@ -33,51 +33,47 @@ struct IAgregationOnly : public IOa {
 struct TSumAgr : public IAgregationOnly {
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 };
 
 struct TMinAgr : public IAgregationOnly {
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 };
 
 struct TMaxAgr : public IAgregationOnly {
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 };
 
 struct TCountAgr : public IAgregationOnly {
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 };
 
 struct TAvgAgr : public IAgregationOnly {
     TSumAgr sum;
-    std::vector<ui64> count;
-
-    ui64 RegisterResult() override {
-        count.push_back(0);
-        used.push_back(false);
-        return used.size() - 1;
-    }
+    TCountAgr cnt;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
         sum.AddArg(arg);
+        cnt.AddArg(arg);
     }
 
     inline void ClearArgs() override {
         arg = nullptr;
         sum.ClearArgs();
+        cnt.ClearArgs();
     }
 
     bool inited = false;
 
     std::string GetName() const override;
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
     TColumnPtr ThrowRowGroup() override;
 };
 
@@ -88,7 +84,7 @@ struct TCountDistinctAgr : public IAgregationOnly {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;

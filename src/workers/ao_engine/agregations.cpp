@@ -10,67 +10,63 @@
 
 namespace JfEngine {
 
-Expected<void> TSumAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
+Expected<void> TSumAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
     // JF_LOG(this, "got arg: " << arg << std::endl);
-    auto v = Do<OSum>(arg->ThrowRowGroup());
-    if (v.HasError()) return v.GetError();
-    CombineAt<OAddAtIdx>(idx, v.GetRes());
-    return EError::NoError;
+    auto v = arg->ThrowRowGroup();
+    return Do<OMultipleAdder>(v, ans, idx);
 }
 
-Expected<void> TMinAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
-    auto v = Do<OMin>(arg->ThrowRowGroup());
-    if (v.HasError()) return v.GetError();
-    CombineAt<OMinAtIdx>(idx, v.GetRes());
-    return EError::NoError;
+Expected<void> TMinAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
+    auto v = arg->ThrowRowGroup();
+    return Do<OMultipleMin>(v, ans, idx);
 }
 
-Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
-    auto v = Do<OMax>(arg->ThrowRowGroup());
-    if (v.HasError()) return v.GetError();
-    CombineAt<OMaxAtIdx>(idx, v.GetRes());
-    return EError::NoError;
+Expected<void> TMaxAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
+    auto v = arg->ThrowRowGroup();
+    return Do<OMultipleMax>(v, ans, idx);
 }
 
-Expected<void> TCountAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
+Expected<void> TCountAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
     if (!ans) {
-        ans = std::make_shared<Ti64Column>(std::vector<i64>(used.size(), 0));
+        ans = std::make_shared<Ti64Column>(std::vector<i64>(1, 0));
     }
-    if (ans->GetSize() <= idx) {
-        Do<OResize>(ans, idx + 1);
+    auto& v = static_cast<Ti64Column*>(ans.get())->GetData();
+    auto col = arg->ThrowRowGroup();
+    if (!idx) {
+        if (v.empty()) {
+            v.push_back(0);
+        }
+        v.at(0) += col->GetSize();
+    } else {
+        auto& id = *idx;
+        for (ui64 i = 0; i < col->GetSize(); i++) {
+            assert(id.at(i) <= v.size());
+            if (v.size() == id.at(i)) {
+                v.push_back(0);
+            }
+            v.at(id.at(i))++;
+        }
     }
-    static_cast<Ti64Column*>(ans.get())->GetData().at(idx) += arg->ThrowRowGroup()->GetSize();
     return EError::NoError;
 }
 
-Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp, ui64 idx) {
-    if (count.size() < idx + 1) {
-        count.resize(idx + 1, 0);
-    }
-    count.at(idx) += arg->ThrowRowGroup()->GetSize();
+Expected<void> TAvgAgr::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) {
     sum.ConsumeRowGroup(inp, idx);
+    cnt.ConsumeRowGroup(inp, idx);
     return EError::NoError;
 }
 
-Expected<void> TCountDistinctAgr::ConsumeRowGroup(ITableInput*, ui64 idx) {
-    if (!ans) {
-        ans = std::make_shared<Ti64Column>(std::vector<i64>(used.size(), 0));
+Expected<void> TCountDistinctAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
+    auto col = arg->ThrowRowGroup();
+    if (!col) {
+        return EError::NoError;
     }
-    if (ans->GetSize() <= idx) {
-        Do<OResize>(ans, idx + 1);
-    }
-
-    static_cast<Ti64Column*>(ans.get())->GetData().at(idx) += Do<ODistinctCountDelta>(
-        arg->ThrowRowGroup(),
-        cur_sets,
-        idx
-    ).GetRes();
-    return EError::NoError;
+    return Do<OMultipleDistinctCountDelta>(col, ans, cur_sets, idx);
 }
 
 TColumnPtr TAvgAgr::ThrowRowGroup() {
     if (!ans) {
-        ans = Do<OMakeAvg>(sum.ThrowRowGroup(), count).GetRes();
+        ans = Do<OMakeAvg>(sum.ThrowRowGroup(), cnt.ThrowRowGroup()).GetRes();
     }
     return ans;
 }

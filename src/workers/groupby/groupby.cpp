@@ -11,9 +11,10 @@ namespace JfEngine {
 
 TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) :
     jf_in_(std::move(jf_in)),
-    group_q_(std::move(query)),
-    eng_(MakeAoEngine(std::move(selects)))
+    group_q_(std::move(query))
 {
+    selects.tp = EAoEngineType::kAgregation;
+    eng_ = MakeAoEngine(std::move(selects));
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
@@ -52,14 +53,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             continue;
         }
 
-        if (!inp_) {
-            inp_ = TNarrowTableInput();
-            inp_->Update(jf_in_->GetScheme());
-        }
-
         const ui64 sz = ag[0]->GetSize();
-
-        keys.clear();
 
         std::vector<std::vector<JString>> printed;
         printed.reserve(group_q_.cols.size());
@@ -72,50 +66,28 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         }
 
         std::vector<JString> key;
+        std::vector<ui64> idcs(sz);
         for (ui64 i = 0; i < sz; i++) {
             key.resize(group_q_.cols.size());
             for (ui64 j = 0; j < key.size(); j++) {
                 key[j] = printed[j][i];
             }
-            auto it = keys.find(key);
-
-            if (it == keys.end()) {
-                if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
-                    continue;
-                }
-                it = keys.emplace(key, std::vector<ui64>(0)).first;
-            }
-            it->second.push_back(i);
-        }
-
-        for (auto& [key, is] : keys) {
-            inp_->MoveCursor();
-            inp_->UploadRowGroup(ag, is);
-
             auto it = groups_.find(key);
 
             if (it == groups_.end()) {
+                if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
+                    continue;
+                }
                 it = groups_.emplace(key, groups_.size()).first;
             }
-            eng_->ConsumeRowGroup(&inp_.value(), it->second);
+
+            idcs.at(i) = it->second;
         }
+
+        eng_->ConsumeRowGroup(jf_in_.get(), &idcs);
     }
 
     std::vector<TColumnPtr> ans = eng_->ThrowRowGroup();
-    // for (auto& [_, value] : groups_) {
-    //     if (!ans[0]) {
-    //         ans = value.eng->ThrowRowGroup();
-    //         for (ui64 i = 0; i < ans.size(); i++) {
-    //             Do<OResize>(ans[i], 1);
-    //             scheme_[i].type_ = ans[i]->GetType();
-    //         }
-    //     } else {
-    //         auto gars = value.eng->ThrowRowGroup();
-    //         for (ui64 i = 0; i < gars.size(); i++) {
-    //             Do<OPushBackFrom>(gars[i], ans[i], 0);
-    //         }
-    //     }
-    // }
 
     assert(ans.size() == GetScheme().size());
     return {std::move(ans), EError::EofErr};

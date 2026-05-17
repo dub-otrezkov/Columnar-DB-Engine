@@ -16,18 +16,12 @@ enum class EAoType {
 
 struct IOa {
     TColumnPtr ans;
-    boost::dynamic_bitset<> used;
 
     virtual ~IOa() = default;
 
     bool is_final = false;
 
-    virtual ui64 RegisterResult() {
-        used.push_back(false);
-        return used.size() - 1;
-    }
-
-    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx = 0) = 0;
+    virtual Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) = 0;
     virtual TColumnPtr ThrowRowGroup() {
         return ans;
     }
@@ -46,28 +40,6 @@ struct IOa {
     }
 
     virtual inline const std::string& GetColumn() const = 0;
-
-    template<typename Combine>
-    void CombineAt(ui64 idx, TColumnPtr value) {
-        if (used.size() < idx + 1) {
-            used.resize(idx + 1, false);
-        }
-        if (!ans) {
-            assert(idx == 0);
-            ans = value;
-            used[idx] = true;
-            return;
-        }
-        if (ans->GetSize() < idx + 1) {
-            Do<OResize>(ans, idx + 1);
-        }
-        if (used[idx]) {
-            Do<Combine>(ans, idx, value);
-        } else {
-            Do<OSetAtIdx>(ans, idx, value);
-            used[idx] = true;
-        }
-    }
 };
 
 struct TColumnOp : public IOa {
@@ -78,7 +50,7 @@ struct TColumnOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline const std::string& GetColumn() const override {
         return name;
@@ -90,7 +62,7 @@ struct TPlusOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* arg) override {
         return args.push_back(arg);
@@ -110,7 +82,7 @@ struct TMinusOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* arg) override {
         args.push_back(arg);
@@ -130,7 +102,7 @@ struct TLengthOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -150,7 +122,7 @@ struct TExtractMinuteOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -170,7 +142,7 @@ struct TTruncMinuteOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -190,7 +162,7 @@ struct TConstIntOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -214,7 +186,7 @@ struct TConstStrOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
@@ -239,7 +211,7 @@ struct TIfOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg.push_back(to_agr);
@@ -263,7 +235,7 @@ struct TRegexpReplaceOp : public IOa {
 
     std::string GetName() const override;
 
-    Expected<void> ConsumeRowGroup(ITableInput* inp, ui64 idx) override;
+    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
 
     inline void AddArg(IOa* to_agr) override {
         arg.push_back(to_agr);

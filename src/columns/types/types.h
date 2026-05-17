@@ -267,4 +267,24 @@ Expected<TColumnPtr> SetupColumn(const TVectorString2d& data, ui64 column_i) {
     return res;
 }
 
+template <typename TCol>
+concept CIntegralColumn =
+       std::same_as<TCol, Ti8Column>
+    || std::same_as<TCol, Ti16Column>
+    || std::same_as<TCol, Ti32Column>
+    || std::same_as<TCol, Ti64Column>
+    || std::same_as<TCol, Ti128Column>;
+
+template <typename TCol>
+concept CDoubleColumn = std::same_as<TCol, TDoubleColumn>;
+
+template <typename TCol>
+concept CStringColumn = std::same_as<TCol, TDoubleColumn>;
+
+template <typename TCol>
+concept CTimeColumn =
+       std::same_as<TCol, TDateColumn>
+    || std::same_as<TCol, TTimestampColumn>;
+
+
 } // namespace JfEngine

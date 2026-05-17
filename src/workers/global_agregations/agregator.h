@@ -13,7 +13,6 @@ namespace JfEngine {
 
 class TAgregator : public ITableInput {
 public:
-    TAgregator(TTableInputPtr jf_in); // return full table
     TAgregator(TTableInputPtr jf_in, TAoQuery query);
 
     Expected<void> SetupColumnsScheme() override;
@@ -26,9 +25,6 @@ private:
     TTableInputPtr jf_in_;
 
     std::shared_ptr<IAoEngine> eng_;
-
-    ui64 cols_cnt_ = 0;
-    bool is_all_ = false;
 };
 
 } // namespace JfEngine

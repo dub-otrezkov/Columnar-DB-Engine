@@ -45,6 +45,30 @@ struct OSetCellFrom {
     }
 };
 
+struct OSetColumnFrom {
+    template <typename TCol>
+    static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
+        if (!ans) {
+            ans = MakeEmptyColumn(col.GetType()).GetRes();
+        }
+        if (col.GetType() != ans->GetType()) {
+            return MakeError<EError::BadArgsErr>("types mismatch");
+        }
+        auto& v = static_cast<TCol*>(ans.get())->GetData();
+        auto& id = *idx;
+        for (ui64 i = 0; i < id.size(); i++) {
+            assert(id.at(i) <= v.size());
+            if (id.at(i) == v.size()) {
+                v.emplace_back(col.GetData().at(i));
+            } else {
+                v.at(id.at(i)) = col.GetData().at(i);
+            }
+        }
+
+        return EError::NoError;
+    }
+};
+
 struct OPushBackEmpty {
     template <typename TCol>
     static inline void Exec(TCol& col) {
@@ -169,7 +193,7 @@ struct ORegexpReplace {
             auto& t = col.GetData().at(i);
             res.clear();
             boost::regex_replace(std::back_inserter(res), t.begin(), t.end(), re, arg2);
-            vals.emplace_back(std::string_view(res));
+            vals.emplace_back(res.size(), res.data());
         }
         return std::make_shared<TStringColumn>(std::move(vals));
     }
