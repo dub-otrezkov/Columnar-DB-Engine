@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace JfEngine {
@@ -121,13 +122,17 @@ struct TCreateToken : public ICommand {
 };
 
 struct TFromToken : public ICommand {
-    inline TFromToken(std::string query) : query_(std::move(query)) {}
+    TFromToken() = default;
 
     inline ETokens GetType() const override { return ETokens::kFrom; }
 
     Expected<TTableInputPtr> MakeWorker() override;
 
-    std::string query_;
+    inline void SetReferencedColumns(std::unordered_set<std::string> r) {
+        referenced_columns_ = std::move(r);
+    }
+
+    std::unordered_set<std::string> referenced_columns_;
 };
 
 class TLimitToken : public ICommand {

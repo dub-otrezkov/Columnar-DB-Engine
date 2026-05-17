@@ -63,7 +63,7 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
     }
 
     if (token == "FROM") {
-        return std::make_unique<TFromToken>(query_);
+        return std::make_unique<TFromToken>();
     } else if (token == "CREATE") {
         return std::make_unique<TCreateToken>();
     } else if (token == "SELECT") {
@@ -258,6 +258,26 @@ Expected<TParsedCommand> ParseCommand(const std::string& cmd) {
             break;
         }
         }
+    }
+
+    TFromToken* from_token = nullptr;
+    for (auto* c : st) {
+        if (c->GetType() == ETokens::kFrom) {
+            from_token = static_cast<TFromToken*>(c);
+            break;
+        }
+    }
+    if (from_token) {
+        std::unordered_set<std::string> refs;
+        for (auto* c : st) {
+            if (c == from_token) continue;
+            for (auto* arg : c->args_) {
+                if (arg->GetType() == ETokens::kNameToken) {
+                    refs.insert(static_cast<TNameToken*>(arg)->GetName());
+                }
+            }
+        }
+        from_token->SetReferencedColumns(std::move(refs));
     }
 
     return TParsedCommand{std::move(all), std::move(st)};

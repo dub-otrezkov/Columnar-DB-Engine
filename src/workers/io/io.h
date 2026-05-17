@@ -4,6 +4,7 @@
 #include "workers/base.h"
 
 #include <iostream>
+#include <unordered_set>
 
 namespace JfEngine {
 
@@ -58,7 +59,7 @@ protected:
 
 class TJfNeccessaryOnly : public TJfTableInput {
 public:
-    TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query = "");
+    TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::unordered_set<std::string> referenced = {});
 
     std::vector<TRowScheme>& GetScheme() override;
     Expected<void> SetupColumnsScheme() override;
@@ -66,7 +67,7 @@ public:
     const char* GetTypeName() const override { return "JfNeccessaryOnly"; }
 
 private:
-    std::string query_;
+    std::unordered_set<std::string> referenced_;
     std::vector<ui64> cols_;
 
     std::vector<TRowScheme> new_scheme_;
