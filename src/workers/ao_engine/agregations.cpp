@@ -74,7 +74,7 @@ Expected<void> TCountDistinctAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64
 
 TColumnPtr TAvgAgr::ThrowRowGroup() {
     if (!ans) {
-        ans = Do<OMakeAvg>(sum.ThrowRowGroup(), cnt).GetRes();
+        ans = Do<OMakeAvg>(sum.ThrowRowGroup(), cnt.ThrowRowGroup()).GetRes();
     }
     return ans;
 }

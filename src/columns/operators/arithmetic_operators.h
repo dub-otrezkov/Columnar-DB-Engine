@@ -240,14 +240,20 @@ struct OMultipleAdder {
     template<CIntegralColumn TCol>
     static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
         if (!ans) {
-            ans = MakeEmptyColumn(EColumn::ki128Column);
+            ans = MakeEmptyColumn(EColumn::ki128Column).GetRes();
         } else if (ans->GetType() != EColumn::ki128Column) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
 
         if (!idx) {
-            auto t = OSum::Exec(col);
-            return Do<OVerticalSum>(t, ans);
+            auto& v = static_cast<Ti128Column*>(ans.get())->GetData();
+            if (v.empty()) {
+                v.push_back(0);
+            }
+            for (ui64 i = 0; i < col.GetSize(); i++) {
+                v.at(0) += col.GetData().at(i);
+            }
+            return EError::NoError;
         }
         if (col.GetSize() != idx->size()) {
             return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
