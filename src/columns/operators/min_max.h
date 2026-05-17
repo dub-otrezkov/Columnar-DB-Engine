@@ -78,12 +78,18 @@ struct OMultipleMax {
         }
         auto& v = static_cast<TCol*>(ans.get())->GetData();
         if (!idx) {
-            for (ui64 i = 0; i < col.GetSize(); i++) {
-                if (v.empty()) {
-                    v.emplace_back(col.GetData().at(i));
-                } else {
-                    v.at(0) = std::max(col.GetData().at(i), v.at(0));
-                }
+            if (col.GetSize() == 0) {
+                return EError::NoError;
+            }
+            ui64 start = 0;
+            if (v.empty()) {
+                v.emplace_back(col.GetData()[0]);
+                start = 1;
+            }
+            auto& d = col.GetData();
+            auto& acc = v[0];
+            for (ui64 i = start; i < col.GetSize(); i++) {
+                acc = std::max(d[i], acc);
             }
             return EError::NoError;
         }
@@ -114,12 +120,18 @@ struct OMultipleMin {
         }
         auto& v = static_cast<TCol*>(ans.get())->GetData();
         if (!idx) {
-            for (ui64 i = 0; i < col.GetSize(); i++) {
-                if (v.empty()) {
-                    v.emplace_back(col.GetData().at(i));
-                } else {
-                    v.at(0) = std::min(col.GetData().at(i), v.at(0));
-                }
+            if (col.GetSize() == 0) {
+                return EError::NoError;
+            }
+            ui64 start = 0;
+            if (v.empty()) {
+                v.emplace_back(col.GetData()[0]);
+                start = 1;
+            }
+            auto& d = col.GetData();
+            auto& acc = v[0];
+            for (ui64 i = start; i < col.GetSize(); i++) {
+                acc = std::min(d[i], acc);
             }
             return EError::NoError;
         }

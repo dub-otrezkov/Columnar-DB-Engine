@@ -250,8 +250,10 @@ struct OMultipleAdder {
             if (v.empty()) {
                 v.push_back(0);
             }
+            auto& d = col.GetData();
+            auto& acc = v[0];
             for (ui64 i = 0; i < col.GetSize(); i++) {
-                v.at(0) += col.GetData().at(i);
+                acc += d[i];
             }
             return EError::NoError;
         }

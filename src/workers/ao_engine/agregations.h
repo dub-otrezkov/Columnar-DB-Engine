@@ -61,11 +61,13 @@ struct TAvgAgr : public IAgregationOnly {
     inline void AddArg(IOa* to_agr) override {
         arg = to_agr;
         sum.AddArg(arg);
+        cnt.AddArg(arg);
     }
 
     inline void ClearArgs() override {
         arg = nullptr;
         sum.ClearArgs();
+        cnt.ClearArgs();
     }
 
     bool inited = false;
