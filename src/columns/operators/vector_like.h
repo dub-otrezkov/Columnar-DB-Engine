@@ -193,7 +193,7 @@ struct ORegexpReplace {
             auto& t = col.GetData().at(i);
             res.clear();
             boost::regex_replace(std::back_inserter(res), t.begin(), t.end(), re, arg2);
-            vals.emplace_back(std::string_view(res));
+            vals.emplace_back(res.size(), res.data());
         }
         return std::make_shared<TStringColumn>(std::move(vals));
     }

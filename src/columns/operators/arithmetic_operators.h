@@ -4,6 +4,8 @@
 
 #include "utils/logger/logger.h"
 
+#include <algorithm>
+
 namespace JfEngine {
 
 struct OSum {
@@ -261,6 +263,8 @@ struct OMultipleAdder {
             return MakeError<EError::BadArgsErr>("col & idx sizes mismatch");
         }
         auto& v =  static_cast<Ti128Column*>(ans.get())->GetData();
+        ui64 sz = idx ? *std::max_element(idx->begin(), idx->end()) : 1;
+        v.reserve(sz);
         auto& id = *idx;
         for (ui64 i = 0; i < id.size(); i++) {
             assert(id.at(i) <= v.size());

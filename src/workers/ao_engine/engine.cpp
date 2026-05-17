@@ -63,8 +63,11 @@ std::vector<std::string>& IAoEngine::GetNames() {
 
 Expected<void> IAoEngine::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* i) {
     bool is_eof = false;
+    // JF_LOG(this, "new iengine consumtion" << std::endl);
     for (auto& c : cols_) {
+        // JF_LOG(this, "col name " << c->GetName() << " " << c->GetColumn() << std::endl);
         auto err = c->ConsumeRowGroup(inp, i);
+        // JF_LOG(this, "col " << err.GetError() << std::endl);
         if (err.HasError()) {
             if (err.GetError() == EError::EofErr) {
                 is_eof = true;

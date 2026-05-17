@@ -6,6 +6,7 @@
 
 #include <type_traits>
 #include <unordered_set>
+#include <algorithm>
 
 namespace JfEngine {
 
@@ -93,6 +94,8 @@ struct OMultipleDistinctCountDelta {
             ans = std::make_shared<Ti64Column>(std::vector<i64>(1, 0));
         }
         auto& v = static_cast<Ti64Column*>(ans.get())->GetData();
+        ui64 sz = idx ? *std::max_element(idx->begin(), idx->end()) : 1;
+        v.reserve(sz);
         if (!idx) {
             auto& st = sts.GetSet<T>(0);
             if (v.empty()) {

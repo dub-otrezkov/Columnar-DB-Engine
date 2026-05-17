@@ -2,6 +2,8 @@
 
 #include "../types/types.h"
 
+#include <algorithm>
+
 namespace JfEngine {
 
 struct OMin {
@@ -77,6 +79,8 @@ struct OMultipleMax {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
         auto& v = static_cast<TCol*>(ans.get())->GetData();
+        ui64 sz = idx ? *std::max_element(idx->begin(), idx->end()) : 1;
+        v.reserve(sz);
         if (!idx) {
             if (col.GetSize() == 0) {
                 return EError::NoError;
@@ -119,6 +123,8 @@ struct OMultipleMin {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
         auto& v = static_cast<TCol*>(ans.get())->GetData();
+        ui64 sz = idx ? *std::max_element(idx->begin(), idx->end()) : 1;
+        v.reserve(sz);
         if (!idx) {
             if (col.GetSize() == 0) {
                 return EError::NoError;

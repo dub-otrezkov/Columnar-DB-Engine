@@ -114,6 +114,26 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         qop_output_names.insert(name);
     }
 
+    // JF_LOG(this, "qop.args.size()=" << qop.args.size() << " etype=" << (int)qop.tp);
+    // for (ui64 i = 0; i < qop.args.size(); i++) {
+    //     JF_LOG(this, "  qop[" << i << "] name=" << qop.args[i]->GetName()
+    //                 << " col=" << qop.args[i]->GetColumn()
+    //                 << " final=" << qop.args[i]->is_final
+    //                 << " type=" << (qop.args[i]->GetType() == EAoType::kAgregation ? "AGR" : "OP"));
+    // }
+    // JF_LOG(this, "selects_.args.size()=" << selects_.args.size());
+    // for (ui64 i = 0; i < selects_.args.size(); i++) {
+    //     JF_LOG(this, "  sel[" << i << "] name=" << selects_.args[i]->GetName()
+    //                 << " col=" << selects_.args[i]->GetColumn()
+    //                 << " final=" << selects_.args[i]->is_final
+    //                 << " in_op_subtree=" << (i < in_op_subtree.size() ? in_op_subtree[i] : false));
+    // }
+    // JF_LOG(this, "selects_.aliases.size()=" << selects_.aliases.size());
+    // for (const auto& [j, n] : selects_.aliases) {
+    //     JF_LOG(this, "  alias j=" << j << " name=" << n);
+    // }
+
+
     return std::make_shared<TGroupBy>(
         std::make_shared<TAgregator>(
             TIoFactory::GetTableIo(kCurTableInput),
