@@ -29,9 +29,22 @@ protected:
 };
 
 struct TAoQuery {
+    std::vector<std::pair<ui64, ui64>> edges;
     std::vector<std::unique_ptr<IOa>> args;
     std::vector<std::pair<ui64, std::string>> aliases;
     EAoEngineType tp;
+
+    TAoQuery(
+        std::vector<std::pair<ui64, ui64>> e,
+        std::vector<std::unique_ptr<IOa>> a,
+        std::vector<std::pair<ui64, std::string>> b,
+        EAoEngineType c
+    ) :
+        edges(std::move(e)),
+        args(std::move(a)),
+        aliases(std::move(b)),
+        tp(c)
+    {}
 
     TAoQuery(
         std::vector<std::unique_ptr<IOa>> a,
