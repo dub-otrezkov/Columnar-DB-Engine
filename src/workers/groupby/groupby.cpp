@@ -26,16 +26,17 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     for (auto name : eng_->GetNames()) {
         scheme_.emplace_back(name, EColumn::kUnitialized);
     }
-    col_idxs_.clear();
-    col_idxs_.reserve(group_q_.cols.size());
-    for (auto& c : group_q_.cols) {
-        col_idxs_.push_back(jf_in_->GetColumnInd(c));
-    }
     return EError::NoError;
 }
 
 Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
     bool run = true;
+
+    if (name_to_i_.empty()) {
+        for (const auto& k : jf_in_->GetScheme()) {
+            name_to_i_[k.name_] = name_to_i_.size();
+        }
+    }
 
     for (; run; jf_in_->MoveCursor()) {
         auto [ag, err2] = jf_in_->ReadRowGroup();
@@ -53,25 +54,34 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         }
 
         const ui64 sz = ag[0]->GetSize();
-        std::vector<ui64> idcs(sz);
 
-        TRowView view{&ag, &col_idxs_, 0};
+        std::vector<std::vector<JString>> printed;
+        printed.reserve(group_q_.cols.size());
+        for (auto& c : group_q_.cols) {
+            auto idx = jf_in_->GetColumnInd(c);
+            if (idx < 0 || static_cast<ui64>(idx) >= ag.size()) {
+                return MakeError<EError::NoSuchColumnsErr>(c);
+            }
+            printed.push_back(Do<OToJStrings>(ag[idx]));
+        }
+
+        std::vector<JString> key;
+        std::vector<ui64> idcs(sz);
         for (ui64 i = 0; i < sz; i++) {
-            view.row = i;
-            auto it = groups_.find(view);
+            key.resize(group_q_.cols.size());
+            for (ui64 j = 0; j < key.size(); j++) {
+                key[j] = printed[j][i];
+            }
+            auto it = groups_.find(key);
+
             if (it == groups_.end()) {
                 if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
                     continue;
                 }
-                TStoredKey k;
-                k.vals.reserve(view.ColsCnt());
-                for (ui64 c = 0; c < view.ColsCnt(); c++) {
-                    auto [p, len] = view.BytesAt(c);
-                    k.vals.emplace_back(len, p);
-                }
-                it = groups_.emplace(std::move(k), groups_.size()).first;
+                it = groups_.emplace(key, groups_.size()).first;
             }
-            idcs[i] = it->second;
+
+            idcs.at(i) = it->second;
         }
 
         eng_->ConsumeRowGroup(jf_in_.get(), &idcs);
