@@ -2,12 +2,86 @@
 #include "ios_factory/ios_factory.h"
 #include "utils/perf_stats/perf_stats.h"
 
+#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
+
+namespace {
+
+#ifdef CLICKBENCH_NO_TCMALLOC
+size_t CurrentAllocatedBytes() { return 0; }
+#else
+extern "C" int MallocExtension_GetNumericProperty(const char* property, size_t* value);
+
+size_t CurrentAllocatedBytes() {
+    size_t v = 0;
+    MallocExtension_GetNumericProperty("generic.current_allocated_bytes", &v);
+    return v;
+}
+#endif
+
+class TPeakMemSampler {
+public:
+    explicit TPeakMemSampler(std::chrono::microseconds interval = std::chrono::microseconds(100)) {
+        baseline_ = CurrentAllocatedBytes();
+        peak_.store(baseline_, std::memory_order_relaxed);
+        stop_.store(false, std::memory_order_relaxed);
+        thread_ = std::thread([this, interval] {
+            while (!stop_.load(std::memory_order_relaxed)) {
+                Sample();
+                std::this_thread::sleep_for(interval);
+            }
+            Sample();
+        });
+    }
+
+    ~TPeakMemSampler() { Stop(); }
+
+    void Stop() {
+        if (stopped_) return;
+        stop_.store(true, std::memory_order_relaxed);
+        if (thread_.joinable()) thread_.join();
+        stopped_ = true;
+    }
+
+    size_t Baseline() const { return baseline_; }
+    size_t Peak() const { return peak_.load(std::memory_order_relaxed); }
+    size_t PeakDelta() const {
+        size_t p = Peak();
+        return p > baseline_ ? p - baseline_ : 0;
+    }
+
+private:
+    void Sample() {
+        size_t cur = CurrentAllocatedBytes();
+        size_t prev = peak_.load(std::memory_order_relaxed);
+        while (cur > prev && !peak_.compare_exchange_weak(prev, cur, std::memory_order_relaxed)) {}
+    }
+
+    std::atomic<bool> stop_{false};
+    std::atomic<size_t> peak_{0};
+    size_t baseline_ = 0;
+    bool stopped_ = false;
+    std::thread thread_;
+};
+
+std::string HumanBytes(size_t b) {
+    static const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+    int i = 0;
+    double v = static_cast<double>(b);
+    while (v >= 1024.0 && i < 4) { v /= 1024.0; ++i; }
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << v << " " << units[i];
+    return oss.str();
+}
+
+} // namespace
 
 // (cd ../../build/benchmark_tests/clickbench; make clickbench)
 // >hits.jf; >tmp1.jf; >tmp2.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
@@ -79,38 +153,54 @@ int main() {
 
     double total_time = 0;
     double total_time_no_create = 0;
+    size_t max_peak_delta = 0;
+    size_t max_peak_abs = 0;
 
-    std::cout << std::left << std::setw(15) << "Time (ms)" << "| Query" << std::endl;
-    std::cout << std::string(100, '-') << std::endl;
+    std::cout << std::left
+              << std::setw(12) << "Time (ms)"
+              << std::setw(14) << "PeakΔ (mem)"
+              << std::setw(14) << "Peak abs"
+              << "| Query" << std::endl;
+    std::cout << std::string(120, '-') << std::endl;
 
     for (const auto& q : queries) {
         stats.Reset();
 
-        // Замер времени начала
+        TPeakMemSampler sampler;
+
         auto start = std::chrono::high_resolution_clock::now();
-
         auto err = exec.ExecQuery(q);
-
-        // Замер времени окончания
         auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = end - start;
 
+        sampler.Stop();
+
+        std::chrono::duration<double, std::milli> elapsed = end - start;
         double current_ms = elapsed.count();
         total_time += current_ms;
 
-        // Проверяем, не является ли запрос операцией CREATE
+        size_t peak_delta = sampler.PeakDelta();
+        size_t peak_abs = sampler.Peak();
+        if (peak_delta > max_peak_delta) max_peak_delta = peak_delta;
+        if (peak_abs > max_peak_abs) max_peak_abs = peak_abs;
+
         bool is_create = (q.find("CREATE") != std::string::npos);
         if (!is_create) {
             total_time_no_create += current_ms;
         }
 
-        // Вывод результата
-        std::cout << std::left << std::setw(15) << std::fixed << std::setprecision(3) << current_ms << "| " << q << std::endl;
+        {
+            std::ostringstream ms_str;
+            ms_str << std::fixed << std::setprecision(3) << current_ms;
+            std::cout << std::left
+                      << std::setw(12) << ms_str.str()
+                      << std::setw(14) << HumanBytes(peak_delta)
+                      << std::setw(14) << HumanBytes(peak_abs)
+                      << "| " << q << std::endl;
+        }
         stats.Print(std::cout);
 
         if (err.HasError()) {
             std::cerr << "   ^-- ERROR: " << err.GetError() << std::endl;
-            // Если CREATE упал, дальнейшие SELECT к таблице могут не иметь смысла
             if (is_create) {
                 std::cerr << "Stopping execution due to CREATE failure." << std::endl;
                 break;
@@ -118,12 +208,13 @@ int main() {
         }
     }
 
-    // Итоговое саммари
-    std::cout << std::string(100, '=') << std::endl;
+    std::cout << std::string(120, '=') << std::endl;
     std::cout << "SUMMARY:" << std::endl;
     std::cout << std::fixed << std::setprecision(3);
     std::cout << "Total execution time:          " << total_time << " ms" << std::endl;
     std::cout << "Total time (excluding CREATE): " << total_time_no_create << " ms" << std::endl;
+    std::cout << "Max per-query peak (delta):    " << HumanBytes(max_peak_delta) << std::endl;
+    std::cout << "Max per-query peak (absolute): " << HumanBytes(max_peak_abs) << std::endl;
 
     return 0;
 }
