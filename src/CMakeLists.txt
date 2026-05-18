@@ -4,7 +4,15 @@ set(CMAKE_BUILD_TYPE Release)
 
 project(columnar_eng)
 
-add_compile_options(-O3 -march=native -Wno-unused -fno-omit-frame-pointer -g)
+option(BUILD_ASAN "Build with AddressSanitizer + UBSan (drops tcmalloc, use a separate build dir)" OFF)
+
+if(BUILD_ASAN)
+    add_compile_options(-O1 -march=native -Wno-unused -fno-omit-frame-pointer -fno-optimize-sibling-calls -g
+                        -fsanitize=address -fsanitize=undefined)
+    add_link_options(-fsanitize=address -fsanitize=undefined)
+else()
+    add_compile_options(-O3 -march=native -Wno-unused -fno-omit-frame-pointer -g)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -17,7 +25,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(utils)
 
-link_libraries(cint_lib Boost::boost tcmalloc)
+if(BUILD_ASAN)
+    link_libraries(cint_lib Boost::boost)
+else()
+    link_libraries(cint_lib Boost::boost tcmalloc)
+endif()
 
 add_subdirectory(csvio)
 add_subdirectory(benchmark_tests)
