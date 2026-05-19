@@ -50,6 +50,7 @@ public:
                 continue;
             }
             auto res = func(std::move(block));
+            TStringHeap::Free();
             if (!res) {
                 return res.GetError();
             }
