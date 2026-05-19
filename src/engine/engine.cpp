@@ -41,6 +41,7 @@ Expected<void> TEngine::WriteDataToCsv(std::ostream& out) {
             }
             w.WriteRow(row);
         }
+        TStringHeap::Free();
         total_rows += batch_rows;
         total_chars += batch_chars;
         // JF_LOG(this, "batch=" << batch_idx
@@ -71,10 +72,6 @@ Expected<void> TEngine::WriteTableToJf(std::ostream& out) {
 
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
-            // for (ui64 i = 0; i < block[0]->GetSize(); i++) {
-            //     row[i] = Do<OJfPrintIth>(block[j], i);
-            // }
-
             col_poses.push_back(out.tellp());
             // w.WriteRow();
             auto bytes = Do<OJfPrintOpt>(block[j]);
