@@ -215,9 +215,9 @@ Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
 }
 
 
-TJfNeccessaryOnly::TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::string query) :
+TJfNeccessaryOnly::TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::unordered_set<std::string> referenced) :
     TJfTableInput(jf_in),
-    query_(std::move(query))
+    referenced_(std::move(referenced))
 {
 }
 
@@ -229,14 +229,39 @@ Expected<void> TJfNeccessaryOnly::SetupColumnsScheme() {
     new_scheme_.clear();
     cols_.clear();
     for (ui64 i = 0; i < TJfTableInput::GetScheme().size(); i++) {
-        if (query_.contains(scheme_[i].name_)) {
+        if (referenced_.contains(scheme_[i].name_)) {
             new_scheme_.emplace_back(scheme_[i]);
             cols_.push_back(i);
         }
     }
-    if (new_scheme_.empty()) {
-        new_scheme_.emplace_back(scheme_[0]);
-        cols_.push_back(0);
+    if (new_scheme_.empty() && !scheme_.empty()) {
+        // Никаких колонок не использовано (e.g. SELECT COUNT(*)). Берём самую дешёвую,
+        // чтобы получить row count, не загружая 8-байтные WatchID-подобные колонки.
+        auto type_width = [](EColumn t) -> int {
+            switch (t) {
+                case ki8Column:        return 1;
+                case ki16Column:       return 2;
+                case ki32Column:       return 4;
+                case kDateColumn:      return 4;
+                case ki64Column:       return 8;
+                case kDoubleColumn:    return 8;
+                case kTimestampColumn: return 8;
+                case ki128Column:      return 16;
+                case kStringColumn:    return 1000;
+                default:               return 1000;
+            }
+        };
+        ui64 best = 0;
+        int best_w = type_width(scheme_[0].type_);
+        for (ui64 i = 1; i < scheme_.size(); i++) {
+            int w = type_width(scheme_[i].type_);
+            if (w < best_w) {
+                best = i;
+                best_w = w;
+            }
+        }
+        new_scheme_.emplace_back(scheme_[best]);
+        cols_.push_back(best);
     }
     return EError::NoError;
 }

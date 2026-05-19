@@ -23,7 +23,9 @@ struct JString {
     explicit JString(ui32 size = 0, const char* data = nullptr) {
         len = size;
         if (size <= kSmallStringSize) {
-            std::memcpy(&prefix, data, size);
+            if (size > 0) {
+                std::memcpy(&prefix, data, size);
+            }
         } else {
             std::memcpy(&prefix, data, sizeof(prefix));
             auto extra_size = size;
@@ -228,7 +230,9 @@ struct JStringHasher {
         ui64 h64 = h;
         ui32 i = 0;
         for (; i + 8 <= tail_size; i += 8) {
-            h64 = _mm_crc32_u64(h64, *reinterpret_cast<const ui64*>(tail + i));
+            ui64 v;
+            std::memcpy(&v, tail + i, sizeof(v));
+            h64 = _mm_crc32_u64(h64, v);
         }
         h = static_cast<ui32>(h64);
         for (; i < tail_size; i++) {

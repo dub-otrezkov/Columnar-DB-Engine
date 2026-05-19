@@ -18,7 +18,7 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
         if (!io) {
             io = std::make_shared<std::fstream>(name + ".jf");
         }
-        return std::make_shared<TJfNeccessaryOnly>(io, query_);
+        return std::make_shared<TJfNeccessaryOnly>(io, referenced_columns_);
     } else if (args_.size() == 2) {
         auto scheme = static_cast<TNameToken*>(args_[0])->GetName();
         auto data = static_cast<TNameToken*>(args_[1])->GetName();

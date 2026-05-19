@@ -14,7 +14,9 @@ struct O128SubstrFinder {
         }
         __m128i ndl = _mm_loadu_si128((const __m128i*)needle.data());
         if (haystack.is_small()) {
-            __m128i str = _mm_loadu_si128((const __m128i*)&haystack.prefix);
+            alignas(16) static char buf[16];
+            std::memcpy(buf, &haystack.prefix, haystack.size());
+            __m128i str = _mm_load_si128((const __m128i*)buf);
 
             return _mm_cmpestrc(ndl, needle.size(), str, haystack.size(), _SIDD_CMP_EQUAL_ORDERED | _SIDD_UBYTE_OPS);
         } else {
