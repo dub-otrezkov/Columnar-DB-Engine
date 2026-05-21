@@ -1,4 +1,4 @@
-#include "utils/faster_vectors/gstring.h"
+#include "utils/compress/dict.h"
 
 #include <random>
 #include <string>
@@ -9,8 +9,8 @@
 namespace {
 
 std::vector<JString> Roundtrip(const std::vector<JString>& in) {
-    auto bytes = JStringVector::Serialize(in);
-    return JStringVector::Unserialize(bytes);
+    auto bytes = DictSerialize(in);
+    return DictUnserialize(bytes);
 }
 
 void ExpectEq(const std::vector<JString>& a, const std::vector<JString>& b) {
@@ -69,6 +69,41 @@ TEST(JStringSerialize, DictPathExactly128Uniques) {
     }
     for (int i = 0; i < 1000; i++) {
         in.emplace_back(std::string_view("u" + std::to_string(i % 128)));
+    }
+    ExpectEq(in, Roundtrip(in));
+}
+
+TEST(JStringSerialize, DictPath1000Uniques) {
+    std::vector<JString> in;
+    for (int i = 0; i < 1000; i++) {
+        in.emplace_back(std::string_view("longerkey_" + std::to_string(i)));
+    }
+    for (int i = 0; i < 5000; i++) {
+        in.emplace_back(std::string_view("longerkey_" + std::to_string(i % 1000)));
+    }
+    ExpectEq(in, Roundtrip(in));
+}
+
+TEST(JStringSerialize, DictPath5000Uniques) {
+    std::vector<JString> in;
+    for (int i = 0; i < 5000; i++) {
+        in.emplace_back(std::string_view("https://site.example/" + std::to_string(i)));
+    }
+    ExpectEq(in, Roundtrip(in));
+}
+
+TEST(JStringSerialize, DictPath65536Uniques) {
+    std::vector<JString> in;
+    for (int i = 0; i < 65536; i++) {
+        in.emplace_back(std::string_view("v" + std::to_string(i)));
+    }
+    ExpectEq(in, Roundtrip(in));
+}
+
+TEST(JStringSerialize, PlainPathJustOver65536Uniques) {
+    std::vector<JString> in;
+    for (int i = 0; i < 65537; i++) {
+        in.emplace_back(std::string_view("w" + std::to_string(i)));
     }
     ExpectEq(in, Roundtrip(in));
 }

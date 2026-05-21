@@ -1,5 +1,2 @@
-add_executable(jstring_serialize_test jstring_serialize_test.cpp)
-target_link_libraries(jstring_serialize_test vectors_lib GTest::gtest GTest::gtest_main)
-
 add_executable(integral_serialize_test integral_serialize_test.cpp)
 target_link_libraries(integral_serialize_test vectors_lib GTest::gtest GTest::gtest_main)

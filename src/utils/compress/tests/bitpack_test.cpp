@@ -1,4 +1,4 @@
-#include "utils/bitpack/bitpack.h"
+#include "utils/compress/bitpack.h"
 
 #include <cstdint>
 #include <random>

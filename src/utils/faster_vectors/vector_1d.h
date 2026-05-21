@@ -2,7 +2,8 @@
 
 #include "gstring.h"
 
-#include <utils/bitpack/bitpack.h>
+#include <utils/compress/bitpack.h>
+#include <utils/compress/dict.h>
 #include <utils/cint/int.h>
 
 #include <bit>
@@ -236,15 +237,14 @@ inline std::vector<char> Serialize(const std::vector<T>& a) {
         }
     };
 
-    std::vector<U> encoded(a.size());
     U max_encoded = 0;
-    for (size_t i = 0; i < a.size(); i++) {
-        encoded[i] = encode(a[i]);
-        if (encoded[i] > max_encoded) max_encoded = encoded[i];
+    for (auto v : a) {
+        U e = encode(v);
+        if (e > max_encoded) max_encoded = e;
     }
-
     ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
-    auto packed = BitPack(encoded, bits);
+
+    auto packed = BitPack(a, bits, encode);
 
     std::vector<char> res(sizeof(bits) + packed.size());
     std::memcpy(res.data(), &bits, sizeof(bits));
@@ -261,7 +261,7 @@ inline std::vector<char> Serialize(const std::vector<T>& a) {
 
 template<>
 inline std::vector<char> Serialize<JString>(const std::vector<JString>& a) {
-    return JStringVector::Serialize(a);
+    return DictSerialize(a);
 }
 
 template <typename T>
@@ -276,9 +276,6 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
 
     ui8 bits = static_cast<ui8>(a.at(0));
 
-    std::vector<U> encoded;
-    BitUnpack(a.data() + sizeof(bits), a.size() - sizeof(bits), bits, encoded);
-
     auto decode = [](U e) -> T {
         if constexpr (std::is_signed_v<T>) {
             return static_cast<T>((e >> 1) ^ -static_cast<U>(e & 1));
@@ -287,13 +284,11 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
         }
     };
 
-    std::vector<T> res(encoded.size());
-    for (size_t i = 0; i < encoded.size(); i++) {
-        res[i] = decode(encoded[i]);
-    }
+    std::vector<T> res;
+    BitUnpack(a.data() + sizeof(bits), a.size() - sizeof(bits), bits, res, decode);
     return res;
 }
 template<>
 inline std::vector<JString> Unserialize<JString>(const std::vector<char>& a) {
-    return JStringVector::Unserialize(a);
+    return DictUnserialize(a);
 }
