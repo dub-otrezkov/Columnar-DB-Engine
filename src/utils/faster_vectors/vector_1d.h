@@ -219,6 +219,77 @@ std::string operator+(std::string_view a, std::string_view b);
 // template <typename T>
 // using std::vector = typename std::vectorImpl<T>::Type;
 
+struct TBitWriter {
+    std::vector<ui64> buf;
+    ui64 pos = 0;
+
+    void Write(const void* src, ui32 bits) {
+        ui64 v = 0;
+        std::memcpy(&v, src, (bits + 7) / 8);
+        ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
+        v &= mask;
+        ui64 lo = pos / 64;
+        ui32 sh = pos % 64;
+        if (lo + 2 > buf.size()) {
+            buf.resize(lo + 2, 0);
+        }
+        buf[lo] |= v << sh;
+        if (sh + bits > 64) {
+            buf[lo + 1] |= v >> (64 - sh);
+        }
+        pos += bits;
+    }
+
+    void Put(std::vector<char>& out) {
+        auto old_size = out.size();
+        out.resize((pos + 7) / 8, 0);
+        std::memcpy(out.data() + old_size, buf.data(), (pos + 7) / 8);
+    }
+};
+
+struct TBitReader {
+    const char* data;
+    ui64 pos = 0;
+
+    explicit TBitReader(const char* src) : data(src) {}
+
+    void Read(void* dst, ui32 bits) {
+        ui64 lo = pos / 64;
+        ui32 sh = pos % 64;
+        ui64 w0;
+        std::memcpy(&w0, data + lo * 8, sizeof(w0));
+        ui64 v = w0 >> sh;
+        if (sh + bits > 64) {
+            ui64 w1;
+            std::memcpy(&w1, data + (lo + 1) * 8, sizeof(w1));
+            v |= w1 << (64 - sh);
+        }
+        ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
+        v &= mask;
+        std::memcpy(dst, &v, (bits + 7) / 8);
+        pos += bits;
+    }
+};
+
+template <std::integral T>
+inline std::vector<char> Serialize(const std::vector<T>& a) {
+    std::vector<char> res;
+    auto mx = *std::max_element(a.begin(), a.end());
+
+    ui8 t = 8 * sizeof(mx) - __builtin_clz(mx);
+
+    ui32 sz = a.size();
+    res.resize(sizeof(t) + sizeof(sz));
+    std::memcpy(res.data(), &t, sizeof(t));
+    std::memcpy(res.data() + sizeof(t), &sz, sizeof(sz));
+    TBitWriter w;
+    for (auto& el : w) {
+        w.Write(el);
+    }
+    w.Put(res);
+    return res;
+}
+
 template <typename T>
 inline std::vector<char> Serialize(const std::vector<T>& a) {
     std::vector<char> res(a.size() * sizeof(T));
@@ -235,6 +306,19 @@ template <typename T>
 inline std::vector<T> Unserialize(const std::vector<char>& a) {
     std::vector<T> res(a.size() / sizeof(T));
     std::memcpy(res.data(), a.data(), a.size());
+    return res;
+}
+template <std::integral T>
+inline std::vector<T> Unserialize(const std::vector<char>& a) {
+    ui8 bits = static_cast<ui8>(a.at(0));
+    ui32 sz;
+    std::memcpy(&sz, a.data() + 1, sizeof(sz));
+    TBitReader r(a.data() + 5);
+    std::vector<T> res;
+    res.reserve((sz - 5) / bits);
+    for (auto& el : res) {
+        r.Read(&el, bits);
+    }
     return res;
 }
 template<>

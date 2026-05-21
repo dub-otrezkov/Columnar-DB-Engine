@@ -13,6 +13,8 @@
 #include <nmmintrin.h>
 #include <functional>
 
+#include <boost/unordered/unordered_flat_map.hpp>
+
 struct JString {
     static constexpr ui64 kSmallStringSize = 12;
 
@@ -37,6 +39,14 @@ struct JString {
     char* begin() {
         if (is_small()) {
             return reinterpret_cast<char*>(&prefix);
+        } else {
+            return extra;
+        }
+    }
+
+    const char* begin() const {
+        if (is_small()) {
+            return reinterpret_cast<const char*>(&prefix);
         } else {
             return extra;
         }
@@ -117,6 +127,9 @@ inline bool operator== (const JString& i, const JString& j) {
     }
     if (i.prefix != j.prefix) {
         return false;
+    }
+    if (i.extra == j.extra) {
+        return true;
     }
     if (i.size() <= sizeof(i.prefix)) {
         return true;
@@ -327,17 +340,47 @@ public:
 
     inline static std::vector<char> Serialize(const std::vector<JString>& data) {
         std::vector<char> ans;
+        constexpr ui64 kDictMaxSize = (1 << 8);
+        boost::unordered_flat_map<JString, ui8> idx;
+
         for (ui64 i = 0; i < data.size(); i++) {
-            auto& cur = data.at(i);
-            ui32 sz = cur.size();
-            auto old_size = ans.size();
-            ans.resize(old_size + sizeof(sz) + sz);
-            std::memcpy(ans.data() + old_size, &sz, sizeof(sz));
-            old_size += sizeof(sz);
-            if (cur.is_small()) {
-                std::memcpy(ans.data() + old_size, &cur.prefix, sz);
-            } else {
-                std::memcpy(ans.data() + old_size, cur.extra, sz);
+            idx.try_emplace(data.at(i), 0);
+
+            if (idx.size() == kDictMaxSize) {
+                break;
+            }
+        }
+
+        // 0 - plain
+        // 1 - dict coding
+
+        if (idx.size() == kDictMaxSize) {
+            ans.push_back(0);
+            for (auto el : data) {
+                ui32 sz = el.size();
+                auto off = ans.size();
+                ans.resize(off + sizeof(sz) + sz);
+                std::memcpy(ans.data() + off, &sz, sizeof(sz));
+                std::memcpy(ans.data() + off + sizeof(sz), el.begin(), sz);
+            }
+        } else {
+            ans.push_back(1);
+            ans.resize(2);
+            unsigned char u = static_cast<unsigned char>(idx.size());
+            std::memcpy(ans.data() + 1, &u, sizeof(u));
+            char i = 0;
+            for (auto& [el, v] : idx) {
+                v = i++;
+                ui32 sz = el.size();
+                auto off = ans.size();
+                ans.resize(off + sizeof(sz) + sz);
+                std::memcpy(ans.data() + off, &sz, sizeof(sz));
+                std::memcpy(ans.data() + off + sizeof(sz), el.begin(), sz);
+            }
+            for (auto el : data) {
+                auto u = idx.at(el);
+                ans.resize(ans.size() + 1);
+                std::memcpy(ans.data() + ans.size() - 1, &u, sizeof(u));
             }
         }
         return ans;
@@ -345,16 +388,33 @@ public:
 
     inline static std::vector<JString> Unserialize(const std::vector<char>& data) {
         std::vector<JString> ans;
-        ui64 i = 0;
 
-        ui32 sz = 0;
-        while (i < data.size()) {
-            std::memcpy(&sz, data.data() + i, sizeof(sz));
-            i += sizeof(sz);
-            ans.emplace_back(sz, data.data() + i);
-            i += sz;
+        if (data.at(0) == 0) {
+            ui64 i = 1;
+
+            ui32 sz = 0;
+            while (i < data.size()) {
+                std::memcpy(&sz, data.data() + i, sizeof(sz));
+                i += sizeof(sz);
+                ans.emplace_back(sz, data.data() + i);
+                i += sz;
+            }
+        } else {
+            ui32 sz = static_cast<ui8>(data.at(1));
+            ui64 i = 2;
+            std::vector<JString> dict(sz);
+            for (ui32 k = 0; k < sz; k++) {
+                ui32 p;
+                std::memcpy(&p, data.data() + i, sizeof(p));
+                i += sizeof(p);
+                dict.at(k) = JString{p, data.data() + i};
+                i += p;
+            }
+            ans.reserve(data.size() - i);
+            for (; i < data.size(); i++) {
+                ans.push_back(dict.at(static_cast<ui8>(data.at(i))));
+            }
         }
-
         return ans;
     }
 private:
