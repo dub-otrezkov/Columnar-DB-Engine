@@ -12,7 +12,7 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 inline std::vector<char> DictSerialize(const std::vector<JString>& data) {
-    constexpr ui64 kDictMaxSize = 1ULL << 16;
+    constexpr ui64 kDictMaxSize = 1ULL << 13;
     ui64 cap = std::min<ui64>(data.size(), kDictMaxSize);
     boost::unordered_flat_map<JString, ui16> idx;
     idx.reserve(cap);
