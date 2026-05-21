@@ -63,8 +63,9 @@ TEST(BitPack, NonAlignedWidths) {
 
 TEST(BitPack, CrossWordBoundary) {
     std::vector<std::pair<ui64, ui32>> items;
+    ui64 mask = (1ULL << 17) - 1;
     for (ui32 i = 0; i < 30; i++) {
-        items.emplace_back((ui64)i * 12345u, 17);
+        items.emplace_back(((ui64)i * 12345u) & mask, 17);
     }
     auto bytes = WriteOnce(items);
     TBitReader r(bytes.data());
@@ -215,9 +216,12 @@ TEST(BitPack, PutAppendsToExisting) {
     ui8 v = 0x55;
     w.Write(&v, 8);
     w.Put(out);
-    ASSERT_EQ(out.size(), 4u);
+    ASSERT_EQ(out.size(), 11u);
     EXPECT_EQ(out[0], 'a');
     EXPECT_EQ(out[1], 'b');
     EXPECT_EQ(out[2], 'c');
     EXPECT_EQ(static_cast<ui8>(out[3]), 0x55);
+    for (size_t i = 4; i < 11; i++) {
+        EXPECT_EQ(out[i], 0);
+    }
 }
