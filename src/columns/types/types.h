@@ -188,6 +188,8 @@ struct TDate {
     }
 };
 
+static_assert(sizeof(TDate) == 4);
+
 class TDateColumn : public TStorage<TDate> {
 public:
     TDateColumn() {}
@@ -226,6 +228,8 @@ struct TTimestamp {
         return IntTime() <= other.IntTime();
     }
 };
+
+static_assert(sizeof(TTimestamp) == 8);
 
 std::string PrintTimestamp(const TTimestamp& d);
 TTimestamp TimestampFromStr(const std::string& s);

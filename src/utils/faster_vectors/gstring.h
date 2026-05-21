@@ -13,6 +13,8 @@
 #include <nmmintrin.h>
 #include <functional>
 
+#include <boost/unordered/unordered_flat_map.hpp>
+
 struct JString {
     static constexpr ui64 kSmallStringSize = 12;
 
@@ -37,6 +39,14 @@ struct JString {
     char* begin() {
         if (is_small()) {
             return reinterpret_cast<char*>(&prefix);
+        } else {
+            return extra;
+        }
+    }
+
+    const char* begin() const {
+        if (is_small()) {
+            return reinterpret_cast<const char*>(&prefix);
         } else {
             return extra;
         }
@@ -117,6 +127,9 @@ inline bool operator== (const JString& i, const JString& j) {
     }
     if (i.prefix != j.prefix) {
         return false;
+    }
+    if (i.extra == j.extra) {
+        return true;
     }
     if (i.size() <= sizeof(i.prefix)) {
         return true;
@@ -325,38 +338,6 @@ public:
         return data_.data();
     }
 
-    inline static std::vector<char> Serialize(const std::vector<JString>& data) {
-        std::vector<char> ans;
-        for (ui64 i = 0; i < data.size(); i++) {
-            auto& cur = data.at(i);
-            ui32 sz = cur.size();
-            auto old_size = ans.size();
-            ans.resize(old_size + sizeof(sz) + sz);
-            std::memcpy(ans.data() + old_size, &sz, sizeof(sz));
-            old_size += sizeof(sz);
-            if (cur.is_small()) {
-                std::memcpy(ans.data() + old_size, &cur.prefix, sz);
-            } else {
-                std::memcpy(ans.data() + old_size, cur.extra, sz);
-            }
-        }
-        return ans;
-    }
-
-    inline static std::vector<JString> Unserialize(const std::vector<char>& data) {
-        std::vector<JString> ans;
-        ui64 i = 0;
-
-        ui32 sz = 0;
-        while (i < data.size()) {
-            std::memcpy(&sz, data.data() + i, sizeof(sz));
-            i += sizeof(sz);
-            ans.emplace_back(sz, data.data() + i);
-            i += sz;
-        }
-
-        return ans;
-    }
 private:
     std::vector<JString> data_;
 };
