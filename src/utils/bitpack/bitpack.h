@@ -62,19 +62,19 @@ inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits) {
 }
 
 template <std::integral T>
-inline void BitUnpack(const std::vector<char>& packed, ui32 bits, std::vector<T>& out) {
-    if (packed.size() < sizeof(ui64)) {
+inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::vector<T>& out) {
+    if (packed_size < sizeof(ui64)) {
         out.clear();
         return;
     }
     ui64 n;
-    std::memcpy(&n, packed.data(), sizeof(n));
+    std::memcpy(&n, packed, sizeof(n));
     out.assign(n, T{});
     if (bits == 0 || n == 0) {
         return;
     }
     ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
-    const char* base = packed.data() + sizeof(ui64);
+    const char* base = packed + sizeof(ui64);
     for (ui64 i = 0; i < n; i++) {
         ui64 pos = i * bits;
         ui64 lo = pos / 64;
@@ -89,6 +89,11 @@ inline void BitUnpack(const std::vector<char>& packed, ui32 bits, std::vector<T>
         }
         out[i] = static_cast<T>(r & mask);
     }
+}
+
+template <std::integral T>
+inline void BitUnpack(const std::vector<char>& packed, ui32 bits, std::vector<T>& out) {
+    BitUnpack(packed.data(), packed.size(), bits, out);
 }
 
 struct TBitReader {

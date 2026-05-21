@@ -236,27 +236,19 @@ inline std::vector<char> Serialize(const std::vector<T>& a) {
         }
     };
 
+    std::vector<U> encoded(a.size());
     U max_encoded = 0;
-    for (auto v : a) {
-        U e = encode(v);
-        if (e > max_encoded) max_encoded = e;
+    for (size_t i = 0; i < a.size(); i++) {
+        encoded[i] = encode(a[i]);
+        if (encoded[i] > max_encoded) max_encoded = encoded[i];
     }
 
     ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
-    ui32 sz = a.size();
+    auto packed = BitPack(encoded, bits);
 
-    std::vector<char> res(sizeof(bits) + sizeof(sz));
+    std::vector<char> res(sizeof(bits) + packed.size());
     std::memcpy(res.data(), &bits, sizeof(bits));
-    std::memcpy(res.data() + sizeof(bits), &sz, sizeof(sz));
-
-    if (bits > 0) {
-        TBitWriter w;
-        for (auto v : a) {
-            U e = encode(v);
-            w.Write(&e, bits);
-        }
-        w.Put(res);
-    }
+    std::memcpy(res.data() + sizeof(bits), packed.data(), packed.size());
     return res;
 }
 
@@ -283,13 +275,9 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
     using U = std::make_unsigned_t<T>;
 
     ui8 bits = static_cast<ui8>(a.at(0));
-    ui32 sz;
-    std::memcpy(&sz, a.data() + 1, sizeof(sz));
 
-    std::vector<T> res(sz);
-    if (bits == 0) {
-        return res;
-    }
+    std::vector<U> encoded;
+    BitUnpack(a.data() + sizeof(bits), a.size() - sizeof(bits), bits, encoded);
 
     auto decode = [](U e) -> T {
         if constexpr (std::is_signed_v<T>) {
@@ -299,11 +287,9 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
         }
     };
 
-    TBitReader r(a.data() + sizeof(bits) + sizeof(sz));
-    for (ui32 i = 0; i < sz; i++) {
-        U e = 0;
-        r.Read(&e, bits);
-        res[i] = decode(e);
+    std::vector<T> res(encoded.size());
+    for (size_t i = 0; i < encoded.size(); i++) {
+        res[i] = decode(encoded[i]);
     }
     return res;
 }
