@@ -2,11 +2,14 @@
 
 #include "gstring.h"
 
+#include <utils/bitpack/bitpack.h>
 #include <utils/cint/int.h>
 
+#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 // template <typename T>
@@ -219,74 +222,41 @@ std::string operator+(std::string_view a, std::string_view b);
 // template <typename T>
 // using std::vector = typename std::vectorImpl<T>::Type;
 
-struct TBitWriter {
-    std::vector<ui64> buf;
-    ui64 pos = 0;
-
-    void Write(const void* src, ui32 bits) {
-        ui64 v = 0;
-        std::memcpy(&v, src, (bits + 7) / 8);
-        ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
-        v &= mask;
-        ui64 lo = pos / 64;
-        ui32 sh = pos % 64;
-        if (lo + 2 > buf.size()) {
-            buf.resize(lo + 2, 0);
-        }
-        buf[lo] |= v << sh;
-        if (sh + bits > 64) {
-            buf[lo + 1] |= v >> (64 - sh);
-        }
-        pos += bits;
-    }
-
-    void Put(std::vector<char>& out) {
-        auto old_size = out.size();
-        out.resize((pos + 7) / 8, 0);
-        std::memcpy(out.data() + old_size, buf.data(), (pos + 7) / 8);
-    }
-};
-
-struct TBitReader {
-    const char* data;
-    ui64 pos = 0;
-
-    explicit TBitReader(const char* src) : data(src) {}
-
-    void Read(void* dst, ui32 bits) {
-        ui64 lo = pos / 64;
-        ui32 sh = pos % 64;
-        ui64 w0;
-        std::memcpy(&w0, data + lo * 8, sizeof(w0));
-        ui64 v = w0 >> sh;
-        if (sh + bits > 64) {
-            ui64 w1;
-            std::memcpy(&w1, data + (lo + 1) * 8, sizeof(w1));
-            v |= w1 << (64 - sh);
-        }
-        ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
-        v &= mask;
-        std::memcpy(dst, &v, (bits + 7) / 8);
-        pos += bits;
-    }
-};
-
 template <std::integral T>
 inline std::vector<char> Serialize(const std::vector<T>& a) {
-    std::vector<char> res;
-    auto mx = *std::max_element(a.begin(), a.end());
+    using U = std::make_unsigned_t<T>;
+    constexpr ui32 W = sizeof(T) * 8;
 
-    ui8 t = 8 * sizeof(mx) - __builtin_clz(mx);
+    auto encode = [](T v) -> U {
+        if constexpr (std::is_signed_v<T>) {
+            U u = static_cast<U>(v);
+            return (u << 1) ^ static_cast<U>(static_cast<std::make_signed_t<U>>(u) >> (W - 1));
+        } else {
+            return static_cast<U>(v);
+        }
+    };
 
-    ui32 sz = a.size();
-    res.resize(sizeof(t) + sizeof(sz));
-    std::memcpy(res.data(), &t, sizeof(t));
-    std::memcpy(res.data() + sizeof(t), &sz, sizeof(sz));
-    TBitWriter w;
-    for (auto& el : w) {
-        w.Write(el);
+    U max_encoded = 0;
+    for (auto v : a) {
+        U e = encode(v);
+        if (e > max_encoded) max_encoded = e;
     }
-    w.Put(res);
+
+    ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
+    ui32 sz = a.size();
+
+    std::vector<char> res(sizeof(bits) + sizeof(sz));
+    std::memcpy(res.data(), &bits, sizeof(bits));
+    std::memcpy(res.data() + sizeof(bits), &sz, sizeof(sz));
+
+    if (bits > 0) {
+        TBitWriter w;
+        for (auto v : a) {
+            U e = encode(v);
+            w.Write(&e, bits);
+        }
+        w.Put(res);
+    }
     return res;
 }
 
@@ -310,14 +280,30 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
 }
 template <std::integral T>
 inline std::vector<T> Unserialize(const std::vector<char>& a) {
+    using U = std::make_unsigned_t<T>;
+
     ui8 bits = static_cast<ui8>(a.at(0));
     ui32 sz;
     std::memcpy(&sz, a.data() + 1, sizeof(sz));
-    TBitReader r(a.data() + 5);
-    std::vector<T> res;
-    res.reserve((sz - 5) / bits);
-    for (auto& el : res) {
-        r.Read(&el, bits);
+
+    std::vector<T> res(sz);
+    if (bits == 0) {
+        return res;
+    }
+
+    auto decode = [](U e) -> T {
+        if constexpr (std::is_signed_v<T>) {
+            return static_cast<T>((e >> 1) ^ -static_cast<U>(e & 1));
+        } else {
+            return static_cast<T>(e);
+        }
+    };
+
+    TBitReader r(a.data() + sizeof(bits) + sizeof(sz));
+    for (ui32 i = 0; i < sz; i++) {
+        U e = 0;
+        r.Read(&e, bits);
+        res[i] = decode(e);
     }
     return res;
 }
