@@ -6,6 +6,9 @@
 #include "utils/errors/errors_templates.h"
 #include "utils/faster_vectors/vector_1d.h"
 #include "utils/faster_vectors/vector_string_2d.h"
+#include "utils/compress/bitpack.h"
+#include "utils/compress/dict.h"
+#include "utils/compress/delta.h"
 
 #include <memory>
 #include <stdexcept>
@@ -188,7 +191,7 @@ struct TDate {
     }
 };
 
-static_assert(sizeof(TDate) == 4);
+static_assert(sizeof(TDate) == sizeof(ui32));
 
 class TDateColumn : public TStorage<TDate> {
 public:
@@ -229,7 +232,7 @@ struct TTimestamp {
     }
 };
 
-static_assert(sizeof(TTimestamp) == 8);
+static_assert(sizeof(TTimestamp) == sizeof(ui64));
 
 std::string PrintTimestamp(const TTimestamp& d);
 TTimestamp TimestampFromStr(const std::string& s);
@@ -290,5 +293,83 @@ concept CTimeColumn =
        std::same_as<TCol, TDateColumn>
     || std::same_as<TCol, TTimestampColumn>;
 
+template <typename T>
+inline std::vector<char> Serialize(std::vector<T>& a);
+
+template <std::integral T>
+inline std::vector<char> Serialize(std::vector<T>& a) {
+    using U = std::make_unsigned_t<T>;
+    constexpr ui32 W = sizeof(T) * 8;
+
+    auto encode = [](T v) -> U {
+        if constexpr (std::is_signed_v<T>) {
+            U u = static_cast<U>(v);
+            return (u << 1) ^ static_cast<U>(static_cast<std::make_signed_t<U>>(u) >> (W - 1));
+        } else {
+            return static_cast<U>(v);
+        }
+    };
+
+    U max_encoded = 0;
+    for (auto v : a) {
+        U e = encode(v);
+        if (e > max_encoded) max_encoded = e;
+    }
+    ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
+
+    auto packed = BitPack(a, bits, encode);
+
+    std::vector<char> res(sizeof(bits) + packed.size());
+    std::memcpy(res.data(), &bits, sizeof(bits));
+    std::memcpy(res.data() + sizeof(bits), packed.data(), packed.size());
+    return res;
+}
+
+template<>
+inline std::vector<char> Serialize<TDate>(std::vector<TDate>& a) {
+    return {};
+}
+
+template<>
+inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
+    return {};
+}
+
+template<>
+inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
+    return DictSerialize(a);
+}
+
+template <typename T>
+inline std::vector<T> Unserialize(const std::vector<char>& a);
+
+template <typename T>
+inline std::vector<T> Unserialize(const std::vector<char>& a) {
+    std::vector<T> res(a.size() / sizeof(T));
+    std::memcpy(res.data(), a.data(), a.size());
+    return res;
+}
+template <std::integral T>
+inline std::vector<T> Unserialize(const std::vector<char>& a) {
+    using U = std::make_unsigned_t<T>;
+
+    ui8 bits = static_cast<ui8>(a.at(0));
+
+    auto decode = [](U e) -> T {
+        if constexpr (std::is_signed_v<T>) {
+            return static_cast<T>((e >> 1) ^ -static_cast<U>(e & 1));
+        } else {
+            return static_cast<T>(e);
+        }
+    };
+
+    std::vector<T> res;
+    BitUnpack(a.data() + sizeof(bits), a.size() - sizeof(bits), bits, res, decode);
+    return res;
+}
+template<>
+inline std::vector<JString> Unserialize<JString>(std::vector<char>& a) {
+    return DictUnserialize(a);
+}
 
 } // namespace JfEngine
