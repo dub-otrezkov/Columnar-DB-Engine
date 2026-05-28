@@ -2,6 +2,7 @@
 
 #include "utils/cint/int.h"
 
+#include <cassert>
 #include <cstring>
 #include <istream>
 #include <memory>
@@ -9,6 +10,11 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace JfEngine {
 
@@ -41,6 +47,57 @@ public:
 using IFileInputPtr  = std::shared_ptr<IFileInput>;
 using IFileOutputPtr = std::shared_ptr<IFileOutput>;
 
+class TMMapFileInput final : public IFileInput {
+public:
+    TMMapFileInput(const std::string& name) {
+        int fd = open(name.data(), O_RDONLY);
+        assert(fd != -1);
+
+        struct stat sb;
+        assert(fstat(fd, &sb) != -1);
+
+        assert(sb.st_size > 0);
+
+        file_size_ = sb.st_size;
+
+        file_ = reinterpret_cast<char*>(mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
+        assert(file_ != MAP_FAILED);
+    }
+
+    ui64 TellPos() override {
+        return offset_;
+    }
+
+    void SetPos(i64 p) override {
+        offset_ = p;
+    }
+
+    ui64 Size() const override {
+        return file_size_;
+    }
+
+    virtual void Read(char*& out, ui64 n) {
+        out = file_ + offset_;
+        offset_ += n;
+    }
+
+    bool Eof() {
+        return offset_ >= file_size_;
+    }
+
+    int Get() {
+        return *(file_ + offset_++);
+    }
+
+    int Peek() {
+        return *(file_ + offset_ + 1);
+    }
+
+private:
+    char* file_;
+    ui64 offset_;
+    ui64 file_size_;
+};
 
 class TIstreamFileInput final : public IFileInput {
 public:

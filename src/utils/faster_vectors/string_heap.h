@@ -4,6 +4,8 @@
 
 #include <sys/mman.h>
 
+#include <iostream>
+
 constexpr ui64 kPadding = 16;
 
 class TStringHeap {
