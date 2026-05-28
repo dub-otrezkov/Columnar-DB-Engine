@@ -172,6 +172,11 @@ struct alignas(4) TDate {
     ui8 month;
     ui16 year; // такой порядок чтобы год был в старших битах и дельта сжатие работало лучше
 
+    TDate() = default;
+
+    TDate(ui16 y, ui8 m, ui8 d) : year(y), month(m), day(d) {
+    }
+
     inline ui64 IntDate() const {
         // return (static_cast<i64>(year) << 16) |
         //        (static_cast<i64>(month) << 8) |
@@ -213,6 +218,11 @@ struct alignas(8) TTimestamp {
     ui8 minute;
     ui16 hour;  // чтобы занулить ласт байт паддинга
     TDate date;
+
+    TTimestamp() = default;
+
+    TTimestamp(TDate d, ui8 h, ui8 m, ui8 s) : date(d), hour(h), minute(m), second(s) {
+    }
 
     inline ui64 IntTime() const {
         // return (date.IntDate() << 24) |
@@ -299,7 +309,9 @@ concept CTimeColumn =
     || std::same_as<TCol, TTimestampColumn>;
 
 template <typename T>
-inline std::vector<char> Serialize(std::vector<T>& a);
+inline std::vector<char> Serialize(std::vector<T>& a) {
+    throw "bad type";
+}
 
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
@@ -323,7 +335,9 @@ inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
 }
 
 template <typename T>
-inline std::vector<T> Unserialize(std::vector<char>& a);
+inline std::vector<T> Unserialize(std::vector<char>& a) {
+    throw "bad type";
+}
 
 template <std::integral T>
 inline std::vector<T> Unserialize(std::vector<char>& a) {
