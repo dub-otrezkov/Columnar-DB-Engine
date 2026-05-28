@@ -18,7 +18,7 @@ Expected<TTableInputPtr> TCreateToken::MakeWorker() {
 
     IFileOutput* io = TIoFactory::GetOutput(name);
     if (!io) {
-        TIoFactory::RegisterFileIo(name, ETypeFile::kJfFile);
+        TIoFactory::RegisterFileOutput(name, ETypeFile::kJfFile);
         io = TIoFactory::GetOutput(name);
     }
     eng.WriteTableToJf(io);

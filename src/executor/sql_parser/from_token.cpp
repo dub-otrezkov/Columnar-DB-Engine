@@ -16,7 +16,7 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
 
         IFileInput* io = TIoFactory::GetInput(name);
         if (!io) {
-            TIoFactory::RegisterFileIo(name, ETypeFile::kJfFile);
+            TIoFactory::RegisterFileInput(name, ETypeFile::kJfFile);
             io = TIoFactory::GetInput(name);
         }
         return std::make_shared<TJfNeccessaryOnly>(io, referenced_columns_);
@@ -26,12 +26,12 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
 
         IFileInput* scheme_io = TIoFactory::GetInput(scheme);
         if (!scheme_io) {
-            TIoFactory::RegisterFileIo(scheme, ETypeFile::kCsvFile);
+            TIoFactory::RegisterFileInput(scheme, ETypeFile::kCsvFile);
             scheme_io = TIoFactory::GetInput(scheme);
         }
         IFileInput* data_io = TIoFactory::GetInput(data);
         if (!data_io) {
-            TIoFactory::RegisterFileIo(data, ETypeFile::kCsvFile);
+            TIoFactory::RegisterFileInput(data, ETypeFile::kCsvFile);
             data_io = TIoFactory::GetInput(data);
         }
 

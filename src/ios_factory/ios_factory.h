@@ -29,7 +29,8 @@ public:
     static void RegisterCustomInput(const std::string& alias, IFileInputPtr in);
     static void RegisterCustomOutput(const std::string& alias, IFileOutputPtr out);
 
-    static void RegisterFileIo(const std::string& alias, ETypeFile t);
+    static void RegisterFileInput(const std::string& alias, ETypeFile t);
+    static void RegisterFileOutput(const std::string& alias, ETypeFile t);
 
     static void RegisterTableInput(const std::string& alias, TTableInputPtr inp);
 
