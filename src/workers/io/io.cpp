@@ -103,7 +103,7 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
         std::vector<ui64> p(scheme_.size());
         auto start = blocks_pos_[current_block_];
         jf_in_->SetPos(start - sizeof(ui64) * cols_cnt_);
-        char* raw = nullptr;
+        const char* raw = nullptr;
         jf_in_->Read(raw, sizeof(ui64) * cols_cnt_);
         memcpy(p.data(), raw, sizeof(ui64) * cols_cnt_);
         p.push_back(start - sizeof(i64) * cols_cnt_);
@@ -114,7 +114,7 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     jf_in_->SetPos(pos);
     ui64 len = pos_next - pos;
 
-    char* raw = nullptr;
+    const char* raw = nullptr;
     jf_in_->Read(raw, len);
     std::vector<char> data(raw, raw + len);
 

@@ -61,7 +61,7 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
             std::vector<std::string> row(block[0]->GetSize());
             col_poses.push_back(static_cast<i64>(out->TellPos()));
             auto bytes = Do<OJfPrintOpt>(block[j]);
-            char* p = bytes.data();
+            const char* p = bytes.data();
             out->Write(p, bytes.size());
         }
 

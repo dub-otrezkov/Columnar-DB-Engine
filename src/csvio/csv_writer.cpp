@@ -63,7 +63,7 @@ void TCsvWriter::WriteRow(const std::vector<std::string>& row) {
         }
     }
     tot[cur] = '\n';
-    char* p = tot.data();
+    const char* p = tot.data();
     out_->Write(p, total);
 }
 
@@ -103,7 +103,7 @@ void TCsvWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
         }
         tot[cur - 1] = '\n';
     }
-    char* p = tot.data();
+    const char* p = tot.data();
     out_->Write(p, total);
 }
 

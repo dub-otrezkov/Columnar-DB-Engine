@@ -27,7 +27,7 @@ public:
 
     virtual ui64 Size() const = 0;
 
-    virtual void Read(char*&, ui64 n) = 0;
+    virtual void Read(const char*&, ui64 n) = 0;
 
     virtual bool Eof() = 0;
     virtual int Get() = 0;
@@ -41,7 +41,7 @@ public:
     virtual ui64 TellPos() = 0;
     virtual void SetPos(i64) = 0;
 
-    virtual void Write(char*&, ui64 n) = 0;
+    virtual void Write(const char*&, ui64 n) = 0;
 };
 
 using IFileInputPtr  = std::shared_ptr<IFileInput>;
@@ -50,53 +50,73 @@ using IFileOutputPtr = std::shared_ptr<IFileOutput>;
 class TMMapFileInput final : public IFileInput {
 public:
     TMMapFileInput(const std::string& name) {
-        int fd = open(name.data(), O_RDONLY);
+        int fd = open(name.c_str(), O_RDONLY);
         assert(fd != -1);
 
         struct stat sb;
         assert(fstat(fd, &sb) != -1);
 
-        assert(sb.st_size > 0);
+        file_size_ = static_cast<ui64>(sb.st_size);
 
-        file_size_ = sb.st_size;
+        if (file_size_ == 0) {
+            file_ = nullptr;
+            close(fd);
+            return;
+        }
 
-        file_ = reinterpret_cast<char*>(mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
+        file_ = reinterpret_cast<char*>(mmap(nullptr, file_size_, PROT_READ, MAP_PRIVATE, fd, 0));
         assert(file_ != MAP_FAILED);
+        close(fd);
     }
+
+    ~TMMapFileInput() {
+        if (file_) {
+            munmap(file_, file_size_);
+        }
+    }
+
+    TMMapFileInput(const TMMapFileInput&) = delete;
+    TMMapFileInput& operator=(const TMMapFileInput&) = delete;
 
     ui64 TellPos() override {
         return offset_;
     }
 
     void SetPos(i64 p) override {
-        offset_ = p;
+        offset_ = static_cast<ui64>(p);
     }
 
     ui64 Size() const override {
         return file_size_;
     }
 
-    virtual void Read(char*& out, ui64 n) {
+    void Read(const char*& out, ui64 n) override {
         out = file_ + offset_;
         offset_ += n;
     }
 
-    bool Eof() {
+    bool Eof() override {
         return offset_ >= file_size_;
     }
 
-    int Get() {
-        return *(file_ + offset_++);
+    int Get() override {
+        if (offset_ >= file_size_) {
+            return EOF;
+        }
+        return static_cast<unsigned char>(file_[offset_++]);
     }
 
-    int Peek() {
-        return *(file_ + offset_ + 1);
+    int Peek() override {
+        if (offset_ >= file_size_) {
+            return EOF;
+        }
+        return static_cast<unsigned char>(file_[offset_]);
     }
 
 private:
-    char* file_;
-    ui64 offset_;
-    ui64 file_size_;
+    char* file_ = nullptr;
+    ui64 offset_ = 0;
+    ui64 file_size_ = 0;
 };
 
 class TIstreamFileInput final : public IFileInput {
@@ -123,7 +143,7 @@ public:
         return static_cast<ui64>(end);
     }
 
-    void Read(char*& dst, ui64 n) override {
+    void Read(const char*& dst, ui64 n) override {
         buf_.resize(n);
         in_->read(buf_.data(), n);
         dst = buf_.data();
@@ -165,7 +185,7 @@ public:
         return ss_.view().size();
     }
 
-    void Read(char*& dst, ui64 n) override {
+    void Read(const char*& dst, ui64 n) override {
         buf_.resize(n);
         ss_.read(buf_.data(), n);
         dst = buf_.data();
@@ -210,7 +230,7 @@ public:
         out_->seekp(p);
     }
 
-    void Write(char*& src, ui64 n) override {
+    void Write(const char*& src, ui64 n) override {
         out_->write(src, n);
     }
 
@@ -232,7 +252,7 @@ public:
         ss_.seekp(p);
     }
 
-    void Write(char*& src, ui64 n) override {
+    void Write(const char*& src, ui64 n) override {
         ss_.write(src, n);
     }
 
@@ -253,13 +273,13 @@ template <typename T>
 inline void PutInt(IFileOutput* out, T v) {
     char buf[sizeof(T)];
     std::memcpy(buf, &v, sizeof(T));
-    char* p = buf;
+    const char* p = buf;
     out->Write(p, sizeof(T));
 }
 
 template <typename T>
 inline T ReadInt(IFileInput* in) {
-    char* p = nullptr;
+    const char* p = nullptr;
     in->Read(p, sizeof(T));
     T ans = 0;
     std::memcpy(&ans, p, sizeof(T));

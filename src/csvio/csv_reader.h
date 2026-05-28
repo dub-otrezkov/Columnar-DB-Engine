@@ -38,7 +38,7 @@ private:
 
     static const ui64 kIBufSize = (1 << 21);
 
-    char* buf_ = nullptr;
+    const char* buf_ = nullptr;
     i64 cpos_ = 0;
     ui64 av_ = 0;
 };
