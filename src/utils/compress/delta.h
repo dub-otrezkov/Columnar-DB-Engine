@@ -18,11 +18,17 @@ inline std::vector<char> DeltaSerialize(ui32 n, T* data) {
     for (ui64 i = 0; i < n; i++) {
         data[i] -= mn;
     }
-    auto t = BitPack(data, bits);
+    auto ans = BitPack(data.size(), data, bits);
+    ans.resize(ans.size() + sizeof(mn));
+    ans.back() = sizeof(mn);
+    std::memcpy(ans.data() + ans.size() - sizeof(mn), &mn);
     return ans;
 }
 
 template <std::integral T>
 inline std::vector<T> DeltaUnserialize(const std::vector<char>& data) {
-    
+    T mn;
+    std::memcpy(&mn, data.data() + data.size() - sizeof(T), sizeof(T));
+    std::vector<T> ans;
+    auto res = BitUnpack(data.size() - sizeof(T), data.data());
 }
