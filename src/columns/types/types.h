@@ -167,7 +167,7 @@ public:
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
-struct TDate {
+struct alignas(4) TDate {
     ui8 day;
     ui8 month;
     ui16 year; // такой порядок чтобы год был в старших битах и дельта сжатие работало лучше
@@ -193,6 +193,7 @@ struct TDate {
 };
 
 static_assert(sizeof(TDate) == sizeof(ui32));
+static_assert(alignof(TDate) == alignof(ui32));
 
 class TDateColumn : public TStorage<TDate> {
 public:
@@ -207,7 +208,7 @@ public:
 std::string PrintDate(const TDate& d);
 TDate DateFromStr(const std::string& s);
 
-struct TTimestamp {
+struct alignas(8) TTimestamp {
     ui8 second;
     ui8 minute;
     ui16 hour;  // чтобы занулить ласт байт паддинга
@@ -236,6 +237,7 @@ struct TTimestamp {
 };
 
 static_assert(sizeof(TTimestamp) == sizeof(ui64));
+static_assert(alignof(TTimestamp) == alignof(ui64));
 
 std::string PrintTimestamp(const TTimestamp& d);
 TTimestamp TimestampFromStr(const std::string& s);
