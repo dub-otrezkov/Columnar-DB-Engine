@@ -1,13 +1,15 @@
 #include "../agregator.h"
 
-#include <gtest/gtest.h>
+#include "utils/mmap_input/mmap_input.h"
 
-#include <string_view>
+#include <gtest/gtest.h>
 
 namespace JfEngine::Testing {
 
 struct AgregationsTest : testing::Test {
     std::shared_ptr<TJfTableInput> MakeJfIn();
+
+    std::shared_ptr<TStringStreamFileInput> jf_storage_;
 
     std::string scheme = R"(red,string
 hot,int64

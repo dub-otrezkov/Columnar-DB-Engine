@@ -1,5 +1,6 @@
 #include "../groupby.h"
 #include "engine/engine.h"
+#include "utils/mmap_input/mmap_input.h"
 
 #include <gtest/gtest.h>
 
@@ -27,19 +28,19 @@ dot,19,hacker,-10,-10,-1,-1.125
 };
 
 TEST_F(GroupByTest, Basic) {
-    auto jf_table = std::make_shared<std::stringstream>();
+    TStringStreamFileOutput jf_out;
     {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>(data);
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in.get(), data_in.get());
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(&jf_out);
 
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -48,16 +49,17 @@ TEST_F(GroupByTest, Basic) {
     }
 
     {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+        auto jf_storage = std::make_shared<TStringStreamFileInput>(jf_out.Str());
+        auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
         TGroupByQuery gq;
         gq.cols.push_back("red");
 
         TAoQuery aq;
-        aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
-        aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
-        aq.args.push_back(std::make_unique<TCountAgr>());          // 2
-        aq.args.push_back(std::make_unique<TSumAgr>());            // 3
+        aq.args.push_back(std::make_unique<TColumnOp>("what"));
+        aq.args.push_back(std::make_unique<TColumnOp>("red"));
+        aq.args.push_back(std::make_unique<TCountAgr>());
+        aq.args.push_back(std::make_unique<TSumAgr>());
         std::vector<std::pair<ui64, ui64>> edges = {
             {2, 0},
             {3, 0}
@@ -77,11 +79,11 @@ TEST_F(GroupByTest, Basic) {
 
         ASSERT_FALSE(err);
 
-        std::stringstream data;
+        TStringStreamFileOutput data;
 
-        auto res = engine.WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(&data);
 
-        std::string a = data.str();
+        std::string a = data.Str();
         std::cout << a << std::endl;
         std::sort(a.begin(), a.end());
         std::string b = R"(dot,3,164
@@ -98,24 +100,24 @@ the,2,36
 }
 
 TEST_F(GroupByTest, Stress) {
-    auto jf_table = std::make_shared<std::stringstream>();
+    TStringStreamFileOutput jf_out;
     {
         constexpr ui64 iter = 500000;
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>();
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>();
 
         for (ui64 i = 0; i < iter; i++) {
-            (*data_in) << data;
+            data_in->Stream() << data;
         }
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in.get(), data_in.get());
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(&jf_out);
 
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
@@ -124,16 +126,17 @@ TEST_F(GroupByTest, Stress) {
     }
 
     {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+        auto jf_storage = std::make_shared<TStringStreamFileInput>(jf_out.Str());
+        auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
         TGroupByQuery gq;
         gq.cols.push_back("red");
 
         TAoQuery aq;
-        aq.args.push_back(std::make_unique<TColumnOp>("what"));    // 0
-        aq.args.push_back(std::make_unique<TColumnOp>("red"));     // 1
-        aq.args.push_back(std::make_unique<TCountAgr>());          // 2
-        aq.args.push_back(std::make_unique<TSumAgr>());            // 3
+        aq.args.push_back(std::make_unique<TColumnOp>("what"));
+        aq.args.push_back(std::make_unique<TColumnOp>("red"));
+        aq.args.push_back(std::make_unique<TCountAgr>());
+        aq.args.push_back(std::make_unique<TSumAgr>());
         std::vector<std::pair<ui64, ui64>> edges = {
             {2, 0},
             {3, 0}
@@ -153,9 +156,9 @@ TEST_F(GroupByTest, Stress) {
 
         ASSERT_FALSE(err);
 
-        std::stringstream data;
+        TStringStreamFileOutput data;
 
-        auto res = engine.WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(&data);
 
         ASSERT_FALSE(res.HasError());
     }

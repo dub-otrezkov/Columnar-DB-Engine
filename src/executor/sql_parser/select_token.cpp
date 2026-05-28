@@ -339,8 +339,8 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
 
         eng.Setup(agr);
 
-        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
-        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
+        eng.WriteDataToCsv(TIoFactory::GetOutput(kResultData));
+        eng.WriteSchemeToCsv(TIoFactory::GetOutput(kResultScheme));
 
         return EError::NoError;
     } else {
@@ -351,8 +351,8 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
 
         eng.Setup(TIoFactory::GetTableIo(kCurTableInput));
 
-        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
-        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
+        eng.WriteDataToCsv(TIoFactory::GetOutput(kResultData));
+        eng.WriteSchemeToCsv(TIoFactory::GetOutput(kResultScheme));
 
         return EError::NoError;
     }

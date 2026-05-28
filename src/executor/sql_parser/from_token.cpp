@@ -15,23 +15,14 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
     if (args_.size() == 1) {
         auto name = static_cast<TNameToken*>(args_[0])->GetName();
 
-        std::shared_ptr<std::iostream> io = TIoFactory::GetIo(name);
-        if (!io) {
-            io = std::make_shared<TMmapIstream>(name + ".jf");
-        }
+        IFileInput* io = TIoFactory::GetInput(name);
         return std::make_shared<TJfNeccessaryOnly>(io, referenced_columns_);
     } else if (args_.size() == 2) {
         auto scheme = static_cast<TNameToken*>(args_[0])->GetName();
         auto data = static_cast<TNameToken*>(args_[1])->GetName();
 
-        std::shared_ptr<std::iostream> scheme_io = TIoFactory::GetIo(scheme);
-        if (!scheme_io) {
-            scheme_io = std::make_shared<TMmapIstream>(scheme + ".csv");
-        }
-        std::shared_ptr<std::iostream> data_io = TIoFactory::GetIo(data);
-        if (!data_io) {
-            data_io = std::make_shared<TMmapIstream>(data + ".csv");
-        }
+        IFileInput* scheme_io = TIoFactory::GetInput(scheme);
+        IFileInput* data_io   = TIoFactory::GetInput(data);
 
         return std::make_shared<TCsvTableInput>(scheme_io, data_io);
     } else {

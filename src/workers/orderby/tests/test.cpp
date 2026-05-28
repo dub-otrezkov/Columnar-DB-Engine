@@ -1,5 +1,6 @@
 #include "../orderby.h"
 #include "engine/engine.h"
+#include "utils/mmap_input/mmap_input.h"
 
 #include <gtest/gtest.h>
 
@@ -26,46 +27,48 @@ dot,19,hacker,-10,-10,-1,-1.125
 )";
 };
 
-TEST_F(OrderByTest, Basic) {
-    auto jf_table = std::make_shared<std::stringstream>();
+static std::shared_ptr<TStringStreamFileInput> BuildJf(const std::string& scheme, const std::string& data) {
+    TStringStreamFileOutput jf_out;
     {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>(data);
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in.get(), data_in.get());
 
         if (err) {
             std::cout << "! " << err << std::endl;
         }
-        ASSERT_FALSE(err);
+        EXPECT_FALSE(err);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
-        
+        auto err2 = eng.WriteTableToJf(&jf_out);
+
         if (err2.HasError()) {
             std::cout << "! " << err2.GetError() << std::endl;
         }
-        ASSERT_FALSE(err2.HasError());
+        EXPECT_FALSE(err2.HasError());
     }
+    return std::make_shared<TStringStreamFileInput>(jf_out.Str());
+}
 
-    {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+TEST_F(OrderByTest, Basic) {
+    auto jf_storage = BuildJf(scheme, data);
+    auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
-        TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}};
-        
-        auto agr = std::make_shared<TOrderBy>(jf_in, oq);
+    TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}};
 
-        agr->SetupColumnsScheme();
+    auto agr = std::make_shared<TOrderBy>(jf_in, oq);
 
-        auto [engine, err] = MakeEngineFromWorker(agr);
+    agr->SetupColumnsScheme();
 
-        ASSERT_FALSE(err);
+    auto [engine, err] = MakeEngineFromWorker(agr);
 
-        std::stringstream data_;
+    ASSERT_FALSE(err);
 
-        auto res = engine->WriteDataToCsv(data_);
+    TStringStreamFileOutput data_;
 
-        // std::cout << data_.str() << std::endl;
-        EXPECT_EQ(data_.str(), R"(josh,1,klinghoffer,2,1,2,0
+    auto res = engine.WriteDataToCsv(&data_);
+
+    EXPECT_EQ(data_.Str(), R"(josh,1,klinghoffer,2,1,2,0
 john,3,frusciante,4,-10,-1,1.2
 stadium,5,arcadium,6,0,0,-1.2
 "i,could,have,lied",6,919,0,5,-5,82
@@ -75,50 +78,28 @@ dot,19,hacker,-10,-10,-1,-1.125
 dot,19,hacker,10,82,82,0
 dot,19,hacker,10,92,2,-1
 )");
-    }
 }
 
 TEST_F(OrderByTest, Offset) {
-    auto jf_table = std::make_shared<std::stringstream>();
-    {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+    auto jf_storage = BuildJf(scheme, data);
+    auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+    TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}};
+    oq.offset = 2;
 
-        if (err) {
-            std::cout << "! " << err << std::endl;
-        }
-        ASSERT_FALSE(err);
+    auto agr = std::make_shared<TOrderBy>(jf_in, oq);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
-        
-        if (err2.HasError()) {
-            std::cout << "! " << err2.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err2.HasError());
-    }
+    agr->SetupColumnsScheme();
 
-    {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    auto [engine, err] = MakeEngineFromWorker(agr);
 
-        TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}};
-        oq.offset = 2;
-        
-        auto agr = std::make_shared<TOrderBy>(jf_in, oq);
+    ASSERT_FALSE(err);
 
-        agr->SetupColumnsScheme();
+    TStringStreamFileOutput data_;
 
-        auto [engine, err] = MakeEngineFromWorker(agr);
+    auto res = engine.WriteDataToCsv(&data_);
 
-        ASSERT_FALSE(err);
-
-        std::stringstream data_;
-
-        auto res = engine->WriteDataToCsv(data_);
-
-        // std::cout << data_.str() << std::endl;
-        EXPECT_EQ(data_.str(), R"(stadium,5,arcadium,6,0,0,-1.2
+    EXPECT_EQ(data_.Str(), R"(stadium,5,arcadium,6,0,0,-1.2
 "i,could,have,lied",6,919,0,5,-5,82
 the,9,afterglow,9,40,81,1.8
 the,14,sides,52,-4,11,18
@@ -126,48 +107,27 @@ dot,19,hacker,-10,-10,-1,-1.125
 dot,19,hacker,10,82,82,0
 dot,19,hacker,10,92,2,-1
 )");
-    }
 }
 
 TEST_F(OrderByTest, Reverse) {
-    auto jf_table = std::make_shared<std::stringstream>();
-    {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+    auto jf_storage = BuildJf(scheme, data);
+    auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+    TOrderByQuery oq{std::vector<std::string>{"hot"}, true};
 
-        if (err) {
-            std::cout << "! " << err << std::endl;
-        }
-        ASSERT_FALSE(err);
+    auto agr = std::make_shared<TOrderBy>(jf_in, oq);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
-        
-        if (err2.HasError()) {
-            std::cout << "! " << err2.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err2.HasError());
-    }
+    agr->SetupColumnsScheme();
 
-    {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    auto [engine, err] = MakeEngineFromWorker(agr);
 
-        TOrderByQuery oq{std::vector<std::string>{"hot"}, true};
-        
-        auto agr = std::make_shared<TOrderBy>(jf_in, oq);
+    ASSERT_FALSE(err);
 
-        agr->SetupColumnsScheme();
+    TStringStreamFileOutput data_;
 
-        auto [engine, err] = MakeEngineFromWorker(agr);
+    auto res = engine.WriteDataToCsv(&data_);
 
-        ASSERT_FALSE(err);
-
-        std::stringstream data_;
-
-        auto res = engine->WriteDataToCsv(data_);
-
-        EXPECT_EQ(data_.str(), R"(dot,19,hacker,-10,-10,-1,-1.125
+    EXPECT_EQ(data_.Str(), R"(dot,19,hacker,-10,-10,-1,-1.125
 dot,19,hacker,10,82,82,0
 dot,19,hacker,10,92,2,-1
 the,14,sides,52,-4,11,18
@@ -177,99 +137,55 @@ stadium,5,arcadium,6,0,0,-1.2
 john,3,frusciante,4,-10,-1,1.2
 josh,1,klinghoffer,2,1,2,0
 )");
-    }
 }
 
 TEST_F(OrderByTest, Limit) {
-    auto jf_table = std::make_shared<std::stringstream>();
-    {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+    auto jf_storage = BuildJf(scheme, data);
+    auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+    TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}, false, 3};
 
-        if (err) {
-            std::cout << "! " << err << std::endl;
-        }
-        ASSERT_FALSE(err);
+    auto agr = std::make_shared<TOrderBy>(jf_in, oq);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
-        
-        if (err2.HasError()) {
-            std::cout << "! " << err2.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err2.HasError());
-    }
+    agr->SetupColumnsScheme();
 
-    {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    auto [engine, err] = MakeEngineFromWorker(agr);
 
-        TOrderByQuery oq{std::vector<std::string>{"hot", "peppers"}, false, 3};
-        
-        auto agr = std::make_shared<TOrderBy>(jf_in, oq);
+    ASSERT_FALSE(err);
 
-        agr->SetupColumnsScheme();
+    TStringStreamFileOutput data_;
 
-        auto [engine, err] = MakeEngineFromWorker(agr);
+    auto res = engine.WriteDataToCsv(&data_);
 
-        ASSERT_FALSE(err);
-
-        std::stringstream data_;
-
-        auto res = engine->WriteDataToCsv(data_);
-
-        // std::cout << data_.str() << std::endl;
-        EXPECT_EQ(data_.str(), R"(josh,1,klinghoffer,2,1,2,0
+    EXPECT_EQ(data_.Str(), R"(josh,1,klinghoffer,2,1,2,0
 john,3,frusciante,4,-10,-1,1.2
 stadium,5,arcadium,6,0,0,-1.2
 )");
-    }
 }
 
 TEST_F(OrderByTest, ReverseLimit) {
-    auto jf_table = std::make_shared<std::stringstream>();
-    {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+    auto jf_storage = BuildJf(scheme, data);
+    auto jf_in = std::make_shared<TJfTableInput>(jf_storage.get());
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+    TOrderByQuery oq{std::vector<std::string>{"hot"}, true, 4};
 
-        if (err) {
-            std::cout << "! " << err << std::endl;
-        }
-        ASSERT_FALSE(err);
+    auto agr = std::make_shared<TOrderBy>(jf_in, oq);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
-        
-        if (err2.HasError()) {
-            std::cout << "! " << err2.GetError() << std::endl;
-        }
-        ASSERT_FALSE(err2.HasError());
-    }
+    agr->SetupColumnsScheme();
 
-    {
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    auto [engine, err] = MakeEngineFromWorker(agr);
 
-        TOrderByQuery oq{std::vector<std::string>{"hot"}, true, 4};
-        
-        auto agr = std::make_shared<TOrderBy>(jf_in, oq);
+    ASSERT_FALSE(err);
 
-        agr->SetupColumnsScheme();
+    TStringStreamFileOutput data_;
 
-        auto [engine, err] = MakeEngineFromWorker(agr);
+    auto res = engine.WriteDataToCsv(&data_);
 
-        ASSERT_FALSE(err);
-
-        std::stringstream data_;
-
-        auto res = engine->WriteDataToCsv(data_);
-
-        EXPECT_EQ(data_.str(), R"(dot,19,hacker,-10,-10,-1,-1.125
+    EXPECT_EQ(data_.Str(), R"(dot,19,hacker,-10,-10,-1,-1.125
 dot,19,hacker,10,82,82,0
 dot,19,hacker,10,92,2,-1
 the,14,sides,52,-4,11,18
 )");
-    }
 }
 
 } // namespace JfEngine::Testing

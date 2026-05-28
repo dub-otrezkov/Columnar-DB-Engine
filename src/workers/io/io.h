@@ -1,19 +1,19 @@
 #pragma once
 
 #include "csvio/csv_reader.h"
+#include "utils/mmap_input/mmap_input.h"
 #include "workers/base.h"
 
-#include <iostream>
 #include <unordered_set>
 
 namespace JfEngine {
 
 class TCsvTableInput : public ITableInput {
 public:
-    TCsvTableInput(std::shared_ptr<std::istream> scheme_in, std::shared_ptr<std::istream> data_in, ui64 row_group_len = kRowGroupLen) :
-        scheme_in_(std::move(scheme_in)),
-        data_in_(std::move(data_in)),
-        csv_data_(*data_in_)
+    TCsvTableInput(IFileInput* scheme_in, IFileInput* data_in, ui64 row_group_len = kRowGroupLen) :
+        scheme_in_(scheme_in),
+        data_in_(data_in),
+        csv_data_(data_in_)
     {
     }
 
@@ -22,8 +22,8 @@ public:
     const char* GetTypeName() const override { return "CsvTableInput"; }
 
 private:
-    std::shared_ptr<std::istream> scheme_in_;
-    std::shared_ptr<std::istream> data_in_;
+    IFileInput* scheme_in_;
+    IFileInput* data_in_;
     TCsvOptimizedReader csv_data_;
 };
 
@@ -31,7 +31,7 @@ class TJfTableInput : public ITableInput {
 public:
     virtual ~TJfTableInput() = default;
 
-    TJfTableInput(std::shared_ptr<std::istream> jf_in) {
+    TJfTableInput(IFileInput* jf_in) {
         jf_in_ = jf_in;
     }
 
@@ -46,7 +46,7 @@ public:
 
 protected:
 
-    std::shared_ptr<std::istream> jf_in_;
+    IFileInput* jf_in_;
 
     std::optional<std::vector<ui64>> poses_of_cols_;
 
@@ -59,7 +59,7 @@ protected:
 
 class TJfNeccessaryOnly : public TJfTableInput {
 public:
-    TJfNeccessaryOnly(std::shared_ptr<std::istream> jf_in, std::unordered_set<std::string> referenced = {});
+    TJfNeccessaryOnly(IFileInput* jf_in, std::unordered_set<std::string> referenced = {});
 
     std::vector<TRowScheme>& GetScheme() override;
     Expected<void> SetupColumnsScheme() override;

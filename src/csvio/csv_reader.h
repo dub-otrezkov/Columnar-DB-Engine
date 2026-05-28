@@ -2,8 +2,8 @@
 
 #include "utils/errors/errors_templates.h"
 #include "utils/faster_vectors/vector_string_2d.h"
+#include "utils/mmap_input/mmap_input.h"
 
-#include <fstream>
 #include <string>
 #include <vector>
 
@@ -11,35 +11,34 @@ namespace JfEngine {
 
 class TCsvReader {
 public:
-    TCsvReader(std::istream& in, char sep = ',');
+    TCsvReader(IFileInput* in, char sep = ',');
 
     Expected<std::vector<std::string>> ReadRow();
 
 private:
-    std::istream& in_;
+    IFileInput* in_;
     char sep_;
-
-    std::streampos init_pos_;
 };
 
-class TCsvOptimizedReader { // DO NOT USE ANYWHERE EXCEPT BIG Csv FILE READING, IT DESTROY ISTREAM CORRECTNESS
+class TCsvOptimizedReader {
 public:
-    TCsvOptimizedReader(std::istream& in, char sep = ',');
+    TCsvOptimizedReader(IFileInput* in, char sep = ',');
     Expected<std::vector<std::string>> ReadRow();
-    Expected<void> ReadRow(TVectorString2d& out); // EXPERIMENTAL
+    Expected<void> ReadRow(TVectorString2d& out);
 
 private:
 
-    char ReadSym();
+    int ReadSym();
     bool EofC();
-    char Peek();
+    int Peek();
+    void Refill();
 
-    std::istream& in_;
+    IFileInput* in_ = nullptr;
     char sep_;
 
     static const ui64 kIBufSize = (1 << 21);
 
-    char buf_[kIBufSize];
+    char* buf_ = nullptr;
     i64 cpos_ = 0;
     ui64 av_ = 0;
 };

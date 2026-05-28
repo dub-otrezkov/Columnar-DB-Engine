@@ -1,35 +1,28 @@
 #include "csv_reader.h"
 
 #include <algorithm>
-#include <iostream>
 
 namespace JfEngine {
 
-const ui64 kStrReserveSize = (1 << 5);
-
-TCsvReader::TCsvReader(std::istream& in, char sep) :
+TCsvReader::TCsvReader(IFileInput* in, char sep) :
     in_(in),
-    sep_(sep),
-    init_pos_(in_.tellg())
+    sep_(sep)
 {
 }
 
 Expected<std::vector<std::string>> TCsvReader::ReadRow() {
-    if (in_.eof()) {
+    if (in_->Eof()) {
         return {std::vector<std::string>(), MakeError<EError::EofErr>()};
     }
 
     bool read_smth = false;
-
     bool in_quotes = false;
-
-    i64 total = 0;
 
     std::vector<std::string> ans;
     ans.push_back("");
 
-    while (!in_.eof()) {
-        auto c = in_.get();
+    while (!in_->Eof()) {
+        auto c = in_->Get();
 
         if (in_quotes && c == EOF) {
             return {std::vector<std::string>(), MakeError<EError::EofErr>()};
@@ -44,9 +37,9 @@ Expected<std::vector<std::string>> TCsvReader::ReadRow() {
             ans.emplace_back();
         } else if (c == '"') {
             if (in_quotes) {
-                if (in_.peek() == '\"') {
-                    ans.back() += in_.get();
-                } else if (in_.peek() != sep_ && in_.peek() != '\n' && in_.peek() != '\r') {
+                if (in_->Peek() == '"') {
+                    ans.back() += static_cast<char>(in_->Get());
+                } else if (in_->Peek() != sep_ && in_->Peek() != '\n' && in_->Peek() != '\r') {
                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
                     in_quotes = false;
@@ -54,10 +47,10 @@ Expected<std::vector<std::string>> TCsvReader::ReadRow() {
             } else if (ans.back().empty()) {
                 in_quotes = true;
             } else {
-                ans.back() += c;
+                ans.back() += static_cast<char>(c);
             }
         } else {
-            ans.back() += c;
+            ans.back() += static_cast<char>(c);
         }
     }
 
@@ -68,33 +61,53 @@ Expected<std::vector<std::string>> TCsvReader::ReadRow() {
     return {std::move(ans)};
 }
 
-TCsvOptimizedReader::TCsvOptimizedReader(std::istream& in, char sep) :
+TCsvOptimizedReader::TCsvOptimizedReader(IFileInput* in, char sep) :
     in_(in),
     sep_(sep)
 {
 }
 
-char TCsvOptimizedReader::ReadSym() {
-    if (cpos_ < av_) {
-        return buf_[cpos_++];
+void TCsvOptimizedReader::Refill() {
+    ui64 remaining = in_->Size() - in_->TellPos();
+    ui64 to_read = std::min<ui64>(kIBufSize, remaining);
+    if (to_read == 0) {
+        av_ = 0;
+        cpos_ = 0;
+        return;
     }
-
-    av_ = in_.read(buf_, kIBufSize).gcount();
-
+    in_->Read(buf_, to_read);
+    av_ = to_read;
     cpos_ = 0;
-    return buf_[cpos_++];
+}
+
+int TCsvOptimizedReader::ReadSym() {
+    if (cpos_ < static_cast<i64>(av_)) {
+        return static_cast<unsigned char>(buf_[cpos_++]);
+    }
+    Refill();
+    if (av_ == 0) {
+        return EOF;
+    }
+    return static_cast<unsigned char>(buf_[cpos_++]);
 }
 
 
 bool TCsvOptimizedReader::EofC() {
-    return cpos_ >= av_ && in_.eof();
+    return cpos_ >= static_cast<i64>(av_) && in_->TellPos() >= in_->Size();
 }
 
-char TCsvOptimizedReader::Peek() {
-    if (cpos_ < kIBufSize) {
-        return buf_[cpos_];
+int TCsvOptimizedReader::Peek() {
+    if (cpos_ < static_cast<i64>(av_)) {
+        return static_cast<unsigned char>(buf_[cpos_]);
     }
-    return in_.peek();
+    if (in_->TellPos() >= in_->Size()) {
+        return EOF;
+    }
+    Refill();
+    if (av_ == 0) {
+        return EOF;
+    }
+    return static_cast<unsigned char>(buf_[cpos_]);
 }
 
 Expected<std::vector<std::string>> TCsvOptimizedReader::ReadRow() {
@@ -103,7 +116,6 @@ Expected<std::vector<std::string>> TCsvOptimizedReader::ReadRow() {
     }
 
     bool read_smth = false;
-
     bool in_quotes = false;
 
     Expected<std::vector<std::string>> ans_e{std::vector<std::string>()};
@@ -126,8 +138,8 @@ Expected<std::vector<std::string>> TCsvOptimizedReader::ReadRow() {
             ans.emplace_back();
         } else if (c == '"') {
             if (in_quotes) {
-                if (Peek() == '\"') {
-                    ans.back() += ReadSym();
+                if (Peek() == '"') {
+                    ans.back() += static_cast<char>(ReadSym());
                 } else if (Peek() != sep_ && Peek() != '\n' && Peek() != '\r') {
                     return {std::vector<std::string>(), MakeError<EError::EofErr>()};
                 } else {
@@ -136,10 +148,10 @@ Expected<std::vector<std::string>> TCsvOptimizedReader::ReadRow() {
             } else if (ans.back().empty()) {
                 in_quotes = true;
             } else {
-                ans.back() += c;
+                ans.back() += static_cast<char>(c);
             }
         } else {
-            ans.back() += c;
+            ans.back() += static_cast<char>(c);
         }
     }
 
@@ -156,7 +168,6 @@ Expected<void> TCsvOptimizedReader::ReadRow(TVectorString2d& out) {
     }
 
     bool read_smth = false;
-
     bool in_quotes = false;
 
     out.NewRow();
@@ -173,13 +184,11 @@ Expected<void> TCsvOptimizedReader::ReadRow(TVectorString2d& out) {
         read_smth = true;
 
         if (!in_quotes && c == sep_) {
-            // ans.emplace_back();
             out.NewCol();
         } else if (c == '"') {
             if (in_quotes) {
-                if (Peek() == '\"') {
-                    // ans.back() += ReadSym();
-                    out.WriteSymToLastCR(ReadSym());
+                if (Peek() == '"') {
+                    out.WriteSymToLastCR(static_cast<char>(ReadSym()));
                 } else if (Peek() != sep_ && Peek() != '\n' && Peek() != '\r') {
                     return MakeError<EError::EofErr>();
                 } else {
@@ -188,12 +197,10 @@ Expected<void> TCsvOptimizedReader::ReadRow(TVectorString2d& out) {
             } else if (out.LastEmpty()) {
                 in_quotes = true;
             } else {
-                // ans.back() += c;
-                out.WriteSymToLastCR(c);
+                out.WriteSymToLastCR(static_cast<char>(c));
             }
         } else {
-            // ans.back() += c;
-            out.WriteSymToLastCR(c);
+            out.WriteSymToLastCR(static_cast<char>(c));
         }
     }
 
@@ -201,7 +208,6 @@ Expected<void> TCsvOptimizedReader::ReadRow(TVectorString2d& out) {
         return EError::EofErr;
     }
 
-    // return ans_e;
     return EError::NoError;
 }
 

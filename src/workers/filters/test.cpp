@@ -1,10 +1,9 @@
 #include "filter.h"
 
 #include "engine/engine.h"
+#include "utils/mmap_input/mmap_input.h"
 
 #include <gtest/gtest.h>
-
-#include <string_view>
 
 namespace JfEngine::Testing {
 
@@ -32,15 +31,15 @@ dot,19,hacker,-10,-10,-1,-1.125
 
 
 TEST_F(FiltersTest, EqTest) {
-    auto jf_table = std::make_shared<std::stringstream>();
+    auto jf_out = std::make_shared<TStringStreamFileOutput>();
     {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>();
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in = std::make_shared<TStringStreamFileInput>();
         for (ui64 i = 0; i < kIter; i++) {
-            (*data_in) << data;
+            data_in->Stream() << data;
         }
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in.get(), data_in.get());
 
         if (err) {
             std::cout << "errdsd!" << std::endl;
@@ -48,8 +47,8 @@ TEST_F(FiltersTest, EqTest) {
         }
         ASSERT_FALSE(err);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
-        
+        auto err2 = eng.WriteTableToJf(jf_out.get());
+
         if (err2.HasError()) {
             std::cout << "err!" << std::endl;
             throw -1;
@@ -58,6 +57,8 @@ TEST_F(FiltersTest, EqTest) {
     }
 
     {
+        auto jf_in = std::make_shared<TStringStreamFileInput>(jf_out->Str());
+
         TFilterQuery query{
             std::vector<TFilterOp>{
                 TFilterOp{
@@ -67,24 +68,18 @@ TEST_F(FiltersTest, EqTest) {
                 }
             }
         };
-        auto jf_in = std::make_shared<TJfTableInput>(jf_table);
-        auto agr = std::make_shared<TFilter>(jf_in, query);
+        auto jf_table_in = std::make_shared<TJfTableInput>(jf_in.get());
+        auto agr = std::make_shared<TFilter>(jf_table_in, query);
 
         auto [engine, err] = MakeEngineFromWorker(agr);
 
         ASSERT_FALSE(err);
 
-        std::stringstream data;
+        TStringStreamFileOutput data;
 
-        auto res = engine->WriteDataToCsv(data);
+        auto res = engine.WriteDataToCsv(&data);
 
-        // if (res.HasError()) {
-        //     std::cout << "errrrr" << std::endl;
-        // }
-
-        // std::cout << "!! " << data.str() << std::endl;\
-        
-        EXPECT_EQ(data.str(), R"(john,9,frusciante,4,-10,-1,1.2
+        EXPECT_EQ(data.Str(), R"(john,9,frusciante,4,-10,-1,1.2
 the,9,afterglow,9,40,81,1.8
 dot,9,hacker,10,92,2,-1
 )");

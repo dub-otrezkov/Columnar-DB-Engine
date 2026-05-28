@@ -1,5 +1,6 @@
 #include "executor/executor.h"
 #include "ios_factory/ios_factory.h"
+#include "utils/mmap_input/mmap_input.h"
 
 #include <chrono>
 #include <fstream>
@@ -105,21 +106,29 @@ static const std::vector<std::string> kQueries = {
     "SELECT TRUNC_MINUTE(EventTime) AS M, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-14' AND EventDate <= '2013-07-15' AND IsRefresh = 0 AND DontCountHits = 0 GROUP BY M ORDER BY M LIMIT 10 OFFSET 1000",
 };
 
-// Open a file as a shared iostream. mode should include in|out.
 static std::shared_ptr<std::fstream> open_file(const std::string& path, std::ios::openmode mode) {
     return std::make_shared<std::fstream>(path, mode);
+}
+
+static void register_fstream(const std::string& alias, std::shared_ptr<std::fstream> fs) {
+    TIoFactory::RegisterCustomInput (alias, std::make_shared<TIstreamFileInput >(fs));
+    TIoFactory::RegisterCustomOutput(alias, std::make_shared<TOstreamFileOutput>(fs));
+}
+
+static void register_sstream(const std::string& alias) {
+    auto ss = std::make_shared<std::stringstream>();
+    TIoFactory::RegisterCustomInput (alias, std::make_shared<TIstreamFileInput >(ss));
+    TIoFactory::RegisterCustomOutput(alias, std::make_shared<TOstreamFileOutput>(ss));
 }
 
 static int do_convert(const std::string& input_csv,
                       const std::string& input_schema,
                       const std::string& output_jf) {
-    // Input files opened directly - no temp dir needed.
-    TIoFactory::RegisterCustomIo("scheme",  open_file(input_schema, std::ios::in | std::ios::out));
-    TIoFactory::RegisterCustomIo("dorothy", open_file(input_csv,    std::ios::in | std::ios::out));
-    TIoFactory::RegisterCustomIo("hits",    open_file(output_jf,    std::ios::in | std::ios::out | std::ios::trunc));
-    // Intermediates as in-memory streams (convert only needs the CREATE step).
-    TIoFactory::RegisterCustomIo("tmp1", std::make_shared<std::stringstream>());
-    TIoFactory::RegisterCustomIo("tmp2", std::make_shared<std::stringstream>());
+    register_fstream("scheme",  open_file(input_schema, std::ios::in | std::ios::out));
+    register_fstream("dorothy", open_file(input_csv,    std::ios::in | std::ios::out));
+    register_fstream("hits",    open_file(output_jf,    std::ios::in | std::ios::out | std::ios::trunc));
+    register_sstream("tmp1");
+    register_sstream("tmp2");
 
     JfEngine::TExecutor exec;
     auto t1  = high_resolution_clock::now();
@@ -152,15 +161,12 @@ static int do_query(int query_num,
         return 0;
     }
 
-    // Pre-register all aliases before the engine can touch them.
-    TIoFactory::RegisterCustomIo("hits", open_file(input_jf, std::ios::in | std::ios::out));
-    TIoFactory::RegisterCustomIo("tmp1", std::make_shared<std::stringstream>());
-    TIoFactory::RegisterCustomIo("tmp2", std::make_shared<std::stringstream>());
-    // RESULT_DATA goes straight to the output file.
-    TIoFactory::RegisterCustomIo("RESULT_DATA",
+    register_fstream("hits", open_file(input_jf, std::ios::in | std::ios::out));
+    register_sstream("tmp1");
+    register_sstream("tmp2");
+    register_fstream("RESULT_DATA",
         open_file(output_csv, std::ios::in | std::ios::out | std::ios::trunc));
-    // RESULT_SCHEME is discarded (not needed in the benchmark output).
-    TIoFactory::RegisterCustomIo("RESULT_SCHEME", std::make_shared<std::stringstream>());
+    register_sstream("RESULT_SCHEME");
 
     JfEngine::TExecutor exec;
     auto t1  = high_resolution_clock::now();

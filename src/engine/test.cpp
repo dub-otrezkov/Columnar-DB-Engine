@@ -1,8 +1,8 @@
 #include "engine.h"
 
-#include <gtest/gtest.h>
+#include "utils/mmap_input/mmap_input.h"
 
-#include <string_view>
+#include <gtest/gtest.h>
 
 namespace JfEngine::Testing {
 
@@ -26,19 +26,19 @@ dot,19,hacker,10,92,2,-1
 dot,19,hacker,-10,-10,-1,-1.125
 )";
 
-    std::shared_ptr<std::stringstream> scheme_ss;
-    std::shared_ptr<std::stringstream> data_ss;
+    std::shared_ptr<TStringStreamFileInput> scheme_ss;
+    std::shared_ptr<TStringStreamFileInput> data_ss;
 
     std::string ans_data = "";
 
     const ui64 kIter = 1;
 
     void SetUp() override {
-        scheme_ss = std::make_shared<std::stringstream>(scheme);
-        data_ss = std::make_shared<std::stringstream>();
+        scheme_ss = std::make_shared<TStringStreamFileInput>(scheme);
+        data_ss = std::make_shared<TStringStreamFileInput>();
         ans_data = "";
         for (ui64 i = 0; i < kIter; i++) {
-            (*data_ss) << data;
+            data_ss->Stream() << data;
             ans_data += data;
         }
     }
@@ -49,146 +49,145 @@ dot,19,hacker,-10,-10,-1,-1.125
 
 TEST_F(EngineTest, CsvToCsv) {
 
-    auto [eng, err] = MakeEngineFromCsv(scheme_ss, data_ss);
+    auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), data_ss.get());
 
     ASSERT_FALSE(err);
 
     {
-        std::stringstream out;
-        err = eng.WriteSchemeToCsv(out).GetError();
-        
-        ASSERT_FALSE(err);
-        EXPECT_EQ(out.str(), scheme);
-    }
-    {
-        std::stringstream out;
-        err = eng.WriteDataToCsv(out).GetError();
+        TStringStreamFileOutput out;
+        err = eng.WriteSchemeToCsv(&out).GetError();
 
         ASSERT_FALSE(err);
-        EXPECT_EQ(out.str(), ans_data);
+        EXPECT_EQ(out.Str(), scheme);
+    }
+    {
+        TStringStreamFileOutput out;
+        err = eng.WriteDataToCsv(&out).GetError();
+
+        ASSERT_FALSE(err);
+        EXPECT_EQ(out.Str(), ans_data);
     }
 }
 
 TEST_F(EngineTest, EmptyData) {
-    auto empty_data = std::make_shared<std::stringstream>("\n");
-    auto [eng, err] = MakeEngineFromCsv(scheme_ss, empty_data);
+    auto empty_data = std::make_shared<TStringStreamFileInput>("\n");
+    auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), empty_data.get());
 
     ASSERT_FALSE(err);
 
     {
-        std::stringstream out;
-        err = eng.WriteSchemeToCsv(out).GetError();
-        
-        ASSERT_FALSE(err);
-        EXPECT_EQ(out.str(), scheme);
-    }
-    {
-        std::stringstream out;
-        err = eng.WriteDataToCsv(out).GetError();
+        TStringStreamFileOutput out;
+        err = eng.WriteSchemeToCsv(&out).GetError();
 
         ASSERT_FALSE(err);
-        EXPECT_EQ(out.str(), "");
+        EXPECT_EQ(out.Str(), scheme);
+    }
+    {
+        TStringStreamFileOutput out;
+        err = eng.WriteDataToCsv(&out).GetError();
+
+        ASSERT_FALSE(err);
+        EXPECT_EQ(out.Str(), "");
     }
 }
 
 TEST_F(EngineTest, JfBasic) {
-    auto out = std::make_shared<std::stringstream>();
+    auto jf_out = std::make_shared<TStringStreamFileOutput>();
     {
-        auto [eng, err] = MakeEngineFromCsv(scheme_ss, data_ss);
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), data_ss.get());
 
         ASSERT_FALSE(err);
 
         {
-            err = eng.WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(jf_out.get()).GetError();
 
             ASSERT_FALSE(err);
         }
     }
+    auto jf_in = std::make_shared<TStringStreamFileInput>(jf_out->Str());
     {
-        auto [eng, err] = MakeEngineFromJf(out);
+        auto [eng, err] = MakeEngineFromJf(jf_in.get());
 
         ASSERT_FALSE(err);
         {
-            std::stringstream ans;
-            err = eng.WriteSchemeToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteSchemeToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), scheme);
+            EXPECT_EQ(ans.Str(), scheme);
         }
 
         {
-            std::stringstream ans;
-            err = eng.WriteDataToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteDataToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), ans_data);
+            EXPECT_EQ(ans.Str(), ans_data);
         }
     }
 }
 
 TEST_F(EngineTest, JfEmpty) {
-    auto out = std::make_shared<std::stringstream>();
+    auto jf_out = std::make_shared<TStringStreamFileOutput>();
     {
-        auto empty_data = std::make_shared<std::stringstream>("\n");
-        auto [eng, err] = MakeEngineFromCsv(scheme_ss, empty_data);
+        auto empty_data = std::make_shared<TStringStreamFileInput>("\n");
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), empty_data.get());
 
         ASSERT_FALSE(err);
 
         {
-            err = eng.WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(jf_out.get()).GetError();
 
             ASSERT_FALSE(err);
         }
     }
+    auto jf_in = std::make_shared<TStringStreamFileInput>(jf_out->Str());
     {
-        auto [eng, err] = MakeEngineFromJf(out);
+        auto [eng, err] = MakeEngineFromJf(jf_in.get());
 
         ASSERT_FALSE(err);
         {
-            std::stringstream ans;
-            err = eng.WriteSchemeToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteSchemeToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            // EXPECT_EQ(ans.str(), scheme);
         }
 
         {
-            std::stringstream ans;
-            err = eng.WriteDataToCsv(ans).GetError();
-            if (err) {
-            }
+            TStringStreamFileOutput ans;
+            err = eng.WriteDataToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            // EXPECT_EQ(ans.str(), "");
         }
     }
 }
 
 TEST_F(EngineTest, JfSmallRowGroupSize) {
-    auto out = std::make_shared<std::stringstream>();
+    auto jf_out = std::make_shared<TStringStreamFileOutput>();
     {
-        auto [eng, err] = MakeEngineFromCsv(scheme_ss, data_ss, /*row_group_size=*/1);
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), data_ss.get(), /*row_group_size=*/1);
 
         ASSERT_FALSE(err);
 
         {
-            err = eng.WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(jf_out.get()).GetError();
 
             ASSERT_FALSE(err);
         }
     }
+    auto jf_in = std::make_shared<TStringStreamFileInput>(jf_out->Str());
     {
-        auto [eng, err] = MakeEngineFromJf(out);
+        auto [eng, err] = MakeEngineFromJf(jf_in.get());
 
         ASSERT_FALSE(err);
         {
-            std::stringstream ans;
-            err = eng.WriteSchemeToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteSchemeToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), scheme);
+            EXPECT_EQ(ans.Str(), scheme);
         }
 
         {
-            std::stringstream ans;
-            err = eng.WriteDataToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteDataToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), ans_data);
+            EXPECT_EQ(ans.Str(), ans_data);
         }
     }
 }
@@ -196,45 +195,43 @@ TEST_F(EngineTest, JfSmallRowGroupSize) {
 TEST_F(EngineTest, JfDateColumns) {
     std::string time_scheme = R"(necessities,date
 )";
-    auto time_scheme_ss = std::make_shared<std::stringstream>(time_scheme);
+    auto time_scheme_ss = std::make_shared<TStringStreamFileInput>(time_scheme);
     std::string time_data = R"(2006-08-21
 2022-02-24
 1234-03-05
 )";
-    auto time_data_ss = std::make_shared<std::stringstream>(time_data);
+    auto time_data_ss = std::make_shared<TStringStreamFileInput>(time_data);
 
-    auto out = std::make_shared<std::stringstream>();
+    auto jf_out = std::make_shared<TStringStreamFileOutput>();
 
     {
-        auto [eng, err] = MakeEngineFromCsv(time_scheme_ss, time_data_ss);
+        auto [eng, err] = MakeEngineFromCsv(time_scheme_ss.get(), time_data_ss.get());
 
         ASSERT_FALSE(err);
 
         {
-            err = eng.WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(jf_out.get()).GetError();
 
             ASSERT_FALSE(err);
         }
     }
+    auto jf_in = std::make_shared<TStringStreamFileInput>(jf_out->Str());
     {
-        auto [eng, err] = MakeEngineFromJf(out);
+        auto [eng, err] = MakeEngineFromJf(jf_in.get());
 
         ASSERT_FALSE(err);
         {
-            std::stringstream ans;
-            err = eng.WriteSchemeToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteSchemeToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), time_scheme);
+            EXPECT_EQ(ans.Str(), time_scheme);
         }
 
         {
-            std::stringstream ans;
-            auto err2 = eng.WriteDataToCsv(ans).GetError();
-            if (err) {
-                std::cout << err << std::endl;
-            }
+            TStringStreamFileOutput ans;
+            auto err2 = eng.WriteDataToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), time_data);
+            EXPECT_EQ(ans.Str(), time_data);
         }
     }
 }
@@ -242,45 +239,43 @@ TEST_F(EngineTest, JfDateColumns) {
 TEST_F(EngineTest, JfTimeColumns) {
     std::string time_scheme = R"(necessities,timestamp
 )";
-    auto time_scheme_ss = std::make_shared<std::stringstream>(time_scheme);
+    auto time_scheme_ss = std::make_shared<TStringStreamFileInput>(time_scheme);
     std::string time_data = R"(2006-10-21 00:00:05
 1234-03-05 14:09:38
 1234-03-05 14:09:38
 )";
-    auto time_data_ss = std::make_shared<std::stringstream>(time_data);
+    auto time_data_ss = std::make_shared<TStringStreamFileInput>(time_data);
 
-    auto out = std::make_shared<std::stringstream>();
+    auto jf_out = std::make_shared<TStringStreamFileOutput>();
 
     {
-        auto [eng, err] = MakeEngineFromCsv(time_scheme_ss, time_data_ss);
+        auto [eng, err] = MakeEngineFromCsv(time_scheme_ss.get(), time_data_ss.get());
 
         ASSERT_FALSE(err);
 
         {
-            err = eng.WriteTableToJf(*out).GetError();
+            err = eng.WriteTableToJf(jf_out.get()).GetError();
 
             ASSERT_FALSE(err);
         }
     }
+    auto jf_in = std::make_shared<TStringStreamFileInput>(jf_out->Str());
     {
-        auto [eng, err] = MakeEngineFromJf(out);
+        auto [eng, err] = MakeEngineFromJf(jf_in.get());
 
         ASSERT_FALSE(err);
         {
-            std::stringstream ans;
-            err = eng.WriteSchemeToCsv(ans).GetError();
+            TStringStreamFileOutput ans;
+            err = eng.WriteSchemeToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), time_scheme);
+            EXPECT_EQ(ans.Str(), time_scheme);
         }
 
         {
-            std::stringstream ans;
-            err = eng.WriteDataToCsv(ans).GetError();
-            if (err) {
-                std::cout << err << std::endl;
-            }
+            TStringStreamFileOutput ans;
+            err = eng.WriteDataToCsv(&ans).GetError();
             ASSERT_FALSE(err);
-            EXPECT_EQ(ans.str(), time_data);
+            EXPECT_EQ(ans.Str(), time_data);
         }
     }
 }
