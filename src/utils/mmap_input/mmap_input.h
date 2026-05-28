@@ -46,9 +46,6 @@ class TIstreamFileInput final : public IFileInput {
 public:
     explicit TIstreamFileInput(std::shared_ptr<std::istream> in) : in_(std::move(in)) {
         in_->clear();
-        in_->seekg(0, std::ios::end);
-        size_ = static_cast<ui64>(in_->tellg());
-        in_->seekg(0, std::ios::beg);
     }
 
     ui64 TellPos() override {
@@ -61,7 +58,12 @@ public:
     }
 
     ui64 Size() const override {
-        return size_;
+        in_->clear();
+        auto cur = in_->tellg();
+        in_->seekg(0, std::ios::end);
+        auto end = in_->tellg();
+        in_->seekg(cur);
+        return static_cast<ui64>(end);
     }
 
     void Read(char*& dst, ui64 n) override {
@@ -84,7 +86,6 @@ public:
 
 private:
     std::shared_ptr<std::istream> in_;
-    ui64 size_ = 0;
     std::vector<char> buf_;
 };
 
