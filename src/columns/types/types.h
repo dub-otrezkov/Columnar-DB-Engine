@@ -310,19 +310,7 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
         }
     };
 
-    U max_encoded = 0;
-    for (auto v : a) {
-        U e = encode(v);
-        if (e > max_encoded) max_encoded = e;
-    }
-    ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
-
-    auto packed = BitPack(a.size(), a.data(), bits, encode);
-
-    std::vector<char> res(sizeof(bits) + packed.size());
-    std::memcpy(res.data(), &bits, sizeof(bits));
-    std::memcpy(res.data() + sizeof(bits), packed.data(), packed.size());
-    return res;
+    return BitPack(a.size(), a.data(), encode);
 }
 
 template<>
@@ -353,8 +341,6 @@ template <std::integral T>
 inline std::vector<T> Unserialize(const std::vector<char>& a) {
     using U = std::make_unsigned_t<T>;
 
-    ui8 bits = static_cast<ui8>(a.at(0));
-
     auto decode = [](U e) -> T {
         if constexpr (std::is_signed_v<T>) {
             return static_cast<T>((e >> 1) ^ -static_cast<U>(e & 1));
@@ -364,7 +350,7 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
     };
 
     std::vector<T> res;
-    BitUnpack(a.size() - sizeof(bits), const_cast<char*>(a.data()) + sizeof(bits), bits, res, decode);
+    BitUnpack(a.size(), const_cast<char*>(a.data()), res, decode);
     return res;
 }
 template<>

@@ -5,7 +5,6 @@
 #include <utils/cint/int.h>
 #include <utils/faster_vectors/gstring.h>
 
-#include <bit>
 #include <cstring>
 #include <vector>
 
@@ -62,12 +61,7 @@ inline std::vector<char> DictSerialize(ui64 n, JString* data) {
             write_raw(el.begin(), el.size());
         }
 
-        ui32 dict_count = static_cast<ui32>(dict_ordered.size());
-        ui32 bits = (dict_count <= 1) ? 0 : static_cast<ui32>(std::bit_width(dict_count - 1));
-        ui8 bits_byte = static_cast<ui8>(bits);
-        write_raw(&bits_byte, sizeof(bits_byte));
-
-        auto packed = BitPack(indices.size(), indices.data(), bits);
+        auto packed = BitPack(indices.size(), indices.data());
         write_raw(packed.data(), packed.size());
     }
     return ans;
@@ -110,9 +104,8 @@ inline std::vector<JString> DictUnserialize(size_t size, char* data) {
             i += sz;
         }
 
-        ui8 bits = static_cast<ui8>(data[i++]);
         std::vector<ui16> indices;
-        BitUnpack(size - i, data + i, bits, indices);
+        BitUnpack(size - i, data + i, indices);
 
         ans.reserve(indices.size());
         for (auto ix : indices) {
