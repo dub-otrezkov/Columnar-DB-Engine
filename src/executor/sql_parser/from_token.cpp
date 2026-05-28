@@ -1,6 +1,7 @@
 #include "tokenizer.h"
 
 #include "ios_factory/ios_factory.h"
+#include "utils/mmap_input/mmap_input.h"
 
 namespace JfEngine {
 
@@ -16,7 +17,7 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
 
         std::shared_ptr<std::iostream> io = TIoFactory::GetIo(name);
         if (!io) {
-            io = std::make_shared<std::fstream>(name + ".jf");
+            io = std::make_shared<TMmapIstream>(name + ".jf");
         }
         return std::make_shared<TJfNeccessaryOnly>(io, referenced_columns_);
     } else if (args_.size() == 2) {
@@ -25,11 +26,11 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
 
         std::shared_ptr<std::iostream> scheme_io = TIoFactory::GetIo(scheme);
         if (!scheme_io) {
-            scheme_io = std::make_shared<std::fstream>(scheme + ".csv");
+            scheme_io = std::make_shared<TMmapIstream>(scheme + ".csv");
         }
         std::shared_ptr<std::iostream> data_io = TIoFactory::GetIo(data);
         if (!data_io) {
-            data_io = std::make_shared<std::fstream>(data + ".csv");
+            data_io = std::make_shared<TMmapIstream>(data + ".csv");
         }
 
         return std::make_shared<TCsvTableInput>(scheme_io, data_io);

@@ -106,10 +106,10 @@ private:
     size_t size_ = 0;
 };
 
-class TMmapIstream : public std::istream {
+class TMmapIstream : public std::iostream {
 public:
     explicit TMmapIstream(const std::string& path)
-        : std::istream(nullptr),
+        : std::iostream(nullptr),
           buf_(std::make_unique<TMmapStreambuf>(path))
     {
         rdbuf(buf_.get());
