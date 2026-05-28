@@ -42,6 +42,8 @@ public:
     virtual void SetPos(i64) = 0;
 
     virtual void Write(const char*&, ui64 n) = 0;
+
+    virtual void Flush() = 0;
 };
 
 using IFileInputPtr  = std::shared_ptr<IFileInput>;
@@ -234,6 +236,10 @@ public:
         out_->write(src, n);
     }
 
+    void Flush() override {
+        out_->flush();
+    }
+
 private:
     std::shared_ptr<std::ostream> out_;
 };
@@ -254,6 +260,10 @@ public:
 
     void Write(const char*& src, ui64 n) override {
         ss_.write(src, n);
+    }
+
+    void Flush() override {
+        ss_.flush();
     }
 
     std::stringstream& Stream() {

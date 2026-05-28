@@ -22,6 +22,7 @@ Expected<TTableInputPtr> TCreateToken::MakeWorker() {
         io = TIoFactory::GetOutput(name);
     }
     eng.WriteTableToJf(io);
+    io->Flush();
 
     return EError::NoError;
 }
