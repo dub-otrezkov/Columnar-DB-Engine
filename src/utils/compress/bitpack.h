@@ -75,7 +75,15 @@ inline std::vector<char> BitPack(ui64 n, T* values, Encode encode) {
 template <std::integral T>
 inline std::vector<char> BitPack(ui64 n, T* values) {
     using U = std::make_unsigned_t<T>;
-    return BitPack(n, values, [](T v) -> U { return static_cast<U>(v); });
+    constexpr ui32 W = sizeof(T) * 8;
+    return BitPack(n, values, [](T v) -> U {
+        if constexpr (std::is_signed_v<T>) {
+            U u = static_cast<U>(v);
+            return (u << 1) ^ static_cast<U>(static_cast<std::make_signed_t<U>>(u) >> (W - 1));
+        } else {
+            return static_cast<U>(v);
+        }
+    });
 }
 
 template <std::integral T, typename Decode>
@@ -116,7 +124,13 @@ inline void BitUnpack(size_t packed_size, char* packed, std::vector<T>& out, Dec
 template <std::integral T>
 inline void BitUnpack(size_t packed_size, char* packed, std::vector<T>& out) {
     using U = std::make_unsigned_t<T>;
-    BitUnpack(packed_size, packed, out, [](U r) -> T { return static_cast<T>(r); });
+    BitUnpack(packed_size, packed, out, [](U r) -> T {
+        if constexpr (std::is_signed_v<T>) {
+            return static_cast<T>((r >> 1) ^ -static_cast<U>(r & 1));
+        } else {
+            return static_cast<T>(r);
+        }
+    });
 }
 
 struct TBitReader {
