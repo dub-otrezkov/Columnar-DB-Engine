@@ -187,9 +187,9 @@ std::string PrintDate(const TDate& d) {
 
 TDate DateFromStr(const std::string& s) {
     return TDate{
-        static_cast<ui16>(std::stoi(s.substr(0, 4))),
-        static_cast<ui8>(std::stoi(s.substr(5, 2))),
-        static_cast<ui8>(std::stoi(s.substr(8, 2)))
+        .day = static_cast<ui8>(std::stoi(s.substr(8, 2))),
+        .month = static_cast<ui8>(std::stoi(s.substr(5, 2))),
+        .year = static_cast<ui16>(std::stoi(s.substr(0, 4)))
     };
 }
 
@@ -218,14 +218,10 @@ std::string PrintTimestamp(const TTimestamp& d) {
 
 TTimestamp TimestampFromStr(const std::string& s) {
     return TTimestamp{
-        TDate{
-            static_cast<ui16>(std::stoi(s.substr(0, 4))),
-            static_cast<ui8>(std::stoi(s.substr(5, 2))),
-            static_cast<ui8>(std::stoi(s.substr(8, 2)))
-        },
-        static_cast<ui8>(std::stoi(s.substr(11, 2))),
-        static_cast<ui8>(std::stoi(s.substr(14, 2))),
-        static_cast<ui8>(std::stoi(s.substr(17, 2)))
+        .second = static_cast<ui8>(std::stoi(s.substr(17, 2))),
+        .minute = static_cast<ui8>(std::stoi(s.substr(14, 2))),
+        .hour = static_cast<ui16>(std::stoi(s.substr(11, 2))),
+        .date = DateFromStr(s.substr(0, 10))
     };
 }
 
