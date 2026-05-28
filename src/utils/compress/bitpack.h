@@ -37,8 +37,7 @@ struct TBitWriter {
 };
 
 template <std::integral T, typename Encode>
-inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits, Encode encode) {
-    ui64 n = values.size();
+inline std::vector<char> BitPack(ui64 n, T* values, ui32 bits, Encode encode) {
     ui64 words = (n * bits + 63) / 64;
     std::vector<ui64> buf(1 + words, 0);
     buf[0] = n;
@@ -61,9 +60,8 @@ inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits, Encode
 }
 
 template <std::integral T>
-inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits) {
+inline std::vector<char> BitPack(ui64 n, T* values, ui32 bits) {
     using U = std::make_unsigned_t<T>;
-    ui64 n = values.size();
 
     if (bits == sizeof(T) * 8) {
         ui64 body = n * sizeof(T);
@@ -71,16 +69,16 @@ inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits) {
         std::vector<char> out(total, 0);
         std::memcpy(out.data(), &n, sizeof(n));
         if (n > 0) {
-            std::memcpy(out.data() + sizeof(n), values.data(), body);
+            std::memcpy(out.data() + sizeof(n), values, body);
         }
         return out;
     }
 
-    return BitPack(values, bits, [](T v) -> U { return static_cast<U>(v); });
+    return BitPack(n, values, bits, [](T v) -> U { return static_cast<U>(v); });
 }
 
 template <std::integral T, typename Decode>
-inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::vector<T>& out, Decode decode) {
+inline void BitUnpack(size_t packed_size, char* packed, ui32 bits, std::vector<T>& out, Decode decode) {
     if (packed_size < sizeof(ui64)) {
         out.clear();
         return;
@@ -92,7 +90,7 @@ inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::ve
         return;
     }
     ui64 mask = (bits == 64) ? ~0ULL : ((bits == 0) ? 0 : ((1ULL << bits) - 1));
-    const char* base = packed + sizeof(ui64);
+    char* base = packed + sizeof(ui64);
     for (ui64 i = 0; i < n; i++) {
         ui64 r = 0;
         if (bits > 0) {
@@ -114,7 +112,7 @@ inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::ve
 }
 
 template <std::integral T>
-inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::vector<T>& out) {
+inline void BitUnpack(size_t packed_size, char* packed, ui32 bits, std::vector<T>& out) {
     if (packed_size < sizeof(ui64)) {
         out.clear();
         return;
@@ -131,12 +129,7 @@ inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::ve
     }
 
     using U = std::make_unsigned_t<T>;
-    BitUnpack(packed, packed_size, bits, out, [](U r) -> T { return static_cast<T>(r); });
-}
-
-template <std::integral T>
-inline void BitUnpack(const std::vector<char>& packed, ui32 bits, std::vector<T>& out) {
-    BitUnpack(packed.data(), packed.size(), bits, out);
+    BitUnpack(packed_size, packed, bits, out, [](U r) -> T { return static_cast<T>(r); });
 }
 
 struct TBitReader {

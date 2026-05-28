@@ -136,24 +136,24 @@ TEST(BitPack, SignedRoundtrip) {
 
 TEST(BitPack, BitPackRoundtripBasic) {
     std::vector<ui64> in = {0, 1, 2, 3, 4, 5, 6, 7};
-    auto packed = BitPack(in, 3);
+    auto packed = BitPack(in.size(), in.data(), 3);
     std::vector<ui64> out;
-    BitUnpack(packed, 3, out);
+    BitUnpack(packed.size(), packed.data(), 3, out);
     EXPECT_EQ(in, out);
 }
 
 TEST(BitPack, BitPackEmpty) {
-    auto packed = BitPack(std::vector<ui64>{}, 5);
+    auto packed = BitPack<ui64>(0, nullptr, 5);
     std::vector<ui64> out;
-    BitUnpack(packed, 5, out);
+    BitUnpack(packed.size(), packed.data(), 5, out);
     EXPECT_TRUE(out.empty());
 }
 
 TEST(BitPack, BitPackZeroBits) {
     std::vector<ui64> in(50, 0);
-    auto packed = BitPack(in, 0);
+    auto packed = BitPack(in.size(), in.data(), 0);
     std::vector<ui64> out;
-    BitUnpack(packed, 0, out);
+    BitUnpack(packed.size(), packed.data(), 0, out);
     ASSERT_EQ(out.size(), in.size());
     for (auto v : out) EXPECT_EQ(v, 0u);
 }
@@ -161,9 +161,9 @@ TEST(BitPack, BitPackZeroBits) {
 TEST(BitPack, BitPackCrossBoundary) {
     std::vector<ui64> in;
     for (ui64 i = 0; i < 100; i++) in.push_back(i * 12345);
-    auto packed = BitPack(in, 21);
+    auto packed = BitPack(in.size(), in.data(), 21);
     std::vector<ui64> out;
-    BitUnpack(packed, 21, out);
+    BitUnpack(packed.size(), packed.data(), 21, out);
     ASSERT_EQ(in.size(), out.size());
     ui64 mask = (1ULL << 21) - 1;
     for (size_t i = 0; i < in.size(); i++) {
@@ -173,9 +173,9 @@ TEST(BitPack, BitPackCrossBoundary) {
 
 TEST(BitPack, BitPackFull64) {
     std::vector<ui64> in = {0, ~0ULL, 1, 0xDEADBEEFCAFEBABEULL, 0x8000000000000000ULL};
-    auto packed = BitPack(in, 64);
+    auto packed = BitPack(in.size(), in.data(), 64);
     std::vector<ui64> out;
-    BitUnpack(packed, 64, out);
+    BitUnpack(packed.size(), packed.data(), 64, out);
     EXPECT_EQ(in, out);
 }
 
@@ -186,27 +186,27 @@ TEST(BitPack, BitPackRandom) {
         in.reserve(500);
         ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
         for (int i = 0; i < 500; i++) in.push_back(rng() & mask);
-        auto packed = BitPack(in, bits);
+        auto packed = BitPack(in.size(), in.data(), bits);
         std::vector<ui64> out;
-        BitUnpack(packed, bits, out);
+        BitUnpack(packed.size(), packed.data(), bits, out);
         ASSERT_EQ(in, out) << "bits=" << bits;
     }
 }
 
 TEST(BitPack, BitPackI32Roundtrip) {
     std::vector<i32> in = {0, 1, 100, 1000, 10000};
-    auto packed = BitPack(in, 14);
+    auto packed = BitPack(in.size(), in.data(), 14);
     std::vector<i32> out;
-    BitUnpack(packed, 14, out);
+    BitUnpack(packed.size(), packed.data(), 14, out);
     EXPECT_EQ(in, out);
 }
 
 TEST(BitPack, BitPackUi8Roundtrip) {
     std::vector<ui8> in;
     for (int i = 0; i < 256; i++) in.push_back(static_cast<ui8>(i));
-    auto packed = BitPack(in, 8);
+    auto packed = BitPack(in.size(), in.data(), 8);
     std::vector<ui8> out;
-    BitUnpack(packed, 8, out);
+    BitUnpack(packed.size(), packed.data(), 8, out);
     EXPECT_EQ(in, out);
 }
 

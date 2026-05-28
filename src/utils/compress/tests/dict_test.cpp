@@ -9,8 +9,8 @@
 namespace {
 
 std::vector<JString> Roundtrip(const std::vector<JString>& in) {
-    auto bytes = DictSerialize(in);
-    return DictUnserialize(bytes);
+    auto bytes = DictSerialize(in.size(), const_cast<JString*>(in.data()));
+    return DictUnserialize(bytes.size(), bytes.data());
 }
 
 void ExpectEq(const std::vector<JString>& a, const std::vector<JString>& b) {

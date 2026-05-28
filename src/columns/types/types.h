@@ -317,7 +317,7 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
     }
     ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
 
-    auto packed = BitPack(a, bits, encode);
+    auto packed = BitPack(a.size(), a.data(), bits, encode);
 
     std::vector<char> res(sizeof(bits) + packed.size());
     std::memcpy(res.data(), &bits, sizeof(bits));
@@ -337,7 +337,7 @@ inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
 
 template<>
 inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
-    return DictSerialize(a);
+    return DictSerialize(a.size(), a.data());
 }
 
 template <typename T>
@@ -364,12 +364,12 @@ inline std::vector<T> Unserialize(const std::vector<char>& a) {
     };
 
     std::vector<T> res;
-    BitUnpack(a.data() + sizeof(bits), a.size() - sizeof(bits), bits, res, decode);
+    BitUnpack(a.size() - sizeof(bits), const_cast<char*>(a.data()) + sizeof(bits), bits, res, decode);
     return res;
 }
 template<>
 inline std::vector<JString> Unserialize<JString>(std::vector<char>& a) {
-    return DictUnserialize(a);
+    return DictUnserialize(a.size(), a.data());
 }
 
 } // namespace JfEngine

@@ -11,18 +11,19 @@
 
 #include <boost/unordered/unordered_flat_map.hpp>
 
-inline std::vector<char> DictSerialize(const std::vector<JString>& data) {
+inline std::vector<char> DictSerialize(ui64 n, JString* data) {
     constexpr ui64 kDictMaxSize = 1ULL << 13;
-    ui64 cap = std::min<ui64>(data.size(), kDictMaxSize);
+    ui64 cap = std::min<ui64>(n, kDictMaxSize);
     boost::unordered_flat_map<JString, ui16> idx;
     idx.reserve(cap);
     std::vector<JString> dict_ordered;
     dict_ordered.reserve(cap);
     std::vector<ui16> indices;
-    indices.reserve(data.size());
+    indices.reserve(n);
 
     bool use_dict = true;
-    for (const auto& el : data) {
+    for (ui64 i = 0; i < n; i++) {
+        const auto& el = data[i];
         auto [it, inserted] = idx.try_emplace(el, 0);
         if (inserted) {
             if (idx.size() > kDictMaxSize) {
@@ -36,19 +37,20 @@ inline std::vector<char> DictSerialize(const std::vector<JString>& data) {
     }
 
     std::vector<char> ans;
-    auto write_raw = [&](const void* src, ui64 n) {
+    auto write_raw = [&](const void* src, ui64 sz) {
         auto off = ans.size();
-        ans.resize(off + n);
-        if (n > 0) {
-            std::memcpy(ans.data() + off, src, n);
+        ans.resize(off + sz);
+        if (sz > 0) {
+            std::memcpy(ans.data() + off, src, sz);
         }
     };
     auto write_u32 = [&](ui32 v) { write_raw(&v, sizeof(v)); };
 
     if (!use_dict) {
         ans.push_back(0);
-        write_u32(static_cast<ui32>(data.size()));
-        for (const auto& el : data) {
+        write_u32(static_cast<ui32>(n));
+        for (ui64 i = 0; i < n; i++) {
+            const auto& el = data[i];
             write_u32(el.size());
             write_raw(el.begin(), el.size());
         }
@@ -65,22 +67,22 @@ inline std::vector<char> DictSerialize(const std::vector<JString>& data) {
         ui8 bits_byte = static_cast<ui8>(bits);
         write_raw(&bits_byte, sizeof(bits_byte));
 
-        auto packed = BitPack(indices, bits);
+        auto packed = BitPack(indices.size(), indices.data(), bits);
         write_raw(packed.data(), packed.size());
     }
     return ans;
 }
 
-inline std::vector<JString> DictUnserialize(const std::vector<char>& data) {
+inline std::vector<JString> DictUnserialize(size_t size, char* data) {
     std::vector<JString> ans;
-    if (data.empty()) {
+    if (size == 0) {
         return ans;
     }
 
     ui64 i = 0;
-    auto read_raw = [&](void* dst, ui64 n) {
-        std::memcpy(dst, data.data() + i, n);
-        i += n;
+    auto read_raw = [&](void* dst, ui64 sz) {
+        std::memcpy(dst, data + i, sz);
+        i += sz;
     };
     auto read_u32 = [&]() -> ui32 {
         ui32 v;
@@ -95,7 +97,7 @@ inline std::vector<JString> DictUnserialize(const std::vector<char>& data) {
         ans.reserve(row_count);
         for (ui32 r = 0; r < row_count; r++) {
             ui32 sz = read_u32();
-            ans.emplace_back(sz, data.data() + i);
+            ans.emplace_back(sz, data + i);
             i += sz;
         }
     } else {
@@ -104,13 +106,13 @@ inline std::vector<JString> DictUnserialize(const std::vector<char>& data) {
         dict.reserve(dict_count);
         for (ui32 k = 0; k < dict_count; k++) {
             ui32 sz = read_u32();
-            dict.emplace_back(sz, data.data() + i);
+            dict.emplace_back(sz, data + i);
             i += sz;
         }
 
         ui8 bits = static_cast<ui8>(data[i++]);
         std::vector<ui16> indices;
-        BitUnpack(data.data() + i, data.size() - i, bits, indices);
+        BitUnpack(size - i, data + i, bits, indices);
 
         ans.reserve(indices.size());
         for (auto ix : indices) {
