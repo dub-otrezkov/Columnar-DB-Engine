@@ -10,6 +10,7 @@
 #include "utils/compress/dict.h"
 #include "utils/compress/delta.h"
 
+#include <bit>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -173,10 +174,7 @@ struct alignas(4) TDate {
     ui16 year; // такой порядок чтобы год был в старших битах и дельта сжатие работало лучше
 
     inline ui64 IntDate() const {
-        // return (static_cast<i64>(year) << 16) |
-        //        (static_cast<i64>(month) << 8) |
-        //        (static_cast<i64>(day));
-        return *reinterpret_cast<const ui32*>(this);
+        return std::bit_cast<ui32>(*this);
     }
 
     inline bool operator< (const TDate& other) const {
@@ -215,12 +213,7 @@ struct alignas(8) TTimestamp {
     TDate date;
 
     inline ui64 IntTime() const {
-        // return (date.IntDate() << 24) |
-        //        (static_cast<i64>(hour) << 16) |
-        //        (static_cast<i64>(minute) << 8) |
-        //        (static_cast<i64>(second));
-
-        return *reinterpret_cast<const ui64*>(this);
+        return std::bit_cast<ui64>(*this);
     }
 
     inline bool operator< (const TTimestamp& other) const {
