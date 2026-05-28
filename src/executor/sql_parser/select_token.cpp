@@ -334,8 +334,8 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
 
         TEngine eng;
 
-        TIoFactory::RegisterFileIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterFileIo(kResultData, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultData, ETypeFile::kCsvFile);
 
         eng.Setup(agr);
 
@@ -346,8 +346,8 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
     } else {
         TEngine eng;
 
-        TIoFactory::RegisterFileIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterFileIo(kResultData, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultData, ETypeFile::kCsvFile);
 
         eng.Setup(TIoFactory::GetTableIo(kCurTableInput));
 

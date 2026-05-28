@@ -49,7 +49,7 @@ void TIoFactory::RegisterFileOutput(const std::string& alias, ETypeFile t) {
         return;
     }
     auto path = alias + (t == kJfFile ? ".jf" : ".csv");
-    auto fs = std::make_shared<TOstreamFileOutput>(std::ofstream(path));
+    auto fs = std::make_shared<TOstreamFileOutput>(std::make_shared<std::ofstream>(path));
     i->outputs_[alias] = fs;
 }
 
