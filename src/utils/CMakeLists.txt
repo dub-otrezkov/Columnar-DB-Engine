@@ -1,7 +1,7 @@
 add_subdirectory(cint)
 add_subdirectory(errors)
-add_subdirectory(compress)
 add_subdirectory(faster_vectors)
+add_subdirectory(compress)
 add_subdirectory(faster_hashmap)
 add_subdirectory(perf_stats)
 add_subdirectory(mmap_input)

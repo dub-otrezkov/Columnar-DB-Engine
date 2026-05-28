@@ -168,14 +168,15 @@ public:
 };
 
 struct TDate {
-    i16 year;
-    i8 month;
-    i8 day;
+    ui8 day;
+    ui8 month;
+    ui16 year; // такой порядок чтобы год был в старших битах и дельта сжатие работало лучше
 
-    inline i64 IntDate() const {
-        return (static_cast<i64>(year) << 16) |
-               (static_cast<i64>(month) << 8) |
-               (static_cast<i64>(day));
+    inline ui64 IntDate() const {
+        // return (static_cast<i64>(year) << 16) |
+        //        (static_cast<i64>(month) << 8) |
+        //        (static_cast<i64>(day));
+        return *reinterpret_cast<const ui32*>(this);
     }
 
     inline bool operator< (const TDate& other) const {
@@ -207,16 +208,18 @@ std::string PrintDate(const TDate& d);
 TDate DateFromStr(const std::string& s);
 
 struct TTimestamp {
+    ui8 second;
+    ui8 minute;
+    ui16 hour;  // чтобы занулить ласт байт паддинга
     TDate date;
-    i8 hour;
-    i8 minute;
-    i8 second;
 
-    inline i64 IntTime() const {
-        return (date.IntDate() << 24) |
-               (static_cast<i64>(hour) << 16) |
-               (static_cast<i64>(minute) << 8) |
-               (static_cast<i64>(second));
+    inline ui64 IntTime() const {
+        // return (date.IntDate() << 24) |
+        //        (static_cast<i64>(hour) << 16) |
+        //        (static_cast<i64>(minute) << 8) |
+        //        (static_cast<i64>(second));
+
+        return *reinterpret_cast<const ui64*>(this);
     }
 
     inline bool operator< (const TTimestamp& other) const {
@@ -298,29 +301,18 @@ inline std::vector<char> Serialize(std::vector<T>& a);
 
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
-    using U = std::make_unsigned_t<T>;
-    constexpr ui32 W = sizeof(T) * 8;
 
-    auto encode = [](T v) -> U {
-        if constexpr (std::is_signed_v<T>) {
-            U u = static_cast<U>(v);
-            return (u << 1) ^ static_cast<U>(static_cast<std::make_signed_t<U>>(u) >> (W - 1));
-        } else {
-            return static_cast<U>(v);
-        }
-    };
-
-    return BitPack(a.size(), a.data(), encode);
+    return BitPack(a.size(), a.data());
 }
 
 template<>
 inline std::vector<char> Serialize<TDate>(std::vector<TDate>& a) {
-    return {};
+    return DeltaSerialize<ui32>(a.size(), reinterpret_cast<ui32*>(a.data()));
 }
 
 template<>
 inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
-    return {};
+    return DeltaSerialize<ui64>(a.size(), reinterpret_cast<ui64*>(a.data()));
 }
 
 template<>
@@ -329,33 +321,37 @@ inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
 }
 
 template <typename T>
-inline std::vector<T> Unserialize(const std::vector<char>& a);
+inline std::vector<T> Unserialize(std::vector<char>& a);
 
-template <typename T>
-inline std::vector<T> Unserialize(const std::vector<char>& a) {
-    std::vector<T> res(a.size() / sizeof(T));
-    std::memcpy(res.data(), a.data(), a.size());
-    return res;
-}
 template <std::integral T>
-inline std::vector<T> Unserialize(const std::vector<char>& a) {
-    using U = std::make_unsigned_t<T>;
-
-    auto decode = [](U e) -> T {
-        if constexpr (std::is_signed_v<T>) {
-            return static_cast<T>((e >> 1) ^ -static_cast<U>(e & 1));
-        } else {
-            return static_cast<T>(e);
-        }
-    };
-
+inline std::vector<T> Unserialize(std::vector<char>& a) {
     std::vector<T> res;
-    BitUnpack(a.size(), const_cast<char*>(a.data()), res, decode);
+    BitUnpack(a.size(), a.data(), res);
     return res;
 }
 template<>
 inline std::vector<JString> Unserialize<JString>(std::vector<char>& a) {
     return DictUnserialize(a.size(), a.data());
+}
+
+template<>
+inline std::vector<TDate> Unserialize<TDate>(std::vector<char>& a) {
+    auto t = DeltaUnserialize<ui32>(a.size(), a.data());
+
+    std::vector<TDate> ans(t.size());
+    std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui32));
+
+    return ans;
+}
+
+template<>
+inline std::vector<TTimestamp> Unserialize<TTimestamp>(std::vector<char>& a) {
+    auto t = DeltaUnserialize<ui64>(a.size(), a.data());
+
+    std::vector<TTimestamp> ans(t.size());
+    std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui64));
+
+    return ans;
 }
 
 } // namespace JfEngine
