@@ -35,22 +35,20 @@ void TIoFactory::RegisterCustomOutput(const std::string& alias, IFileOutputPtr o
 
 void TIoFactory::RegisterFileInput(const std::string& alias, ETypeFile t) {
     auto i = Instance();
-    if (i->inputs_.contains(alias) || i->outputs_.contains(alias)) {
+    if (i->inputs_.contains(alias)) {
         return;
     }
     auto path = alias + (t == kJfFile ? ".jf" : ".csv");
-    auto fs = std::make_shared<TMMapFileInput>(path);
-    i->inputs_[alias]  = fs;
+    i->inputs_[alias] = std::make_shared<TMMapFileInput>(path);
 }
 
 void TIoFactory::RegisterFileOutput(const std::string& alias, ETypeFile t) {
     auto i = Instance();
-    if (i->inputs_.contains(alias) || i->outputs_.contains(alias)) {
+    if (i->outputs_.contains(alias)) {
         return;
     }
     auto path = alias + (t == kJfFile ? ".jf" : ".csv");
-    auto fs = std::make_shared<TOstreamFileOutput>(std::make_shared<std::ofstream>(path));
-    i->outputs_[alias] = fs;
+    i->outputs_[alias] = std::make_shared<TOstreamFileOutput>(std::make_shared<std::ofstream>(path));
 }
 
 void TIoFactory::RegisterTableInput(const std::string& alias, TTableInputPtr inp) {
