@@ -12,6 +12,7 @@
 
 #include <bit>
 #include <memory>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -260,7 +261,7 @@ public:
 Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
-Expected<TColumnPtr> MakeColumnJf(std::vector<char> data, EColumn type);
+Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
 
 template <typename T>
 Expected<TColumnPtr> SetupColumn(std::vector<std::string>&& data) {
@@ -328,23 +329,23 @@ inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
 }
 
 template <typename T>
-inline std::vector<T> Unserialize(std::vector<char>& a) {
+inline std::vector<T> Unserialize(std::span<const char> a) {
     throw "bad type";
 }
 
 template <std::integral T>
-inline std::vector<T> Unserialize(std::vector<char>& a) {
+inline std::vector<T> Unserialize(std::span<const char> a) {
     std::vector<T> res;
     BitUnpack(a.size(), a.data(), res);
     return res;
 }
 template<>
-inline std::vector<JString> Unserialize<JString>(std::vector<char>& a) {
+inline std::vector<JString> Unserialize<JString>(std::span<const char> a) {
     return DictUnserialize(a.size(), a.data());
 }
 
 template<>
-inline std::vector<TDate> Unserialize<TDate>(std::vector<char>& a) {
+inline std::vector<TDate> Unserialize<TDate>(std::span<const char> a) {
     auto t = DeltaUnserialize<ui32>(a.size(), a.data());
 
     std::vector<TDate> ans(t.size());
@@ -354,7 +355,7 @@ inline std::vector<TDate> Unserialize<TDate>(std::vector<char>& a) {
 }
 
 template<>
-inline std::vector<TTimestamp> Unserialize<TTimestamp>(std::vector<char>& a) {
+inline std::vector<TTimestamp> Unserialize<TTimestamp>(std::span<const char> a) {
     auto t = DeltaUnserialize<ui64>(a.size(), a.data());
 
     std::vector<TTimestamp> ans(t.size());

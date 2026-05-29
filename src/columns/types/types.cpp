@@ -225,7 +225,7 @@ TTimestamp TimestampFromStr(const std::string& s) {
     };
 }
 
-Expected<TColumnPtr> MakeColumnJf(std::vector<char> data, EColumn type) {
+Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type) {
     switch (type) {
         case kUnitialized: {
             return MakeError<EError::UnimplementedErr>();

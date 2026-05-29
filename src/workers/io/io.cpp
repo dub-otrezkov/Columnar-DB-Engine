@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstring>
 #include <unordered_map>
+#include <span>
 
 namespace JfEngine {
 
@@ -116,7 +117,7 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
 
     const char* raw = nullptr;
     jf_in_->Read(raw, len);
-    std::vector<char> data(raw, raw + len);
+    std::span<const char> data(raw, len);
 
     auto col = MakeColumnJf(data, scheme_[i].type_);
 

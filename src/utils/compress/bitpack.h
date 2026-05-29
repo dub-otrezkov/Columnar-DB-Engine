@@ -87,7 +87,7 @@ inline std::vector<char> BitPack(ui64 n, T* values) {
 }
 
 template <std::integral T, typename Decode>
-inline void BitUnpack(size_t packed_size, char* packed, std::vector<T>& out, Decode decode) {
+inline void BitUnpack(size_t packed_size, const char* packed, std::vector<T>& out, Decode decode) {
     if (packed_size < sizeof(ui8) + sizeof(ui64)) {
         out.clear();
         return;
@@ -100,7 +100,7 @@ inline void BitUnpack(size_t packed_size, char* packed, std::vector<T>& out, Dec
         return;
     }
     ui64 mask = (bits == 64) ? ~0ULL : ((bits == 0) ? 0 : ((1ULL << bits) - 1));
-    char* base = packed + sizeof(bits) + sizeof(n);
+    auto* base = packed + sizeof(bits) + sizeof(n);
     for (ui64 i = 0; i < n; i++) {
         ui64 r = 0;
         if (bits > 0) {
@@ -122,7 +122,7 @@ inline void BitUnpack(size_t packed_size, char* packed, std::vector<T>& out, Dec
 }
 
 template <std::integral T>
-inline void BitUnpack(size_t packed_size, char* packed, std::vector<T>& out) {
+inline void BitUnpack(size_t packed_size, const char* packed, std::vector<T>& out) {
     using U = std::make_unsigned_t<T>;
     BitUnpack(packed_size, packed, out, [](U r) -> T {
         if constexpr (std::is_signed_v<T>) {

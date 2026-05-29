@@ -26,7 +26,7 @@ inline std::vector<char> DeltaSerialize(ui64 n, T* data) {
 }
 
 template <std::integral T>
-inline std::vector<T> DeltaUnserialize(size_t size, char* data) {
+inline std::vector<T> DeltaUnserialize(size_t size, const char* data) {
     using U = std::make_unsigned_t<T>;
     if (size < sizeof(T)) {
         return {};

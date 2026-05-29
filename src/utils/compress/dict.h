@@ -67,7 +67,7 @@ inline std::vector<char> DictSerialize(ui64 n, JString* data) {
     return ans;
 }
 
-inline std::vector<JString> DictUnserialize(size_t size, char* data) {
+inline std::vector<JString> DictUnserialize(size_t size, const char* data) {
     std::vector<JString> ans;
     if (size == 0) {
         return ans;
