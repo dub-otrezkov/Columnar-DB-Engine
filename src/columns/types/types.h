@@ -6,8 +6,13 @@
 #include "utils/errors/errors_templates.h"
 #include "utils/faster_vectors/vector_1d.h"
 #include "utils/faster_vectors/vector_string_2d.h"
+#include "utils/compress/bitpack.h"
+#include "utils/compress/dict.h"
+#include "utils/compress/delta.h"
 
+#include <bit>
 #include <memory>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -164,15 +169,18 @@ public:
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
-struct TDate {
-    i16 year;
-    i8 month;
-    i8 day;
+struct alignas(4) TDate {
+    ui8 day;
+    ui8 month;
+    ui16 year; // такой порядок чтобы год был в старших битах и дельта сжатие работало лучше
 
-    inline i64 IntDate() const {
-        return (static_cast<i64>(year) << 16) |
-               (static_cast<i64>(month) << 8) |
-               (static_cast<i64>(day));
+    TDate() = default;
+
+    TDate(ui16 y, ui8 m, ui8 d) : year(y), month(m), day(d) {
+    }
+
+    inline ui64 IntDate() const {
+        return std::bit_cast<ui32>(*this);
     }
 
     inline bool operator< (const TDate& other) const {
@@ -188,7 +196,8 @@ struct TDate {
     }
 };
 
-static_assert(sizeof(TDate) == 4);
+static_assert(sizeof(TDate) == sizeof(ui32));
+static_assert(alignof(TDate) == alignof(ui32));
 
 class TDateColumn : public TStorage<TDate> {
 public:
@@ -203,17 +212,19 @@ public:
 std::string PrintDate(const TDate& d);
 TDate DateFromStr(const std::string& s);
 
-struct TTimestamp {
+struct alignas(8) TTimestamp {
+    ui8 second;
+    ui8 minute;
+    ui16 hour;  // чтобы занулить ласт байт паддинга
     TDate date;
-    i8 hour;
-    i8 minute;
-    i8 second;
 
-    inline i64 IntTime() const {
-        return (date.IntDate() << 24) |
-               (static_cast<i64>(hour) << 16) |
-               (static_cast<i64>(minute) << 8) |
-               (static_cast<i64>(second));
+    TTimestamp() = default;
+
+    TTimestamp(TDate d, ui8 h, ui8 m, ui8 s) : date(d), hour(h), minute(m), second(s) {
+    }
+
+    inline ui64 IntTime() const {
+        return std::bit_cast<ui64>(*this);
     }
 
     inline bool operator< (const TTimestamp& other) const {
@@ -229,7 +240,8 @@ struct TTimestamp {
     }
 };
 
-static_assert(sizeof(TTimestamp) == 8);
+static_assert(sizeof(TTimestamp) == sizeof(ui64));
+static_assert(alignof(TTimestamp) == alignof(ui64));
 
 std::string PrintTimestamp(const TTimestamp& d);
 TTimestamp TimestampFromStr(const std::string& s);
@@ -249,7 +261,7 @@ public:
 Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
-Expected<TColumnPtr> MakeColumnJf(std::vector<char> data, EColumn type);
+Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
 
 template <typename T>
 Expected<TColumnPtr> SetupColumn(std::vector<std::string>&& data) {
@@ -290,5 +302,66 @@ concept CTimeColumn =
        std::same_as<TCol, TDateColumn>
     || std::same_as<TCol, TTimestampColumn>;
 
+template <typename T>
+inline std::vector<char> Serialize(std::vector<T>& a) {
+    throw "bad type";
+}
+
+template <std::integral T>
+inline std::vector<char> Serialize(std::vector<T>& a) {
+
+    return BitPack(a.size(), a.data());
+}
+
+template<>
+inline std::vector<char> Serialize<TDate>(std::vector<TDate>& a) {
+    return DeltaSerialize<ui32>(a.size(), reinterpret_cast<ui32*>(a.data()));
+}
+
+template<>
+inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
+    return DeltaSerialize<ui64>(a.size(), reinterpret_cast<ui64*>(a.data()));
+}
+
+template<>
+inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
+    return DictSerialize(a.size(), a.data());
+}
+
+template <typename T>
+inline std::vector<T> Unserialize(std::span<const char> a) {
+    throw "bad type";
+}
+
+template <std::integral T>
+inline std::vector<T> Unserialize(std::span<const char> a) {
+    std::vector<T> res;
+    BitUnpack(a.size(), a.data(), res);
+    return res;
+}
+template<>
+inline std::vector<JString> Unserialize<JString>(std::span<const char> a) {
+    return DictUnserialize(a.size(), a.data());
+}
+
+template<>
+inline std::vector<TDate> Unserialize<TDate>(std::span<const char> a) {
+    auto t = DeltaUnserialize<ui32>(a.size(), a.data());
+
+    std::vector<TDate> ans(t.size());
+    std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui32));
+
+    return ans;
+}
+
+template<>
+inline std::vector<TTimestamp> Unserialize<TTimestamp>(std::span<const char> a) {
+    auto t = DeltaUnserialize<ui64>(a.size(), a.data());
+
+    std::vector<TTimestamp> ans(t.size());
+    std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui64));
+
+    return ans;
+}
 
 } // namespace JfEngine

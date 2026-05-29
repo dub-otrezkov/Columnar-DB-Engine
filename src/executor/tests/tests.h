@@ -1,10 +1,10 @@
 #include "../executor.h"
 #include "ios_factory/ios_factory.h"
+#include "utils/mmap_input/mmap_input.h"
 
 #include <gtest/gtest.h>
 
 #include <memory>
-#include <string_view>
 
 namespace JfEngine::Testing {
 
@@ -29,26 +29,18 @@ dot,19,hacker,10,92,2,-1
 dot,19,hacker,-10,-10,-1,-1.125
 )";
 
-    std::shared_ptr<std::stringstream> out_scheme;
-    std::shared_ptr<std::stringstream> out_data;
+    std::shared_ptr<TStringStreamFileOutput> out_scheme;
+    std::shared_ptr<TStringStreamFileOutput> out_data;
 
     void SetUp() override {
-        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        TIoFactory::RegisterCustomInput("scheme", std::make_shared<TStringStreamFileInput>(scheme));
+        TIoFactory::RegisterCustomInput("data",   std::make_shared<TStringStreamFileInput>(data));
         TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
 
-        *TIoFactory::GetIo("scheme") << scheme;
-        *TIoFactory::GetIo("data") << data;
-
-        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
-
-        out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultScheme)
-        );
-        out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultData)
-        );
+        out_scheme = std::make_shared<TStringStreamFileOutput>();
+        out_data   = std::make_shared<TStringStreamFileOutput>();
+        TIoFactory::RegisterCustomOutput(kResultScheme, out_scheme);
+        TIoFactory::RegisterCustomOutput(kResultData,   out_data);
     }
 
     void TearDown() override {
@@ -66,22 +58,18 @@ struct SumOverflowTest : testing::Test {
     // 2 * 2^62 = 2^63 = INT64_MAX + 1, overflows int64 but fits in int128
     std::string data = "4611686018427387904\n4611686018427387904\n";
 
-    std::shared_ptr<std::stringstream> out_scheme;
-    std::shared_ptr<std::stringstream> out_data;
+    std::shared_ptr<TStringStreamFileOutput> out_scheme;
+    std::shared_ptr<TStringStreamFileOutput> out_data;
 
     void SetUp() override {
-        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        TIoFactory::RegisterCustomInput("scheme", std::make_shared<TStringStreamFileInput>(scheme));
+        TIoFactory::RegisterCustomInput("data",   std::make_shared<TStringStreamFileInput>(data));
         TIoFactory::RegisterSStreamIo("ovf", ETypeFile::kJfFile);
 
-        *TIoFactory::GetIo("scheme") << scheme;
-        *TIoFactory::GetIo("data") << data;
-
-        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
-
-        out_scheme = std::dynamic_pointer_cast<std::stringstream>(TIoFactory::GetIo(kResultScheme));
-        out_data = std::dynamic_pointer_cast<std::stringstream>(TIoFactory::GetIo(kResultData));
+        out_scheme = std::make_shared<TStringStreamFileOutput>();
+        out_data   = std::make_shared<TStringStreamFileOutput>();
+        TIoFactory::RegisterCustomOutput(kResultScheme, out_scheme);
+        TIoFactory::RegisterCustomOutput(kResultData,   out_data);
     }
 
     void TearDown() override {

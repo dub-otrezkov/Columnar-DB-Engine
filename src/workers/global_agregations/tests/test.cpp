@@ -1,22 +1,23 @@
 #include "agregations_test.h"
 #include "engine/engine.h"
+#include "utils/mmap_input/mmap_input.h"
 
 namespace JfEngine::Testing {
 
 std::shared_ptr<TJfTableInput> AgregationsTest::MakeJfIn() {
-    auto jf_table = std::make_shared<std::stringstream>();
+    TStringStreamFileOutput jf_out;
     {
-        auto scheme_in = std::make_shared<std::stringstream>(scheme);
-        auto data_in = std::make_shared<std::stringstream>(data);
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>(data);
 
-        auto [eng, err] = MakeEngineFromCsv(scheme_in, data_in);
+        auto [eng, err] = MakeEngineFromCsv(scheme_in.get(), data_in.get());
 
         if (err) {
             std::cout << err << std::endl;
         }
         EXPECT_FALSE(err);
 
-        auto err2 = eng.WriteTableToJf(*jf_table);
+        auto err2 = eng.WriteTableToJf(&jf_out);
 
         if (err2.HasError()) {
             std::cout << err2.GetError() << std::endl;
@@ -24,7 +25,8 @@ std::shared_ptr<TJfTableInput> AgregationsTest::MakeJfIn() {
         EXPECT_FALSE(err2.HasError());
     }
 
-    auto jf_in = std::make_shared<TJfTableInput>(jf_table);
+    jf_storage_ = std::make_shared<TStringStreamFileInput>(jf_out.Str());
+    auto jf_in = std::make_shared<TJfTableInput>(jf_storage_.get());
     {
         auto err = jf_in->SetupColumnsScheme();
         if (err.HasError()) {
@@ -48,11 +50,11 @@ TEST_F(AgregationsTest, SelectTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), R"(1
+    EXPECT_EQ(data.Str(), R"(1
 -10
 0
 5
@@ -88,11 +90,11 @@ TEST_F(AgregationsTest, SumTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), "196\n");
+    EXPECT_EQ(data.Str(), "196\n");
 }
 
 TEST_F(AgregationsTest, CountTest) {
@@ -120,11 +122,11 @@ TEST_F(AgregationsTest, CountTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), "9\n");
+    EXPECT_EQ(data.Str(), "9\n");
 }
 
 TEST_F(AgregationsTest, MultipleAgrTest) {
@@ -160,11 +162,11 @@ TEST_F(AgregationsTest, MultipleAgrTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), "196,9,21\n");
+    EXPECT_EQ(data.Str(), "196,9,21\n");
 }
 
 TEST_F(AgregationsTest, MultipleOpTest) {
@@ -200,11 +202,11 @@ TEST_F(AgregationsTest, MultipleOpTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), "196,9,21\n");
+    EXPECT_EQ(data.Str(), "196,9,21\n");
 }
 
 TEST_F(AgregationsTest, PlusConstTest) {
@@ -238,11 +240,11 @@ TEST_F(AgregationsTest, PlusConstTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), R"(1,2
+    EXPECT_EQ(data.Str(), R"(1,2
 -10,-9
 0,1
 5,6
@@ -294,11 +296,11 @@ TEST_F(AgregationsTest, StringOpsTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), R"(josh,4,jOsh
+    EXPECT_EQ(data.Str(), R"(josh,4,jOsh
 john,4,jOhn
 stadium,7,stadium
 "i,could,have,lied",17,"i,cOuld,have,lied"
@@ -358,11 +360,11 @@ TEST_F(AgregationsTest, ComplexAgrTest) {
 
     ASSERT_FALSE(err);
 
-    std::stringstream data;
+    TStringStreamFileOutput data;
 
-    auto res = engine.WriteDataToCsv(data);
+    auto res = engine.WriteDataToCsv(&data);
 
-    EXPECT_EQ(data.str(), "5,205,7\n");
+    EXPECT_EQ(data.Str(), "5,205,7\n");
 }
 
 } // namespace JfEngine::Testing

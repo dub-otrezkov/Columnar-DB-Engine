@@ -5,8 +5,6 @@
 #include "utils/logger/logger.h"
 
 #include <cassert>
-#include <iostream>
-#include <sstream>
 
 namespace JfEngine {
 
@@ -15,7 +13,7 @@ Expected<void> TEngine::Setup(TTableInputPtr in) {
     return in_->SetupColumnsScheme();
 }
 
-Expected<void> TEngine::WriteSchemeToCsv(std::ostream& out) {
+Expected<void> TEngine::WriteSchemeToCsv(IFileOutput* out) {
     TCsvWriter w(out);
     for (const auto& col : in_->GetScheme()) {
         w.WriteRow({col.name_, TColumnToStr(col.type_)});
@@ -23,7 +21,7 @@ Expected<void> TEngine::WriteSchemeToCsv(std::ostream& out) {
     return nullptr;
 }
 
-Expected<void> TEngine::WriteDataToCsv(std::ostream& out) {
+Expected<void> TEngine::WriteDataToCsv(IFileOutput* out) {
     TCsvWriter w(out);
 
     ui64 total_rows = 0;
@@ -43,37 +41,28 @@ Expected<void> TEngine::WriteDataToCsv(std::ostream& out) {
         }
         total_rows += batch_rows;
         total_chars += batch_chars;
-        // JF_LOG(this, "batch=" << batch_idx
-        //     << " rows=" << batch_rows
-        //     << " chars=" << batch_chars
-        //     << " total_rows=" << total_rows
-        //     << " total_chars=" << total_chars);
         batch_idx++;
         return nullptr;
     };
 
     auto res = RunCommand(f);
-    // JF_LOG(this, "DONE total_rows=" << total_rows
-    //     << " total_chars=" << total_chars
-    //     << " batches=" << batch_idx);
     return res;
 }
 
-Expected<void> TEngine::WriteTableToJf(std::ostream& out) {
+Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
     std::vector<i64> poses;
 
     ui64 cols_cnt = 0;
 
-    auto f = [&poses, &out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
-        TCsvWriter w(out);
-
+    auto f = [&poses, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         std::vector<i64> col_poses;
 
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
-            col_poses.push_back(out.tellp());
+            col_poses.push_back(static_cast<i64>(out->TellPos()));
             auto bytes = Do<OJfPrintOpt>(block[j]);
-            out.write(bytes.data(), bytes.size());
+            const char* p = bytes.data();
+            out->Write(p, bytes.size());
         }
 
         cols_cnt = block.size();
@@ -81,14 +70,14 @@ Expected<void> TEngine::WriteTableToJf(std::ostream& out) {
         for (auto pos : col_poses) {
             PutI64(out, pos);
         }
-        poses.push_back(out.tellp());
+        poses.push_back(static_cast<i64>(out->TellPos()));
 
         return nullptr;
     };
 
     RunCommand(f);
-    
-    auto meta_start = out.tellp();
+
+    auto meta_start = static_cast<i64>(out->TellPos());
     PutI64(out, in_->GetRowGroupLen());
     PutI64(out, cols_cnt);
     PutI64(out, poses.size());
@@ -103,8 +92,8 @@ Expected<void> TEngine::WriteTableToJf(std::ostream& out) {
 }
 
 Expected<TEngine> MakeEngineFromCsv(
-    std::shared_ptr<std::istream> scheme,
-    std::shared_ptr<std::istream> data,
+    IFileInput* scheme,
+    IFileInput* data,
     ui64 row_group_size
 ) {
     TEngine eng;
@@ -115,7 +104,7 @@ Expected<TEngine> MakeEngineFromCsv(
     return std::move(eng);
 }
 
-Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf) {
+Expected<TEngine> MakeEngineFromJf(IFileInput* jf) {
     TEngine eng;
     auto err = eng.Setup(std::make_shared<TJfTableInput>(jf));
     if (err.HasError()) {

@@ -1,5 +1,8 @@
 #include "ios_factory.h"
 
+#include <fstream>
+#include <sstream>
+
 namespace JfEngine {
 
 std::shared_ptr<TIoFactory> TIoFactory::Instance() {
@@ -7,27 +10,45 @@ std::shared_ptr<TIoFactory> TIoFactory::Instance() {
     return factory;
 }
 
-void TIoFactory::RegisterSStreamIo(const std::string& alias, ETypeFile t) { // FOR TESTS (and probably optimizations)
+void TIoFactory::RegisterSStreamIo(const std::string& alias, ETypeFile /*t*/) {
     auto i = Instance();
-    i->ios_[alias] = std::make_shared<std::stringstream>();
+    auto ss = std::make_shared<std::stringstream>();
+    i->inputs_[alias]  = std::make_shared<TIstreamFileInput>(ss);
+    i->outputs_[alias] = std::make_shared<TOstreamFileOutput>(ss);
 }
 
-void TIoFactory::UnregisterIo(const std::string& alias) { // FOR TESTS (and probably optimizations)
+void TIoFactory::UnregisterIo(const std::string& alias) {
     auto i = Instance();
-    i->ios_.erase(alias);
+    i->inputs_.erase(alias);
+    i->outputs_.erase(alias);
 }
 
-void TIoFactory::RegisterCustomIo(const std::string& alias, std::shared_ptr<std::iostream> io) {
+void TIoFactory::RegisterCustomInput(const std::string& alias, IFileInputPtr in) {
     auto i = Instance();
-    i->ios_[alias] = std::move(io);
+    i->inputs_[alias] = std::move(in);
 }
 
-void TIoFactory::RegisterFileIo(const std::string& alias, ETypeFile t) {
+void TIoFactory::RegisterCustomOutput(const std::string& alias, IFileOutputPtr out) {
     auto i = Instance();
-    if (i->ios_.contains(alias)) {
+    i->outputs_[alias] = std::move(out);
+}
+
+void TIoFactory::RegisterFileInput(const std::string& alias, ETypeFile t) {
+    auto i = Instance();
+    if (i->inputs_.contains(alias)) {
         return;
     }
-    i->ios_[alias] = std::make_shared<std::fstream>(alias + (t == kJfFile ? ".jf" : ".csv"));
+    auto path = alias + (t == kJfFile ? ".jf" : ".csv");
+    i->inputs_[alias] = std::make_shared<TMMapFileInput>(path);
+}
+
+void TIoFactory::RegisterFileOutput(const std::string& alias, ETypeFile t) {
+    auto i = Instance();
+    if (i->outputs_.contains(alias)) {
+        return;
+    }
+    auto path = alias + (t == kJfFile ? ".jf" : ".csv");
+    i->outputs_[alias] = std::make_shared<TOstreamFileOutput>(std::make_shared<std::ofstream>(path));
 }
 
 void TIoFactory::RegisterTableInput(const std::string& alias, TTableInputPtr inp) {
@@ -35,18 +56,26 @@ void TIoFactory::RegisterTableInput(const std::string& alias, TTableInputPtr inp
     i->iotables_[alias] = inp;
 }
 
-std::shared_ptr<std::iostream> TIoFactory::GetIo(const std::string& alias) {
+IFileInput* TIoFactory::GetInput(const std::string& alias) {
     auto i = Instance();
-    if (i->ios_.contains(alias)) {
-        return i->ios_.at(alias);
+    if (auto it = i->inputs_.find(alias); it != i->inputs_.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+IFileOutput* TIoFactory::GetOutput(const std::string& alias) {
+    auto i = Instance();
+    if (auto it = i->outputs_.find(alias); it != i->outputs_.end()) {
+        return it->second.get();
     }
     return nullptr;
 }
 
 TTableInputPtr TIoFactory::GetTableIo(const std::string& alias) {
     auto i = Instance();
-    if (i->iotables_.contains(alias)) {
-        return i->iotables_.at(alias);
+    if (auto it = i->iotables_.find(alias); it != i->iotables_.end()) {
+        return it->second;
     }
     return nullptr;
 }
@@ -59,7 +88,8 @@ void TIoFactory::Clear() {
 void TIoFactory::ClearAll() {
     auto i = Instance();
     i->iotables_.clear();
-    i->ios_.clear();
+    i->inputs_.clear();
+    i->outputs_.clear();
 }
 
 } // namespace JfEngine

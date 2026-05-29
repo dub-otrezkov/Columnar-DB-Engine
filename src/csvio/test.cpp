@@ -1,5 +1,6 @@
 #include "csv_reader.h"
 #include "csv_writer.h"
+#include "utils/mmap_input/mmap_input.h"
 
 #include <gtest/gtest.h>
 
@@ -21,10 +22,9 @@ josh;klinghoffer
 };
 
 TEST_F(IoTests, BasicRead) {
-    std::stringstream in;
-    in << basic;
+    TStringStreamFileInput in(basic);
 
-    TCsvReader rr(in, ';');
+    TCsvReader rr(&in, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -46,23 +46,22 @@ TEST_F(IoTests, BasicRead) {
 }
 
 TEST_F(IoTests, BasicWrite) {
-    std::stringstream out;
+    TStringStreamFileOutput out;
 
-    TCsvWriter rr(out, ';');
+    TCsvWriter rr(&out, ';');
     std::vector<std::string> i;
     i = {"john", "frusciante"};
     rr.WriteRow(i);
     i = {"josh", "klinghoffer"};
     rr.WriteRow(i);
 
-    EXPECT_EQ(basic, out.str());
+    EXPECT_EQ(basic, out.Str());
 }
 
 TEST_F(IoTests, AdvancedRead) {
-    std::stringstream in;
-    in << advanced;
+    TStringStreamFileInput in(advanced);
 
-    TCsvReader rr(in);
+    TCsvReader rr(&in);
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -82,23 +81,22 @@ TEST_F(IoTests, AdvancedRead) {
 }
 
 TEST_F(IoTests, AdvancedWrite) {
-    std::stringstream out;
+    TStringStreamFileOutput out;
 
-    TCsvWriter rr(out);
+    TCsvWriter rr(&out);
     std::vector<std::string> i;
     i = {R"(Scar "Tissue")", R"(Calif"ornica"tion)", R"(the,"Zephyr song)"};
     rr.WriteRow(i);
     i = {R"(,)", R"("by the way")",R"(the,"adventures",of,"rain" dance maggie)"};
     rr.WriteRow(i);
 
-    EXPECT_EQ(advanced, out.str());
+    EXPECT_EQ(advanced, out.Str());
 }
 
 TEST_F(IoTests, EdgeCasesRead) {
-    std::stringstream in;
-    in << extra;
+    TStringStreamFileInput in(extra);
 
-    TCsvReader rr(in, ';');
+    TCsvReader rr(&in, ';');
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -111,10 +109,9 @@ TEST_F(IoTests, EdgeCasesRead) {
 }
 
 TEST_F(IoTests, UnclosedQuoteRead) {
-    std::stringstream in;
-    in << unclosedQuote;
+    TStringStreamFileInput in(unclosedQuote);
 
-    TCsvReader rr(in);
+    TCsvReader rr(&in);
 
     auto [_, err] = rr.ReadRow();
 
@@ -122,10 +119,9 @@ TEST_F(IoTests, UnclosedQuoteRead) {
 }
 
 TEST_F(IoTests, BadQuoteRead) {
-    std::stringstream in;
-    in << badQuote;
+    TStringStreamFileInput in(badQuote);
 
-    TCsvReader rr(in);
+    TCsvReader rr(&in);
 
     auto [_, err] = rr.ReadRow();
 
@@ -133,10 +129,9 @@ TEST_F(IoTests, BadQuoteRead) {
 }
 
 TEST_F(IoTests, OptimizedRead) {
-    std::stringstream in;
-    in << advanced;
+    TStringStreamFileInput in(advanced);
 
-    TCsvOptimizedReader rr(in);
+    TCsvOptimizedReader rr(&in);
     {
         auto [d, err] = rr.ReadRow();
         ASSERT_FALSE(err);
@@ -158,10 +153,9 @@ TEST_F(IoTests, OptimizedRead) {
 
 TEST_F(IoTests, ExperimenatalBufferedRead) {
     {
-        std::stringstream in;
-        in << advanced;
+        TStringStreamFileInput in(advanced);
 
-        TCsvOptimizedReader rr(in);
+        TCsvOptimizedReader rr(&in);
         TVectorString2d out;
         {
             auto err = rr.ReadRow(out);
@@ -188,18 +182,16 @@ TEST_F(IoTests, ExperimenatalBufferedRead) {
 }
 
 TEST_F(IoTests, EmptyCases) {
-    { // Basic I
-        std::stringstream in;
-        in << "";
-        TCsvReader rr(in);
+    {
+        TStringStreamFileInput in("");
+        TCsvReader rr(&in);
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }
-    { // Basic I
-        std::stringstream in;
-        in << R"(
-)";
-        TCsvReader rr(in);
+    {
+        TStringStreamFileInput in(R"(
+)");
+        TCsvReader rr(&in);
         auto [d, err] = rr.ReadRow();
         ASSERT_TRUE(Is<EError::EofErr>(err));
     }

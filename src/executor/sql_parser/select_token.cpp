@@ -334,25 +334,25 @@ Expected<TTableInputPtr> TSelectToken::MakeWorker() {
 
         TEngine eng;
 
-        TIoFactory::RegisterFileIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterFileIo(kResultData, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultData, ETypeFile::kCsvFile);
 
         eng.Setup(agr);
 
-        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
-        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
+        eng.WriteDataToCsv(TIoFactory::GetOutput(kResultData));
+        eng.WriteSchemeToCsv(TIoFactory::GetOutput(kResultScheme));
 
         return EError::NoError;
     } else {
         TEngine eng;
 
-        TIoFactory::RegisterFileIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterFileIo(kResultData, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultScheme, ETypeFile::kCsvFile);
+        TIoFactory::RegisterFileOutput(kResultData, ETypeFile::kCsvFile);
 
         eng.Setup(TIoFactory::GetTableIo(kCurTableInput));
 
-        eng.WriteDataToCsv(*TIoFactory::GetIo(kResultData));
-        eng.WriteSchemeToCsv(*TIoFactory::GetIo(kResultScheme));
+        eng.WriteDataToCsv(TIoFactory::GetOutput(kResultData));
+        eng.WriteSchemeToCsv(TIoFactory::GetOutput(kResultScheme));
 
         return EError::NoError;
     }

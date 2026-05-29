@@ -1,4 +1,4 @@
-#include "tests.h"
+﻿#include "tests.h"
 
 namespace JfEngine::Testing {
 
@@ -19,11 +19,11 @@ TEST_F(AgregationsTest, GetColumnsTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(hot,int64
+    EXPECT_EQ(out_scheme->Str(), R"(hot,int64
 red,string
 peppers,int32
 )");
-    EXPECT_EQ(out_data->str(), R"(1,josh,2
+    EXPECT_EQ(out_data->Str(), R"(1,josh,2
 3,john,4
 5,stadium,6
 6,"i,could,have,lied",0
@@ -52,9 +52,9 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(hot),int128
+    EXPECT_EQ(out_scheme->Str(), R"(SUM(hot),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(95
+    EXPECT_EQ(out_data->Str(), R"(95
 )");
 }
 
@@ -69,9 +69,9 @@ TEST_F(AgregationsTest, GetCountTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(9
+    EXPECT_EQ(out_data->Str(), R"(9
 )");
 }
 
@@ -92,12 +92,12 @@ TEST_F(AgregationsTest, GetAvgTest) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(AVG(what),int128
+    EXPECT_EQ(out_scheme->Str(), R"(AVG(what),int128
 AVG(once),int128
 AVG(was),int128
 ddd,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(21,19,11,10
+    EXPECT_EQ(out_data->Str(), R"(21,19,11,10
 )");
 }
 
@@ -115,9 +115,9 @@ TEST_F(SumOverflowTest, Int64Overflow) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), "SUM(val),int128\n");
+    EXPECT_EQ(out_scheme->Str(), "SUM(val),int128\n");
     // 2 * 4611686018427387904 = 9223372036854775808 > INT64_MAX (9223372036854775807)
-    EXPECT_EQ(out_data->str(), "9223372036854775808\n");
+    EXPECT_EQ(out_data->Str(), "9223372036854775808\n");
 }
 
 }

@@ -2,27 +2,27 @@
 
 #include "columns/types/types.h"
 #include "utils/errors/errors.h"
+#include "utils/mmap_input/mmap_input.h"
 
-#include <fstream>
-#include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace JfEngine {
 
 class TCsvWriter {
 public:
-    TCsvWriter(std::ostream& out, char sep = ',');
+    TCsvWriter(IFileOutput* out, char sep = ',');
 
     void WriteRow(const std::vector<std::string>& row);
     void WriteRowGroup(std::vector<std::vector<std::string>> row);
 
-    ~TCsvWriter();
+    ~TCsvWriter() = default;
 
 private:
     ui64 PrepareString(std::string_view str);
 
-    std::ostream& out_;
+    IFileOutput* out_;
     char sep_;
 };
 

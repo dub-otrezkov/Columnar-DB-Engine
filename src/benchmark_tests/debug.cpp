@@ -1,11 +1,11 @@
-#include "executor/executor.h"
+﻿#include "executor/executor.h"
 #include "ios_factory/ios_factory.h"
+#include "utils/mmap_input/mmap_input.h"
 #include "workers/base.h"
 
 #include <gtest/gtest.h>
 
 #include <memory>
-#include <string_view>
 
 namespace JfEngine::Testing {
 
@@ -35,30 +35,26 @@ dorothy,int64
 
     static constexpr ui64 iter = 50000;
 
-    std::shared_ptr<std::stringstream> out_scheme;
-    std::shared_ptr<std::stringstream> out_data;
+    std::shared_ptr<TStringStreamFileOutput> out_scheme;
+    std::shared_ptr<TStringStreamFileOutput> out_data;
 
     void SetUp() override {
-        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>();
+        for (ui64 i = 0; i < iter; i++) {
+            data_in->Stream() << data;
+        }
+
+        TIoFactory::RegisterCustomInput("scheme", scheme_in);
+        TIoFactory::RegisterCustomInput("data",   data_in);
         TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp1", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp2", ETypeFile::kJfFile);
 
-        *TIoFactory::GetIo("scheme") << scheme;
-        for (ui64 i = 0; i < iter; i++) {
-            *TIoFactory::GetIo("data") << data;
-        }
-
-        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
-
-        out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultScheme)
-        );
-        out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultData)
-        );
+        out_scheme = std::make_shared<TStringStreamFileOutput>();
+        out_data   = std::make_shared<TStringStreamFileOutput>();
+        TIoFactory::RegisterCustomOutput(kResultScheme, out_scheme);
+        TIoFactory::RegisterCustomOutput(kResultData,   out_data);
     }
 
     void TearDown() override {
@@ -95,9 +91,9 @@ TEST_F(BenchTest, _1) {
     //     ASSERT_FALSE(err.HasError());
     // }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), "400000\n");
+    EXPECT_EQ(out_data->Str(), "400000\n");
 }
 
 } // namespace JfEngine::Testing

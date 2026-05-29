@@ -1,11 +1,11 @@
-#include "executor/executor.h"
+﻿#include "executor/executor.h"
 #include "ios_factory/ios_factory.h"
+#include "utils/mmap_input/mmap_input.h"
 #include "workers/base.h"
 
 #include <gtest/gtest.h>
 
 #include <memory>
-#include <string_view>
 
 namespace JfEngine::Testing {
 
@@ -34,30 +34,26 @@ beam,timestamp
 
     static constexpr ui64 iter = 50000;
 
-    std::shared_ptr<std::stringstream> out_scheme;
-    std::shared_ptr<std::stringstream> out_data;
+    std::shared_ptr<TStringStreamFileOutput> out_scheme;
+    std::shared_ptr<TStringStreamFileOutput> out_data;
 
     void SetUp() override {
-        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>();
+        for (ui64 i = 0; i < iter; i++) {
+            data_in->Stream() << data;
+        }
+
+        TIoFactory::RegisterCustomInput("scheme", scheme_in);
+        TIoFactory::RegisterCustomInput("data",   data_in);
         TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp1", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp2", ETypeFile::kJfFile);
 
-        *TIoFactory::GetIo("scheme") << scheme;
-        for (ui64 i = 0; i < iter; i++) {
-            *TIoFactory::GetIo("data") << data;
-        }
-
-        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
-
-        out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultScheme)
-        );
-        out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultData)
-        );
+        out_scheme = std::make_shared<TStringStreamFileOutput>();
+        out_data   = std::make_shared<TStringStreamFileOutput>();
+        TIoFactory::RegisterCustomOutput(kResultScheme, out_scheme);
+        TIoFactory::RegisterCustomOutput(kResultData,   out_data);
     }
 
     void TearDown() override {
@@ -96,9 +92,9 @@ TEST_F(BenchTest, _0) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), "400000\n");
+    EXPECT_EQ(out_data->Str(), "400000\n");
 }
 
 TEST_F(BenchTest, _1) {
@@ -113,9 +109,9 @@ TEST_F(BenchTest, _1) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), "300000\n");
+    EXPECT_EQ(out_data->Str(), "300000\n");
 }
 
 TEST_F(BenchTest, _2) {
@@ -130,11 +126,11 @@ TEST_F(BenchTest, _2) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int128
+    EXPECT_EQ(out_scheme->Str(), R"(SUM(what),int128
 COUNT(*),int64
 AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), "1600000,400000,5\n");
+    EXPECT_EQ(out_data->Str(), "1600000,400000,5\n");
 }
 
 TEST_F(BenchTest, _3) {
@@ -149,9 +145,9 @@ TEST_F(BenchTest, _3) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(AVG(once),int128
+    EXPECT_EQ(out_scheme->Str(), R"(AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), "5\n");
+    EXPECT_EQ(out_data->Str(), "5\n");
 }
 
 TEST_F(BenchTest, _4) {
@@ -166,9 +162,9 @@ TEST_F(BenchTest, _4) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT_DISTINCT(once),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT_DISTINCT(once),int64
 )");
-    EXPECT_EQ(out_data->str(), "5\n");
+    EXPECT_EQ(out_data->Str(), "5\n");
 }
 
 TEST_F(BenchTest, _5) {
@@ -183,9 +179,9 @@ TEST_F(BenchTest, _5) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT_DISTINCT(was),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT_DISTINCT(was),int64
 )");
-    EXPECT_EQ(out_data->str(), "4\n");
+    EXPECT_EQ(out_data->Str(), "4\n");
 }
 
 TEST_F(BenchTest, _6) {
@@ -200,13 +196,13 @@ TEST_F(BenchTest, _6) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(MIN(low),date
+    EXPECT_EQ(out_scheme->Str(), R"(MIN(low),date
 MAX(low),date
 )");
-    EXPECT_EQ(out_data->str(), R"(2020-09-12,2024-01-30
+    EXPECT_EQ(out_data->Str(), R"(2020-09-12,2024-01-30
 )");
 }
 
@@ -222,10 +218,10 @@ TEST_F(BenchTest, _7) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(once,int32
+    EXPECT_EQ(out_scheme->Str(), R"(once,int32
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(8,100000
+    EXPECT_EQ(out_data->Str(), R"(8,100000
 4,100000
 7,50000
 6,50000
@@ -244,13 +240,13 @@ TEST_F(BenchTest, _8) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(hers,string
+    EXPECT_EQ(out_scheme->Str(), R"(hers,string
 u,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(forever,4
+    EXPECT_EQ(out_data->Str(), R"(forever,4
 rip,2
 )");
 }
@@ -267,13 +263,13 @@ TEST_F(BenchTest, _9) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(hers,string
+    EXPECT_EQ(out_scheme->Str(), R"(hers,string
 SUM(what),int128
 c,int64
 AVG(once),int128
 COUNT_DISTINCT(was),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(forever,800000,200000,4,3
+    EXPECT_EQ(out_data->Str(), R"(forever,800000,200000,4,3
 rip,200000,100000,3,2
 )");
 }
@@ -290,10 +286,10 @@ TEST_F(BenchTest, _10) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(hers,string
+    EXPECT_EQ(out_scheme->Str(), R"(hers,string
 u,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(forever,3
+    EXPECT_EQ(out_data->Str(), R"(forever,3
 )");
 }
 
@@ -309,14 +305,14 @@ TEST_F(BenchTest, _11) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 hers,string
 u,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,forever,2
+    EXPECT_EQ(out_data->Str(), R"(frusciante,forever,2
 klinghoffer,forever,1
 klinghoffer,alive,1
 josh,rip,1
@@ -335,13 +331,13 @@ TEST_F(BenchTest, _12) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,100000
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,100000
 josh,100000
 john,100000
 frusciante,100000
@@ -360,13 +356,13 @@ TEST_F(BenchTest, _13) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 u,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,2
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,2
 john,2
 frusciante,1
 )");
@@ -384,14 +380,14 @@ TEST_F(BenchTest, _14) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(getaway,int8
+    EXPECT_EQ(out_scheme->Str(), R"(getaway,int8
 was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(2,frusciante,100000
+    EXPECT_EQ(out_data->Str(), R"(2,frusciante,100000
 4,klinghoffer,50000
 2,klinghoffer,50000
 )");
@@ -409,13 +405,13 @@ TEST_F(BenchTest, _15) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(getaway,int8
+    EXPECT_EQ(out_scheme->Str(), R"(getaway,int8
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(2,200000
+    EXPECT_EQ(out_data->Str(), R"(2,200000
 1,150000
 4,50000
 )");
@@ -433,14 +429,14 @@ TEST_F(BenchTest, _16) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,1,100000
+    EXPECT_EQ(out_data->Str(), R"(josh,1,100000
 frusciante,2,100000
 klinghoffer,4,50000
 klinghoffer,2,50000
@@ -450,7 +446,7 @@ john,1,50000
 }
 
 TEST_F(BenchTest, _17) {
-    // EXTRACT_MINUTE в GROUP BY.
+    // EXTRACT_MINUTE Ð² GROUP BY.
 
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -467,14 +463,14 @@ TEST_F(BenchTest, _17) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Все 8 (what, m, was) тройки уникальны, c=iter=50000 каждая.
-    // ORDER BY c, what, m, was DESC (все DESC): ties по c, сортируем what DESC, m DESC, was DESC.
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    // Ð’ÑÐµ 8 (what, m, was) Ñ‚Ñ€Ð¾Ð¹ÐºÐ¸ ÑƒÐ½Ð¸ÐºÐ°Ð»ÑŒÐ½Ñ‹, c=iter=50000 ÐºÐ°Ð¶Ð´Ð°Ñ.
+    // ORDER BY c, what, m, was DESC (Ð²ÑÐµ DESC): ties Ð¿Ð¾ c, ÑÐ¾Ñ€Ñ‚Ð¸Ñ€ÑƒÐµÐ¼ what DESC, m DESC, was DESC.
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 m,int64
 was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(7,52,klinghoffer,50000
+    EXPECT_EQ(out_data->Str(), R"(7,52,klinghoffer,50000
 7,15,frusciante,50000
 5,40,john,50000
 5,18,frusciante,50000
@@ -497,10 +493,10 @@ TEST_F(BenchTest, _18) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 )");
     // 2 rows per block match (rows with what=5), output "5\n" each
-    EXPECT_EQ(out_data->str().size(), iter * 2 * 2);
+    EXPECT_EQ(out_data->Str().size(), iter * 2 * 2);
 }
 
 TEST_F(BenchTest, _19) {
@@ -515,12 +511,12 @@ TEST_F(BenchTest, _19) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(getaway,int8
+    EXPECT_EQ(out_scheme->Str(), R"(getaway,int8
 )");
-    EXPECT_EQ(out_data->str().size(), 400000);
+    EXPECT_EQ(out_data->Str().size(), 400000);
 }
 
 TEST_F(BenchTest, _20) {
@@ -535,12 +531,12 @@ TEST_F(BenchTest, _20) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), "200000\n");
+    EXPECT_EQ(out_data->Str(), "200000\n");
 }
 
 TEST_F(BenchTest, _21) {
@@ -555,14 +551,14 @@ TEST_F(BenchTest, _21) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 MIN(hers),string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,alive,100000
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,alive,100000
 frusciante,forever,100000
 )");
 }
@@ -579,16 +575,16 @@ TEST_F(BenchTest, _22) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 MIN(what),int64
 MIN(once),int32
 c,int64
 COUNT_DISTINCT(what),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,1,2,100000,2
+    EXPECT_EQ(out_data->Str(), R"(josh,1,2,100000,2
 john,3,4,100000,2
 )");
 }
@@ -606,12 +602,12 @@ TEST_F(BenchTest, _23) {
     }
 
     // Earliest `low` among rows matching LIKE '%o%' is 2020-09-12 (row 4: klinghoffer, what=7).
-    // Повторяется iter раз подряд, LIMIT 10 все попадают в эту группу.
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    // ÐŸÐ¾Ð²Ñ‚Ð¾Ñ€ÑÐµÑ‚ÑÑ iter Ñ€Ð°Ð· Ð¿Ð¾Ð´Ñ€ÑÐ´, LIMIT 10 Ð²ÑÐµ Ð¿Ð¾Ð¿Ð°Ð´Ð°ÑŽÑ‚ Ð² ÑÑ‚Ñƒ Ð³Ñ€ÑƒÐ¿Ð¿Ñƒ.
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 was,string
 low,date
 )");
-    EXPECT_EQ(out_data->str(), R"(7,klinghoffer,2020-09-12
+    EXPECT_EQ(out_data->Str(), R"(7,klinghoffer,2020-09-12
 7,klinghoffer,2020-09-12
 7,klinghoffer,2020-09-12
 7,klinghoffer,2020-09-12
@@ -636,12 +632,12 @@ TEST_F(BenchTest, _24) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(empty,string
+    EXPECT_EQ(out_scheme->Str(), R"(empty,string
 )");
-    EXPECT_EQ(out_data->str(), R"(dolores2
+    EXPECT_EQ(out_data->Str(), R"(dolores2
 dolores2
 dolores2
 dolores2
@@ -666,12 +662,12 @@ TEST_F(BenchTest, _25) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(empty,string
+    EXPECT_EQ(out_scheme->Str(), R"(empty,string
 )");
-//     EXPECT_EQ(out_data->str(), R"(dolores1
+//     EXPECT_EQ(out_data->Str(), R"(dolores1
 // dolores
 // dolores1
 // dolores
@@ -696,12 +692,12 @@ TEST_F(BenchTest, _26) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(empty,string
+    EXPECT_EQ(out_scheme->Str(), R"(empty,string
 )");
-    EXPECT_EQ(out_data->str(), R"(dolores
+    EXPECT_EQ(out_data->Str(), R"(dolores
 dolores
 dolores
 dolores
@@ -726,11 +722,11 @@ TEST_F(BenchTest, _27) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(ste,int16
+    EXPECT_EQ(out_scheme->Str(), R"(ste,int16
 l,int128
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(6,10,50000
+    EXPECT_EQ(out_data->Str(), R"(6,10,50000
 1,8,150000
 )");
 }
@@ -767,8 +763,8 @@ TEST_F(BenchTest, _29) {
     }
     ans_data.back() = '\n';
 
-    EXPECT_EQ(out_scheme->str(), ans_scheme);
-    EXPECT_EQ(out_data->str(), ans_data);
+    EXPECT_EQ(out_scheme->Str(), ans_scheme);
+    EXPECT_EQ(out_data->Str(), ans_data);
 }
 
 TEST_F(BenchTest, _30) {
@@ -805,8 +801,8 @@ TEST_F(BenchTest, _30) {
     }
     ans_data.back() = '\n';
 
-    EXPECT_EQ(out_scheme->str(), ans_scheme);
-    EXPECT_EQ(out_data->str(), ans_data);
+    EXPECT_EQ(out_scheme->Str(), ans_scheme);
+    EXPECT_EQ(out_data->Str(), ans_data);
 }
 
 TEST_F(BenchTest, _31) {
@@ -821,16 +817,16 @@ TEST_F(BenchTest, _31) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 c,int64
 SUM(what),int128
 AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,2,50000,350000,8
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,2,50000,350000,8
 john,2,50000,250000,8
 klinghoffer,4,50000,50000,4
 josh,1,100000,200000,4
@@ -851,16 +847,16 @@ TEST_F(BenchTest, _32) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 c,int64
 SUM(what),int128
 AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,1,50000,150000,7
+    EXPECT_EQ(out_data->Str(), R"(josh,1,50000,150000,7
 klinghoffer,4,50000,50000,4
 john,1,50000,150000,4
 frusciante,2,100000,600000,4
@@ -879,16 +875,16 @@ TEST_F(BenchTest, _33) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 c,int64
 SUM(what),int128
 AVG(once),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,2,50000,350000,8
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,2,50000,350000,8
 john,2,50000,250000,8
 klinghoffer,4,50000,50000,4
 josh,1,100000,200000,4
@@ -898,7 +894,7 @@ frusciante,2,100000,600000,4
 }
 
 TEST_F(BenchTest, _34) {
-    // CONST_INT в SELECT и GROUP BY.
+    // CONST_INT Ð² SELECT Ð¸ GROUP BY.
 
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -915,11 +911,11 @@ TEST_F(BenchTest, _34) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(CONST_INT(1),int64
+    EXPECT_EQ(out_scheme->Str(), R"(CONST_INT(1),int64
 was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(1,klinghoffer,100000
+    EXPECT_EQ(out_data->Str(), R"(1,klinghoffer,100000
 1,josh,100000
 1,john,100000
 1,frusciante,100000
@@ -943,15 +939,15 @@ TEST_F(BenchTest, _35) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 -(what 1),int64
 -(what 2),int64
 c,int64
 )");
-    // 4 groups (what ∈ {1,3,5,7}), each with count = 2 * iter = 100000.
-    // Engine uses single direction: ORDER BY c DESC, what ⇒ both DESC.
+    // 4 groups (what âˆˆ {1,3,5,7}), each with count = 2 * iter = 100000.
+    // Engine uses single direction: ORDER BY c DESC, what â‡’ both DESC.
     // So expect what descending: 7, 5, 3, 1.
-    EXPECT_EQ(out_data->str(), R"(7,6,5,100000
+    EXPECT_EQ(out_data->Str(), R"(7,6,5,100000
 5,4,3,100000
 3,2,1,100000
 1,0,-1,100000
@@ -980,14 +976,14 @@ TEST_F(BenchTest, _36) {
     //   row 2 (john, dolores,  2022-11-08)
     //   row 3 (frusciante, dolores, 2022-03-27)
     //   row 6 (klinghoffer, dolores2, 2022-07-19)
-    //   row 7 (frusciante, dolores1, ...): beam is 2023-12-03 but low is 2022-12-03 — YES
+    //   row 7 (frusciante, dolores1, ...): beam is 2023-12-03 but low is 2022-12-03 â€” YES
     //   row 8 (josh, dolores1, 2022-06-21)
     // Row 7: low=2022-12-03 matches; empty=dolores1 matches; getaway=2 matches. YES.
-    // Groups: frusciante×2=100000, john×1=50000, josh×1=50000, klinghoffer×1=50000
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    // Groups: fruscianteÃ—2=100000, johnÃ—1=50000, joshÃ—1=50000, klinghofferÃ—1=50000
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,100000
+    EXPECT_EQ(out_data->Str(), R"(frusciante,100000
 klinghoffer,50000
 josh,50000
 john,50000
@@ -1006,13 +1002,13 @@ TEST_F(BenchTest, _37) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->str() << std::endl;
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_scheme->Str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,50000
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,50000
 josh,50000
 frusciante,50000
 )");
@@ -1023,7 +1019,7 @@ TEST_F(BenchTest, _38) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        // CLI 38 — аналог с OFFSET
+        // CLI 38 â€” Ð°Ð½Ð°Ð»Ð¾Ð³ Ñ OFFSET
         auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt, was DESC LIMIT 10 OFFSET 1");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
@@ -1031,11 +1027,11 @@ TEST_F(BenchTest, _38) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Те же 3 группы, что в _37, но после OFFSET 1 отбрасываем klinghoffer.
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    // Ð¢Ðµ Ð¶Ðµ 3 Ð³Ñ€ÑƒÐ¿Ð¿Ñ‹, Ñ‡Ñ‚Ð¾ Ð² _37, Ð½Ð¾ Ð¿Ð¾ÑÐ»Ðµ OFFSET 1 Ð¾Ñ‚Ð±Ñ€Ð°ÑÑ‹Ð²Ð°ÐµÐ¼ klinghoffer.
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,50000
+    EXPECT_EQ(out_data->Str(), R"(josh,50000
 frusciante,50000
 )");
 }
@@ -1054,13 +1050,13 @@ TEST_F(BenchTest, _39) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(label,string
+    EXPECT_EQ(out_scheme->Str(), R"(label,string
 )");
-    // Per 8-row block: "rip\n" (was=josh, hers=rip) + 6 × "other\n"
+    // Per 8-row block: "rip\n" (was=josh, hers=rip) + 6 Ã— "other\n"
     //                  + "forever\n" (was=josh, hers=forever)
     // Sizes: 4 + 6*6 + 8 = 48 bytes per block.
-    EXPECT_EQ(out_data->str().size(), iter * 48);
-    EXPECT_EQ(out_data->str().substr(0, 4), "rip\n");
+    EXPECT_EQ(out_data->Str().size(), iter * 48);
+    EXPECT_EQ(out_data->Str().substr(0, 4), "rip\n");
 }
 
 TEST_F(BenchTest, _40) {
@@ -1089,11 +1085,11 @@ TEST_F(BenchTest, _40) {
     // 4 groups, each with count = iter = 50000.
     // Sort by c DESC then (what, low) DESC (single direction):
     //   5, 2022-03-27; 3, 2022-11-08; 3, 2022-06-21; 1, 2022-07-19
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 low,date
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(5,2022-03-27,50000
+    EXPECT_EQ(out_data->Str(), R"(5,2022-03-27,50000
 3,2022-11-08,50000
 3,2022-06-21,50000
 1,2022-07-19,50000
@@ -1125,13 +1121,13 @@ TEST_F(BenchTest, _41) {
     //   row 7 (once=2, what=7, ste=1, empty=dolores1)
     //   row 8 (once=7, what=3, ste=1, empty=dolores1)
     // 5 groups, each c = iter = 50000.
-    // ORDER BY c, once, what DESC (все DESC):
-    //   once=7 → (7, 3); once=6 → (6, 5); once=4 ties → what DESC: (4, 3), (4, 1); once=2 → (2, 7)
-    EXPECT_EQ(out_scheme->str(), R"(once,int32
+    // ORDER BY c, once, what DESC (Ð²ÑÐµ DESC):
+    //   once=7 â†’ (7, 3); once=6 â†’ (6, 5); once=4 ties â†’ what DESC: (4, 3), (4, 1); once=2 â†’ (2, 7)
+    EXPECT_EQ(out_scheme->Str(), R"(once,int32
 what,int64
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(7,3,50000
+    EXPECT_EQ(out_data->Str(), R"(7,3,50000
 6,5,50000
 4,3,50000
 4,1,50000
@@ -1158,11 +1154,11 @@ TEST_F(BenchTest, _42) {
 
     // All 8 beam values distinct; TRUNC_MINUTE zeroes the seconds.
     // 8 groups, each c = iter = 50000.
-    // ORDER BY M (ASC — no DESC keyword): chronological.
-    EXPECT_EQ(out_scheme->str(), R"(M,timestamp
+    // ORDER BY M (ASC â€” no DESC keyword): chronological.
+    EXPECT_EQ(out_scheme->Str(), R"(M,timestamp
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(2019-07-19 11:33:00,50000
+    EXPECT_EQ(out_data->Str(), R"(2019-07-19 11:33:00,50000
 2020-09-12 07:52:00,50000
 2021-11-08 09:45:00,50000
 2022-03-27 23:18:00,50000
@@ -1189,14 +1185,14 @@ TEST_F(BenchTest, _28) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // was values: josh(×2), john(×2), frusciante(×2), klinghoffer(×2) per block.
-    // REGEXP_REPLACE('^j','J'): josh→Josh, john→John, others unchanged.
-    // 4 groups × 2 rows × iter = 100000 each.
-    // ORDER BY k ASC: 'J'(74) < 'f'(102) < 'k'(107) → John, Josh, frusciante, klinghoffer.
-    EXPECT_EQ(out_scheme->str(), R"(k,string
+    // was values: josh(Ã—2), john(Ã—2), frusciante(Ã—2), klinghoffer(Ã—2) per block.
+    // REGEXP_REPLACE('^j','J'): joshâ†’Josh, johnâ†’John, others unchanged.
+    // 4 groups Ã— 2 rows Ã— iter = 100000 each.
+    // ORDER BY k ASC: 'J'(74) < 'f'(102) < 'k'(107) â†’ John, Josh, frusciante, klinghoffer.
+    EXPECT_EQ(out_scheme->Str(), R"(k,string
 c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(John,100000
+    EXPECT_EQ(out_data->Str(), R"(John,100000
 Josh,100000
 frusciante,100000
 klinghoffer,100000

@@ -2,11 +2,12 @@
 
 #include <chrono>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace JfEngine {
 
@@ -15,6 +16,23 @@ struct TQueryStat {
     uint64_t total_ns = 0;
     uint64_t count = 0;
 };
+
+inline uint64_t ReadProcSelfIoReadBytes() {
+    std::ifstream f("/proc/self/io");
+    if (!f) return 0;
+    std::string line;
+    while (std::getline(f, line)) {
+        static const std::string kPrefix = "read_bytes:";
+        if (line.rfind(kPrefix, 0) == 0) {
+            try {
+                return std::stoull(line.substr(kPrefix.size()));
+            } catch (...) {
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
 
 class TQueryStats {
 public:
@@ -25,6 +43,12 @@ public:
         stat.name = name;
         stat.total_ns += ns;
         stat.count++;
+    }
+
+    void RecordDiskRead(uint64_t ns, uint64_t bytes) {
+        disk_read_ns_ += ns;
+        disk_read_bytes_userspace_ += bytes;
+        disk_read_count_++;
     }
 
     void Print(std::ostream& out) const {
@@ -46,14 +70,37 @@ public:
                 << std::right << std::fixed << std::setprecision(3) << std::setw(10) << ms << "ms  "
                 << std::setw(10) << e->count << '\n';
         }
+
+        uint64_t disk_now = ReadProcSelfIoReadBytes();
+        uint64_t disk_delta = disk_now > disk_bytes_at_start_
+                                  ? disk_now - disk_bytes_at_start_
+                                  : 0;
+        double disk_ms = static_cast<double>(disk_read_ns_) / 1e6;
+        double disk_us_mb = static_cast<double>(disk_read_bytes_userspace_) / (1024.0 * 1024.0);
+        double disk_phys_mb = static_cast<double>(disk_delta) / (1024.0 * 1024.0);
+        out << "  " << std::left << std::setw(22) << "DiskRead"
+            << std::right << std::fixed << std::setprecision(3) << std::setw(10) << disk_ms << "ms  "
+            << std::setw(10) << disk_read_count_ << '\n';
+        out << "  " << std::left << std::setw(22) << "DiskBytes(userspace)"
+            << std::right << std::fixed << std::setprecision(3) << std::setw(10) << disk_us_mb << "MB" << '\n';
+        out << "  " << std::left << std::setw(22) << "DiskBytes(physical)"
+            << std::right << std::fixed << std::setprecision(3) << std::setw(10) << disk_phys_mb << "MB" << '\n';
     }
 
     void Reset() {
         stats_.clear();
+        disk_read_ns_ = 0;
+        disk_read_count_ = 0;
+        disk_read_bytes_userspace_ = 0;
+        disk_bytes_at_start_ = ReadProcSelfIoReadBytes();
     }
 
 private:
     std::map<std::string, TQueryStat> stats_;
+    uint64_t disk_read_ns_ = 0;
+    uint64_t disk_read_count_ = 0;
+    uint64_t disk_read_bytes_userspace_ = 0;
+    uint64_t disk_bytes_at_start_ = 0;
 };
 
 // Thread-local child time stack for self-time calculation

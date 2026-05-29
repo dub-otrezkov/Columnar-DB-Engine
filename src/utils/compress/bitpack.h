@@ -2,6 +2,7 @@
 
 #include <utils/cint/int.h>
 
+#include <bit>
 #include <concepts>
 #include <cstring>
 #include <type_traits>
@@ -37,17 +38,23 @@ struct TBitWriter {
 };
 
 template <std::integral T, typename Encode>
-inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits, Encode encode) {
-    ui64 n = values.size();
+inline std::vector<char> BitPack(ui64 n, T* values, Encode encode) {
+    using U = std::make_unsigned_t<T>;
+    U max_encoded = 0;
+    for (ui64 i = 0; i < n; i++) {
+        U e = encode(values[i]);
+        if (e > max_encoded) max_encoded = e;
+    }
+    ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
+
     ui64 words = (n * bits + 63) / 64;
-    std::vector<ui64> buf(1 + words, 0);
-    buf[0] = n;
+    std::vector<ui64> buf(words, 0);
     if (bits > 0) {
         ui64 mask = (bits == 64) ? ~0ULL : ((1ULL << bits) - 1);
         for (ui64 i = 0; i < n; i++) {
             ui64 v = static_cast<ui64>(encode(values[i])) & mask;
             ui64 pos = i * bits;
-            ui64 lo = 1 + (pos >> 6);
+            ui64 lo = pos >> 6;
             ui32 sh = static_cast<ui32>(pos & 63);
             buf[lo] |= v << sh;
             if (sh + bits > 64) {
@@ -55,44 +62,45 @@ inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits, Encode
             }
         }
     }
-    std::vector<char> out(buf.size() * sizeof(ui64));
-    std::memcpy(out.data(), buf.data(), out.size());
+
+    std::vector<char> out(sizeof(bits) + sizeof(n) + words * sizeof(ui64));
+    out[0] = static_cast<char>(bits);
+    std::memcpy(out.data() + sizeof(bits), &n, sizeof(n));
+    if (words > 0) {
+        std::memcpy(out.data() + sizeof(bits) + sizeof(n), buf.data(), words * sizeof(ui64));
+    }
     return out;
 }
 
 template <std::integral T>
-inline std::vector<char> BitPack(const std::vector<T>& values, ui32 bits) {
+inline std::vector<char> BitPack(ui64 n, T* values) {
     using U = std::make_unsigned_t<T>;
-    ui64 n = values.size();
-
-    if (bits == sizeof(T) * 8) {
-        ui64 body = n * sizeof(T);
-        ui64 total = ((sizeof(ui64) + body + 7) / 8) * 8;
-        std::vector<char> out(total, 0);
-        std::memcpy(out.data(), &n, sizeof(n));
-        if (n > 0) {
-            std::memcpy(out.data() + sizeof(n), values.data(), body);
+    constexpr ui32 W = sizeof(T) * 8;
+    return BitPack(n, values, [](T v) -> U {
+        if constexpr (std::is_signed_v<T>) {
+            U u = static_cast<U>(v);
+            return (u << 1) ^ static_cast<U>(static_cast<std::make_signed_t<U>>(u) >> (W - 1));
+        } else {
+            return static_cast<U>(v);
         }
-        return out;
-    }
-
-    return BitPack(values, bits, [](T v) -> U { return static_cast<U>(v); });
+    });
 }
 
 template <std::integral T, typename Decode>
-inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::vector<T>& out, Decode decode) {
-    if (packed_size < sizeof(ui64)) {
+inline void BitUnpack(size_t packed_size, const char* packed, std::vector<T>& out, Decode decode) {
+    if (packed_size < sizeof(ui8) + sizeof(ui64)) {
         out.clear();
         return;
     }
+    ui8 bits = static_cast<ui8>(packed[0]);
     ui64 n;
-    std::memcpy(&n, packed, sizeof(n));
+    std::memcpy(&n, packed + sizeof(bits), sizeof(n));
     out.assign(n, T{});
     if (n == 0) {
         return;
     }
     ui64 mask = (bits == 64) ? ~0ULL : ((bits == 0) ? 0 : ((1ULL << bits) - 1));
-    const char* base = packed + sizeof(ui64);
+    auto* base = packed + sizeof(bits) + sizeof(n);
     for (ui64 i = 0; i < n; i++) {
         ui64 r = 0;
         if (bits > 0) {
@@ -114,29 +122,15 @@ inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::ve
 }
 
 template <std::integral T>
-inline void BitUnpack(const char* packed, size_t packed_size, ui32 bits, std::vector<T>& out) {
-    if (packed_size < sizeof(ui64)) {
-        out.clear();
-        return;
-    }
-    ui64 n;
-    std::memcpy(&n, packed, sizeof(n));
-
-    if (bits == sizeof(T) * 8) {
-        out.resize(n);
-        if (n > 0) {
-            std::memcpy(out.data(), packed + sizeof(n), n * sizeof(T));
-        }
-        return;
-    }
-
+inline void BitUnpack(size_t packed_size, const char* packed, std::vector<T>& out) {
     using U = std::make_unsigned_t<T>;
-    BitUnpack(packed, packed_size, bits, out, [](U r) -> T { return static_cast<T>(r); });
-}
-
-template <std::integral T>
-inline void BitUnpack(const std::vector<char>& packed, ui32 bits, std::vector<T>& out) {
-    BitUnpack(packed.data(), packed.size(), bits, out);
+    BitUnpack(packed_size, packed, out, [](U r) -> T {
+        if constexpr (std::is_signed_v<T>) {
+            return static_cast<T>((r >> 1) ^ -static_cast<U>(r & 1));
+        } else {
+            return static_cast<T>(r);
+        }
+    });
 }
 
 struct TBitReader {

@@ -1,4 +1,4 @@
-#include "tests.h"
+﻿#include "tests.h"
 #include "workers/base.h"
 
 namespace JfEngine::Testing {
@@ -20,30 +20,26 @@ beam,timestamp
 
     static constexpr ui64 iter = kRowGroupLen * 50;
 
-    std::shared_ptr<std::stringstream> out_scheme;
-    std::shared_ptr<std::stringstream> out_data;
+    std::shared_ptr<TStringStreamFileOutput> out_scheme;
+    std::shared_ptr<TStringStreamFileOutput> out_data;
 
     void SetUp() override {
-        TIoFactory::RegisterSStreamIo("scheme", ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo("data", ETypeFile::kCsvFile);
+        auto scheme_in = std::make_shared<TStringStreamFileInput>(scheme);
+        auto data_in   = std::make_shared<TStringStreamFileInput>();
+        for (ui64 i = 0; i < iter; i++) {
+            data_in->Stream() << data;
+        }
+
+        TIoFactory::RegisterCustomInput("scheme", scheme_in);
+        TIoFactory::RegisterCustomInput("data",   data_in);
         TIoFactory::RegisterSStreamIo("josh", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp1", ETypeFile::kJfFile);
         TIoFactory::RegisterSStreamIo("tmp2", ETypeFile::kJfFile);
 
-        *TIoFactory::GetIo("scheme") << scheme;
-        for (ui64 i = 0; i < iter; i++) {
-            *TIoFactory::GetIo("data") << data;
-        }
-
-        TIoFactory::RegisterSStreamIo(kResultScheme, ETypeFile::kCsvFile);
-        TIoFactory::RegisterSStreamIo(kResultData, ETypeFile::kCsvFile);
-
-        out_scheme = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultScheme)
-        );
-        out_data = std::dynamic_pointer_cast<std::stringstream>(
-            TIoFactory::GetIo(kResultData)
-        );
+        out_scheme = std::make_shared<TStringStreamFileOutput>();
+        out_data   = std::make_shared<TStringStreamFileOutput>();
+        TIoFactory::RegisterCustomOutput(kResultScheme, out_scheme);
+        TIoFactory::RegisterCustomOutput(kResultData,   out_data);
     }
 
     void TearDown() override {
@@ -76,9 +72,9 @@ TEST_F(BigTest, SimpleColumnGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 )");
-    EXPECT_EQ(out_data->str().size(), iter * 8);
+    EXPECT_EQ(out_data->Str().size(), iter * 8);
 }
 
 TEST_F(BigTest, DatesFilter) {
@@ -99,10 +95,10 @@ TEST_F(BigTest, DatesFilter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(d,int64
+    EXPECT_EQ(out_scheme->Str(), R"(d,int64
 )");
-    EXPECT_EQ(out_data->str(), std::to_string(iter * 2) + "\n");
-    // std::cout << out_data->str() << std::endl;
+    EXPECT_EQ(out_data->Str(), std::to_string(iter * 2) + "\n");
+    // std::cout << out_data->Str() << std::endl;
 }
 
 TEST_F(BigTest, SumGetter) {
@@ -123,9 +119,9 @@ TEST_F(BigTest, SumGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int128
+    EXPECT_EQ(out_scheme->Str(), R"(SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), std::to_string(16 * iter) + "\n");
+    EXPECT_EQ(out_data->Str(), std::to_string(16 * iter) + "\n");
 }
 
 TEST_F(BigTest, MinMaxGetter) {
@@ -146,12 +142,12 @@ TEST_F(BigTest, MinMaxGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(MIN(what),int64
+    EXPECT_EQ(out_scheme->Str(), R"(MIN(what),int64
 MAX(what),int64
 MAX(was),string
 MIN(was),string
 )");
-    EXPECT_EQ(out_data->str(), "1,7,klinghoffer,frusciante\n");
+    EXPECT_EQ(out_data->Str(), "1,7,klinghoffer,frusciante\n");
 }
 
 TEST_F(BigTest, CountDistinctGetter) {
@@ -172,9 +168,9 @@ TEST_F(BigTest, CountDistinctGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(c,int64
+    EXPECT_EQ(out_scheme->Str(), R"(c,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(4
+    EXPECT_EQ(out_data->Str(), R"(4
 )");
 }
 
@@ -196,9 +192,9 @@ TEST_F(BigTest, LikeGetter) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(SUM(what),int128
+    EXPECT_EQ(out_scheme->Str(), R"(SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), std::to_string(4 * iter) + "\n");
+    EXPECT_EQ(out_data->Str(), std::to_string(4 * iter) + "\n");
 }
 
 TEST_F(BigTest, In) {
@@ -219,9 +215,9 @@ TEST_F(BigTest, In) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(COUNT(*),int64
+    EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), std::to_string(3 * iter) + "\n");
+    EXPECT_EQ(out_data->Str(), std::to_string(3 * iter) + "\n");
 }
 
 TEST_F(BigTest, GroupBySimple) {
@@ -241,11 +237,11 @@ TEST_F(BigTest, GroupBySimple) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(hers,string
+    EXPECT_EQ(out_scheme->Str(), R"(hers,string
 COUNT(*),int64
 SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(rip,4000000,16000000
+    EXPECT_EQ(out_data->Str(), R"(rip,4000000,16000000
 )");
 }
 
@@ -266,11 +262,11 @@ TEST_F(BigTest, GroupByWithWhere) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 COUNT(*),int64
 SUM(what),int128
 )");
-    EXPECT_EQ(out_data->str(), R"(john,1000000,3000000
+    EXPECT_EQ(out_data->Str(), R"(john,1000000,3000000
 josh,1000000,1000000
 )");
 }
@@ -292,11 +288,11 @@ TEST_F(BigTest, GroupBySeveral) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 hers,string
 cnt,int64
 )");
-    EXPECT_EQ(out_data->str(), R"(frusciante,rip,1000000
+    EXPECT_EQ(out_data->Str(), R"(frusciante,rip,1000000
 john,rip,1000000
 josh,rip,1000000
 klinghoffer,rip,1000000
@@ -320,11 +316,11 @@ TEST_F(BigTest, OrderBy) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(what,int64
+    EXPECT_EQ(out_scheme->Str(), R"(what,int64
 once,int32
 was,string
 )");
-    EXPECT_EQ(out_data->str(), R"(5,6,frusciante
+    EXPECT_EQ(out_data->Str(), R"(5,6,frusciante
 5,6,frusciante
 5,6,frusciante
 )");
@@ -347,11 +343,11 @@ TEST_F(BigTest, WhereGroupOrder) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 COUNT(*),int64
 sum,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,1000000,1000000
+    EXPECT_EQ(out_data->Str(), R"(josh,1000000,1000000
 john,1000000,3000000
 )");
 }
@@ -373,14 +369,14 @@ TEST_F(BigTest, GroupByTimestamp) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(beam,timestamp
+    EXPECT_EQ(out_scheme->Str(), R"(beam,timestamp
 COUNT(*),int64
 )");
-    EXPECT_EQ(out_data->str(), R"(2022-02-24 00:00:04,1000000
+    EXPECT_EQ(out_data->Str(), R"(2022-02-24 00:00:04,1000000
 2022-02-24 00:00:03,1000000
 2022-02-24 00:00:00,2000000
 )");
-    // std::cout << out_data->str() << std::endl;
+    // std::cout << out_data->Str() << std::endl;
 }
 
 TEST_F(BigTest, GroupOrderWhere) {
@@ -400,11 +396,11 @@ TEST_F(BigTest, GroupOrderWhere) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 COUNT(*),int64
 sum,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(josh,1000000,1000000
+    EXPECT_EQ(out_data->Str(), R"(josh,1000000,1000000
 frusciante,1000000,5000000
 klinghoffer,1000000,7000000
 )");
@@ -427,11 +423,11 @@ TEST_F(BigTest, GroupOrderLimit) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(was,string
+    EXPECT_EQ(out_scheme->Str(), R"(was,string
 COUNT(*),int64
 sum,int128
 )");
-    EXPECT_EQ(out_data->str(), R"(klinghoffer,1000000,7000000
+    EXPECT_EQ(out_data->Str(), R"(klinghoffer,1000000,7000000
 frusciante,1000000,5000000
 )");
 }
@@ -453,10 +449,10 @@ TEST_F(BigTest, IfElseSimple) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(label,string
+    EXPECT_EQ(out_scheme->Str(), R"(label,string
 )");
-    EXPECT_EQ(out_data->str().size(), iter * 22);
-    EXPECT_EQ(out_data->str().substr(0, 22), "rip\nother\nother\nother\n");
+    EXPECT_EQ(out_data->Str().size(), iter * 22);
+    EXPECT_EQ(out_data->Str().substr(0, 22), "rip\nother\nother\nother\n");
 }
 
 TEST_F(BigTest, IfElseAllFalse) {
@@ -476,10 +472,10 @@ TEST_F(BigTest, IfElseAllFalse) {
         ASSERT_FALSE(err.HasError());
     }
 
-    EXPECT_EQ(out_scheme->str(), R"(label,string
+    EXPECT_EQ(out_scheme->Str(), R"(label,string
 )");
-    EXPECT_EQ(out_data->str().size(), iter * 4 * std::string("fallback\n").size());
-    EXPECT_EQ(out_data->str().substr(0, 9), "fallback\n");
+    EXPECT_EQ(out_data->Str().size(), iter * 4 * std::string("fallback\n").size());
+    EXPECT_EQ(out_data->Str().substr(0, 9), "fallback\n");
 }
 
 } // namespace JfEngine::Testing

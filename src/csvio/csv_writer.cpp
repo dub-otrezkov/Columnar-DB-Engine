@@ -5,7 +5,7 @@
 
 namespace JfEngine {
 
-TCsvWriter::TCsvWriter(std::ostream& out, char sep) :
+TCsvWriter::TCsvWriter(IFileOutput* out, char sep) :
     out_(out),
     sep_(sep)
 {
@@ -63,7 +63,8 @@ void TCsvWriter::WriteRow(const std::vector<std::string>& row) {
         }
     }
     tot[cur] = '\n';
-    out_.write(tot.data(), total);
+    const char* p = tot.data();
+    out_->Write(p, total);
 }
 
 
@@ -102,11 +103,8 @@ void TCsvWriter::WriteRowGroup(std::vector<std::vector<std::string>> group) {
         }
         tot[cur - 1] = '\n';
     }
-    out_.write(tot.data(), total);
-}
-
-TCsvWriter::~TCsvWriter() {
-    out_.flush();
+    const char* p = tot.data();
+    out_->Write(p, total);
 }
 
 } // namespace JfEngine

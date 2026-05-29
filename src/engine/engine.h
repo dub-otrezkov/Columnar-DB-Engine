@@ -3,9 +3,9 @@
 #include "columns/types/types.h"
 #include "csvio/csv_reader.h"
 #include "utils/errors/errors.h"
+#include "utils/mmap_input/mmap_input.h"
 #include "workers/io/io.h"
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -14,16 +14,16 @@ namespace JfEngine {
 
 class TEngine {
     friend Expected<TEngine> MakeEngineFromCsv(
-        std::shared_ptr<std::istream> scheme,
-        std::shared_ptr<std::istream> data,
+        IFileInput* scheme,
+        IFileInput* data,
         ui64 row_group_size
     );
-    friend Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
+    friend Expected<TEngine> MakeEngineFromJf(IFileInput* jf);
 public:
 
-    Expected<void> WriteSchemeToCsv(std::ostream& out);
-    Expected<void> WriteDataToCsv(std::ostream& out);
-    Expected<void> WriteTableToJf(std::ostream& out);
+    Expected<void> WriteSchemeToCsv(IFileOutput* out);
+    Expected<void> WriteDataToCsv(IFileOutput* out);
+    Expected<void> WriteTableToJf(IFileOutput* out);
 
 public:
 
@@ -63,9 +63,9 @@ public:
     TTableInputPtr in_;
 };
 
-Expected<TEngine> MakeEngineFromCsv(std::shared_ptr<std::istream> scheme, std::shared_ptr<std::istream> data, ui64 row_group_size = kRowGroupLen);
+Expected<TEngine> MakeEngineFromCsv(IFileInput* scheme, IFileInput* data, ui64 row_group_size = kRowGroupLen);
 
-Expected<TEngine> MakeEngineFromJf(std::shared_ptr<std::istream> jf);
+Expected<TEngine> MakeEngineFromJf(IFileInput* jf);
 
 Expected<TEngine> MakeEngineFromWorker(TTableInputPtr worker);
 
