@@ -55,14 +55,14 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
 
         const ui64 sz = ag[0]->GetSize();
 
-        std::vector<std::vector<JString>> printed;
-        printed.reserve(group_q_.cols.size());
+        std::vector<TJStringGetter> printer;
+        printer.reserve(group_q_.cols.size());
         for (auto& c : group_q_.cols) {
             auto idx = jf_in_->GetColumnInd(c);
             if (idx < 0 || static_cast<ui64>(idx) >= ag.size()) {
                 return MakeError<EError::NoSuchColumnsErr>(c);
             }
-            printed.push_back(Do<OToJStrings>(ag[idx]));
+            printer.push_back(Do<OToJStrings>(ag[idx]));
         }
 
         std::vector<JString> key;
@@ -70,7 +70,7 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         for (ui64 i = 0; i < sz; i++) {
             key.resize(group_q_.cols.size());
             for (ui64 j = 0; j < key.size(); j++) {
-                key[j] = printed[j][i];
+                key[j] = printer[j](i);
             }
             auto it = groups_.find(key);
 
