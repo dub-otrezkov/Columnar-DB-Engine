@@ -3,7 +3,10 @@
 #include "utils/cint/int.h"
 
 #include <cassert>
+#include <cerrno>
+#include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <istream>
 #include <memory>
 #include <ostream>
@@ -53,10 +56,19 @@ class TMMapFileInput final : public IFileInput {
 public:
     TMMapFileInput(const std::string& name) {
         int fd = open(name.c_str(), O_RDONLY);
-        assert(fd != -1);
+        if (fd < 0) {
+            std::cerr << "TMMapFileInput: cannot open '" << name
+                      << "': " << std::strerror(errno) << std::endl;
+            std::abort();
+        }
 
-        struct stat sb;
-        assert(fstat(fd, &sb) != -1);
+        struct stat sb{};
+        if (fstat(fd, &sb) < 0) {
+            std::cerr << "TMMapFileInput: fstat failed for '" << name
+                      << "': " << std::strerror(errno) << std::endl;
+            close(fd);
+            std::abort();
+        }
 
         file_size_ = static_cast<ui64>(sb.st_size);
 
@@ -66,8 +78,15 @@ public:
             return;
         }
 
-        file_ = reinterpret_cast<char*>(mmap(nullptr, file_size_, PROT_READ, MAP_PRIVATE, fd, 0));
-        assert(file_ != MAP_FAILED);
+        void* p = mmap(nullptr, file_size_, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (p == MAP_FAILED) {
+            std::cerr << "TMMapFileInput: mmap failed for '" << name
+                      << "' (size=" << file_size_ << "): "
+                      << std::strerror(errno) << std::endl;
+            close(fd);
+            std::abort();
+        }
+        file_ = reinterpret_cast<char*>(p);
         close(fd);
     }
 
