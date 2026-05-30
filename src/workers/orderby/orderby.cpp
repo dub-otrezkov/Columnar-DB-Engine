@@ -40,9 +40,18 @@ void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, std::vector<TColumnPtr>
     for (ui64 i = 0; i < is.size(); i++) {
         is[i] = name_to_i_[order_q_.cols.at(i)];
     }
-    auto cmp = [&](i64 i, i64 j) -> bool {
-        for (i64 k = 0; k < order_q_.cols.size(); k++) {
-            auto t1 = Do<OCmp>(other.at(is[k]), i, j) * (order_q_.reverse ? -1 : 1);
+
+    const i64 dir = order_q_.reverse ? -1 : 1;
+    const ui64 nc = order_q_.cols.size();
+
+    std::vector<TIntComparator> cmps_same;
+    cmps_same.reserve(nc);
+    for (ui64 k = 0; k < nc; k++) {
+        cmps_same.push_back(Do<OCmp>(other.at(is[k])));
+    }
+    auto cmp = [&cmps_same, dir, nc](i64 i, i64 j) -> bool {
+        for (ui64 k = 0; k < nc; k++) {
+            auto t1 = cmps_same[k](i, j) * dir;
             if (t1 == 1) {
                 return true;
             }
@@ -58,10 +67,15 @@ void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, std::vector<TColumnPtr>
     } else {
         std::partial_sort(ids.begin(), std::min(ids.end(), ids.begin() + order_q_.limit), ids.end(), cmp);
     }
-    
-    auto cmp2 = [&](i64 i, i64 j) -> bool {
-        for (i64 k = 0; k < order_q_.cols.size(); k++) {
-            auto t1 = Do<OCmpDiffCol>(rg.at(is[k]), other.at(is[k]), i, j) * (order_q_.reverse ? -1 : 1);
+
+    std::vector<TIntComparator2> cmps_diff;
+    cmps_diff.reserve(nc);
+    for (ui64 k = 0; k < nc; k++) {
+        cmps_diff.push_back(Do<OCmpDiffCol>(rg.at(is[k]), other.at(is[k])));
+    }
+    auto cmp2 = [&cmps_diff, dir, nc](i64 i, i64 j) -> bool {
+        for (ui64 k = 0; k < nc; k++) {
+            auto t1 = cmps_diff[k](i, j) * dir;
             if (t1 == 1) {
                 return true;
             }
