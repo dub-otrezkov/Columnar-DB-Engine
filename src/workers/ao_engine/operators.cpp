@@ -178,15 +178,14 @@ Expected<void> TIfOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
         if (!col) {
             return err_read;
         }
-        auto [res, err] = Do<OFilterCheck>(col, f.op, f.value);
-        if (err) {
-            return err;
-        }
         if (mask.empty()) {
-            mask = std::move(res);
-        } else {
-            assert(mask.size() == res.size());
-            mask &= res;
+            mask.resize(col->GetSize());
+            mask.set();
+        }
+        assert(mask.size() == col->GetSize());
+        auto e = Do<OAndCheck>(col, f.op, f.value, mask);
+        if (e.HasError()) {
+            return e.GetError();
         }
     }
 

@@ -4,6 +4,18 @@
 
 namespace JfEngine::Testing {
 
+namespace {
+inline Expected<boost::dynamic_bitset<>> CheckFilter(TColumnPtr col, EFilterType op, const std::string& value) {
+    boost::dynamic_bitset<> mask(col->GetSize());
+    mask.set();
+    auto err = Do<OAndCheck>(col, op, value, mask);
+    if (err.HasError()) {
+        return err.GetError();
+    }
+    return mask;
+}
+} // namespace
+
 TEST_F(OperatorsTest, FilterEqTest) {
     auto test = [](EColumn t) -> void {
         std::vector<std::string> data = {"-1", "10", "9", "9", "8"};
@@ -11,7 +23,7 @@ TEST_F(OperatorsTest, FilterEqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kEq, "9");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kEq, "9");
 
         ASSERT_FALSE(r.HasError());
 
@@ -42,7 +54,7 @@ TEST_F(OperatorsTest, FilterEqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kEq, "2022-02-24");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kEq, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
@@ -74,7 +86,7 @@ TEST_F(OperatorsTest, FilterEqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kEq, "2022-02-24 04:04:04");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kEq, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
@@ -102,7 +114,7 @@ TEST_F(OperatorsTest, FilterLessTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLess, "9");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kLess, "9");
 
         ASSERT_FALSE(r.HasError());
 
@@ -133,7 +145,7 @@ TEST_F(OperatorsTest, FilterLessTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLess, "2022-02-24");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kLess, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
@@ -165,7 +177,7 @@ TEST_F(OperatorsTest, FilterLessTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLess, "2022-02-24 04:04:04");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kLess, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
@@ -193,7 +205,7 @@ TEST_F(OperatorsTest, FilterLeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLeq, "9");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kLeq, "9");
 
         ASSERT_FALSE(r.HasError());
 
@@ -224,7 +236,7 @@ TEST_F(OperatorsTest, FilterLeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLeq, "2022-02-24");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kLeq, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
@@ -256,7 +268,7 @@ TEST_F(OperatorsTest, FilterLeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLeq, "2022-02-24 04:04:04");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kLeq, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
@@ -284,7 +296,7 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGreater, "9");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kGreater, "9");
 
         ASSERT_FALSE(r.HasError());
 
@@ -315,7 +327,7 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGreater, "2022-02-24");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kGreater, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
@@ -347,7 +359,7 @@ TEST_F(OperatorsTest, FilterGreaterTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGreater, "2022-02-24 04:04:04");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kGreater, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
@@ -375,7 +387,7 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGeq, "9");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kGeq, "9");
 
         ASSERT_FALSE(r.HasError());
 
@@ -406,7 +418,7 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGeq, "2022-02-24");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kGeq, "2022-02-24");
 
         ASSERT_FALSE(r.HasError());
 
@@ -438,7 +450,7 @@ TEST_F(OperatorsTest, FilterGeqTest) {
 
         ASSERT_FALSE(m.HasError());
 
-        auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kGeq, "2022-02-24 04:04:04");
+        auto r = CheckFilter(m.GetRes(), EFilterType::kGeq, "2022-02-24 04:04:04");
 
         ASSERT_FALSE(r.HasError());
 
@@ -489,7 +501,7 @@ TEST_F(OperatorsTest, FilterLikeTest) {
         ASSERT_FALSE(m.HasError());
 
         {
-            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLike, "9");
+            auto r = CheckFilter(m.GetRes(), EFilterType::kLike, "9");
 
             ASSERT_FALSE(r.HasError());
 
@@ -508,7 +520,7 @@ TEST_F(OperatorsTest, FilterLikeTest) {
 
         
         {
-            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kLike, "%h%");
+            auto r = CheckFilter(m.GetRes(), EFilterType::kLike, "%h%");
 
             ASSERT_FALSE(r.HasError());
 
@@ -554,7 +566,7 @@ TEST_F(OperatorsTest, FilterNLikeTest) {
         ASSERT_FALSE(m.HasError());
 
         {
-            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kNLike, "9");
+            auto r = CheckFilter(m.GetRes(), EFilterType::kNLike, "9");
 
             ASSERT_FALSE(r.HasError());
 
@@ -583,7 +595,7 @@ TEST_F(OperatorsTest, FilterNLikeTest) {
 
         
         {
-            auto r = Do<OFilterCheck>(m.GetRes(), EFilterType::kNLike, "%h%");
+            auto r = CheckFilter(m.GetRes(), EFilterType::kNLike, "%h%");
 
             ASSERT_FALSE(r.HasError());
 

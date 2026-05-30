@@ -23,33 +23,44 @@ enum EFilterType {
     kNLike
 };
 
-struct OFilterCheck {
+struct OAndCheck {
+    template <typename TCol, typename Pred>
+    static inline void ApplyMask(TCol& col, Pred pred, boost::dynamic_bitset<>& mask, bool inv) {
+        auto& data = col.GetData();
+        auto npos = boost::dynamic_bitset<>::npos;
+        for (auto i = mask.find_first(); i != npos; i = mask.find_next(i)) {
+            if (!(pred(data[i]) ^ inv)) {
+                mask.reset(i);
+            }
+        }
+    }
+
     template<typename T>
-    static inline Expected<boost::dynamic_bitset<>> Exec(T& col, EFilterType op, const std::string& value) {
+    static inline Expected<void> Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
         switch (op) {
             case EFilterType::kEq: {
-                return ExecInner(col, EFilterType::kEq, value);
+                return ExecInner(col, EFilterType::kEq, value, mask, /*inv=*/false);
             }
             case EFilterType::kNeq: {
-                return ExecInner(col, EFilterType::kEq, value, /*inv=*/true);
+                return ExecInner(col, EFilterType::kEq, value, mask, /*inv=*/true);
             }
             case EFilterType::kLess: {
-                return ExecInner(col, EFilterType::kLess, value);
+                return ExecInner(col, EFilterType::kLess, value, mask, /*inv=*/false);
             }
             case EFilterType::kLeq: {
-                return ExecInner(col, EFilterType::kLeq, value);
+                return ExecInner(col, EFilterType::kLeq, value, mask, /*inv=*/false);
             }
             case EFilterType::kGreater: {
-                return ExecInner(col, EFilterType::kLeq, value, /*inv=*/true);
+                return ExecInner(col, EFilterType::kLeq, value, mask, /*inv=*/true);
             }
             case EFilterType::kGeq: {
-                return ExecInner(col, EFilterType::kLess, value, /*inv=*/true);
+                return ExecInner(col, EFilterType::kLess, value, mask, /*inv=*/true);
             }
             case EFilterType::kLike: {
-                return ExecInner(col, EFilterType::kLike, value);
+                return ExecInner(col, EFilterType::kLike, value, mask, /*inv=*/false);
             }
             case EFilterType::kNLike: {
-                return ExecInner(col, EFilterType::kLike, value, /*inv=*/true);
+                return ExecInner(col, EFilterType::kLike, value, mask, /*inv=*/true);
             }
             default:
                 return MakeError<EError::UnimplementedErr>();
@@ -57,11 +68,13 @@ struct OFilterCheck {
     }
 
     template <typename TCol>
-    static inline Expected<boost::dynamic_bitset<>> ExecInner(TCol& col, EFilterType op, const std::string& value, bool inv = false) {
+    static inline Expected<void> ExecInner(TCol& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask, bool inv) {
         using T = typename TCol::ElemType;
-        boost::dynamic_bitset<> ans(col.GetSize());
-        if (inv) {
-            ans.set();
+        if (col.GetSize() != mask.size()) {
+            return MakeError<EError::BadArgsErr>();
+        }
+        if (op == EFilterType::kLike) {
+            return MakeError<EError::UnsupportedErr>();
         }
         T target;
         try {
@@ -77,172 +90,156 @@ struct OFilterCheck {
         } catch (...) {
             return MakeError<EError::NotAnIntErr>();
         }
-        if (op == EFilterType::kLike) {
-            return MakeError<EError::UnsupportedErr>();
-        }
         switch (op) {
             case EFilterType::kEq: {
-                for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData()[i] == target);
-                }
+                ApplyMask(col, [&](const T& v) {
+                    return v == target;
+                }, mask, inv);
                 break;
             }
             case EFilterType::kLess: {
-                for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData()[i] < target);
-                }
+                ApplyMask(col, [&](const T& v) {
+                    return v < target;
+                }, mask, inv);
                 break;
             }
             case EFilterType::kLeq: {
-                for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData()[i] <= target);
-                }
+                ApplyMask(col, [&](const T& v) {
+                    return v <= target;
+                }, mask, inv);
                 break;
             }
+            default: {
+                return MakeError<EError::UnimplementedErr>();
+            }
         }
-        return ans;
+        return EError::NoError;
     }
 
-    static inline Expected<boost::dynamic_bitset<>> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, bool inv = false) {
-        boost::dynamic_bitset<> ans(col.GetSize());
-        if (inv) {
-            ans.set();
+    static inline Expected<void> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask, bool inv) {
+        if (col.GetSize() != mask.size()) {
+            return MakeError<EError::BadArgsErr>();
         }
         switch (op) {
             case EFilterType::kEq: {
                 if (value.empty()) {
-                    for (ui64 i = 0; i < col.GetSize(); i++) {
-                        ans[i] ^= (col.GetData().at(i).size() == 0);
-                    }
+                    ApplyMask(col, [](const JString& s) {
+                        return s.size() == 0;
+                    }, mask, inv);
                 } else {
-                    for (ui64 i = 0; i < col.GetSize(); i++) {
-                        ans[i] ^= (col.GetData().at(i) == value);
-                    }
+                    ApplyMask(col, [&](const JString& s) {
+                        return s == value;
+                    }, mask, inv);
                 }
                 break;
             }
             case EFilterType::kLess: {
-                for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData().at(i) < value);
-                }
+                ApplyMask(col, [&](const JString& s) {
+                    return s < value;
+                }, mask, inv);
                 break;
             }
             case EFilterType::kLeq: {
-                for (ui64 i = 0; i < col.GetSize(); i++) {
-                    ans[i] ^= (col.GetData().at(i) <= value);
-                }
+                ApplyMask(col, [&](const JString& s) {
+                    return s <= value;
+                }, mask, inv);
                 break;
             }
             case EFilterType::kLike: {
                 if (std::count(value.begin(), value.end(), '%') == 2 && value.at(0) == '%' && value.at(value.size() - 1) == '%') {
-                    // std::cout << "dkdkkd" << std::endl;
-                    for (ui64 i = 0; i < col.GetSize(); i++) {
-                        ans[i] ^= OLikeChecker::Exec(col.GetData().at(i), std::string_view(value.data() + 1, value.size() - 2));
-                    }
+                    std::string_view needle(value.data() + 1, value.size() - 2);
+                    ApplyMask(col, [&](JString& s) {
+                        return OLikeChecker::Exec(s, needle);
+                    }, mask, inv);
                 } else {
-                    for (ui64 i = 0; i < col.GetSize(); i++) {
-                        if (value.empty()) {
-                            ans[i] ^= 1;
-                            continue;
-                        }
-                        if (value == "%") {
-                            ans[i] ^= 1;
-                            continue;
-                        }
-                        auto& s = col.GetData().at(i);
-                        std::vector<i64> pf(value.size(), 0);
-                        i64 st = 0;
-
-                        static auto eq = [](char a, char b) -> bool {
-                            return (a == b || a == '_' || b == '_');
-                        };
-
-                        auto recalc_pf = [&pf, &st, &value]() -> void {
-                            while (st < value.size() && value[st] == '%') {
-                                st++;
-                            }
-                            for (ui64 t = st + 1; t < value.size() && value[t] != '%'; t++) {
-                                pf[t] = pf[t - 1];
-                                while (pf[t] > 0 && !eq(value[pf[t] + st], value[t])) {
-                                    pf[t] = pf[pf[t] + st - 1];
-                                }
-                                if (eq(value[t], value[st + pf[t]])) {
-                                    pf[t]++;
-                                }
-                            }
-                        };
-                        recalc_pf();
-                        ui64 curpf = 0;
-                        for (ui64 k = 0; k < s.size(); k++) {
-                            if (st == value.size()) {
-                                break;
-                            }
-                            while (curpf > 0 && !eq(s[k], value[st + curpf])) {
-                                curpf = pf[st + curpf - 1];
-                            }
-                            if (eq(s[k], value[st + curpf])) {
-                                curpf++;
-                            }
-
-                            if (st + curpf == value.size() || value[st + curpf] == '%') {
-                                st = st + curpf;
-                                curpf = 0;
-                                if (st < value.size()) {
-                                    recalc_pf();
-                                }
-                            }
-                        }
-
-
-                        bool ans_c = 1;
-
-                        if (st != value.size()) {
-                            ans_c = 0;
-                        }
-
-                        if (value[0] != '%') {
-                            for (ui64 k = 0; k < value.size(); k++) {
-                                if (value[k] == '%') {
-                                    break;
-                                }
-                                if (!eq(value[k], s[k])) {
-                                    ans_c = 0;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (value[0] != '%') {
-                            for (ui64 k = 0; k < value.size(); k++) {
-                                if (value[k] == '%') {
-                                    break;
-                                }
-                                if (!eq(value[k], s[k])) {
-                                    ans_c = 0;
-                                    break;
-                                }
-                            }
-                        }
-                        if (value.back() != '%') {
-                            for (ui64 k = 1; k <= value.size(); k++) {
-                                if (value[value.size() - k] == '%') {
-                                    break;
-                                }
-                                if (!eq(value[value.size() - k], s[s.size() - k])) {
-                                    ans_c = 0;
-                                }
-                            }
-                        }
-
-                        ans[i] ^= ans_c;
-                    }
+                    ApplyMask(col, [&](JString& s) {
+                        return LikeMatch(s, value);
+                    }, mask, inv);
                 }
                 break;
             }
-            default:
+            default: {
                 return MakeError<EError::UnsupportedErr>();
+            }
         }
-        return ans;
+        return EError::NoError;
+    }
+
+    static inline bool LikeMatch(JString& s, const std::string& value) {
+        if (value.empty()) {
+            return true;
+        }
+        if (value == "%") {
+            return true;
+        }
+        std::vector<i64> pf(value.size(), 0);
+        i64 st = 0;
+
+        static auto eq = [](char a, char b) -> bool {
+            return (a == b || a == '_' || b == '_');
+        };
+
+        auto recalc_pf = [&pf, &st, &value]() -> void {
+            while (st < static_cast<i64>(value.size()) && value[st] == '%') {
+                st++;
+            }
+            for (ui64 t = st + 1; t < value.size() && value[t] != '%'; t++) {
+                pf[t] = pf[t - 1];
+                while (pf[t] > 0 && !eq(value[pf[t] + st], value[t])) {
+                    pf[t] = pf[pf[t] + st - 1];
+                }
+                if (eq(value[t], value[st + pf[t]])) {
+                    pf[t]++;
+                }
+            }
+        };
+        recalc_pf();
+        ui64 curpf = 0;
+        for (ui64 k = 0; k < s.size(); k++) {
+            if (st == static_cast<i64>(value.size())) {
+                break;
+            }
+            while (curpf > 0 && !eq(s[k], value[st + curpf])) {
+                curpf = pf[st + curpf - 1];
+            }
+            if (eq(s[k], value[st + curpf])) {
+                curpf++;
+            }
+            if (st + curpf == static_cast<i64>(value.size()) || value[st + curpf] == '%') {
+                st = st + curpf;
+                curpf = 0;
+                if (st < static_cast<i64>(value.size())) {
+                    recalc_pf();
+                }
+            }
+        }
+
+        bool ans_c = true;
+        if (st != static_cast<i64>(value.size())) {
+            ans_c = false;
+        }
+        if (value[0] != '%') {
+            for (ui64 k = 0; k < value.size(); k++) {
+                if (value[k] == '%') {
+                    break;
+                }
+                if (!eq(value[k], s[k])) {
+                    ans_c = false;
+                    break;
+                }
+            }
+        }
+        if (value.back() != '%') {
+            for (ui64 k = 1; k <= value.size(); k++) {
+                if (value[value.size() - k] == '%') {
+                    break;
+                }
+                if (!eq(value[value.size() - k], s[s.size() - k])) {
+                    ans_c = false;
+                }
+            }
+        }
+        return ans_c;
     }
 };
 
