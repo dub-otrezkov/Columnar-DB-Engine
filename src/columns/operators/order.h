@@ -121,33 +121,71 @@ struct OApplyOrder {
     }
 };
 
+struct TIntComparator {
+    using FnPtr = i64 (*)(void*, i64, i64);
+    void* ctx = nullptr;
+    FnPtr fn = nullptr;
+
+    inline i64 operator()(i64 i, i64 j) const {
+        return fn(ctx, i, j);
+    }
+};
+
+struct TIntComparator2 {
+    using FnPtr = i64 (*)(void*, void*, i64, i64);
+    void* lhs = nullptr;
+    void* rhs = nullptr;
+    FnPtr fn = nullptr;
+
+    inline i64 operator()(i64 i, i64 j) const {
+        return fn(lhs, rhs, i, j);
+    }
+};
+
 struct OCmp {
     template <typename TCol>
-    static inline i64 Exec(TCol& self, i64 i1, i64 i2) {
-        if (self.GetData().at(i1) < self.GetData().at(i2)) {
-            return 1;
-        } else if (self.GetData().at(i1) == self.GetData().at(i2)) {
-            return 0;
-        } else {
-            return -1;
-        }
+    static inline TIntComparator Exec(TCol& col) {
+        return TIntComparator{
+            &col,
+            +[](void* p, i64 i, i64 j) -> i64 {
+                auto& data = static_cast<TCol*>(p)->GetData();
+                const auto& a = data[i];
+                const auto& b = data[j];
+                if (a < b) {
+                    return 1;
+                }
+                if (a == b) {
+                    return 0;
+                }
+                return -1;
+            }
+        };
     }
 };
 
 struct OCmpDiffCol {
     template <typename TCol>
-    static inline i64 Exec(TCol& self, TColumnPtr other, i64 i1, i64 i2) {
+    static inline TIntComparator2 Exec(TCol& self, TColumnPtr other) {
         if (self.GetType() != other->GetType()) {
-            return 0;
+            return TIntComparator2{};
         }
-        auto& ot = *static_cast<TCol*>(other.get());
-        if (self.GetData().at(i1) < ot.GetData().at(i2)) {
-            return 1;
-        } else if (self.GetData().at(i1) == ot.GetData().at(i2)) {
-            return 0;
-        } else {
-            return -1;
-        }
+        return TIntComparator2{
+            &self,
+            other.get(),
+            +[](void* lp, void* rp, i64 i, i64 j) -> i64 {
+                auto& l = static_cast<TCol*>(lp)->GetData();
+                auto& r = static_cast<TCol*>(rp)->GetData();
+                const auto& a = l[i];
+                const auto& b = r[j];
+                if (a < b) {
+                    return 1;
+                }
+                if (a == b) {
+                    return 0;
+                }
+                return -1;
+            }
+        };
     }
 };
 

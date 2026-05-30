@@ -161,21 +161,42 @@ struct OCloneConst {
     }
 };
 
-struct OToJStrings {
-    template <typename TCol>
-    static inline std::vector<JString> Exec(TCol& col) {
-        auto& data = col.GetData();
-        std::vector<JString> ans(data.size());
-        for (ui64 i = 0; i < data.size(); i++) {
-            ans[i] = JString(data.at(i));
-        }
-        return ans;
-    }
+struct TJStringGetter {
+    using FnPtr = JString (*)(char*, ui64);
+    char* ctx;
+    FnPtr fn;
 
-    static inline std::vector<JString> Exec(TStringColumn& col) {
-        return col.GetData();
+    JString operator()(ui64 i) const {
+        return fn(ctx, i);
     }
 };
+
+
+struct OToJStrings {
+    template <typename TCol>
+    static inline TJStringGetter Exec(TCol& col) {
+        using T = typename TCol::ElemType;
+        return TJStringGetter{
+            reinterpret_cast<char*>(col.GetData().data()),
+            +[](char* p, ui64 i) -> JString {
+                return JString{
+                    static_cast<ui32>(sizeof(T)),
+                    p + i * sizeof(T)
+                };
+            }
+        };
+    }
+
+    static inline TJStringGetter Exec(TStringColumn& col) {
+        return TJStringGetter{
+            reinterpret_cast<char*>(col.GetData().data()),
+            +[](char* p, ui64 i) -> JString {
+                return *reinterpret_cast<JString*>(p + i * sizeof(JString));
+            }
+        };
+    }
+};
+
 
 struct ORegexpReplace {
     template <typename TCol>

@@ -39,41 +39,36 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
     keep.set();
     for (const auto& [name, op, target, opt_args] : query_.fils) {
         if (op == EFilterType::kIn || op == EFilterType::kNIn) {
-            boost::dynamic_bitset<> al;
             if (!opt_args) {
                 return EError::BadCmdErr;
             }
-
+            // IN / NOT IN: build a separate union mask across `opt_args`, then AND once into keep.
+            // For IN, union of equalities; for NOT IN, union of equalities and then keep &= ~al.
+            boost::dynamic_bitset<> al(keep.size());
             for (const auto& item : *opt_args) {
-                auto [orr, err] = Do<OFilterCheck>(
+                boost::dynamic_bitset<> item_mask(keep.size());
+                item_mask.set();
+                auto e = Do<OAndCheck>(
                     col[name_to_i_[name]],
-                    (op == EFilterType::kIn ? EFilterType::kEq : EFilterType::kNeq),
-                    item
+                    EFilterType::kEq,
+                    item,
+                    item_mask
                 );
-
-                if (err) {
-                    return err;
+                if (e.HasError()) {
+                    return e.GetError();
                 }
-
-                if (al.empty()) {
-                    al = std::move(orr);
-                } else {
-                    if (op == EFilterType::kIn) {
-                        al |= orr;
-                    } else {
-                        al = std::move(orr);
-                    }
-                }
+                al |= item_mask;
             }
-            keep &= al;
+            if (op == EFilterType::kIn) {
+                keep &= al;
+            } else {
+                keep -= al;
+            }
         } else {
-            auto [bl, err] = Do<OFilterCheck>(col[name_to_i_[name]], op, target);
-
-            if (err) {
-                return err;
+            auto e = Do<OAndCheck>(col[name_to_i_[name]], op, target, keep);
+            if (e.HasError()) {
+                return e.GetError();
             }
-
-            keep &= bl;
         }
     }
 
