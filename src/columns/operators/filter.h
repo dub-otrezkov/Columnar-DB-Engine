@@ -27,8 +27,11 @@ struct OAndCheck {
     template <typename TCol, typename Pred>
     static inline void ApplyMask(TCol& col, Pred pred, boost::dynamic_bitset<>& mask, bool inv) {
         auto& data = col.GetData();
-        auto npos = boost::dynamic_bitset<>::npos;
-        for (auto i = mask.find_first(); i != npos; i = mask.find_next(i)) {
+        const ui64 n = mask.size();
+        for (ui64 i = 0; i < n; i++) {
+            if (!mask[i]) {
+                continue;
+            }
             if (!(pred(data[i]) ^ inv)) {
                 mask.reset(i);
             }
