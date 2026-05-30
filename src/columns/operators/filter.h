@@ -24,20 +24,6 @@ enum EFilterType {
 };
 
 struct OAndCheck {
-    template <typename TCol, typename Pred>
-    static inline void ApplyMask(TCol& col, Pred pred, boost::dynamic_bitset<>& mask, bool inv) {
-        auto& data = col.GetData();
-        const ui64 n = mask.size();
-        for (ui64 i = 0; i < n; i++) {
-            if (!mask[i]) {
-                continue;
-            }
-            if (!(pred(data[i]) ^ inv)) {
-                mask.reset(i);
-            }
-        }
-    }
-
     template<typename T>
     static inline Expected<void> Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
         switch (op) {
@@ -93,23 +79,40 @@ struct OAndCheck {
         } catch (...) {
             return MakeError<EError::NotAnIntErr>();
         }
+        auto& data = col.GetData();
+        const ui64 n = col.GetSize();
         switch (op) {
             case EFilterType::kEq: {
-                ApplyMask(col, [&](const T& v) {
-                    return v == target;
-                }, mask, inv);
+                for (ui64 i = 0; i < n; i++) {
+                    if (!mask[i]) {
+                        continue;
+                    }
+                    if ((data[i] == target) == inv) {
+                        mask.reset(i);
+                    }
+                }
                 break;
             }
             case EFilterType::kLess: {
-                ApplyMask(col, [&](const T& v) {
-                    return v < target;
-                }, mask, inv);
+                for (ui64 i = 0; i < n; i++) {
+                    if (!mask[i]) {
+                        continue;
+                    }
+                    if ((data[i] < target) == inv) {
+                        mask.reset(i);
+                    }
+                }
                 break;
             }
             case EFilterType::kLeq: {
-                ApplyMask(col, [&](const T& v) {
-                    return v <= target;
-                }, mask, inv);
+                for (ui64 i = 0; i < n; i++) {
+                    if (!mask[i]) {
+                        continue;
+                    }
+                    if ((data[i] <= target) == inv) {
+                        mask.reset(i);
+                    }
+                }
                 break;
             }
             default: {
@@ -123,41 +126,73 @@ struct OAndCheck {
         if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
+        auto& data = col.GetData();
+        const ui64 n = col.GetSize();
         switch (op) {
             case EFilterType::kEq: {
                 if (value.empty()) {
-                    ApplyMask(col, [](const JString& s) {
-                        return s.size() == 0;
-                    }, mask, inv);
+                    for (ui64 i = 0; i < n; i++) {
+                        if (!mask[i]) {
+                            continue;
+                        }
+                        if ((data[i].size() == 0) == inv) {
+                            mask.reset(i);
+                        }
+                    }
                 } else {
-                    ApplyMask(col, [&](const JString& s) {
-                        return s == value;
-                    }, mask, inv);
+                    for (ui64 i = 0; i < n; i++) {
+                        if (!mask[i]) {
+                            continue;
+                        }
+                        if ((data[i] == value) == inv) {
+                            mask.reset(i);
+                        }
+                    }
                 }
                 break;
             }
             case EFilterType::kLess: {
-                ApplyMask(col, [&](const JString& s) {
-                    return s < value;
-                }, mask, inv);
+                for (ui64 i = 0; i < n; i++) {
+                    if (!mask[i]) {
+                        continue;
+                    }
+                    if ((data[i] < value) == inv) {
+                        mask.reset(i);
+                    }
+                }
                 break;
             }
             case EFilterType::kLeq: {
-                ApplyMask(col, [&](const JString& s) {
-                    return s <= value;
-                }, mask, inv);
+                for (ui64 i = 0; i < n; i++) {
+                    if (!mask[i]) {
+                        continue;
+                    }
+                    if ((data[i] <= value) == inv) {
+                        mask.reset(i);
+                    }
+                }
                 break;
             }
             case EFilterType::kLike: {
                 if (std::count(value.begin(), value.end(), '%') == 2 && value.at(0) == '%' && value.at(value.size() - 1) == '%') {
                     std::string_view needle(value.data() + 1, value.size() - 2);
-                    ApplyMask(col, [&](JString& s) {
-                        return OLikeChecker::Exec(s, needle);
-                    }, mask, inv);
+                    for (ui64 i = 0; i < n; i++) {
+                        if (!mask[i]) {
+                            continue;
+                        }
+                        if (OLikeChecker::Exec(data[i], needle) == inv) {
+                            mask.reset(i);
+                        }
+                    }
                 } else {
-                    ApplyMask(col, [&](JString& s) {
-                        return LikeMatch(s, value);
-                    }, mask, inv);
+                    for (ui64 i = 0; i < n; i++) {
+                        if (!mask[i]) {
+                            continue;
+                        }
+                        if (LikeMatch(data[i], value) == inv) {
+                            mask.reset(i);
+                        }
+                    }
                 }
                 break;
             }
