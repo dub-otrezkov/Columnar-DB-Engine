@@ -9,6 +9,7 @@
 #include "utils/compress/bitpack.h"
 #include "utils/compress/dict.h"
 #include "utils/compress/delta.h"
+#include "utils/perf_stats/perf_stats.h"
 
 #include <bit>
 #include <memory>
@@ -309,22 +310,25 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
 
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
-
+    TAoEngineTimer t("BitPack");
     return BitPack(a.size(), a.data());
 }
 
 template<>
 inline std::vector<char> Serialize<TDate>(std::vector<TDate>& a) {
+    TAoEngineTimer t("DeltaPack");
     return DeltaSerialize<ui32>(a.size(), reinterpret_cast<ui32*>(a.data()));
 }
 
 template<>
 inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
+    TAoEngineTimer t("DeltaPack");
     return DeltaSerialize<ui64>(a.size(), reinterpret_cast<ui64*>(a.data()));
 }
 
 template<>
 inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
+    TAoEngineTimer t("DictPack");
     return DictSerialize(a.size(), a.data());
 }
 
@@ -335,31 +339,35 @@ inline std::vector<T> Unserialize(std::span<const char> a) {
 
 template <std::integral T>
 inline std::vector<T> Unserialize(std::span<const char> a) {
+    TAoEngineTimer t("BitUnpack");
     std::vector<T> res;
     BitUnpack(a.size(), a.data(), res);
     return res;
 }
 template<>
 inline std::vector<JString> Unserialize<JString>(std::span<const char> a) {
+    TAoEngineTimer t("DictUnpack");
     return DictUnserialize(a.size(), a.data());
 }
 
 template<>
 inline std::vector<TDate> Unserialize<TDate>(std::span<const char> a) {
-    auto t = DeltaUnserialize<ui32>(a.size(), a.data());
+    TAoEngineTimer t("DeltaUnpack");
+    auto tmp = DeltaUnserialize<ui32>(a.size(), a.data());
 
-    std::vector<TDate> ans(t.size());
-    std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui32));
+    std::vector<TDate> ans(tmp.size());
+    std::memcpy(ans.data(), tmp.data(), tmp.size() * sizeof(ui32));
 
     return ans;
 }
 
 template<>
 inline std::vector<TTimestamp> Unserialize<TTimestamp>(std::span<const char> a) {
-    auto t = DeltaUnserialize<ui64>(a.size(), a.data());
+    TAoEngineTimer t("DeltaUnpack");
+    auto tmp = DeltaUnserialize<ui64>(a.size(), a.data());
 
-    std::vector<TTimestamp> ans(t.size());
-    std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui64));
+    std::vector<TTimestamp> ans(tmp.size());
+    std::memcpy(ans.data(), tmp.data(), tmp.size() * sizeof(ui64));
 
     return ans;
 }
