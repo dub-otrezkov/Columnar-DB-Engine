@@ -14,7 +14,7 @@ struct TRowScheme {
     EColumn type_;
 };
 
-const ui64 kRowGroupLen = 1 << 14;
+const ui64 kRowGroupLen = 1 << 13;
 
 class ITableInput;
 using TTableInputPtr = std::shared_ptr<ITableInput>;

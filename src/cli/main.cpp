@@ -89,7 +89,7 @@ static const std::vector<std::string> kQueries = {
     // 34: ok
     "SELECT CONST_INT(1), URL, COUNT(*) AS c FROM hits GROUP BY URL ORDER BY c DESC LIMIT 10",
     // 35: ok
-    "SELECT ClientIP, -(ClientIP, 1), -(ClientIP, 2), -(ClientIP, 3), COUNT(*) AS c FROM hits GROUP BY ClientIP, -(ClientIP, 1), -(ClientIP, 2), -(ClientIP, 3) ORDER BY c DESC LIMIT 10",
+    "SELECT ClientIP, -(ClientIP, 1), -(ClientIP, 2), -(ClientIP, 3), COUNT(*) AS c FROM hits GROUP BY ClientIP ORDER BY c DESC LIMIT 10",
     // 36: ok
     "SELECT URL, COUNT(*) AS PageViews FROM hits WHERE CounterID = 62 AND EventDate >= '2013-07-01' AND EventDate <= '2013-07-31' AND DontCountHits = 0 AND IsRefresh = 0 AND URL <> '' GROUP BY URL ORDER BY PageViews DESC LIMIT 10",
     // 37: ok

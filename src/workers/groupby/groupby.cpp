@@ -15,6 +15,7 @@ TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) 
 {
     selects.tp = EAoEngineType::kAgregation;
     eng_ = MakeAoEngine(std::move(selects));
+    groups_.reserve(kRowGroupLen * 100);
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
