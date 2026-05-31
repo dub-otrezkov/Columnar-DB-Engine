@@ -36,13 +36,19 @@ private:
 
     TTableInputPtr jf_in_;
 
-    struct VectorStringHasher {
-        using is_transparent = void;
-
-        ui64 operator()(const std::vector<JString>& a) const {
+    struct StringHasher {
+        ui64 operator()(const std::string& s) const noexcept {
+            const char* p = s.data();
+            ui64 n = s.size();
             ui64 h = 0;
-            for (ui64 i = 0; i < a.size(); i++) {
-                h = _mm_crc32_u64(h, hash_value(a.at(i)));
+            ui64 i = 0;
+            for (; i + 8 <= n; i += 8) {
+                ui64 v;
+                std::memcpy(&v, p + i, sizeof(v));
+                h = _mm_crc32_u64(h, v);
+            }
+            for (; i < n; i++) {
+                h = _mm_crc32_u8(static_cast<ui32>(h), static_cast<unsigned char>(p[i]));
             }
             return h;
         }
@@ -50,8 +56,8 @@ private:
 
     template<typename T>
     using THashMap = boost::unordered_flat_map<
-        std::vector<JString>, T,
-        VectorStringHasher
+        std::string, T,
+        StringHasher
     >;
 
     std::shared_ptr<IAoEngine> eng_;

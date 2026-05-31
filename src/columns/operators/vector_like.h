@@ -198,6 +198,57 @@ struct OToJStrings {
 };
 
 
+struct TKeyBytesGetter {
+    using AppendFn = void (*)(char*, ui64, std::string&);
+    using SizeFn = ui64 (*)(char*, ui64);
+
+    char* ctx = nullptr;
+    AppendFn append_fn = nullptr;
+    SizeFn size_fn = nullptr;
+
+    void Append(ui64 i, std::string& out) const {
+        append_fn(ctx, i, out);
+    }
+
+    ui64 Size(ui64 i) const {
+        return size_fn(ctx, i);
+    }
+};
+
+
+struct OKeyBytes {
+    template <typename TCol>
+    static inline TKeyBytesGetter Exec(TCol& col) {
+        using T = typename TCol::ElemType;
+        return TKeyBytesGetter{
+            reinterpret_cast<char*>(col.GetData().data()),
+            +[](char* p, ui64 i, std::string& out) -> void {
+                out.append(p + i * sizeof(T), sizeof(T));
+            },
+            +[](char* p, ui64 i) -> ui64 {
+                return sizeof(T);
+            }
+        };
+    }
+
+    static inline TKeyBytesGetter Exec(TStringColumn& col) {
+        return TKeyBytesGetter{
+            reinterpret_cast<char*>(col.GetData().data()),
+            +[](char* p, ui64 i, std::string& out) -> void {
+                auto& s = *reinterpret_cast<JString*>(p + i * sizeof(JString));
+                ui32 sz = s.size();
+                out.append(reinterpret_cast<const char*>(&sz), sizeof(sz));
+                out.append(s.begin(), s.size());
+            },
+            +[](char* p, ui64 i) -> ui64 {
+                auto& s = *reinterpret_cast<JString*>(p + i * sizeof(JString));
+                return sizeof(ui32) + s.size();
+            }
+        };
+    }
+};
+
+
 struct ORegexpReplace {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, const std::string& arg1, const std::string& arg2) {
