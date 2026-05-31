@@ -260,4 +260,47 @@ Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type) {
     }
 }
 
+template <typename TCol>
+static Expected<TColumnPtr> ExtractMinMaxTyped(std::span<const char> data) {
+    using T = typename TCol::ElemType;
+    constexpr ui64 sz = 2 * sizeof(T);
+    if (data.size() < sz) {
+        return MakeError<EError::IncorrectFileErr>("no minmax in chunk");
+    }
+    std::vector<T> res(2);
+    std::memcpy(res.data(), data.data() + data.size() - sz, sz);
+    return std::make_shared<TCol>(std::move(res));
+}
+
+Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type) {
+    switch (type) {
+        case ki8Column: {
+            return ExtractMinMaxTyped<Ti8Column>(data);
+        }
+        case ki16Column: {
+            return ExtractMinMaxTyped<Ti16Column>(data);
+        }
+        case ki32Column: {
+            return ExtractMinMaxTyped<Ti32Column>(data);
+        }
+        case ki64Column: {
+            return ExtractMinMaxTyped<Ti64Column>(data);
+        }
+        case kDoubleColumn: {
+            return ExtractMinMaxTyped<TDoubleColumn>(data);
+        }
+        case kDateColumn: {
+            return ExtractMinMaxTyped<TDateColumn>(data);
+        }
+        case kTimestampColumn: {
+            return ExtractMinMaxTyped<TTimestampColumn>(data);
+        }
+        case kStringColumn:
+        case kUnitialized:
+        default: {
+            return MakeError<EError::UnimplementedErr>();
+        }
+    }
+}
+
 } // namespace JfEngine

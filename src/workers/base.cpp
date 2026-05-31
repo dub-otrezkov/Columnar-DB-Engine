@@ -63,6 +63,18 @@ Expected<TColumnPtr> ITableInput::ReadColumn(const std::string& name) {
     return Expected<TColumnPtr>{(*current_rg_)[name_to_i_[name]], current_rg_err_};
 }
 
+Expected<TColumnPtr> ITableInput::ReadMinMax(const std::string& name) {
+    if (name_to_i_.empty()) {
+        for (const auto& [n, _] : scheme_) {
+            name_to_i_[n] = name_to_i_.size();
+        }
+    }
+    return ReadMinMax(name_to_i_.at(name));
+}
+
+Expected<TColumnPtr> ITableInput::ReadMinMax(i64 i) {
+    return MakeError<EError::UnimplementedErr>();
+}
 
 i64 ITableInput::GetColumnInd(const std::string& name) {
     if (name == "*") {

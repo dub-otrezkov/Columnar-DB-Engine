@@ -24,6 +24,26 @@ Ti128Column::Ti128Column(std::vector<i128> data) {
     cols_ = std::move(data);
 }
 
+Ti8Column::Ti8Column(i64 n, i8* data) {
+    cols_.resize(n);
+    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
+}
+
+Ti16Column::Ti16Column(i64 n, i16* data) {
+    cols_.resize(n);
+    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
+}
+
+Ti32Column::Ti32Column(i64 n, i32* data) {
+    cols_.resize(n);
+    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
+}
+
+Ti64Column::Ti64Column(i64 n, i64* data) {
+    cols_.resize(n);
+    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
+}
+
 EColumn Ti8Column::GetType() const {
     return ki8Column;
 }

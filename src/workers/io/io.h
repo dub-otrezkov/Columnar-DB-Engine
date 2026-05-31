@@ -39,10 +39,14 @@ public:
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<TColumnPtr> ReadColumn(const std::string& name) override;
     Expected<TColumnPtr> ReadIthColumn(i64 i) override;
+    Expected<TColumnPtr> ReadMinMax(i64 i) override;
 
     void MoveCursor() override;
     void Reset() override;
     const char* GetTypeName() const override { return "JfTableInput"; }
+
+private:
+    void LoadMeta();
 
 protected:
 
