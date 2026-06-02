@@ -311,39 +311,57 @@ concept CHasMinMax =
 
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
-    auto [mn, mx] = std::minmax_element(a.begin(), a.end());
+    T mn{};
+    T mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
     auto packed = BitPack(a.size(), a.data());
     if (!a.empty()) {
         auto old = packed.size();
         packed.resize(old + 2 * sizeof(T));
-        std::memcpy(packed.data() + old,              &*mn, sizeof(T));
-        std::memcpy(packed.data() + old + sizeof(T),  &*mx, sizeof(T));
+        std::memcpy(packed.data() + old,              &mn, sizeof(T));
+        std::memcpy(packed.data() + old + sizeof(T),  &mx, sizeof(T));
     }
     return packed;
 }
 
 template<>
 inline std::vector<char> Serialize<TDate>(std::vector<TDate>& a) {
+    TDate mn{};
+    TDate mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
     auto packed = DeltaSerialize<ui32>(a.size(), reinterpret_cast<ui32*>(a.data()));
     if (!a.empty()) {
-        auto [mn, mx] = std::minmax_element(a.begin(), a.end());
         auto old = packed.size();
         packed.resize(old + 2 * sizeof(TDate));
-        std::memcpy(packed.data() + old,                  &*mn, sizeof(TDate));
-        std::memcpy(packed.data() + old + sizeof(TDate),  &*mx, sizeof(TDate));
+        std::memcpy(packed.data() + old,                  &mn, sizeof(TDate));
+        std::memcpy(packed.data() + old + sizeof(TDate),  &mx, sizeof(TDate));
     }
     return packed;
 }
 
 template<>
 inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
+    TTimestamp mn{};
+    TTimestamp mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
     auto packed = DeltaSerialize<ui64>(a.size(), reinterpret_cast<ui64*>(a.data()));
     if (!a.empty()) {
-        auto [mn, mx] = std::minmax_element(a.begin(), a.end());
         auto old = packed.size();
         packed.resize(old + 2 * sizeof(TTimestamp));
-        std::memcpy(packed.data() + old,                       &*mn, sizeof(TTimestamp));
-        std::memcpy(packed.data() + old + sizeof(TTimestamp),  &*mx, sizeof(TTimestamp));
+        std::memcpy(packed.data() + old,                       &mn, sizeof(TTimestamp));
+        std::memcpy(packed.data() + old + sizeof(TTimestamp),  &mx, sizeof(TTimestamp));
     }
     return packed;
 }
@@ -355,14 +373,20 @@ inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
 
 template <>
 inline std::vector<char> Serialize<ld>(std::vector<ld>& a) {
-    auto [mn, mx] = std::minmax_element(a.begin(), a.end());
+    ld mn{};
+    ld mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
     std::vector<char> packed(a.size() * sizeof(ld));
     std::memcpy(packed.data(), a.data(), packed.size());
     if (!a.empty()) {
         auto old = packed.size();
         packed.resize(old + 2 * sizeof(ld));
-        std::memcpy(packed.data() + old,             &*mn, sizeof(ld));
-        std::memcpy(packed.data() + old + sizeof(ld), &*mx, sizeof(ld));
+        std::memcpy(packed.data() + old,             &mn, sizeof(ld));
+        std::memcpy(packed.data() + old + sizeof(ld), &mx, sizeof(ld));
     }
     return packed;
 }
