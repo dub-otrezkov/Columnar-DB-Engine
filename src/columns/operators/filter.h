@@ -58,12 +58,11 @@ struct OFilterShouldSkipBatch {
         kNeedCheck,
     };
 
-    template<typename TCol>
-        requires THasMinMax<typename TCol::ElemType>
+    template<CHasMinMax TCol>
     static inline EResult Exec(TCol& col, EFilterType op, const std::string& value) {
         assert(col.GetSize() == 2);
         using T = typename TCol::ElemType;
-        auto target = ParseArg<T>(value);
+        T target = ParseArg<T>(value);
 
         switch (op) {
         case EFilterType::kEq:

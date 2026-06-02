@@ -187,16 +187,12 @@ struct alignas(4) TDate {
         return std::bit_cast<ui32>(*this);
     }
 
-    inline bool operator< (const TDate& other) const {
-        return IntDate() < other.IntDate();
-    }
-
-    inline bool operator== (const TDate& other) const {
+    inline auto operator==(const TDate& other) const {
         return IntDate() == other.IntDate();
     }
 
-    inline bool operator<= (const TDate& other) const {
-        return IntDate() <= other.IntDate();
+    inline auto operator<=>(const TDate& other) const {
+        return IntDate() <=> other.IntDate();
     }
 };
 
@@ -231,16 +227,12 @@ struct alignas(8) TTimestamp {
         return std::bit_cast<ui64>(*this);
     }
 
-    inline bool operator< (const TTimestamp& other) const {
-        return IntTime() < other.IntTime();
-    }
-
-    inline bool operator== (const TTimestamp& other) const {
+    inline auto operator==(const TTimestamp& other) const {
         return IntTime() == other.IntTime();
     }
 
-    inline bool operator<= (const TTimestamp& other) const {
-        return IntTime() <= other.IntTime();
+    inline auto operator<=>(const TTimestamp& other) const {
+        return IntTime() <=> other.IntTime();
     }
 };
 
@@ -314,11 +306,8 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
 }
 
 template <typename T>
-concept THasMinMax =
-        std::is_integral_v<T>
-     || std::is_same_v<T, ld>
-     || std::is_same_v<T, TDate>
-     || std::is_same_v<T, TTimestamp>;
+concept CHasMinMax =
+        CIntegralColumn<T> || CTimeColumn<T>;
 
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
