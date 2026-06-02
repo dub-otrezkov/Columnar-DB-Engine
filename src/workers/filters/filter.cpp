@@ -25,8 +25,48 @@ Expected<void> TFilter::SetupColumnsScheme() {
 }
 
 Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
+    bool is_eof;
+    OFilterShouldSkipBatch::EResult pre_check_res = OFilterShouldSkipBatch::EResult::kTakeAll;
+    for (const auto& [name, op, target, opt_args] : query_.fils) {
+        auto [minmax, err] = jf_in_->ReadMinMax(name);
+        if (err == EError::UnimplementedErr) {
+            pre_check_res = OFilterShouldSkipBatch::EResult::kNeedCheck;
+            continue;
+        }
+        if (err == EError::EofErr) {
+            is_eof = true;
+        }
+        if (op == EFilterType::kIn || op == EFilterType::kNIn) {
+            bool skip_all = true;
+            bool take_all = false;
+            for (const auto& item : *opt_args) {
+                auto t = Do<OFilterShouldSkipBatch>(minmax, EFilterType::kEq, item);
+                if (t != OFilterShouldSkipBatch::EResult::kSkipAll) {
+                    skip_all = false;
+                }
+                if (t != OFilterShouldSkipBatch::EResult::kTakeAll) {
+                    take_all = false;
+                }
+            }
+            if (skip_all) {
+                pre_check_res = OFilterShouldSkipBatch::EResult::kSkipAll;
+            }
+            if (!take_all) {
+                pre_check_res = OFilterShouldSkipBatch::EResult::kNeedCheck;
+            }
+        } else {
+            auto t = Do<OFilterShouldSkipBatch>(minmax, op, target);
+
+            if (t == OFilterShouldSkipBatch::EResult::kSkipAll) {
+                pre_check_res = t;
+                break;
+            } else if (t == OFilterShouldSkipBatch::EResult::kNeedCheck) {
+                pre_check_res = t;
+            }
+        }
+    }
     auto [col_sp, err] = jf_in_->ReadRowGroup();
-    bool is_eof = Is<EError::EofErr>(err);
+    is_eof = Is<EError::EofErr>(err);
     if (err && !is_eof) {
         return err;
     }
@@ -42,8 +82,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             if (!opt_args) {
                 return EError::BadCmdErr;
             }
-            // IN / NOT IN: build a separate union mask across `opt_args`, then AND once into keep.
-            // For IN, union of equalities; for NOT IN, union of equalities and then keep &= ~al.
             boost::dynamic_bitset<> al(keep.size());
             for (const auto& item : *opt_args) {
                 boost::dynamic_bitset<> item_mask(keep.size());

@@ -314,12 +314,11 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
 }
 
 template <typename T>
-constexpr bool HasMinMax() {
-    return std::is_integral_v<T>
-        || std::is_same_v<T, ld>
-        || std::is_same_v<T, TDate>
-        || std::is_same_v<T, TTimestamp>;
-}
+concept THasMinMax =
+        std::is_integral_v<T>
+     || std::is_same_v<T, ld>
+     || std::is_same_v<T, TDate>
+     || std::is_same_v<T, TTimestamp>;
 
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {

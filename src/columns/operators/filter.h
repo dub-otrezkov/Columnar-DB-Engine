@@ -23,6 +23,101 @@ enum EFilterType {
     kNLike
 };
 
+template <typename T> 
+static T ParseArg(const std::string& value);
+
+template <std::integral T>
+T ParseArg(const std::string& value) {
+    if constexpr (sizeof(T) <= 4) {
+        return static_cast<T>(std::stoi(value));
+    } else {
+        return static_cast<T>(std::stoll(value));
+    }
+}
+
+template <>
+ld ParseArg<ld>(const std::string& value) {
+    return std::stold(value);
+}
+
+template <>
+TDate ParseArg<TDate>(const std::string& value) {
+    return DateFromStr(value);
+}
+
+template <>
+TTimestamp ParseArg<TTimestamp>(const std::string& value) {
+    return TimestampFromStr(value);
+}
+
+struct OFilterShouldSkipBatch {
+
+    enum class EResult {
+        kSkipAll,
+        kTakeAll,
+        kNeedCheck,
+    };
+
+    template<THasMinMax T>
+    static inline EResult Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
+        assert(col.GetSize() == 2);
+        using T = typename TCol::ElemType;
+        auto target = ParseArg<T>(value);
+
+        switch (op) {
+        case EFilterType::kEq:
+            if (target < col.GetData().at(0) || target > col.GetData().at(1)) {
+                return EResult::kSkipAll;
+            }
+            return EResult::kNeedCheck;
+        case EFilterType::kNeq:
+            if (target < col.GetData().at(0) || target > col.GetData().at(1)) {
+                return EResult::kTakeAll;
+            }
+            return EResult::kNeedCheck;
+        case EFilterType::kLess:
+            if (target <= col.GetData().at(0)) {
+                return EResult::kSkipAll;
+            }
+            if (target > col.GetData().at(1)) {
+                return EResult::kTakeAll;
+            }
+            return EResult::kNeedCheck;
+        case EFilterType::kLeq:
+            if (target < col.GetData().at(0)) {
+                return EResult::kSkipAll;
+            }
+            if (target >= col.GetData().at(1)) {
+                return EResult::kTakeAll;
+            }
+            return EResult::kNeedCheck;
+        case EFilterType::kGreater:
+            if (target < col.GetData().at(0)) {
+                return EResult::kTakeAll;
+            }
+            if (target >= col.GetData().at(1)) {
+                return EResult::kSkipAll;
+            }
+            return EResult::kNeedCheck;
+        case EFilterType::kGeq:
+            if (target <= col.GetData().at(0)) {
+                return EResult::kTakeAll;
+            }
+            if (target > col.GetData().at(1)) {
+                return EResult::kSkipAll;
+            }
+            return EResult::kNeedCheck;
+        default:
+            break;
+        }
+    }
+
+    template<typename T>
+    static inline EResult Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
+        return EResult::kNeedCheck;
+    }
+};
+
 struct OAndCheck {
     template<typename T>
     static inline Expected<void> Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
@@ -67,15 +162,7 @@ struct OAndCheck {
         }
         T target;
         try {
-            if constexpr (std::is_same_v<TCol, TDateColumn>) {
-                target = DateFromStr(value);
-            } else if constexpr (std::is_same_v<TCol, TTimestampColumn>) {
-                target = TimestampFromStr(value);
-            } else if constexpr (std::is_same_v<TCol, TDoubleColumn>) {
-                target = static_cast<T>(std::stold(value));
-            } else {
-                target = static_cast<T>(std::stoll(value));
-            }
+            target = ParseArg<T>(value);
         } catch (...) {
             return MakeError<EError::NotAnIntErr>();
         }
