@@ -25,7 +25,7 @@ Expected<void> TFilter::SetupColumnsScheme() {
 }
 
 Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
-    bool is_eof;
+    bool is_eof = false;
     OFilterShouldSkipBatch::EResult pre_check_res = OFilterShouldSkipBatch::EResult::kTakeAll;
     for (const auto& [name, op, target, opt_args] : query_.fils) {
         auto [minmax, err] = jf_in_->ReadMinMax(name);
@@ -37,22 +37,31 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             is_eof = true;
         }
         if (op == EFilterType::kIn || op == EFilterType::kNIn) {
-            bool skip_all = true;
-            bool take_all = false;
+            if (!opt_args) {
+                pre_check_res = OFilterShouldSkipBatch::EResult::kNeedCheck;
+                continue;
+            }
+            bool all_absent = true;
             for (const auto& item : *opt_args) {
                 auto t = Do<OFilterShouldSkipBatch>(minmax, EFilterType::kEq, item);
                 if (t != OFilterShouldSkipBatch::EResult::kSkipAll) {
-                    skip_all = false;
-                }
-                if (t != OFilterShouldSkipBatch::EResult::kTakeAll) {
-                    take_all = false;
+                    all_absent = false;
+                    break;
                 }
             }
-            if (skip_all) {
-                pre_check_res = OFilterShouldSkipBatch::EResult::kSkipAll;
+            OFilterShouldSkipBatch::EResult verdict = OFilterShouldSkipBatch::EResult::kNeedCheck;
+            if (all_absent) {
+                if (op == EFilterType::kIn) {
+                    verdict = OFilterShouldSkipBatch::EResult::kSkipAll;
+                } else {
+                    verdict = OFilterShouldSkipBatch::EResult::kTakeAll;
+                }
             }
-            if (!take_all) {
-                pre_check_res = OFilterShouldSkipBatch::EResult::kNeedCheck;
+            if (verdict == OFilterShouldSkipBatch::EResult::kSkipAll) {
+                pre_check_res = verdict;
+                break;
+            } else if (verdict == OFilterShouldSkipBatch::EResult::kNeedCheck) {
+                pre_check_res = verdict;
             }
         } else {
             auto t = Do<OFilterShouldSkipBatch>(minmax, op, target);
@@ -65,6 +74,19 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             }
         }
     }
+
+    if (pre_check_res == OFilterShouldSkipBatch::EResult::kSkipAll) {
+        std::vector<TColumnPtr> empty(scheme_.size());
+        for (ui64 i = 0; i < scheme_.size(); i++) {
+            auto c = MakeEmptyColumn(scheme_[i].type_);
+            if (c.HasError()) {
+                return c.GetError();
+            }
+            empty[i] = c.GetRes();
+        }
+        return {std::move(empty), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
+    }
+
     auto [col_sp, err] = jf_in_->ReadRowGroup();
     is_eof = Is<EError::EofErr>(err);
     if (err && !is_eof) {

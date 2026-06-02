@@ -327,8 +327,8 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
     if (!a.empty()) {
         auto old = packed.size();
         packed.resize(old + 2 * sizeof(T));
-        std::memcpy(packed.data() + old,              &mn, sizeof(T));
-        std::memcpy(packed.data() + old + sizeof(T),  &mx, sizeof(T));
+        std::memcpy(packed.data() + old,              &*mn, sizeof(T));
+        std::memcpy(packed.data() + old + sizeof(T),  &*mx, sizeof(T));
     }
     return packed;
 }
@@ -372,8 +372,8 @@ inline std::vector<char> Serialize<ld>(std::vector<ld>& a) {
     if (!a.empty()) {
         auto old = packed.size();
         packed.resize(old + 2 * sizeof(ld));
-        std::memcpy(packed.data() + old,             &mn, sizeof(ld));
-        std::memcpy(packed.data() + old + sizeof(ld), &mx, sizeof(ld));
+        std::memcpy(packed.data() + old,             &*mn, sizeof(ld));
+        std::memcpy(packed.data() + old + sizeof(ld), &*mx, sizeof(ld));
     }
     return packed;
 }

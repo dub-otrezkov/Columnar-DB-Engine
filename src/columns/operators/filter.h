@@ -58,8 +58,9 @@ struct OFilterShouldSkipBatch {
         kNeedCheck,
     };
 
-    template<THasMinMax T>
-    static inline EResult Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
+    template<typename TCol>
+        requires THasMinMax<typename TCol::ElemType>
+    static inline EResult Exec(TCol& col, EFilterType op, const std::string& value) {
         assert(col.GetSize() == 2);
         using T = typename TCol::ElemType;
         auto target = ParseArg<T>(value);
@@ -110,10 +111,11 @@ struct OFilterShouldSkipBatch {
         default:
             break;
         }
+        return EResult::kNeedCheck;
     }
 
-    template<typename T>
-    static inline EResult Exec(T& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask) {
+    template<typename TCol>
+    static inline EResult Exec(TCol& col, EFilterType op, const std::string& value) {
         return EResult::kNeedCheck;
     }
 };
