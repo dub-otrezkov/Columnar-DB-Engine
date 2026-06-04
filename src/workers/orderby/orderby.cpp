@@ -152,7 +152,7 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
 
     std::vector<i64> is(nc);
     for (ui64 i = 0; i < nc; i++) {
-        JF_LOG(0, order_q_.cols.at(i) << " " << name_to_i_.size() << " " << name_to_i_.contains(order_q_.cols.at(i)));
+        // JF_LOG(0, order_q_.cols.at(i) << " " << name_to_i_.size() << " " << name_to_i_.contains(order_q_.cols.at(i)));
         is.at(i) = name_to_i_.at(order_q_.cols.at(i));
     }
 
@@ -164,7 +164,7 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
         } else if (err != EError::NoError) {
             return false;
         }
-        mins.push_back(std::move(mn));
+        mins.at(i) = std::move(mn);
     }
 
     std::vector<TIntComparator2> cmps_diff;
