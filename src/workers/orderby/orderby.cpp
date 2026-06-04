@@ -184,8 +184,9 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
         return true;
     };
 
-    if (cmp2(ans.at(0)->GetSize() - 1, 0)) {
-        return {true, is_eof ? EError::EofErr : EError::NoError};;
+    const i64 edge = (dir == 1) ? 0 : 1;
+    if (cmp2(ans.at(0)->GetSize() - 1, edge)) {
+        return {true, is_eof ? EError::EofErr : EError::NoError};
     }
 
     return false;
