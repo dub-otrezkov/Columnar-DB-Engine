@@ -140,34 +140,37 @@ void TOrderBy::MergeRowGroups(
 
 
 Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
-    if (ans.empty() || order_q_.limit == kUnlimited || ans.at(0)->GetSize() < order_q_.limit) {
+    if (ans.empty() || order_q_.limit == kUnlimited || !ans.at(0) || ans.at(0)->GetSize() < order_q_.limit) {
         return false;
     }
 
-    std::vector<TColumnPtr> mins(order_q_.cols.size());
+    const ui64 nc = order_q_.cols.size();
+    std::vector<TColumnPtr> mins(nc);
     bool is_eof = false;
 
     const i64 dir = order_q_.reverse ? -1 : 1;
-    const ui64 nc = order_q_.cols.size();
 
-    std::vector<i64> is(order_q_.cols.size());
-    for (ui64 i = 0; i < is.size(); i++) {
+    std::vector<i64> is(nc);
+    for (ui64 i = 0; i < nc; i++) {
+        JF_LOG(0, order_q_.cols.at(i) << " " << name_to_i_.size() << " " << name_to_i_.contains(order_q_.cols.at(i)));
         is.at(i) = name_to_i_.at(order_q_.cols.at(i));
     }
 
-    for (ui64 i = 0; i < mins.size(); i++) {
+    for (ui64 i = 0; i < nc; i++) {
+        JF_LOG(0, i << " : " << is.size());
         auto [mn, err] = jf_in_->ReadMinMax(is.at(i));
         if (err == EError::EofErr) {
             is_eof = true;
         } else if (err != EError::NoError) {
             return false;
         }
+        mins.push_back(std::move(mn));
     }
 
     std::vector<TIntComparator2> cmps_diff;
     cmps_diff.reserve(nc);
     for (ui64 k = 0; k < nc; k++) {
-        cmps_diff.push_back(Do<OCmpDiffCol>(ans.at(is[k]), mins.at(is[k])));
+        cmps_diff.push_back(Do<OCmpDiffCol>(ans.at(is.at(k)), mins.at(k)));
     }
     auto cmp2 = [&cmps_diff, dir, nc](i64 i, i64 j) -> bool {
         for (ui64 k = 0; k < nc; k++) {
@@ -183,10 +186,8 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
         return true;
     };
 
-    for (ui64 i = 0; i < nc; i++) {
-        if (!cmps_diff.at(i)(ans.at(0)->GetSize() - 1, 0)) {
-            return false;
-        }
+    if (cmp2(ans.at(0)->GetSize() - 1, 0)) {
+        return false;
     }
 
     return {true, is_eof ? EError::EofErr : EError::NoError};
