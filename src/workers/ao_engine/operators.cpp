@@ -120,14 +120,6 @@ std::string TConstIntOp::GetName() const {
     return "CONST_INT(" + arg->GetName() + ")";
 }
 
-Expected<void> TConstStrOp::ConsumeRowGroup(ITableInput* inp, std::vector<ui64>*) {
-    return EError::NoError;
-}
-
-std::string TConstStrOp::GetName() const {
-    return arg->GetName();
-}
-
 TColumnOp::TColumnOp(std::string name_) :
     name(std::move(name_))
 {}

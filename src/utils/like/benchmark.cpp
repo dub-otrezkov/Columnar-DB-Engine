@@ -23,7 +23,7 @@ static std::vector<std::string> GenStrings(ui64 n, ui64 hit_one_in) {
         "/short",
         "abc",
         "redhotchili",
-        "googleAndMore", // 13 chars — needle 'google' straddles prefix/extra boundary
+        "googleAndMore",
     };
 
     std::vector<std::string> r;
@@ -58,7 +58,9 @@ static double Bench(std::vector<JString>& cols, std::string_view needle, ui64 it
     auto t0 = steady_clock::now();
     for (ui64 it = 0; it < iters; it++) {
         for (auto& s : cols) {
-            if (Finder::Exec(s, needle)) hits++;
+            if (Finder::Exec(s, needle)) {
+                hits++;
+            }
         }
     }
     auto t1 = steady_clock::now();
@@ -78,7 +80,7 @@ int main() {
     constexpr ui64 N     = 1'000'000;
     constexpr ui64 ITERS = 3;
 
-    auto strs = GenStrings(N, /*hit_one_in=*/10);
+    auto strs = GenStrings(N, 10);
     auto cols = ToJStrings(strs);
 
     std::cout << "rows=" << N << " iterations=" << ITERS << std::endl;

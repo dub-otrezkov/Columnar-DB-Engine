@@ -5,8 +5,6 @@
 
 #include <nmmintrin.h>
 
-// needle size <= 12
-
 struct O128SubstrFinder {
     static bool Exec(JString& haystack, std::string_view needle) {
         if (needle.size() > haystack.size()) {
@@ -18,7 +16,8 @@ struct O128SubstrFinder {
             std::memcpy(buf, &haystack.prefix, haystack.size());
             __m128i str = _mm_load_si128((const __m128i*)buf);
 
-            return _mm_cmpestrc(ndl, needle.size(), str, haystack.size(), _SIDD_CMP_EQUAL_ORDERED | _SIDD_UBYTE_OPS);
+            return _mm_cmpestrc(ndl, needle.size(), str, haystack.size(),
+                                _SIDD_CMP_EQUAL_ORDERED | _SIDD_UBYTE_OPS);
         } else {
             const char* p   = haystack.extra;
             const char* end = p + haystack.size();

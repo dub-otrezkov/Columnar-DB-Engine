@@ -64,10 +64,6 @@ struct OFilterShouldSkipBatch {
         using T = typename TCol::ElemType;
         T target = ParseArg<T>(value);
 
-        // if constexpr (std::is_same_v<T, TDate>) {
-        //     JF_LOG(0, PrintDate(col.GetData().at(0)) << " " << value << " " << PrintDate(col.GetData().at(1)) << std::endl);
-        // }
-
         switch (op) {
         case EFilterType::kEq:
             if (target < col.GetData().at(0) || target > col.GetData().at(1)) {
@@ -157,7 +153,8 @@ struct OAndCheck {
     }
 
     template <typename TCol>
-    static inline Expected<void> ExecInner(TCol& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask, bool inv) {
+    static inline Expected<void> ExecInner(
+        TCol& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask, bool inv) {
         using T = typename TCol::ElemType;
         if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
@@ -214,7 +211,9 @@ struct OAndCheck {
         return EError::NoError;
     }
 
-    static inline Expected<void> ExecInner(TStringColumn& col, EFilterType op, const std::string& value, boost::dynamic_bitset<>& mask, bool inv) {
+    static inline Expected<void> ExecInner(
+        TStringColumn& col, EFilterType op, const std::string& value,
+        boost::dynamic_bitset<>& mask, bool inv) {
         if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
@@ -266,7 +265,8 @@ struct OAndCheck {
                 break;
             }
             case EFilterType::kLike: {
-                if (std::count(value.begin(), value.end(), '%') == 2 && value.at(0) == '%' && value.at(value.size() - 1) == '%') {
+                if (std::count(value.begin(), value.end(), '%') == 2 && value.at(0) == '%'
+                        && value.at(value.size() - 1) == '%') {
                     std::string_view needle(value.data() + 1, value.size() - 2);
                     for (ui64 i = 0; i < n; i++) {
                         if (!mask[i]) {

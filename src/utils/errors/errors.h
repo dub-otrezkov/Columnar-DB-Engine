@@ -27,14 +27,6 @@ enum EError {
     OutOfRangeErr
 };
 
-class IError {
-public:
-    virtual ~IError() = default;
-    virtual std::string Print() const = 0;
-
-    virtual i64 GetId() const;
-};
-
 template <EError T>
 bool Is(EError in) {
     return T == in;
@@ -43,14 +35,10 @@ bool Is(EError in) {
 template <EError T>
 EError MakeError(const std::string& arg = "") {
     if (!arg.empty()) {
-        // std::cout << "GOT ERR: " << " " << T << " " << arg << std::endl;
     }
     return T;
 }
 
-// ---------------------------------------------------------------------------
-// Expected<T>  —  stores T directly via std::optional<T>
-// ---------------------------------------------------------------------------
 template <typename T>
 class Expected {
     std::optional<T> val_;
@@ -77,9 +65,15 @@ public:
     Expected& operator=(const Expected&) = default;
     Expected& operator=(Expected&&) = default;
 
-    bool HasError() const { return err_ != EError::NoError; }
-    bool HasValue() const { return val_.has_value(); }
-    EError GetError() const { return err_; }
+    bool HasError() const {
+        return err_ != EError::NoError;
+    }
+    bool HasValue() const {
+        return val_.has_value();
+    }
+    EError GetError() const {
+        return err_;
+    }
 
     T& GetRes() {
         assert(val_.has_value());
@@ -91,7 +85,9 @@ public:
         return *val_;
     }
 
-    explicit operator bool() const { return !HasError(); }
+    explicit operator bool() const {
+        return !HasError();
+    }
 
     T* operator->() {
         assert(val_.has_value());
@@ -138,11 +134,17 @@ public:
     Expected& operator=(const Expected&) = default;
     Expected& operator=(Expected&&) = default;
 
-    bool HasError() const { return err_ != EError::NoError; }
+    bool HasError() const {
+        return err_ != EError::NoError;
+    }
 
-    explicit operator bool() const { return !HasError(); }
+    explicit operator bool() const {
+        return !HasError();
+    }
 
-    EError GetError() { return err_; }
+    EError GetError() {
+        return err_;
+    }
 
 private:
     EError err_ = EError::NoError;

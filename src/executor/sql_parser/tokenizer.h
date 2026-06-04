@@ -35,14 +35,13 @@ enum class ETokens {
     kMinus,
     kOpenBracket,
     kCloseBracket,
-    kComa, // misc (
+    kComa,
     kIf,
     kCond,
-    kThen, // misc (
-    kElse, // misc (
+    kThen,
+    kElse,
     kRegexpReplace,
     kWhere,
-    kBy, // misc (
     kGroup,
     kOrder,
     kLimit,
@@ -58,26 +57,6 @@ static const std::unordered_map<std::string, ETokens> cmds = {
     {"OFFSET", ETokens::kOffset},
     {"SELECT", ETokens::kSelect},
     {"CREATE", ETokens::kCreate},
-};
-
-static const std::unordered_map<std::string, ETokens> agregations = {
-    {"SUM",      ETokens::kSum},
-    {"COUNT",    ETokens::kCount},
-    {"AVG",      ETokens::kAvg},
-    {"MIN",      ETokens::kMin},
-    {"MAX",      ETokens::kMax},
-    {"DISTINCT_COUNT", ETokens::kCountDistinct},
-};
-
-static const std::unordered_map<std::string, ETokens> operators = {
-    {"+",        ETokens::kPlus},
-    {"-",        ETokens::kMinus},
-    {"EXTRACT_MINUTE", ETokens::kExtractMinute},
-    {"TRUNC_MINUTE", ETokens::kTruncMinute},
-    {"CONST_INT", ETokens::kConstInt},
-    {"IF", ETokens::kIf},
-    {"COND", ETokens::kCond},
-    {"REGEXP_REPLACE", ETokens::kRegexpReplace},
 };
 
 struct IToken {
@@ -102,21 +81,28 @@ struct IoperatorCommand : public ICommand {
     Expected<TTableInputPtr> MakeWorker() override;
 };
 
-// commands tokens
-
 struct TSelectToken : public ICommand {
-    inline ETokens GetType() const override { return ETokens::kSelect; }
+    inline ETokens GetType() const override {
+        return ETokens::kSelect;
+    }
 
-    inline const std::vector<IToken*>& GetArgs() const { return args_; }
     Expected<TTableInputPtr> MakeWorker() override;
 
-    inline void SetIsId() { is_id_ = true; }
+    inline const std::vector<IToken*>& GetArgs() const {
+        return args_;
+    }
+
+    inline void SetIsId() {
+        is_id_ = true;
+    }
 
     bool is_id_ = false;
 };
 
 struct TCreateToken : public ICommand {
-    inline ETokens GetType() const override { return ETokens::kCreate; }
+    inline ETokens GetType() const override {
+        return ETokens::kCreate;
+    }
 
     Expected<TTableInputPtr> MakeWorker() override;
 };
@@ -124,7 +110,9 @@ struct TCreateToken : public ICommand {
 struct TFromToken : public ICommand {
     TFromToken() = default;
 
-    inline ETokens GetType() const override { return ETokens::kFrom; }
+    inline ETokens GetType() const override {
+        return ETokens::kFrom;
+    }
 
     Expected<TTableInputPtr> MakeWorker() override;
 
@@ -138,7 +126,9 @@ struct TFromToken : public ICommand {
 class TLimitToken : public ICommand {
 public:
 
-    inline ETokens GetType() const override { return ETokens::kLimit; }
+    inline ETokens GetType() const override {
+        return ETokens::kLimit;
+    }
 
     ui64 GetLimit() const;
 
@@ -148,7 +138,9 @@ public:
 class TOffsetToken : public ICommand {
 public:
 
-    inline ETokens GetType() const override { return ETokens::kOffset; }
+    inline ETokens GetType() const override {
+        return ETokens::kOffset;
+    }
 
     ui64 GetOffset() const;
 
@@ -157,7 +149,9 @@ public:
 
 struct TOrderToken : public ICommand {
 
-    inline ETokens GetType() const override { return ETokens::kOrder; }
+    inline ETokens GetType() const override {
+        return ETokens::kOrder;
+    }
 
     Expected<TTableInputPtr> MakeWorker() override;
 
@@ -169,7 +163,9 @@ struct TOrderToken : public ICommand {
 class TWhereToken : public ICommand {
 public:
 
-    inline ETokens GetType() const override { return ETokens::kWhere; }
+    inline ETokens GetType() const override {
+        return ETokens::kWhere;
+    }
 
     Expected<TTableInputPtr> MakeWorker() override;
 };
@@ -177,10 +173,14 @@ public:
 class TGroupToken : public ICommand {
 public:
 
-    inline ETokens GetType() const override { return ETokens::kGroup; }
+    inline ETokens GetType() const override {
+        return ETokens::kGroup;
+    }
 
     Expected<TTableInputPtr> MakeWorker() override;
-    inline void SetSelects(TAoQuery s) { selects_ = std::move(s); }
+    inline void SetSelects(TAoQuery s) {
+        selects_ = std::move(s);
+    }
 
     TLimitToken* limit_ = nullptr;
 
@@ -188,126 +188,170 @@ private:
     TAoQuery selects_;
 };
 
-// operator cmds tokens
-
 class TSumToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kSum; }
+    inline ETokens GetType() const override {
+        return ETokens::kSum;
+    }
 };
 
 class TMinToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kMin; }
+    inline ETokens GetType() const override {
+        return ETokens::kMin;
+    }
 };
 
 class TMaxToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kMax; }
+    inline ETokens GetType() const override {
+        return ETokens::kMax;
+    }
 };
 
 class TCountToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kCount; }
+    inline ETokens GetType() const override {
+        return ETokens::kCount;
+    }
 };
 
 class TCountDistinctToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kCountDistinct; }
+    inline ETokens GetType() const override {
+        return ETokens::kCountDistinct;
+    }
 };
 
 struct TExtractMinuteToken : public IoperatorCommand {
-    inline ETokens GetType() const override { return ETokens::kExtractMinute; }
+    inline ETokens GetType() const override {
+        return ETokens::kExtractMinute;
+    }
 };
 
 struct TTruncMinuteToken : public IoperatorCommand {
-    inline ETokens GetType() const override { return ETokens::kTruncMinute; }
+    inline ETokens GetType() const override {
+        return ETokens::kTruncMinute;
+    }
 };
 
 class TAvgToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kAvg; }
+    inline ETokens GetType() const override {
+        return ETokens::kAvg;
+    }
 };
 
 class TLengthToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kLength; }
+    inline ETokens GetType() const override {
+        return ETokens::kLength;
+    }
 };
 
 struct TConstIntToken : public IoperatorCommand {
-    inline ETokens GetType() const override { return ETokens::kConstInt; }
+    inline ETokens GetType() const override {
+        return ETokens::kConstInt;
+    }
 };
 
 class TPlusToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kPlus; }
+    inline ETokens GetType() const override {
+        return ETokens::kPlus;
+    }
 };
 
 class TMinusToken : public IoperatorCommand {
 public:
-    inline ETokens GetType() const override { return ETokens::kMinus; }
+    inline ETokens GetType() const override {
+        return ETokens::kMinus;
+    }
 };
 
 class TNameToken : public IToken {
 public:
     inline TNameToken(std::string name) : name_(std::move(name)) {}
 
-    inline ETokens GetType() const override { return ETokens::kNameToken; }
+    inline ETokens GetType() const override {
+        return ETokens::kNameToken;
+    }
 
-    inline std::string GetName() const { return name_; }
+    inline std::string GetName() const {
+        return name_;
+    }
 private:
     std::string name_;
 };
 
-// misc
-
 class TAsToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kAs; }
+    inline ETokens GetType() const override {
+        return ETokens::kAs;
+    }
 };
 
 class TAndToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kAnd; }
+    inline ETokens GetType() const override {
+        return ETokens::kAnd;
+    }
 };
 
 class TOpenBracketToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kOpenBracket; }
+    inline ETokens GetType() const override {
+        return ETokens::kOpenBracket;
+    }
 };
 
 class TComaToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kComa; }
+    inline ETokens GetType() const override {
+        return ETokens::kComa;
+    }
 };
 
 class TIfToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kIf; }
+    inline ETokens GetType() const override {
+        return ETokens::kIf;
+    }
 };
 
 class TCondToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kCond; }
+    inline ETokens GetType() const override {
+        return ETokens::kCond;
+    }
 };
 
 class TThenToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kThen; }
+    inline ETokens GetType() const override {
+        return ETokens::kThen;
+    }
 };
 
 class TElseToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kElse; }
+    inline ETokens GetType() const override {
+        return ETokens::kElse;
+    }
 };
 
 struct TRegexpReplaceToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kRegexpReplace; }
+    inline ETokens GetType() const override {
+        return ETokens::kRegexpReplace;
+    }
 };
 
 class TCloseBracketToken : public IToken {
 public:
-    inline ETokens GetType() const override { return ETokens::kCloseBracket; }
+    inline ETokens GetType() const override {
+        return ETokens::kCloseBracket;
+    }
 };
 
 class TTokenizer {

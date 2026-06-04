@@ -3,7 +3,6 @@
 #include "columns/operators/distinct.h"
 #include "columns/operators/operators.h"
 #include "columns/operators/vector_like.h"
-#include "utils/faster_hashmap/hashset.h"
 #include "workers/io/io.h"
 #include "workers/filters/filter.h"
 
@@ -158,30 +157,6 @@ struct TTruncMinuteOp : public IOa {
 };
 
 struct TConstIntOp : public IOa {
-    IOa* arg;
-
-    std::string GetName() const override;
-
-    Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* idx) override;
-
-    inline void AddArg(IOa* to_agr) override {
-        arg = to_agr;
-    }
-
-    inline void ClearArgs() override {
-        arg = nullptr;
-    }
-
-    inline const std::string& GetColumn() const override {
-        return arg->GetColumn();
-    }
-
-    inline bool IsConst() const override {
-        return true;
-    }
-};
-
-struct TConstStrOp : public IOa {
     IOa* arg;
 
     std::string GetName() const override;

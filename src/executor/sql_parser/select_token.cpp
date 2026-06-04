@@ -291,8 +291,6 @@ TAoQuery ParseArgs(const std::vector<IToken*>& inp, bool has_group_by) {
         all[i]->AddArg(all[j].get());
     }
 
-    // Cache names before moving — needed for the edge remap below since
-    // the moved-from unique_ptrs become null.
     std::vector<std::string> all_names(all.size());
     for (ui64 i = 0; i < all.size(); i++) {
         all_names[i] = all[i]->GetName();

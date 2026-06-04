@@ -40,7 +40,6 @@ public:
     static TTableInputPtr GetTableIo(const std::string& alias);
 
     static void Clear();
-    static void ClearAll();
 
 private:
     std::unordered_map<std::string, IFileInputPtr>  inputs_;
@@ -48,4 +47,4 @@ private:
     std::unordered_map<std::string, TTableInputPtr> iotables_;
 };
 
-} // namespace JfEngine
+}

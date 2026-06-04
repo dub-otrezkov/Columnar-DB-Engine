@@ -122,4 +122,4 @@ Expected<TEngine> MakeEngineFromWorker(TTableInputPtr worker) {
     return std::move(eng);
 }
 
-} // namespace JfEngine
+}

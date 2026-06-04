@@ -13,18 +13,12 @@
 #include <type_traits>
 #include <vector>
 
-// template <typename T>
-// struct std::vectorImpl {
-//     using Type = std::vector<T>;
-// };
-
 class StringVector {
 public:
     StringVector() = default;
 
     void push_back(std::string_view val) {
         offsets_.push_back(data_.size());
-        // data_.insert(data_.end(), val.begin(), val.end());
         data_.resize(data_.size() + val.size());
         std::memcpy(data_.data() + data_.size() - val.size(), val.data(), val.size());
 
@@ -82,97 +76,6 @@ public:
         offsets_.clear();
     }
 
-    struct Iterator {
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type = std::string_view;
-        using difference_type = std::ptrdiff_t;
-        using pointer = void;
-        using reference = std::string_view;
-
-        const StringVector* col;
-        ui64 pos;
-
-        reference operator*() const {
-            return col->ro_at(pos);
-        }
-
-        Iterator& operator++() {
-            pos++;
-            return *this;
-        }
-
-        Iterator operator++(i32) {
-            Iterator tmp = *this;
-            pos++;
-            return tmp;
-        }
-
-        Iterator& operator--() {
-            pos--;
-            return *this;
-        }
-
-        Iterator operator--(i32) {
-            Iterator tmp = *this;
-            pos--;
-            return tmp;
-        }
-
-        Iterator& operator+=(difference_type n) {
-            pos += n;
-            return *this;
-        }
-
-        Iterator& operator-=(difference_type n) {
-            pos -= n;
-            return *this;
-        }
-
-        Iterator operator+(difference_type n) const {
-            return {col, pos + n};
-        }
-
-        Iterator operator-(difference_type n) const {
-            return {col, pos - n};
-        }
-
-        difference_type operator-(const Iterator& other) const {
-            return (difference_type)pos - (difference_type)other.pos;
-        }
-        
-        bool operator==(const Iterator& other) const {
-            return pos == other.pos;
-        }
-
-        bool operator!=(const Iterator& other) const {
-            return pos != other.pos;
-        }
-
-        bool operator<(const Iterator& other) const {
-            return pos < other.pos;
-        }
-
-        bool operator>(const Iterator& other) const {
-            return pos > other.pos;
-        }
-
-        bool operator<=(const Iterator& other) const {
-            return pos <= other.pos;
-        }
-
-        bool operator>=(const Iterator& other) const {
-            return pos >= other.pos;
-        }
-    };
-
-    Iterator begin() const {
-        return {this, 0};
-    }
-
-    Iterator end() const {
-        return {this, size()};
-    }
-
     inline char* data() {
         return data_.data();
     }
@@ -181,44 +84,7 @@ public:
         return data_.data();
     }
 
-    inline ui64* offsets_data() {
-        return offsets_.data();
-    }
-
-    inline const ui64* offsets_data() const {
-        return offsets_.data();
-    }
-
-    inline void resize_both(ui64 data_sz, ui64 offsets_sz) {
-        data_.resize(data_sz);
-        offsets_.resize(offsets_sz);
-    }
-
-    inline ui64 data_size() const {
-        return data_.size();
-    }
-
-    bool operator==(const StringVector& other) const {
-        if (other.size() != size()) {
-            return false;
-        }
-        if (other.data_size() != data_size()) {
-            return false;
-        }
-
-        return (data_ == other.data_ && offsets_ == other.offsets_);
-    }
 private:
     std::vector<char> data_;
     std::vector<ui64> offsets_;
 };
-
-// template <>
-// struct std::vectorImpl<JString> {
-//     using Type = JStringVector;
-// };
-
-std::string operator+(std::string_view a, std::string_view b);
-
-// template <typename T>
-// using std::vector = typename std::vectorImpl<T>::Type;

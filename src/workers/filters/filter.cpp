@@ -68,7 +68,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
 
             if (t == OFilterShouldSkipBatch::EResult::kSkipAll) {
                 pre_check_res = t;
-                // JF_LOG(nullptr, "skipping" << " " << " " << target << std::endl);
                 break;
             } else if (t == OFilterShouldSkipBatch::EResult::kNeedCheck) {
                 pre_check_res = t;

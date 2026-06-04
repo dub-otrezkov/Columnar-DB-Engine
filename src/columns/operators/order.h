@@ -94,29 +94,10 @@ struct OApply2 {
             if (i >= 0) {
                 ans.push_back(data1.at(i));
             } else {
-                // std::cout << -i - 1 << std::endl;
-                // if constexpr (std::is_same_v<T, i64>) {
-                //     std::cout << "------ " << data2.at(-i - 1) << std::endl;
-                // }
                 ans.push_back(data2.at(-i - 1));
             }
         }
 
-        return std::make_shared<TCol>(std::move(ans));
-    }
-};
-
-struct OApplyOrder {
-    template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const std::vector<ui64>& order) {
-        using T = typename TCol::ElemType;
-        if (order.size() != col.GetSize()) {
-            return EError::BadArgsErr;
-        }
-        std::vector<T> ans(col.GetSize());
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = col.GetData().at(order[i]);
-        }
         return std::make_shared<TCol>(std::move(ans));
     }
 };

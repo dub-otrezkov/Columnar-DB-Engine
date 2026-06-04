@@ -9,13 +9,6 @@
 
 namespace JfEngine {
 
-std::optional<ETokens> IsCommand(const std::string& cmd) {
-    if (cmds.contains(cmd)) {
-        return cmds.at(cmd);
-    }
-    return std::nullopt;
-}
-
 TTokenizer::TTokenizer(const std::string& data) : query_(data) {
     ss << data;
 }
@@ -50,7 +43,8 @@ Expected<std::unique_ptr<IToken>> TTokenizer::GetNext() {
             token += ss.get();
             break;
         }
-        if (ss.peek() == EOF || std::isspace(ss.peek()) || ss.peek() == '(' || ss.peek() == ')' || ss.peek() == ',') {
+        if (ss.peek() == EOF || std::isspace(ss.peek()) || ss.peek() == '(' ||
+            ss.peek() == ')' || ss.peek() == ',') {
             break;
         }
 
@@ -270,7 +264,9 @@ Expected<TParsedCommand> ParseCommand(const std::string& cmd) {
     if (from_token) {
         std::unordered_set<std::string> refs;
         for (auto* c : st) {
-            if (c == from_token) continue;
+            if (c == from_token) {
+                continue;
+            }
             for (auto* arg : c->args_) {
                 if (arg->GetType() == ETokens::kNameToken) {
                     refs.insert(static_cast<TNameToken*>(arg)->GetName());

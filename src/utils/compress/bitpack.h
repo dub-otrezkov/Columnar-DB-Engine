@@ -9,9 +9,6 @@
 #include <vector>
 
 struct TBitWriter {
-    std::vector<ui64> buf;
-    ui64 pos = 0;
-
     void Write(const void* src, ui32 bits) {
         ui64 v = 0;
         std::memcpy(&v, src, (bits + 7) / 8);
@@ -35,6 +32,9 @@ struct TBitWriter {
         out.resize(old_size + word_count * 8);
         std::memcpy(out.data() + old_size, buf.data(), word_count * 8);
     }
+
+    std::vector<ui64> buf;
+    ui64 pos = 0;
 };
 
 template <std::integral T, typename Encode>
@@ -43,7 +43,9 @@ inline std::vector<char> BitPack(ui64 n, T* values, Encode encode) {
     U max_encoded = 0;
     for (ui64 i = 0; i < n; i++) {
         U e = encode(values[i]);
-        if (e > max_encoded) max_encoded = e;
+        if (e > max_encoded) {
+            max_encoded = e;
+        }
     }
     ui8 bits = static_cast<ui8>(std::bit_width(static_cast<ui64>(max_encoded)));
 
@@ -134,9 +136,6 @@ inline void BitUnpack(size_t packed_size, const char* packed, std::vector<T>& ou
 }
 
 struct TBitReader {
-    const char* data;
-    ui64 pos = 0;
-
     explicit TBitReader(const char* src) : data(src) {}
 
     void Read(void* dst, ui32 bits) {
@@ -155,4 +154,7 @@ struct TBitReader {
         std::memcpy(dst, &v, (bits + 7) / 8);
         pos += bits;
     }
+
+    const char* data;
+    ui64 pos = 0;
 };

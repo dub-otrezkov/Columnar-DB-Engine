@@ -7,14 +7,12 @@ TEST_F(AgregationsTest, GetColumnsTest) {
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
     {
         auto err = exec.ExecQuery("SELECT hot, red, peppers FROM josh");
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
@@ -40,14 +38,12 @@ TEST_F(AgregationsTest, GetColumnsSumTest) {
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
     {
         auto err = exec.ExecQuery("SELECT SUM(hot) FROM josh");
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
@@ -80,14 +76,12 @@ TEST_F(AgregationsTest, GetAvgTest) {
     {
         auto err = exec.ExecQuery("CREATE josh FROM scheme, data");
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
     {
         auto err = exec.ExecQuery("SELECT AVG(what), AVG(once), AVG(was), AVG(hot) AS ddd FROM josh");
         if (err.HasError()) {
-            // std::cout << err.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(err.HasError());
     }
@@ -116,7 +110,6 @@ TEST_F(SumOverflowTest, Int64Overflow) {
     }
 
     EXPECT_EQ(out_scheme->Str(), "SUM(val),int128\n");
-    // 2 * 4611686018427387904 = 9223372036854775808 > INT64_MAX (9223372036854775807)
     EXPECT_EQ(out_data->Str(), "9223372036854775808\n");
 }
 

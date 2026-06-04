@@ -24,26 +24,6 @@ Ti128Column::Ti128Column(std::vector<i128> data) {
     cols_ = std::move(data);
 }
 
-Ti8Column::Ti8Column(i64 n, i8* data) {
-    cols_.resize(n);
-    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
-}
-
-Ti16Column::Ti16Column(i64 n, i16* data) {
-    cols_.resize(n);
-    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
-}
-
-Ti32Column::Ti32Column(i64 n, i32* data) {
-    cols_.resize(n);
-    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
-}
-
-Ti64Column::Ti64Column(i64 n, i64* data) {
-    cols_.resize(n);
-    std::memcpy(cols_.data(), data, n * sizeof(data[0]));
-}
-
 EColumn Ti8Column::GetType() const {
     return ki8Column;
 }
@@ -136,16 +116,15 @@ Expected<void> Ti64Column::Setup(const TVectorString2d& data, ui64 column_i) {
     for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
         cols_.push_back(0);
         std::from_chars(cur.data(), cur.data() + cur.size(), cols_.back());
-        // cols_.push_back(std::stoll(cur));
     }
     return nullptr;
 }
 
-// GEMINI CODE STARTED
-
-// Перегрузка для знакового i128
-Ti128Column::from_chars_result_128 Ti128Column::from_chars(const char* first, const char* last, i128& value, int base) {
-    if (first == last) return {first, std::errc::invalid_argument};
+Ti128Column::from_chars_result_128 Ti128Column::from_chars(
+    const char* first, const char* last, i128& value, int base) {
+    if (first == last) {
+        return {first, std::errc::invalid_argument};
+    }
 
     bool negative = false;
     const char* start = first;
@@ -158,9 +137,10 @@ Ti128Column::from_chars_result_128 Ti128Column::from_chars(const char* first, co
     i128 u_val;
     auto res = from_chars(start, last, u_val, base);
 
-    if (res.ec != std::errc{}) return res;
+    if (res.ec != std::errc{}) {
+        return res;
+    }
 
-    // Проверка диапазона для знакового типа
     if (negative) {
         if (u_val > std::numeric_limits<i128>::max()) {
             return {res.ptr, std::errc::result_out_of_range};
@@ -175,8 +155,6 @@ Ti128Column::from_chars_result_128 Ti128Column::from_chars(const char* first, co
 
     return res;
 }
-
-// GEMINI CODE END
 
 Expected<void> Ti128Column::Setup(std::vector<std::string>&& data) {
     cols_.reserve(data.size());
@@ -193,9 +171,8 @@ Expected<void> Ti128Column::Setup(const TVectorString2d& data, ui64 column_i) {
     for (ui64 i = 0; !data.At(i, column_i, &cur).HasError(); i++) {
         cols_.push_back(0);
         from_chars(cur.data(), cur.data() + cur.size(), cols_.back());
-        // cols_.push_back(std::stoll(cur));
     }
     return nullptr;
 }
 
-} // namespace JfEngine
+}

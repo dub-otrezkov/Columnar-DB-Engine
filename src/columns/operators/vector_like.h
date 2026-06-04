@@ -18,33 +18,6 @@ struct OPushBack {
     }
 };
 
-struct OSetAtIdx {
-    template <typename TCol>
-    static inline Expected<void> Exec(TCol& col, ui64 idx, TColumnPtr value) {
-        if (value->GetSize() != 1) {
-            return MakeError<EError::BadArgsErr>("not 1 size");
-        }
-        if (value->GetType() != col.GetType()) {
-            return MakeError<EError::BadArgsErr>("types mismatch");
-        }
-        auto casted = static_cast<TCol*>(value.get());
-        col.GetData().at(idx) = casted->GetData().at(0);
-        return EError::NoError;
-    }
-};
-
-struct OSetCellFrom {
-    template <typename TCol>
-    static inline Expected<void> Exec(TCol& to, ui64 to_idx, TColumnPtr from, ui64 from_idx) {
-        if (to.GetType() != from->GetType()) {
-            return MakeError<EError::BadArgsErr>("types mismatch");
-        }
-        auto src = static_cast<TCol*>(from.get());
-        to.GetData().at(to_idx) = src->GetData().at(from_idx);
-        return EError::NoError;
-    }
-};
-
 struct OSetColumnFrom {
     template <typename TCol>
     static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
@@ -69,66 +42,6 @@ struct OSetColumnFrom {
     }
 };
 
-struct OPushBackEmpty {
-    template <typename TCol>
-    static inline void Exec(TCol& col) {
-        col.GetData().emplace_back();
-    }
-};
-
-// from, to, i
-struct OPushBackFrom {
-    template<typename TCol>
-    static inline void Exec(TCol& from, TColumnPtr to, i64 i) {
-        if (to->GetType() != from.GetType()) {
-            throw "bad arg";
-        }
-        OPushBack::Exec(*static_cast<TCol*>(to.get()), from.GetData().at(i));
-    }
-};
-
-struct OPushBackFromBatch {
-    template<typename TCol>
-    static inline void Exec(TCol& from, TColumnPtr to, std::vector<ui64>& is) {
-        if (to->GetType() != from.GetType()) {
-            throw "bad arg";
-        }
-        auto& t = *static_cast<TCol*>(to.get());
-        t.GetData().reserve(t.GetData().size() + is.size());
-        for (const auto& i : is) {
-            assert(i < from.GetData().size());
-            OPushBack::Exec(t, from.GetData().at(i));
-        }
-    }
-};
-
-// from, to
-struct OPushBackVector {
-    template<typename TCol>
-    static inline Expected<void> Exec(TCol& from, TColumnPtr to) {
-        if (to->GetType() != from.GetType()) {
-            throw "bad arg";
-        }
-        auto target = static_cast<TCol*>(to.get());
-        ui64 prev_sz = target->GetData().size();
-        target->GetData().resize(from.GetData().size() + target->GetData().size());
-        std::memcpy(
-            reinterpret_cast<char*>(target->GetData().data() + prev_sz),
-            reinterpret_cast<char*>(from.GetData().data()),
-            from.GetData().size() * sizeof(typename TCol::ElemType)
-        );
-        return EError::NoError;
-    }
-};
-
-struct OResize {
-    template <typename T>
-    static inline Expected<void> Exec(T& col, i64 len) {
-        col.GetData().resize(len, (typename T::ElemType){});
-        return EError::NoError;
-    }
-};
-
 struct OOffset {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, i64 offset) {
@@ -141,14 +54,6 @@ struct OOffset {
             ans.size() * sizeof(T)
         );
         return std::make_shared<TCol>(std::move(ans));
-    }
-};
-
-struct OClear {
-    template <typename TCol>
-    static inline Expected<void> Exec(TCol& col) {
-        col.GetData().clear();
-        return EError::NoError;
     }
 };
 

@@ -38,7 +38,9 @@ public:
     virtual ui64 GetRowGroupLen() const;
     virtual void MoveCursor();
     virtual void Reset();
-    virtual const char* GetTypeName() const { return "Unknown"; }
+    virtual const char* GetTypeName() const {
+        return "Unknown";
+    }
 
 private:
     void EnsureLoaded();

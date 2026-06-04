@@ -13,11 +13,9 @@ namespace JfEngine {
 class TCsvWriter {
 public:
     TCsvWriter(IFileOutput* out, char sep = ',');
+    ~TCsvWriter() = default;
 
     void WriteRow(const std::vector<std::string>& row);
-    void WriteRowGroup(std::vector<std::vector<std::string>> row);
-
-    ~TCsvWriter() = default;
 
 private:
     ui64 PrepareString(std::string_view str);
@@ -26,4 +24,4 @@ private:
     char sep_;
 };
 
-} // namespace JfEngine
+}

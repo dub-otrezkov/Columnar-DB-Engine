@@ -303,4 +303,4 @@ Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type) {
     }
 }
 
-} // namespace JfEngine
+}
