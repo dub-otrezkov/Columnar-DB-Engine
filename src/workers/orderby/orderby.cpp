@@ -185,10 +185,10 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
     };
 
     if (cmp2(ans.at(0)->GetSize() - 1, 0)) {
-        return false;
+        return {true, is_eof ? EError::EofErr : EError::NoError};;
     }
 
-    return {true, is_eof ? EError::EofErr : EError::NoError};
+    return false;
 }
 
 Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
