@@ -28,6 +28,8 @@ public:
     virtual Expected<std::vector<TColumnPtr>> ReadRowGroup();
     virtual Expected<TColumnPtr> ReadColumn(const std::string& name);
     virtual Expected<TColumnPtr> ReadIthColumn(i64 i);
+    virtual Expected<TColumnPtr> ReadMinMax(const std::string& name);
+    virtual Expected<TColumnPtr> ReadMinMax(i64 i);
     virtual i64 GetColumnInd(const std::string& name);
 
     virtual Expected<void> SetupColumnsScheme() = 0;

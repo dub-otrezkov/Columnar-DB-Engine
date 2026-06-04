@@ -99,7 +99,7 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
+void TJfTableInput::LoadMeta() {
     if (!poses_of_cols_) {
         std::vector<ui64> p(scheme_.size());
         auto start = blocks_pos_[current_block_];
@@ -110,6 +110,10 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
         p.push_back(start - sizeof(i64) * cols_cnt_);
         poses_of_cols_ = std::move(p);
     }
+}
+
+Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
+    LoadMeta();
     ui64 pos = poses_of_cols_->at(i);
     ui64 pos_next = poses_of_cols_->at(i + 1);
     jf_in_->SetPos(pos);
@@ -131,6 +135,32 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     );
 
     return ans;
+}
+
+Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {
+    LoadMeta();
+
+    ui64 pos = poses_of_cols_->at(i);
+    ui64 pos_next = poses_of_cols_->at(i + 1);
+    jf_in_->SetPos(pos);
+    ui64 len = pos_next - pos;
+
+    const char* raw = nullptr;
+    jf_in_->Read(raw, len);
+    std::span<const char> data(raw, len);
+
+    auto col = ExtractMinMax(data, scheme_[i].type_);
+
+    if (col.HasError()) {
+        return col.GetError();
+    }
+
+    Expected<TColumnPtr> ans(
+        col.GetRes(),
+        current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
+    );
+    return ans;
+
 }
 
 Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {

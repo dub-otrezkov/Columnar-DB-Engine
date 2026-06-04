@@ -136,25 +136,83 @@ void TOrderBy::MergeRowGroups(
         }
     }
     SortRowGroup(rg1, rg2);
-    // if (order_q_.limit != kUnlimited && !rg1.empty() && rg1[0]->GetSize() > order_q_.limit) {
-    //     for (ui64 j = 0; j < rg1.size(); j++) {
-    //         Do<OResize>(rg1[j], order_q_.limit);
-    //     }
-    // }
+}
+
+
+Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
+    if (ans.empty() || order_q_.limit == kUnlimited || !ans.at(0) || ans.at(0)->GetSize() < order_q_.limit) {
+        return false;
+    }
+
+    const ui64 nc = order_q_.cols.size();
+    std::vector<TColumnPtr> mins(nc);
+    bool is_eof = false;
+
+    const i64 dir = order_q_.reverse ? -1 : 1;
+
+    std::vector<i64> is(nc);
+    for (ui64 i = 0; i < nc; i++) {
+        // JF_LOG(0, order_q_.cols.at(i) << " " << name_to_i_.size() << " " << name_to_i_.contains(order_q_.cols.at(i)));
+        is.at(i) = name_to_i_.at(order_q_.cols.at(i));
+    }
+
+    for (ui64 i = 0; i < nc; i++) {
+        JF_LOG(0, i << " : " << is.size());
+        auto [mn, err] = jf_in_->ReadMinMax(is.at(i));
+        if (err == EError::EofErr) {
+            is_eof = true;
+        } else if (err != EError::NoError) {
+            return false;
+        }
+        mins.at(i) = std::move(mn);
+    }
+
+    std::vector<TIntComparator2> cmps_diff;
+    cmps_diff.reserve(nc);
+    for (ui64 k = 0; k < nc; k++) {
+        cmps_diff.push_back(Do<OCmpDiffCol>(ans.at(is.at(k)), mins.at(k)));
+    }
+    auto cmp2 = [&cmps_diff, dir, nc](i64 i, i64 j) -> bool {
+        for (ui64 k = 0; k < nc; k++) {
+            auto t1 = cmps_diff[k](i, j) * dir;
+            if (t1 == 1) {
+                return true;
+            }
+            if (t1 == 0) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    };
+
+    if (cmp2(ans.at(0)->GetSize() - 1, 0)) {
+        return false;
+    }
+
+    return {true, is_eof ? EError::EofErr : EError::NoError};
 }
 
 Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {
-    bool run = 1;
+    bool run = true;
     
     std::vector<TColumnPtr> ans_;
     ans_.resize(scheme_.size());
 
     for (; run; jf_in_->MoveCursor()) {
+        auto [f, eof] = ShouldSkipBatch(ans_);
+        if (f) {
+            if (eof == EError::EofErr) {
+                run = false;
+            }
+            continue;
+        }
+
         auto [g, err] = jf_in_->ReadRowGroup();
 
         if (err) {
             if (err == EError::EofErr) {
-                run = 0;
+                run = false;
             } else {
                 return err;
             }

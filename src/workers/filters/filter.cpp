@@ -25,8 +25,74 @@ Expected<void> TFilter::SetupColumnsScheme() {
 }
 
 Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
+    bool is_eof = false;
+    OFilterShouldSkipBatch::EResult pre_check_res = OFilterShouldSkipBatch::EResult::kTakeAll;
+    for (const auto& [name, op, target, opt_args] : query_.fils) {
+        auto [minmax, err] = jf_in_->ReadMinMax(name);
+        if (err == EError::UnimplementedErr) {
+            pre_check_res = OFilterShouldSkipBatch::EResult::kNeedCheck;
+            continue;
+        }
+        if (err == EError::EofErr) {
+            is_eof = true;
+        }
+        if (op == EFilterType::kIn || op == EFilterType::kNIn) {
+            if (!opt_args) {
+                pre_check_res = OFilterShouldSkipBatch::EResult::kNeedCheck;
+                continue;
+            }
+            bool all_absent = true;
+            for (const auto& item : *opt_args) {
+                auto t = Do<OFilterShouldSkipBatch>(minmax, EFilterType::kEq, item);
+                if (t != OFilterShouldSkipBatch::EResult::kSkipAll) {
+                    all_absent = false;
+                    break;
+                }
+            }
+            OFilterShouldSkipBatch::EResult verdict = OFilterShouldSkipBatch::EResult::kNeedCheck;
+            if (all_absent) {
+                if (op == EFilterType::kIn) {
+                    verdict = OFilterShouldSkipBatch::EResult::kSkipAll;
+                } else {
+                    verdict = OFilterShouldSkipBatch::EResult::kTakeAll;
+                }
+            }
+            if (verdict == OFilterShouldSkipBatch::EResult::kSkipAll) {
+                pre_check_res = verdict;
+                break;
+            } else if (verdict == OFilterShouldSkipBatch::EResult::kNeedCheck) {
+                pre_check_res = verdict;
+            }
+        } else {
+            auto t = Do<OFilterShouldSkipBatch>(minmax, op, target);
+
+            if (t == OFilterShouldSkipBatch::EResult::kSkipAll) {
+                pre_check_res = t;
+                // JF_LOG(nullptr, "skipping" << " " << " " << target << std::endl);
+                break;
+            } else if (t == OFilterShouldSkipBatch::EResult::kNeedCheck) {
+                pre_check_res = t;
+            }
+        }
+    }
+
+    if (pre_check_res == OFilterShouldSkipBatch::EResult::kSkipAll) {
+        std::vector<TColumnPtr> empty(scheme_.size());
+        for (ui64 i = 0; i < scheme_.size(); i++) {
+            auto c = MakeEmptyColumn(scheme_[i].type_);
+            if (c.HasError()) {
+                return c.GetError();
+            }
+            empty[i] = c.GetRes();
+        }
+        return {std::move(empty), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
+    }
+    if (pre_check_res == OFilterShouldSkipBatch::EResult::kTakeAll) {
+        return jf_in_->ReadRowGroup();
+    }
+
     auto [col_sp, err] = jf_in_->ReadRowGroup();
-    bool is_eof = Is<EError::EofErr>(err);
+    is_eof = Is<EError::EofErr>(err);
     if (err && !is_eof) {
         return err;
     }
@@ -42,8 +108,6 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             if (!opt_args) {
                 return EError::BadCmdErr;
             }
-            // IN / NOT IN: build a separate union mask across `opt_args`, then AND once into keep.
-            // For IN, union of equalities; for NOT IN, union of equalities and then keep &= ~al.
             boost::dynamic_bitset<> al(keep.size());
             for (const auto& item : *opt_args) {
                 boost::dynamic_bitset<> item_mask(keep.size());

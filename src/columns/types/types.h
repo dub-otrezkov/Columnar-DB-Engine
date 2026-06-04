@@ -92,6 +92,7 @@ class Ti8Column : public TStorage<i8> {
 public:
     Ti8Column() {}
     Ti8Column(std::vector<i8> data);
+    Ti8Column(i64 n, i8* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -102,6 +103,7 @@ class Ti16Column : public TStorage<i16> {
 public:
     Ti16Column() {}
     Ti16Column(std::vector<i16> data);
+    Ti16Column(i64 n, i16* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -112,6 +114,7 @@ class Ti32Column : public TStorage<i32> {
 public:
     Ti32Column() {}
     Ti32Column(std::vector<i32> data);
+    Ti32Column(i64 n, i32* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -122,6 +125,7 @@ class Ti64Column : public TStorage<i64> {
 public:
     Ti64Column() {}
     Ti64Column(std::vector<i64> data);
+    Ti64Column(i64 n, i64* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -183,16 +187,12 @@ struct alignas(4) TDate {
         return std::bit_cast<ui32>(*this);
     }
 
-    inline bool operator< (const TDate& other) const {
-        return IntDate() < other.IntDate();
-    }
-
-    inline bool operator== (const TDate& other) const {
+    inline auto operator==(const TDate& other) const {
         return IntDate() == other.IntDate();
     }
 
-    inline bool operator<= (const TDate& other) const {
-        return IntDate() <= other.IntDate();
+    inline auto operator<=>(const TDate& other) const {
+        return IntDate() <=> other.IntDate();
     }
 };
 
@@ -227,16 +227,12 @@ struct alignas(8) TTimestamp {
         return std::bit_cast<ui64>(*this);
     }
 
-    inline bool operator< (const TTimestamp& other) const {
-        return IntTime() < other.IntTime();
-    }
-
-    inline bool operator== (const TTimestamp& other) const {
+    inline auto operator==(const TTimestamp& other) const {
         return IntTime() == other.IntTime();
     }
 
-    inline bool operator<= (const TTimestamp& other) const {
-        return IntTime() <= other.IntTime();
+    inline auto operator<=>(const TTimestamp& other) const {
+        return IntTime() <=> other.IntTime();
     }
 };
 
@@ -262,6 +258,8 @@ Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
 Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
+
+Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type);
 
 template <typename T>
 Expected<TColumnPtr> SetupColumn(std::vector<std::string>&& data) {
@@ -307,25 +305,90 @@ inline std::vector<char> Serialize(std::vector<T>& a) {
     throw "bad type";
 }
 
+template <typename T>
+concept CHasMinMax =
+        CIntegralColumn<T> || CTimeColumn<T>;
+
 template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
-
-    return BitPack(a.size(), a.data());
+    T mn{};
+    T mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
+    auto packed = BitPack(a.size(), a.data());
+    if (!a.empty()) {
+        auto old = packed.size();
+        packed.resize(old + 2 * sizeof(T));
+        std::memcpy(packed.data() + old,              &mn, sizeof(T));
+        std::memcpy(packed.data() + old + sizeof(T),  &mx, sizeof(T));
+    }
+    return packed;
 }
 
 template<>
 inline std::vector<char> Serialize<TDate>(std::vector<TDate>& a) {
-    return DeltaSerialize<ui32>(a.size(), reinterpret_cast<ui32*>(a.data()));
+    TDate mn{};
+    TDate mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
+    auto packed = DeltaSerialize<ui32>(a.size(), reinterpret_cast<ui32*>(a.data()));
+    if (!a.empty()) {
+        auto old = packed.size();
+        packed.resize(old + 2 * sizeof(TDate));
+        std::memcpy(packed.data() + old,                  &mn, sizeof(TDate));
+        std::memcpy(packed.data() + old + sizeof(TDate),  &mx, sizeof(TDate));
+    }
+    return packed;
 }
 
 template<>
 inline std::vector<char> Serialize<TTimestamp>(std::vector<TTimestamp>& a) {
-    return DeltaSerialize<ui64>(a.size(), reinterpret_cast<ui64*>(a.data()));
+    TTimestamp mn{};
+    TTimestamp mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
+    auto packed = DeltaSerialize<ui64>(a.size(), reinterpret_cast<ui64*>(a.data()));
+    if (!a.empty()) {
+        auto old = packed.size();
+        packed.resize(old + 2 * sizeof(TTimestamp));
+        std::memcpy(packed.data() + old,                       &mn, sizeof(TTimestamp));
+        std::memcpy(packed.data() + old + sizeof(TTimestamp),  &mx, sizeof(TTimestamp));
+    }
+    return packed;
 }
 
 template<>
 inline std::vector<char> Serialize<JString>(std::vector<JString>& a) {
     return DictSerialize(a.size(), a.data());
+}
+
+template <>
+inline std::vector<char> Serialize<ld>(std::vector<ld>& a) {
+    ld mn{};
+    ld mx{};
+    if (!a.empty()) {
+        auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
+        mn = *mn_it;
+        mx = *mx_it;
+    }
+    std::vector<char> packed(a.size() * sizeof(ld));
+    std::memcpy(packed.data(), a.data(), packed.size());
+    if (!a.empty()) {
+        auto old = packed.size();
+        packed.resize(old + 2 * sizeof(ld));
+        std::memcpy(packed.data() + old,             &mn, sizeof(ld));
+        std::memcpy(packed.data() + old + sizeof(ld), &mx, sizeof(ld));
+    }
+    return packed;
 }
 
 template <typename T>
@@ -336,9 +399,12 @@ inline std::vector<T> Unserialize(std::span<const char> a) {
 template <std::integral T>
 inline std::vector<T> Unserialize(std::span<const char> a) {
     std::vector<T> res;
-    BitUnpack(a.size(), a.data(), res);
+    const ui64 minmax_size = 2 * sizeof(T);
+    auto payload = a.size() >= minmax_size ? a.first(a.size() - minmax_size) : a;
+    BitUnpack(payload.size(), payload.data(), res);
     return res;
 }
+
 template<>
 inline std::vector<JString> Unserialize<JString>(std::span<const char> a) {
     return DictUnserialize(a.size(), a.data());
@@ -346,22 +412,31 @@ inline std::vector<JString> Unserialize<JString>(std::span<const char> a) {
 
 template<>
 inline std::vector<TDate> Unserialize<TDate>(std::span<const char> a) {
-    auto t = DeltaUnserialize<ui32>(a.size(), a.data());
-
+    const ui64 minmax_size = 2 * sizeof(TDate);
+    auto payload = a.size() >= minmax_size ? a.first(a.size() - minmax_size) : a;
+    auto t = DeltaUnserialize<ui32>(payload.size(), payload.data());
     std::vector<TDate> ans(t.size());
     std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui32));
-
     return ans;
 }
 
 template<>
 inline std::vector<TTimestamp> Unserialize<TTimestamp>(std::span<const char> a) {
-    auto t = DeltaUnserialize<ui64>(a.size(), a.data());
-
+    const ui64 minmax_size = 2 * sizeof(TTimestamp);
+    auto payload = a.size() >= minmax_size ? a.first(a.size() - minmax_size) : a;
+    auto t = DeltaUnserialize<ui64>(payload.size(), payload.data());
     std::vector<TTimestamp> ans(t.size());
     std::memcpy(ans.data(), t.data(), t.size() * sizeof(ui64));
-
     return ans;
+}
+
+template<>
+inline std::vector<ld> Unserialize<ld>(std::span<const char> a) {
+    const ui64 minmax_size = 2 * sizeof(ld);
+    auto payload = a.size() >= minmax_size ? a.first(a.size() - minmax_size) : a;
+    std::vector<ld> res(payload.size() / sizeof(ld));
+    std::memcpy(res.data(), payload.data(), payload.size());
+    return res;
 }
 
 } // namespace JfEngine
