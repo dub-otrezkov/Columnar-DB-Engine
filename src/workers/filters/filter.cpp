@@ -68,6 +68,7 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
 
             if (t == OFilterShouldSkipBatch::EResult::kSkipAll) {
                 pre_check_res = t;
+                JF_LOG(nullptr, "skipping" << " " << " " << target << std::endl);
                 break;
             } else if (t == OFilterShouldSkipBatch::EResult::kNeedCheck) {
                 pre_check_res = t;
@@ -85,6 +86,9 @@ Expected<std::vector<TColumnPtr>> TFilter::LoadRowGroup() {
             empty[i] = c.GetRes();
         }
         return {std::move(empty), is_eof ? MakeError<EError::EofErr>() : EError::NoError};
+    }
+    if (pre_check_res == OFilterShouldSkipBatch::EResult::kTakeAll) {
+        return jf_in_->ReadRowGroup();
     }
 
     auto [col_sp, err] = jf_in_->ReadRowGroup();

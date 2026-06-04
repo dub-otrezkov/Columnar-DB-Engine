@@ -64,6 +64,10 @@ struct OFilterShouldSkipBatch {
         using T = typename TCol::ElemType;
         T target = ParseArg<T>(value);
 
+        // if constexpr (std::is_same_v<T, TDate>) {
+        //     JF_LOG(0, PrintDate(col.GetData().at(0)) << " " << value << " " << PrintDate(col.GetData().at(1)) << std::endl);
+        // }
+
         switch (op) {
         case EFilterType::kEq:
             if (target < col.GetData().at(0) || target > col.GetData().at(1)) {

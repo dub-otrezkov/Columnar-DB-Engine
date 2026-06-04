@@ -33,6 +33,8 @@ private:
         std::vector<TColumnPtr>& rg2
     );
 
+    Expected<bool> ShouldSkipBatch(std::vector<TColumnPtr>&);
+
     TOrderByQuery order_q_;
     
     TTableInputPtr jf_in_;
