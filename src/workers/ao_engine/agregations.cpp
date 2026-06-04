@@ -11,7 +11,6 @@
 namespace JfEngine {
 
 Expected<void> TSumAgr::ConsumeRowGroup(ITableInput*, std::vector<ui64>* idx) {
-    // JF_LOG(this, "got arg: " << arg << std::endl);
     auto v = arg->ThrowRowGroup();
     return Do<OMultipleAdder>(v, ans, idx);
 }

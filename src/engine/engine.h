@@ -63,10 +63,14 @@ public:
     TTableInputPtr in_;
 };
 
-Expected<TEngine> MakeEngineFromCsv(IFileInput* scheme, IFileInput* data, ui64 row_group_size = kRowGroupLen);
+Expected<TEngine> MakeEngineFromCsv(
+    IFileInput* scheme,
+    IFileInput* data,
+    ui64 row_group_size = kRowGroupLen
+);
 
 Expected<TEngine> MakeEngineFromJf(IFileInput* jf);
 
 Expected<TEngine> MakeEngineFromWorker(TTableInputPtr worker);
 
-} // namespace JfEngine
+}

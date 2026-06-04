@@ -18,10 +18,6 @@
 struct JString {
     static constexpr ui64 kSmallStringSize = 12;
 
-    ui32 len    = 0;
-    ui32 prefix = 0;
-    char* extra = 0;
-
     explicit JString(ui32 size = 0, const char* data = nullptr) {
         len = size;
         if (size <= kSmallStringSize) {
@@ -34,26 +30,6 @@ struct JString {
             extra = TStringHeap::Allocate(extra_size);
             std::memcpy(extra, data, extra_size);
         }
-    }
-
-    char* begin() {
-        if (is_small()) {
-            return reinterpret_cast<char*>(&prefix);
-        } else {
-            return extra;
-        }
-    }
-
-    const char* begin() const {
-        if (is_small()) {
-            return reinterpret_cast<const char*>(&prefix);
-        } else {
-            return extra;
-        }
-    }
-
-    char* end() {
-        return begin() + len;
     }
 
     explicit JString(std::string_view data) : JString(data.size(), data.data()) {
@@ -85,6 +61,26 @@ struct JString {
 
     JString& operator=(const JString& other) = default;
 
+    char* begin() {
+        if (is_small()) {
+            return reinterpret_cast<char*>(&prefix);
+        } else {
+            return extra;
+        }
+    }
+
+    const char* begin() const {
+        if (is_small()) {
+            return reinterpret_cast<const char*>(&prefix);
+        } else {
+            return extra;
+        }
+    }
+
+    char* end() {
+        return begin() + len;
+    }
+
     inline ui32 size() const {
         return len;
     }
@@ -112,6 +108,10 @@ struct JString {
         }
         return std::string(extra, len);
     }
+
+    ui32 len    = 0;
+    ui32 prefix = 0;
+    char* extra = 0;
 };
 static_assert(sizeof(JString) == 16);
 
@@ -162,16 +162,24 @@ inline int JStringCompare(const JString& a, std::string_view b) {
     ui32 min_len = std::min<ui32>(a.size(), b.size());
     ui32 head = std::min<ui32>(min_len, sizeof(a.prefix));
     int c = std::memcmp(&a.prefix, b.data(), head);
-    if (c != 0) return c;
+    if (c != 0) {
+        return c;
+    }
 
     if (min_len > sizeof(a.prefix)) {
         c = std::memcmp(JStringBytes(a) + sizeof(a.prefix),
                         b.data() + sizeof(a.prefix),
                         min_len - sizeof(a.prefix));
-        if (c != 0) return c;
+        if (c != 0) {
+            return c;
+        }
     }
-    if (a.size() < b.size()) return -1;
-    if (a.size() > b.size()) return  1;
+    if (a.size() < b.size()) {
+        return -1;
+    }
+    if (a.size() > b.size()) {
+        return  1;
+    }
     return 0;
 }
 
@@ -267,77 +275,3 @@ namespace std {
 inline std::size_t hash_value(const JString& s) noexcept {
     return JStringHasher{}(s);
 }
-
-// namespace boost {
-//     template <>
-//     struct hash<JString> {
-//         inline std::size_t operator()(const JString& s) const noexcept {
-//             return JStringHasher{}(s);
-//         }
-//     };
-// }
-
-class JStringVector {
-public:
-    JStringVector() = default;
-    JStringVector(JStringVector&&) = default;
-    JStringVector(const JStringVector&) = default;
-    JStringVector& operator=(const JStringVector&) = default;
-
-    JStringVector& operator=(JStringVector&& other) {
-        data_ = std::move(other.data_);
-        return *this;
-    }
-
-    inline void push_back(std::string_view data) {
-        data_.emplace_back(data);
-    }
-
-    inline void push_back(JString&& data) {
-        data_.push_back(std::move(data));
-    }
-
-    inline void push_back(const JString& data) {
-        data_.push_back(data);
-    }
-
-    template<typename ...Args>
-    inline void emplace_back(Args&&... data) {
-        data_.emplace_back(std::forward<Args>(data)...);
-    }
-
-    inline const JString& at(ui64 i) const {
-        return data_.at(i);
-    }
-
-    inline JString& at(ui64 i) {
-        return data_.at(i);
-    }
-
-    inline ui64 size() const {
-        return data_.size();
-    }
-
-    inline void reserve(ui64 n) {
-        data_.reserve(n);
-    }
-
-    inline void resize(ui64 n) {
-        data_.resize(n);
-    }
-
-    inline void clear() {
-        data_.clear();
-    }
-
-    inline JString* data() {
-        return data_.data();
-    }
-
-    inline const JString* data() const {
-        return data_.data();
-    }
-
-private:
-    std::vector<JString> data_;
-};

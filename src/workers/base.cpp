@@ -9,13 +9,16 @@ ITableInput::ITableInput(ui64 row_group_len) : row_group_len_(row_group_len) {
 }
 
 void ITableInput::EnsureLoaded() {
-    if (current_rg_) return;
+    if (current_rg_) {
+        return;
+    }
 
     if (!TQueryStats::instance) {
         auto result = LoadRowGroup();
         current_rg_err_ = result.GetError();
-        if (result.HasValue())
+        if (result.HasValue()) {
             current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
+        }
         return;
     }
 
@@ -29,8 +32,9 @@ void ITableInput::EnsureLoaded() {
     AddToParentChildTime(ns);
 
     current_rg_err_ = result.GetError();
-    if (result.HasValue())
+    if (result.HasValue()) {
         current_rg_ = std::make_shared<std::vector<TColumnPtr>>(std::move(result.GetRes()));
+    }
 }
 
 Expected<std::vector<TColumnPtr>> ITableInput::ReadRowGroup() {

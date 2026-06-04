@@ -42,7 +42,8 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
     {
         std::vector<ui64> stack;
         for (ui64 k = 0; k < selects_.args.size(); k++) {
-            if (selects_.args[k]->is_final && selects_.args[k]->GetType() != EAoType::kAgregation) {
+            if (selects_.args[k]->is_final &&
+                selects_.args[k]->GetType() != EAoType::kAgregation) {
                 stack.push_back(k);
             }
         }
@@ -59,9 +60,6 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         }
     }
 
-    // Names that qop will OUTPUT in its schema (= narrow's scheme).
-    // - For kOp: NEW TColumnOp's name after swap (alias if matched, else original).
-    // - For kAg: name of the TColumnOp pushed for the underlying column.
     boost::unordered_flat_set<std::string> qop_output_names;
 
     ui64 jrank = 0;
@@ -89,7 +87,6 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
             col_n->is_final = col->is_final;
 
             col.swap(col_n);
-            // col (in selects_) is now NEW TColumnOp with the qop-output name.
             qop_output_names.insert(col->GetName());
             qop.args.push_back(std::move(col_n));
             if (col->is_final) {
@@ -113,26 +110,6 @@ Expected<TTableInputPtr> TGroupToken::MakeWorker() {
         qop.args.back()->is_final = true;
         qop_output_names.insert(name);
     }
-
-    // JF_LOG(this, "qop.args.size()=" << qop.args.size() << " etype=" << (int)qop.tp);
-    // for (ui64 i = 0; i < qop.args.size(); i++) {
-    //     JF_LOG(this, "  qop[" << i << "] name=" << qop.args[i]->GetName()
-    //                 << " col=" << qop.args[i]->GetColumn()
-    //                 << " final=" << qop.args[i]->is_final
-    //                 << " type=" << (qop.args[i]->GetType() == EAoType::kAgregation ? "AGR" : "OP"));
-    // }
-    // JF_LOG(this, "selects_.args.size()=" << selects_.args.size());
-    // for (ui64 i = 0; i < selects_.args.size(); i++) {
-    //     JF_LOG(this, "  sel[" << i << "] name=" << selects_.args[i]->GetName()
-    //                 << " col=" << selects_.args[i]->GetColumn()
-    //                 << " final=" << selects_.args[i]->is_final
-    //                 << " in_op_subtree=" << (i < in_op_subtree.size() ? in_op_subtree[i] : false));
-    // }
-    // JF_LOG(this, "selects_.aliases.size()=" << selects_.aliases.size());
-    // for (const auto& [j, n] : selects_.aliases) {
-    //     JF_LOG(this, "  alias j=" << j << " name=" << n);
-    // }
-
 
     return std::make_shared<TGroupBy>(
         std::make_shared<TAgregator>(

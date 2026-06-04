@@ -19,7 +19,9 @@ struct TQueryStat {
 
 inline uint64_t ReadProcSelfIoReadBytes() {
     std::ifstream f("/proc/self/io");
-    if (!f) return 0;
+    if (!f) {
+        return 0;
+    }
     std::string line;
     while (std::getline(f, line)) {
         static const std::string kPrefix = "read_bytes:";
@@ -43,12 +45,6 @@ public:
         stat.name = name;
         stat.total_ns += ns;
         stat.count++;
-    }
-
-    void RecordDiskRead(uint64_t ns, uint64_t bytes) {
-        disk_read_ns_ += ns;
-        disk_read_bytes_userspace_ += bytes;
-        disk_read_count_++;
     }
 
     void Print(std::ostream& out) const {
@@ -103,7 +99,6 @@ private:
     uint64_t disk_bytes_at_start_ = 0;
 };
 
-// Thread-local child time stack for self-time calculation
 inline thread_local std::vector<uint64_t> tl_child_time_stack;
 
 inline void PushChildFrame() {
@@ -122,11 +117,12 @@ inline void AddToParentChildTime(uint64_t ns) {
     }
 }
 
-// RAII timer for engine operations (aggregation, operator engines)
 class TAoEngineTimer {
 public:
     TAoEngineTimer(const char* name) {
-        if (!TQueryStats::instance) return;
+        if (!TQueryStats::instance) {
+            return;
+        }
         active_ = true;
         name_ = name;
         frame_before_ = tl_child_time_stack.empty() ? 0 : tl_child_time_stack.back();
@@ -134,7 +130,9 @@ public:
     }
 
     ~TAoEngineTimer() {
-        if (!active_) return;
+        if (!active_) {
+            return;
+        }
         auto ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now() - t0_).count());
         uint64_t child_added = tl_child_time_stack.empty() ? 0 : tl_child_time_stack.back() - frame_before_;

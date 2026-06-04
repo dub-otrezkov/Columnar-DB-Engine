@@ -161,7 +161,7 @@ TEST_F(EngineTest, JfEmpty) {
 TEST_F(EngineTest, JfSmallRowGroupSize) {
     auto jf_out = std::make_shared<TStringStreamFileOutput>();
     {
-        auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), data_ss.get(), /*row_group_size=*/1);
+        auto [eng, err] = MakeEngineFromCsv(scheme_ss.get(), data_ss.get(), 1);
 
         ASSERT_FALSE(err);
 
@@ -280,4 +280,4 @@ TEST_F(EngineTest, JfTimeColumns) {
     }
 }
 
-} // namespace JfEngine::Testing
+}

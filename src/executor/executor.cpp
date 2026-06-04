@@ -70,4 +70,4 @@ Expected<void> TExecutor::ExecQuery(const std::string& query) {
     return EError::NoError;
 }
 
-} // namespace JfEngine
+}

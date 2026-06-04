@@ -7,7 +7,6 @@
 namespace JfEngine::Testing {
 
 struct IoTests : ::testing::Test {
-    // correct
     std::string basic = R"(john;frusciante
 josh;klinghoffer
 )";
@@ -16,7 +15,6 @@ josh;klinghoffer
 )";
     std::string extra = R"(;hey;,,;)";
 
-    // incorrect
     std::string unclosedQuote = R"(",remain)";
     std::string badQuote = R"(slow,"cheet"ah)";
 };
@@ -198,4 +196,4 @@ TEST_F(IoTests, EmptyCases) {
 
 }
 
-} // namespace JfEngine::Testing
+}

@@ -152,12 +152,10 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
 
     std::vector<i64> is(nc);
     for (ui64 i = 0; i < nc; i++) {
-        // JF_LOG(0, order_q_.cols.at(i) << " " << name_to_i_.size() << " " << name_to_i_.contains(order_q_.cols.at(i)));
         is.at(i) = name_to_i_.at(order_q_.cols.at(i));
     }
 
     for (ui64 i = 0; i < nc; i++) {
-        JF_LOG(0, i << " : " << is.size());
         auto [mn, err] = jf_in_->ReadMinMax(is.at(i));
         if (err == EError::EofErr) {
             is_eof = true;
@@ -187,10 +185,10 @@ Expected<bool> TOrderBy::ShouldSkipBatch(std::vector<TColumnPtr>& ans) {
     };
 
     if (cmp2(ans.at(0)->GetSize() - 1, 0)) {
-        return false;
+        return {true, is_eof ? EError::EofErr : EError::NoError};;
     }
 
-    return {true, is_eof ? EError::EofErr : EError::NoError};
+    return false;
 }
 
 Expected<std::vector<TColumnPtr>> TOrderBy::LoadRowGroup() {

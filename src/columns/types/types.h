@@ -19,8 +19,6 @@
 
 namespace JfEngine {
 
-// basic classes
-
 const std::string ki8SchemeAlias = "int8";
 const std::string ki16SchemeAlias = "int16";
 const std::string ki32SchemeAlias = "int32";
@@ -86,13 +84,10 @@ protected:
     std::vector<T> cols_;
 };
 
-// colums
-
 class Ti8Column : public TStorage<i8> {
 public:
     Ti8Column() {}
     Ti8Column(std::vector<i8> data);
-    Ti8Column(i64 n, i8* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -103,7 +98,6 @@ class Ti16Column : public TStorage<i16> {
 public:
     Ti16Column() {}
     Ti16Column(std::vector<i16> data);
-    Ti16Column(i64 n, i16* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -114,7 +108,6 @@ class Ti32Column : public TStorage<i32> {
 public:
     Ti32Column() {}
     Ti32Column(std::vector<i32> data);
-    Ti32Column(i64 n, i32* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -125,7 +118,6 @@ class Ti64Column : public TStorage<i64> {
 public:
     Ti64Column() {}
     Ti64Column(std::vector<i64> data);
-    Ti64Column(i64 n, i64* data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -151,12 +143,8 @@ private:
 
 class TStringColumn : public TStorage<JString> {
 public:
-    // using ElemTypeRo = std::string_view;
-
     TStringColumn() {}
     TStringColumn(std::vector<JString> data);
-    TStringColumn(std::vector<std::string> data);
-    TStringColumn(std::vector<std::string_view> data);
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -176,7 +164,7 @@ public:
 struct alignas(4) TDate {
     ui8 day;
     ui8 month;
-    ui16 year; // такой порядок чтобы год был в старших битах и дельта сжатие работало лучше
+    ui16 year;
 
     TDate() = default;
 
@@ -215,7 +203,7 @@ TDate DateFromStr(const std::string& s);
 struct alignas(8) TTimestamp {
     ui8 second;
     ui8 minute;
-    ui16 hour;  // чтобы занулить ласт байт паддинга
+    ui16 hour;
     TDate date;
 
     TTimestamp() = default;
@@ -252,8 +240,6 @@ public:
     Expected<void> Setup(const TVectorString2d& data, ui64 column_i) override;
 };
 
-// helpers
-
 Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
@@ -288,12 +274,6 @@ concept CIntegralColumn =
     || std::same_as<TCol, Ti32Column>
     || std::same_as<TCol, Ti64Column>
     || std::same_as<TCol, Ti128Column>;
-
-template <typename TCol>
-concept CDoubleColumn = std::same_as<TCol, TDoubleColumn>;
-
-template <typename TCol>
-concept CStringColumn = std::same_as<TCol, TDoubleColumn>;
 
 template <typename TCol>
 concept CTimeColumn =
@@ -439,4 +419,4 @@ inline std::vector<ld> Unserialize<ld>(std::span<const char> a) {
     return res;
 }
 
-} // namespace JfEngine
+}

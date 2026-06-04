@@ -10,8 +10,6 @@
 
 namespace JfEngine {
 
-// FOR DISTINCTS
-
 template <typename T>
 using TSet = boost::unordered_flat_set<T>;
 
@@ -41,54 +39,10 @@ struct TDistinctSets {
     }
 };
 
-// struct ODistinctStreamV {
-//     template <typename TCol>
-//     static inline Expected<TColumnPtr> Exec(TCol& col1, TDistinctSets& st) {
-//         using T = typename TCol::ElemTypeRo;
-//         std::vector<T> ans;
-//         for (ui64 i = 0; i < col1.GetSize(); i++) {
-//             if (st.GetSet<T>().insert(col1.GetData().at(i)).second) {
-//                 ans.push_back(col1.GetData().at(i));
-//             }
-//         }
-//         return std::make_shared<TCol>(std::move(ans));
-//     }
-
-//     static inline Expected<TColumnPtr> Exec(TDateColumn& col, TDistinctSets& st) {
-//         return EError::UnsupportedErr;
-//     }
-
-//     static inline Expected<TColumnPtr> Exec(TTimestampColumn& col1, TDistinctSets& st) {
-//         return EError::UnsupportedErr;
-//     }
-// };
-
-struct ODistinctCountDelta {
-    template <typename TCol>
-    static inline Expected<ui64> Exec(TCol& col1, TDistinctSets& sts, ui64 idx) {
-        using T = typename TCol::ElemType;
-        ui64 ans = 0;
-        auto& st = sts.GetSet<T>(idx);
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            if (st.insert(col1.GetData().at(i)).second) {
-                ans++;
-            }
-        }
-        return ans;
-    }
-
-    static inline Expected<ui64> Exec(TDateColumn& col1, TDistinctSets& sts, ui64 idx) {
-        return EError::UnsupportedErr;
-    }
-
-    static inline Expected<ui64> Exec(TTimestampColumn& col1, TDistinctSets& sts, ui64 idx) {
-        return EError::UnsupportedErr;
-    }
-};
-
 struct OMultipleDistinctCountDelta {
     template <typename TCol>
-    static inline Expected<void> Exec(TCol& col1, TColumnPtr& ans, TDistinctSets& sts, std::vector<ui64>* idx) {
+    static inline Expected<void> Exec(
+        TCol& col1, TColumnPtr& ans, TDistinctSets& sts, std::vector<ui64>* idx) {
         using T = typename TCol::ElemType;
         if (!ans) {
             ans = std::make_shared<Ti64Column>(std::vector<i64>(1, 0));
@@ -120,11 +74,13 @@ struct OMultipleDistinctCountDelta {
         return EError::NoError;
     }
 
-    static inline Expected<void> Exec(TDateColumn& col1, TColumnPtr& ans, TDistinctSets& sts, std::vector<ui64>* idx) {
+    static inline Expected<void> Exec(
+        TDateColumn& col1, TColumnPtr& ans, TDistinctSets& sts, std::vector<ui64>* idx) {
         return EError::UnsupportedErr;
     }
 
-    static inline Expected<void> Exec(TTimestampColumn& col1, TColumnPtr& ans, TDistinctSets& sts, std::vector<ui64>* idx) {
+    static inline Expected<void> Exec(
+        TTimestampColumn& col1, TColumnPtr& ans, TDistinctSets& sts, std::vector<ui64>* idx) {
         return EError::UnsupportedErr;
     }
 };

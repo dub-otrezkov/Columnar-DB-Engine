@@ -55,7 +55,6 @@ dot,19,hacker,-10,-10,-1,-1.125
 
 struct SumOverflowTest : testing::Test {
     std::string scheme = "val,int64\n";
-    // 2 * 2^62 = 2^63 = INT64_MAX + 1, overflows int64 but fits in int128
     std::string data = "4611686018427387904\n4611686018427387904\n";
 
     std::shared_ptr<TStringStreamFileOutput> out_scheme;

@@ -315,32 +315,8 @@ inline T ReadInt(IFileInput* in) {
     return ans;
 }
 
-inline void PutI8(IFileOutput* o, i8 v) {
-    PutInt<i8>(o, v);
-}
-
-inline void PutI16(IFileOutput* o, i16 v) {
-    PutInt<i16>(o, v);
-}
-
-inline void PutI32(IFileOutput* o, i32 v) {
-    PutInt<i32>(o, v);
-}
-
 inline void PutI64(IFileOutput* o, i64 v) {
     PutInt<i64>(o, v);
-}
-
-inline i8 ReadI8(IFileInput* i) {
-    return ReadInt<i8>(i);
-}
-
-inline i16 ReadI16(IFileInput* i) {
-    return ReadInt<i16>(i);
-}
-
-inline i32 ReadI32(IFileInput* i) {
-    return ReadInt<i32>(i);
 }
 
 inline i64 ReadI64(IFileInput* i) {

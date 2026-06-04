@@ -15,7 +15,6 @@ struct OSum {
         for (ui64 i = 0; i < col.GetSize(); i++) {
             res += static_cast<i128>(col.GetData()[i]);
         }
-        // JF_LOG(nullptr, "sum " << static_cast<i64>(res) << " of size " << col.GetSize() << std::endl);
         return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
 
@@ -48,7 +47,8 @@ struct OVerticalSum {
         }
         if (col2->GetType() != col1.GetType()) {
             return MakeError<EError::BadArgsErr>(
-                "no addition between i8 and other type " + std::to_string(col1.GetType()) + " " + std::to_string(col2->GetType()));
+                "no addition between i8 and other type " + std::to_string(col1.GetType())
+                    + " " + std::to_string(col2->GetType()));
         }
         auto col2_i = static_cast<T*>(col2.get());
         std::vector<i128> ans;
@@ -204,36 +204,6 @@ struct OAddConst {
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
-        return MakeError<EError::UnsupportedErr>();
-    }
-};
-
-struct OAddAtIdx {
-    template<typename TCol>
-    static inline Expected<void> Exec(TCol& col, ui64 idx, TColumnPtr s) {
-
-        // JF_LOG(nullptr, "addition at " << idx << std::endl);
-
-        if (col.GetType() != s->GetType()) {
-            return MakeError<EError::BadArgsErr>("types mismatch");
-        }
-        if (s->GetSize() != 1) {
-            return MakeError<EError::BadArgsErr>("size not 1");
-        }
-        col.GetData().at(idx) += static_cast<TCol*>(s.get())->GetData().at(0);
-
-        return EError::NoError;
-    }
-
-    static inline Expected<void> Exec(TTimestampColumn& col, ui64 idx, TColumnPtr s) {
-        return EError::UnsupportedErr;
-    }
-
-    static inline Expected<void> Exec(TDateColumn& col, ui64 idx, TColumnPtr s) {
-        return EError::UnsupportedErr;
-    }
-
-    static inline Expected<void> Exec(TStringColumn& col, ui64 idx, TColumnPtr s) {
         return MakeError<EError::UnsupportedErr>();
     }
 };

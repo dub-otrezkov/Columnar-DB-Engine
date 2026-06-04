@@ -196,9 +196,6 @@ TEST_F(BenchTest, _6) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(MIN(low),date
 MAX(low),date
 )");
@@ -239,9 +236,6 @@ TEST_F(BenchTest, _8) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(hers,string
 u,int64
@@ -305,9 +299,6 @@ TEST_F(BenchTest, _11) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 hers,string
 u,int64
@@ -331,9 +322,6 @@ TEST_F(BenchTest, _12) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 c,int64
 )");
@@ -356,9 +344,6 @@ TEST_F(BenchTest, _13) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 u,int64
 )");
@@ -379,9 +364,6 @@ TEST_F(BenchTest, _14) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(getaway,int8
 was,string
@@ -405,9 +387,6 @@ TEST_F(BenchTest, _15) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(getaway,int8
 COUNT(*),int64
 )");
@@ -429,9 +408,6 @@ TEST_F(BenchTest, _16) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 COUNT(*),int64
@@ -446,7 +422,6 @@ john,1,50000
 }
 
 TEST_F(BenchTest, _17) {
-    // EXTRACT_MINUTE Ð² GROUP BY.
 
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -463,8 +438,6 @@ TEST_F(BenchTest, _17) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Ð’ÑÐµ 8 (what, m, was) Ñ‚Ñ€Ð¾Ð¹ÐºÐ¸ ÑƒÐ½Ð¸ÐºÐ°Ð»ÑŒÐ½Ñ‹, c=iter=50000 ÐºÐ°Ð¶Ð´Ð°Ñ.
-    // ORDER BY c, what, m, was DESC (Ð²ÑÐµ DESC): ties Ð¿Ð¾ c, ÑÐ¾Ñ€Ñ‚Ð¸Ñ€ÑƒÐµÐ¼ what DESC, m DESC, was DESC.
     EXPECT_EQ(out_scheme->Str(), R"(what,int64
 m,int64
 was,string
@@ -495,7 +468,6 @@ TEST_F(BenchTest, _18) {
 
     EXPECT_EQ(out_scheme->Str(), R"(what,int64
 )");
-    // 2 rows per block match (rows with what=5), output "5\n" each
     EXPECT_EQ(out_data->Str().size(), iter * 2 * 2);
 }
 
@@ -510,9 +482,6 @@ TEST_F(BenchTest, _19) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(getaway,int8
 )");
@@ -531,9 +500,6 @@ TEST_F(BenchTest, _20) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(COUNT(*),int64
 )");
     EXPECT_EQ(out_data->Str(), "200000\n");
@@ -550,9 +516,6 @@ TEST_F(BenchTest, _21) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 MIN(hers),string
@@ -574,9 +537,6 @@ TEST_F(BenchTest, _22) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 MIN(what),int64
@@ -601,8 +561,6 @@ TEST_F(BenchTest, _23) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Earliest `low` among rows matching LIKE '%o%' is 2020-09-12 (row 4: klinghoffer, what=7).
-    // ÐŸÐ¾Ð²Ñ‚Ð¾Ñ€ÑÐµÑ‚ÑÑ iter Ñ€Ð°Ð· Ð¿Ð¾Ð´Ñ€ÑÐ´, LIMIT 10 Ð²ÑÐµ Ð¿Ð¾Ð¿Ð°Ð´Ð°ÑŽÑ‚ Ð² ÑÑ‚Ñƒ Ð³Ñ€ÑƒÐ¿Ð¿Ñƒ.
     EXPECT_EQ(out_scheme->Str(), R"(what,int64
 was,string
 low,date
@@ -632,9 +590,6 @@ TEST_F(BenchTest, _24) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(empty,string
 )");
     EXPECT_EQ(out_data->Str(), R"(dolores2
@@ -662,22 +617,8 @@ TEST_F(BenchTest, _25) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(empty,string
 )");
-//     EXPECT_EQ(out_data->Str(), R"(dolores1
-// dolores
-// dolores1
-// dolores
-// dolores1
-// dolores
-// dolores1
-// dolores
-// dolores1
-// dolores
-// )");
 }
 
 TEST_F(BenchTest, _26) {
@@ -691,9 +632,6 @@ TEST_F(BenchTest, _26) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(empty,string
 )");
@@ -796,7 +734,6 @@ TEST_F(BenchTest, _30) {
     std::string ans_data;
 
     for (i64 i = 0; i < its; i++) {
-        // std::cout << 1600000 - static_cast<i64>(i * iter * 8) << std::endl;
         ans_data += std::to_string(1600000 - static_cast<i64>(i * iter * 8)) + ",";
     }
     ans_data.back() = '\n';
@@ -816,9 +753,6 @@ TEST_F(BenchTest, _31) {
         }
         ASSERT_FALSE(err.HasError());
     }
-
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
 
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
@@ -847,9 +781,6 @@ TEST_F(BenchTest, _32) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 c,int64
@@ -875,9 +806,6 @@ TEST_F(BenchTest, _33) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 getaway,int8
 c,int64
@@ -894,7 +822,6 @@ frusciante,2,100000,600000,4
 }
 
 TEST_F(BenchTest, _34) {
-    // CONST_INT Ð² SELECT Ð¸ GROUP BY.
 
     JfEngine::TExecutor exec;
     prolog(exec);
@@ -944,9 +871,6 @@ TEST_F(BenchTest, _35) {
 -(what 2),int64
 c,int64
 )");
-    // 4 groups (what âˆˆ {1,3,5,7}), each with count = 2 * iter = 100000.
-    // Engine uses single direction: ORDER BY c DESC, what â‡’ both DESC.
-    // So expect what descending: 7, 5, 3, 1.
     EXPECT_EQ(out_data->Str(), R"(7,6,5,100000
 5,4,3,100000
 3,2,1,100000
@@ -972,14 +896,6 @@ TEST_F(BenchTest, _36) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Rows matching filters per block:
-    //   row 2 (john, dolores,  2022-11-08)
-    //   row 3 (frusciante, dolores, 2022-03-27)
-    //   row 6 (klinghoffer, dolores2, 2022-07-19)
-    //   row 7 (frusciante, dolores1, ...): beam is 2023-12-03 but low is 2022-12-03 â€” YES
-    //   row 8 (josh, dolores1, 2022-06-21)
-    // Row 7: low=2022-12-03 matches; empty=dolores1 matches; getaway=2 matches. YES.
-    // Groups: fruscianteÃ—2=100000, johnÃ—1=50000, joshÃ—1=50000, klinghofferÃ—1=50000
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 c,int64
 )");
@@ -1002,9 +918,6 @@ TEST_F(BenchTest, _37) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // std::cout << out_scheme->Str() << std::endl;
-    // std::cout << out_data->Str() << std::endl;
-
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 cnt,int64
 )");
@@ -1019,7 +932,6 @@ TEST_F(BenchTest, _38) {
     JfEngine::TExecutor exec;
     prolog(exec);
     {
-        // CLI 38 â€” Ð°Ð½Ð°Ð»Ð¾Ð³ Ñ OFFSET
         auto err = exec.ExecQuery("SELECT was, COUNT(*) AS cnt FROM josh WHERE ste = 1 AND low <= '2022-12-31' AND low >= '2022-01-01' AND empty <> '' GROUP BY was ORDER BY cnt, was DESC LIMIT 10 OFFSET 1");
         if (err.HasError()) {
             std::cout << err.GetError() << std::endl;
@@ -1027,7 +939,6 @@ TEST_F(BenchTest, _38) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Ð¢Ðµ Ð¶Ðµ 3 Ð³Ñ€ÑƒÐ¿Ð¿Ñ‹, Ñ‡Ñ‚Ð¾ Ð² _37, Ð½Ð¾ Ð¿Ð¾ÑÐ»Ðµ OFFSET 1 Ð¾Ñ‚Ð±Ñ€Ð°ÑÑ‹Ð²Ð°ÐµÐ¼ klinghoffer.
     EXPECT_EQ(out_scheme->Str(), R"(was,string
 cnt,int64
 )");
@@ -1052,9 +963,6 @@ TEST_F(BenchTest, _39) {
 
     EXPECT_EQ(out_scheme->Str(), R"(label,string
 )");
-    // Per 8-row block: "rip\n" (was=josh, hers=rip) + 6 Ã— "other\n"
-    //                  + "forever\n" (was=josh, hers=forever)
-    // Sizes: 4 + 6*6 + 8 = 48 bytes per block.
     EXPECT_EQ(out_data->Str().size(), iter * 48);
     EXPECT_EQ(out_data->Str().substr(0, 4), "rip\n");
 }
@@ -1078,13 +986,6 @@ TEST_F(BenchTest, _40) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Rows matching per block: row 2 (3, 2022-11-08, dolores),
-    //   row 3 (5, 2022-03-27, dolores),
-    //   row 6 (1, 2022-07-19, dolores2),
-    //   row 8 (3, 2022-06-21, dolores1)
-    // 4 groups, each with count = iter = 50000.
-    // Sort by c DESC then (what, low) DESC (single direction):
-    //   5, 2022-03-27; 3, 2022-11-08; 3, 2022-06-21; 1, 2022-07-19
     EXPECT_EQ(out_scheme->Str(), R"(what,int64
 low,date
 c,int64
@@ -1114,15 +1015,6 @@ TEST_F(BenchTest, _41) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // Rows matching per block (ste in [1,10] AND empty<>''):
-    //   row 2 (once=4, what=3, ste=5, empty=dolores)
-    //   row 3 (once=6, what=5, ste=6, empty=dolores)
-    //   row 6 (once=4, what=1, ste=1, empty=dolores2)
-    //   row 7 (once=2, what=7, ste=1, empty=dolores1)
-    //   row 8 (once=7, what=3, ste=1, empty=dolores1)
-    // 5 groups, each c = iter = 50000.
-    // ORDER BY c, once, what DESC (Ð²ÑÐµ DESC):
-    //   once=7 â†’ (7, 3); once=6 â†’ (6, 5); once=4 ties â†’ what DESC: (4, 3), (4, 1); once=2 â†’ (2, 7)
     EXPECT_EQ(out_scheme->Str(), R"(once,int32
 what,int64
 c,int64
@@ -1152,9 +1044,6 @@ TEST_F(BenchTest, _42) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // All 8 beam values distinct; TRUNC_MINUTE zeroes the seconds.
-    // 8 groups, each c = iter = 50000.
-    // ORDER BY M (ASC â€” no DESC keyword): chronological.
     EXPECT_EQ(out_scheme->Str(), R"(M,timestamp
 c,int64
 )");
@@ -1185,10 +1074,6 @@ TEST_F(BenchTest, _28) {
         ASSERT_FALSE(err.HasError());
     }
 
-    // was values: josh(Ã—2), john(Ã—2), frusciante(Ã—2), klinghoffer(Ã—2) per block.
-    // REGEXP_REPLACE('^j','J'): joshâ†’Josh, johnâ†’John, others unchanged.
-    // 4 groups Ã— 2 rows Ã— iter = 100000 each.
-    // ORDER BY k ASC: 'J'(74) < 'f'(102) < 'k'(107) â†’ John, Josh, frusciante, klinghoffer.
     EXPECT_EQ(out_scheme->Str(), R"(k,string
 c,int64
 )");

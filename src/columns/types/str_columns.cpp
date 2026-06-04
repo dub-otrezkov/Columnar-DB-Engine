@@ -2,26 +2,8 @@
 
 namespace JfEngine {
 
-TStringColumn::TStringColumn(std::vector<std::string> data) {
-    // cols_ = std::move(data);
-    cols_.clear();
-    cols_.reserve(data.size());
-    for (auto& el : data) {
-        cols_.emplace_back(std::string_view(el));
-    }
-}
-
 TStringColumn::TStringColumn(std::vector<JString> data) {
     cols_ = std::move(data);
-}
-
-TStringColumn::TStringColumn(std::vector<std::string_view> data) {
-    // cols_ = std::move(data);
-    cols_.clear();
-    cols_.reserve(data.size());
-    for (const auto& el : data) {
-        cols_.emplace_back(el);
-    }
 }
 
 EColumn TStringColumn::GetType() const {

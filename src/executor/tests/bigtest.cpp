@@ -98,7 +98,6 @@ TEST_F(BigTest, DatesFilter) {
     EXPECT_EQ(out_scheme->Str(), R"(d,int64
 )");
     EXPECT_EQ(out_data->Str(), std::to_string(iter * 2) + "\n");
-    // std::cout << out_data->Str() << std::endl;
 }
 
 TEST_F(BigTest, SumGetter) {
@@ -376,7 +375,6 @@ COUNT(*),int64
 2022-02-24 00:00:03,1000000
 2022-02-24 00:00:00,2000000
 )");
-    // std::cout << out_data->Str() << std::endl;
 }
 
 TEST_F(BigTest, GroupOrderWhere) {

@@ -31,7 +31,3 @@ private:
     std::shared_ptr<char[]> buf_;
     std::pmr::monotonic_buffer_resource res_;
 };
-
-inline std::pmr::polymorphic_allocator<> ArenaAlloc() {
-    return std::pmr::polymorphic_allocator<>{&TMemoryArena::Instance().Resource()};
-}

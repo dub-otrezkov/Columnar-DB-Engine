@@ -15,7 +15,9 @@
 namespace {
 
 #ifdef CLICKBENCH_NO_TCMALLOC
-size_t CurrentAllocatedBytes() { return 0; }
+size_t CurrentAllocatedBytes() {
+    return 0;
+}
 #else
 extern "C" int MallocExtension_GetNumericProperty(const char* property, size_t* value);
 
@@ -41,17 +43,24 @@ public:
         });
     }
 
-    ~TPeakMemSampler() { Stop(); }
+    ~TPeakMemSampler() {
+        Stop();
+    }
 
     void Stop() {
-        if (stopped_) return;
+        if (stopped_) {
+            return;
+        }
         stop_.store(true, std::memory_order_relaxed);
-        if (thread_.joinable()) thread_.join();
+        if (thread_.joinable()) {
+            thread_.join();
+        }
         stopped_ = true;
     }
 
-    size_t Baseline() const { return baseline_; }
-    size_t Peak() const { return peak_.load(std::memory_order_relaxed); }
+    size_t Peak() const {
+        return peak_.load(std::memory_order_relaxed);
+    }
     size_t PeakDelta() const {
         size_t p = Peak();
         return p > baseline_ ? p - baseline_ : 0;
@@ -75,7 +84,10 @@ std::string HumanBytes(size_t b) {
     static const char* units[] = {"B", "KB", "MB", "GB", "TB"};
     int i = 0;
     double v = static_cast<double>(b);
-    while (v >= 1024.0 && i < 4) { v /= 1024.0; ++i; }
+    while (v >= 1024.0 && i < 4) {
+        v /= 1024.0;
+        ++i;
+    }
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2) << v << " " << units[i];
     return oss.str();
@@ -83,27 +95,12 @@ std::string HumanBytes(size_t b) {
 
 } // namespace
 
-// (cd ../../build/benchmark_tests/clickbench; make clickbench)
-// >hits.jf; >tmp1.jf; >tmp2.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
-// >hits.jf; >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
-// >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/executor/debug/debug_exec
-
-// >RESULT_DATA.csv; >RESULT_SCHEME.csv; ../../build/benchmark_tests/clickbench/clickbench
-
-/*
-sync    
-echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
-*/
-
-// AI GENERATED CODE WARNING
-
 int main() {
     JfEngine::TQueryStats stats;
     JfEngine::TQueryStats::instance = &stats;
 
     JfEngine::TExecutor exec;
 
-    // Список всех запросов (включая CREATE и помеченные как "ok")
     std::vector<std::string> queries = {
         "CREATE hits FROM scheme, dorothy",
         "SELECT COUNT(*) FROM hits",
@@ -180,8 +177,12 @@ int main() {
 
         size_t peak_delta = sampler.PeakDelta();
         size_t peak_abs = sampler.Peak();
-        if (peak_delta > max_peak_delta) max_peak_delta = peak_delta;
-        if (peak_abs > max_peak_abs) max_peak_abs = peak_abs;
+        if (peak_delta > max_peak_delta) {
+            max_peak_delta = peak_delta;
+        }
+        if (peak_abs > max_peak_abs) {
+            max_peak_abs = peak_abs;
+        }
 
         bool is_create = (q.find("CREATE") != std::string::npos);
         if (!is_create) {

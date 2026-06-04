@@ -25,7 +25,9 @@ public:
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     void MoveCursor() override;
-    const char* GetTypeName() const override { return "Filter"; }
+    const char* GetTypeName() const override {
+        return "Filter";
+    }
 
 private:
     TTableInputPtr jf_in_;

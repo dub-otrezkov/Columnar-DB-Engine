@@ -43,7 +43,9 @@ inline std::vector<char> DictSerialize(ui64 n, JString* data) {
             std::memcpy(ans.data() + off, src, sz);
         }
     };
-    auto write_u32 = [&](ui32 v) { write_raw(&v, sizeof(v)); };
+    auto write_u32 = [&](ui32 v) {
+        write_raw(&v, sizeof(v));
+    };
 
     if (!use_dict) {
         ans.push_back(0);

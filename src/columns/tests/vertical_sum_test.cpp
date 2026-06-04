@@ -15,7 +15,6 @@ TEST_F(OperatorsTest, i64VerticalSumTest) {
         auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
-            // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
@@ -43,7 +42,6 @@ TEST_F(OperatorsTest, i32VerticalSumTest) {
         auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
-            // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
@@ -70,7 +68,6 @@ TEST_F(OperatorsTest, i16VerticalSumTest) {
         auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
-            // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
@@ -97,7 +94,6 @@ TEST_F(OperatorsTest, i8VerticalSumTest) {
         auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
-            // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
@@ -124,7 +120,6 @@ TEST_F(OperatorsTest, i64DoubleSumTest) {
         auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
-            // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
@@ -151,7 +146,6 @@ TEST_F(OperatorsTest, StringVerticalSumTest) {
         auto r = Do<OVerticalSum>(a.GetRes(), b.GetRes());
 
         if (r.HasError()) {
-            // std::cout << r.GetError()->Print() << std::endl;
         }
         ASSERT_FALSE(r.HasError());
 
