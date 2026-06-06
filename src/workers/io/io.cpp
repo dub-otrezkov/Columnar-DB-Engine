@@ -131,6 +131,7 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
             return col;
         }
         const char* raw = nullptr;
+        in_cp->SetPos(pos);
         in_cp->Read(raw, len);
         std::span<const char> data(raw, len);
 
