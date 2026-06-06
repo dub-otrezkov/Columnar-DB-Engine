@@ -115,18 +115,26 @@ void TJfTableInput::LoadMeta() {
 
 Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     LoadMeta();
+
+    bool is_eof = (current_block_ + 1 == blocks_pos_.size());
+
+    if (!current_rg_) {
+        current_rg_ = std::make_shared<std::vector<TColumnPtr>>(cols_cnt_);
+    }
+    if (current_rg_->at(i)) {
+        return {current_rg_->at(i), is_eof ? EError::EofErr : EError::NoError};
+    }
+
     ui64 pos = poses_of_cols_->at(i);
     ui64 pos_next = poses_of_cols_->at(i + 1);
-    jf_in_->SetPos(pos);
     ui64 len = pos_next - pos;
 
     auto in_cp = jf_in_;
     auto tp = scheme_[i].type_;
-    bool is_eof = (current_block_ + 1 == blocks_pos_.size());
 
     TColumnPtr col;
 
-    auto pref = [in_cp, pos, len, tp, is_eof, col]() mutable -> TColumnPtr {
+    auto pref = [in_cp, pos, len, tp, col]() mutable -> TColumnPtr {
         if (col) {
             return col;
         }
@@ -141,12 +149,9 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     };
 
     auto res = MakeColumnLazy(column_size_, pref, scheme_.at(i).type_).GetRes();
+    current_rg_->at(i) = res;
 
-    Expected<TColumnPtr> ans(
-        res,
-        current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
-    );
-    return ans;
+    return {res, is_eof ? EError::EofErr : EError::NoError};
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {
