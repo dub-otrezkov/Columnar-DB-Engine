@@ -23,13 +23,13 @@ struct OMultipleMax {
             }
             ui64 start = 0;
             if (v.empty()) {
-                v.emplace_back(col.GetData()[0]);
+                v.emplace_back(col.GetData().at(0));
                 start = 1;
             }
             auto& d = col.GetData();
-            auto& acc = v[0];
+            auto& acc = v.at(0);
             for (ui64 i = start; i < col.GetSize(); i++) {
-                acc = std::max(d[i], acc);
+                acc = std::max(d.at(i), acc);
             }
             return EError::NoError;
         }
@@ -67,13 +67,13 @@ struct OMultipleMin {
             }
             ui64 start = 0;
             if (v.empty()) {
-                v.emplace_back(col.GetData()[0]);
+                v.emplace_back(col.GetData().at(0));
                 start = 1;
             }
             auto& d = col.GetData();
-            auto& acc = v[0];
+            auto& acc = v.at(0);
             for (ui64 i = start; i < col.GetSize(); i++) {
-                acc = std::min(d[i], acc);
+                acc = std::min(d.at(i), acc);
             }
             return EError::NoError;
         }

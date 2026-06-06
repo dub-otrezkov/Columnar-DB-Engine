@@ -11,12 +11,12 @@ namespace JfEngine {
 struct OPrintIth {
     template <typename TCol>
     static inline std::string Exec(TCol& col, ui64 i) {
-        auto res = col.GetData()[i];
+        auto res = col.GetData().at(i);
         return std::to_string(res);
     }
 
     static inline std::string Exec(Ti128Column& col, ui64 i) {
-        auto res = col.GetData()[i];
+        auto res = col.GetData().at(i);
         if (res == 0) {
             return "0";
         }
@@ -36,7 +36,7 @@ struct OPrintIth {
     }
 
     static inline std::string Exec(TDoubleColumn& col, ui64 i) {
-        auto res = col.GetData()[i];
+        auto res = col.GetData().at(i);
         auto ans = std::to_string(res);
         while (!ans.empty() && ans.back() == '0') {
             ans.pop_back();
@@ -48,12 +48,12 @@ struct OPrintIth {
     }
 
     static inline std::string Exec(TDateColumn& col, ui64 i) {
-        auto j = col.GetData()[i];
+        auto j = col.GetData().at(i);
         return PrintDate(j);
     }
 
     static inline std::string Exec(TTimestampColumn& col, ui64 i) {
-        auto j = col.GetData()[i];
+        auto j = col.GetData().at(i);
         return PrintTimestamp(j);
     }
 
@@ -65,7 +65,7 @@ struct OPrintIth {
 struct OJfPrintOpt {
     template <typename TCol>
     static inline std::vector<char> Exec(TCol& col) {
-        return Serialize(col.GetData());
+        return Serialize(col.GetData().Vec());
     }
 };
 

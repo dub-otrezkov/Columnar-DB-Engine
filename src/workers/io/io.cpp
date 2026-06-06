@@ -106,8 +106,8 @@ void TJfTableInput::LoadMeta() {
         jf_in_->SetPos(start - sizeof(ui64) * cols_cnt_ - sizeof(i64));
         const char* raw = nullptr;
         jf_in_->Read(raw, sizeof(ui64) * cols_cnt_);
-        column_size_ = ReadI64(jf_in_);
         std::memcpy(p.data(), raw, sizeof(ui64) * cols_cnt_);
+        column_size_ = ReadI64(jf_in_);
         p.push_back(start - sizeof(i64) * cols_cnt_ - sizeof(i64));
         poses_of_cols_ = std::move(p);
     }

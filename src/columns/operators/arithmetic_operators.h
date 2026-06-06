@@ -13,7 +13,7 @@ struct OSum {
     static inline Expected<TColumnPtr> Exec(T& col) {
         i128 res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += static_cast<i128>(col.GetData()[i]);
+            res += static_cast<i128>(col.GetData().at(i));
         }
         return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
@@ -21,7 +21,7 @@ struct OSum {
     static inline Expected<TColumnPtr> Exec(TDoubleColumn& col) {
         ld res = 0;
         for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData()[i];
+            res += col.GetData().at(i);
         }
         return std::make_shared<TDoubleColumn>(std::vector<ld>{res});
     }
@@ -53,7 +53,7 @@ struct OVerticalSum {
         auto col2_i = static_cast<T*>(col2.get());
         std::vector<i128> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
+            ans.push_back(col1.GetData().at(i) + col2_i->GetData().at(i));
         }
         return std::make_shared<Ti128Column>(ans);
     }
@@ -68,7 +68,7 @@ struct OVerticalSum {
         auto col2_i = static_cast<TDoubleColumn*>(col2.get());
         std::vector<ld> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
+            ans.push_back(col1.GetData().at(i) + col2_i->GetData().at(i));
         }
         return std::make_shared<TDoubleColumn>(ans);
     }
@@ -98,7 +98,7 @@ struct OVerticalSub {
         auto col2_i = static_cast<T*>(col2.get());
         std::vector<i64> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
+            ans.push_back(col1.GetData().at(i) - col2_i->GetData().at(i));
         }
         return std::make_shared<Ti64Column>(ans);
     }
@@ -113,7 +113,7 @@ struct OVerticalSub {
         auto col2_i = static_cast<TDoubleColumn*>(col2.get());
         std::vector<ld> ans;
         for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
+            ans.push_back(col1.GetData().at(i) - col2_i->GetData().at(i));
         }
         return std::make_shared<TDoubleColumn>(ans);
     }
@@ -196,9 +196,9 @@ struct OAddConst {
             return EError::BadArgsErr;
         }
         auto res = std::static_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetRes());
-        res->GetData() = col.GetData();
-        for (auto& v : res->GetData()) {
-            v += add;
+        res->GetData().reserve(col.GetData().size());
+        for (ui64 i = 0; i < col.GetData().size(); i++) {
+            res->GetData().push_back(col.GetData().at(i) + add);
         }
         return res;
     }
@@ -223,9 +223,9 @@ struct OMultipleAdder {
                 v.push_back(0);
             }
             auto& d = col.GetData();
-            auto& acc = v[0];
+            auto& acc = v.at(0);
             for (ui64 i = 0; i < col.GetSize(); i++) {
-                acc += d[i];
+                acc += d.at(i);
             }
             return EError::NoError;
         }
@@ -277,9 +277,9 @@ struct OSubConst {
             return EError::BadArgsErr;
         }
         auto res = std::dynamic_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetRes());
-        res->GetData() = col.GetData();
-        for (auto& v : res->GetData()) {
-            v -= add;
+        res->GetData().reserve(col.GetData().size());
+        for (ui64 i = 0; i < col.GetData().size(); i++) {
+            res->GetData().push_back(col.GetData().at(i) - add);
         }
         return res;
     }

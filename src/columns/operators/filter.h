@@ -176,7 +176,7 @@ struct OAndCheck {
                     if (!mask[i]) {
                         continue;
                     }
-                    if ((data[i] == target) == inv) {
+                    if ((data.at(i) == target) == inv) {
                         mask.reset(i);
                     }
                 }
@@ -187,7 +187,7 @@ struct OAndCheck {
                     if (!mask[i]) {
                         continue;
                     }
-                    if ((data[i] < target) == inv) {
+                    if ((data.at(i) < target) == inv) {
                         mask.reset(i);
                     }
                 }
@@ -198,7 +198,7 @@ struct OAndCheck {
                     if (!mask[i]) {
                         continue;
                     }
-                    if ((data[i] <= target) == inv) {
+                    if ((data.at(i) <= target) == inv) {
                         mask.reset(i);
                     }
                 }
@@ -226,7 +226,7 @@ struct OAndCheck {
                         if (!mask[i]) {
                             continue;
                         }
-                        if ((data[i].size() == 0) == inv) {
+                        if ((data.at(i).size() == 0) == inv) {
                             mask.reset(i);
                         }
                     }
@@ -235,7 +235,7 @@ struct OAndCheck {
                         if (!mask[i]) {
                             continue;
                         }
-                        if ((data[i] == value) == inv) {
+                        if ((data.at(i) == value) == inv) {
                             mask.reset(i);
                         }
                     }
@@ -247,7 +247,7 @@ struct OAndCheck {
                     if (!mask[i]) {
                         continue;
                     }
-                    if ((data[i] < value) == inv) {
+                    if ((data.at(i) < value) == inv) {
                         mask.reset(i);
                     }
                 }
@@ -258,7 +258,7 @@ struct OAndCheck {
                     if (!mask[i]) {
                         continue;
                     }
-                    if ((data[i] <= value) == inv) {
+                    if ((data.at(i) <= value) == inv) {
                         mask.reset(i);
                     }
                 }
@@ -272,7 +272,7 @@ struct OAndCheck {
                         if (!mask[i]) {
                             continue;
                         }
-                        if (OLikeChecker::Exec(data[i], needle) == inv) {
+                        if (OLikeChecker::Exec(data.at(i), needle) == inv) {
                             mask.reset(i);
                         }
                     }
@@ -281,7 +281,7 @@ struct OAndCheck {
                         if (!mask[i]) {
                             continue;
                         }
-                        if (LikeMatch(data[i], value) == inv) {
+                        if (LikeMatch(data.at(i), value) == inv) {
                             mask.reset(i);
                         }
                     }

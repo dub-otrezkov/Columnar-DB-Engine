@@ -11,10 +11,12 @@
 #include "utils/compress/delta.h"
 
 #include <bit>
+#include <functional>
 #include <memory>
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace JfEngine {
@@ -60,31 +62,205 @@ public:
 using TColumnPtr = std::shared_ptr<IColumn>;
 
 template <typename T>
+struct TLoaderSlot {
+    std::function<std::vector<T>()> fn;
+    std::vector<T> data;
+    bool ready = false;
+
+    std::vector<T>& Get() {
+        if (!ready) {
+            data = fn();
+            ready = true;
+        }
+        return data;
+    }
+};
+
+template <typename T>
+class TColData {
+public:
+    static constexpr ui32 kNoBuild = static_cast<ui32>(-1);
+
+    TColData() = default;
+
+    TColData(std::vector<T> data) {
+        auto slot = std::make_shared<TLoaderSlot<T>>();
+        slot->ready = true;
+        slot->data = std::move(data);
+        build_li_ = static_cast<ui32>(loaders_.size());
+        loaders_.push_back(slot);
+        ui64 n = loaders_.at(build_li_)->data.size();
+        idx_.reserve(n);
+        for (ui64 i = 0; i < n; i++) {
+            idx_.emplace_back(static_cast<ui32>(i), build_li_);
+        }
+    }
+
+    TColData(ui64 n, std::function<std::vector<T>()> fn) {
+        auto slot = std::make_shared<TLoaderSlot<T>>();
+        slot->fn = std::move(fn);
+        ui32 li = static_cast<ui32>(loaders_.size());
+        loaders_.push_back(slot);
+        idx_.reserve(n);
+        for (ui64 i = 0; i < n; i++) {
+            idx_.emplace_back(static_cast<ui32>(i), li);
+        }
+    }
+
+    TColData& operator=(std::vector<T> data) {
+        *this = TColData(std::move(data));
+        return *this;
+    }
+
+    ui64 size() const {
+        return idx_.size();
+    }
+
+    bool empty() const {
+        return idx_.empty();
+    }
+
+    T& at(ui64 i) {
+        const auto& p = idx_.at(i);
+        return loaders_.at(p.second)->Get().at(p.first);
+    }
+
+    const T& at(ui64 i) const {
+        const auto& p = idx_.at(i);
+        return loaders_.at(p.second)->Get().at(p.first);
+    }
+
+    T& back() {
+        const auto& p = idx_.back();
+        return loaders_.at(p.second)->Get().at(p.first);
+    }
+
+    void reserve(ui64 n) {
+        EnsureBuildSlot().data.reserve(n);
+        idx_.reserve(n);
+    }
+
+    void push_back(const T& value) {
+        auto& slot = EnsureBuildSlot();
+        slot.data.push_back(value);
+        idx_.emplace_back(static_cast<ui32>(slot.data.size() - 1), build_li_);
+    }
+
+    template <typename... TArgs>
+    void emplace_back(TArgs&&... args) {
+        auto& slot = EnsureBuildSlot();
+        slot.data.emplace_back(std::forward<TArgs>(args)...);
+        idx_.emplace_back(static_cast<ui32>(slot.data.size() - 1), build_li_);
+    }
+
+    void assign(ui64 n, const T& value) {
+        *this = TColData();
+        auto& slot = EnsureBuildSlot();
+        slot.data.push_back(value);
+        idx_.assign(n, std::make_pair(static_cast<ui32>(0), build_li_));
+    }
+
+    void resize(ui64 n, const T& value) {
+        if (n <= idx_.size()) {
+            idx_.resize(n);
+            return;
+        }
+        auto& slot = EnsureBuildSlot();
+        while (idx_.size() < n) {
+            slot.data.push_back(value);
+            idx_.emplace_back(static_cast<ui32>(slot.data.size() - 1), build_li_);
+        }
+    }
+
+    void LoadFrom(TColData<T>& other, ui64 i) {
+        const auto& p = other.idx_.at(i);
+        ui32 li = AdoptLoader(other.loaders_.at(p.second));
+        idx_.emplace_back(p.first, li);
+    }
+
+    void Materialize() {
+        for (auto& slot : loaders_) {
+            slot->Get();
+        }
+    }
+
+    T* data() {
+        Compact();
+        return loaders_.at(0)->data.data();
+    }
+
+    std::vector<T>& Vec() {
+        Compact();
+        return loaders_.at(0)->data;
+    }
+
+private:
+    TLoaderSlot<T>& EnsureBuildSlot() {
+        if (build_li_ == kNoBuild) {
+            auto slot = std::make_shared<TLoaderSlot<T>>();
+            slot->ready = true;
+            build_li_ = static_cast<ui32>(loaders_.size());
+            loaders_.push_back(slot);
+        }
+        return *loaders_.at(build_li_);
+    }
+
+    ui32 AdoptLoader(const std::shared_ptr<TLoaderSlot<T>>& slot) {
+        for (ui32 k = 0; k < loaders_.size(); k++) {
+            if (loaders_.at(k) == slot) {
+                return k;
+            }
+        }
+        loaders_.push_back(slot);
+        return static_cast<ui32>(loaders_.size() - 1);
+    }
+
+    void Compact() {
+        if (loaders_.size() == 1) {
+            auto& d = loaders_.at(0)->Get();
+            bool identity = (idx_.size() == d.size());
+            for (ui64 i = 0; identity && i < idx_.size(); i++) {
+                if (idx_.at(i).first != i || idx_.at(i).second != 0) {
+                    identity = false;
+                }
+            }
+            if (identity) {
+                return;
+            }
+        }
+        std::vector<T> flat;
+        flat.reserve(idx_.size());
+        for (ui64 i = 0; i < idx_.size(); i++) {
+            flat.push_back(at(i));
+        }
+        *this = TColData(std::move(flat));
+    }
+
+    std::vector<std::shared_ptr<TLoaderSlot<T>>> loaders_;
+    std::vector<std::pair<ui32, ui32>> idx_;
+    ui32 build_li_ = kNoBuild;
+};
+
+template <typename T>
 class TStorage : public IColumn {
 public:
     using ElemType = T;
     using ElemTypeRo = T;
-    
+
     TStorage() = default;
 
     TStorage(i64 n, std::function<TColumnPtr()> func) {
-        auto src = std::make_shared<std::function<TColumnPtr()>>(std::move(func));
-        load_data_ = std::vector<std::function<void(std::vector<T>&)>>{};
-        load_data_->reserve(n);
-        for (i64 i = 0; i < n; i++) {
-            load_data_->emplace_back([src, i](std::vector<T>& out) -> void {
-                auto t = (*src)();
-                out.push_back(static_cast<TStorage<T>*>(t.get())->cols_.at(i));
-            });
-        }
+        cols_ = TColData<T>(static_cast<ui64>(n), [func]() -> std::vector<T> {
+            auto t = func();
+            return std::move(static_cast<TStorage<T>*>(t.get())->cols_.Vec());
+        });
     }
 
     ui64 GetSize() const override {
-        return (load_data_.has_value() ? load_data_->size() : cols_.size());
+        return cols_.size();
     }
 
-    std::vector<T>& GetData() {
-        Materialize();
+    TColData<T>& GetData() {
         return cols_;
     }
 
@@ -96,30 +272,15 @@ public:
     virtual Expected<void> Setup(const TVectorString2d& data, ui64 column_i) = 0;
 
     void Materialize() {
-        if (load_data_) {
-            auto loaders = std::move(*load_data_);
-            load_data_ = std::nullopt;
-            for (auto& f : loaders) {
-                f(cols_);
-            }
-        }
+        cols_.Materialize();
     }
-    
+
     void LoadFrom(TStorage<T>* other, ui64 i) {
-        if (other->load_data_) {
-            if (!load_data_) {
-                load_data_ = std::vector<std::function<void(std::vector<T>&)>>{};
-            }
-            load_data_->push_back(other->load_data_->at(i));
-        } else {
-            cols_.push_back(other->cols_.at(i));
-        }
+        cols_.LoadFrom(other->cols_, i);
     }
 
 protected:
-    std::vector<T> cols_;
-
-    std::optional<std::vector<std::function<void(std::vector<T>&)>>> load_data_;
+    TColData<T> cols_;
 };
 
 class Ti8Column : public TStorage<i8> {

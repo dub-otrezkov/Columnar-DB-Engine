@@ -127,8 +127,8 @@ struct OCmp {
             &col,
             +[](void* p, i64 i, i64 j) -> i64 {
                 auto& data = static_cast<TCol*>(p)->GetData();
-                const auto& a = data[i];
-                const auto& b = data[j];
+                const auto& a = data.at(i);
+                const auto& b = data.at(j);
                 if (a < b) {
                     return 1;
                 }
@@ -153,8 +153,8 @@ struct OCmpDiffCol {
             +[](void* lp, void* rp, i64 i, i64 j) -> i64 {
                 auto& l = static_cast<TCol*>(lp)->GetData();
                 auto& r = static_cast<TCol*>(rp)->GetData();
-                const auto& a = l[i];
-                const auto& b = r[j];
+                const auto& a = l.at(i);
+                const auto& b = r.at(j);
                 if (a < b) {
                     return 1;
                 }
