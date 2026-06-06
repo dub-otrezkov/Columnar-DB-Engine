@@ -60,8 +60,8 @@ protected:
 
     ui64 cols_cnt_;
     ui64 meta_start_;
+    ui64 column_size_;
     std::vector<ui64> blocks_pos_;
-
     ui64 current_block_ = 0;
 };
 

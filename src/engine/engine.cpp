@@ -56,7 +56,7 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
 
     auto f = [&poses, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         std::vector<i64> col_poses;
-
+        i64 sz = block[0]->GetSize();
         for (ui64 j = 0; j < block.size(); j++) {
             std::vector<std::string> row(block[0]->GetSize());
             col_poses.push_back(static_cast<i64>(out->TellPos()));
@@ -70,6 +70,8 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
         for (auto pos : col_poses) {
             PutI64(out, pos);
         }
+
+        PutI64(out, sz);
         poses.push_back(static_cast<i64>(out->TellPos()));
 
         return nullptr;

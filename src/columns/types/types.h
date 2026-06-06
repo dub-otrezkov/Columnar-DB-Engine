@@ -64,12 +64,25 @@ class TStorage : public IColumn {
 public:
     using ElemType = T;
     using ElemTypeRo = T;
+    
+    TStorage() = default;
+
+    TStorage(i64 n, std::function<TColumnPtr()> func) {
+        load_data_ = std::vector<std::function<void()>>{};
+        for (i64 i = 0; i < n; i++) {
+            load_data_->emplace_back([this, func, i]() -> void {
+                auto t = func();
+                LoadFrom(static_cast<TStorage<T>*>(t.get()), i);
+            });
+        }
+    }
 
     ui64 GetSize() const override {
-        return cols_.size();
+        return (load_data_.has_value() ? load_data_->size() : cols_.size());
     }
 
     std::vector<T>& GetData() {
+        Materialize();
         return cols_;
     }
 
@@ -110,6 +123,9 @@ class Ti8Column : public TStorage<i8> {
 public:
     Ti8Column() {}
     Ti8Column(std::vector<i8> data);
+    Ti8Column(i64 n, std::function<TColumnPtr()> func) : TStorage<i8>(n, func) {}
+    
+    // Ti8Column() {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -120,6 +136,7 @@ class Ti16Column : public TStorage<i16> {
 public:
     Ti16Column() {}
     Ti16Column(std::vector<i16> data);
+    Ti16Column(i64 n, std::function<TColumnPtr()> func) : TStorage<i16>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -130,6 +147,7 @@ class Ti32Column : public TStorage<i32> {
 public:
     Ti32Column() {}
     Ti32Column(std::vector<i32> data);
+    Ti32Column(i64 n, std::function<TColumnPtr()> func) : TStorage<i32>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -140,6 +158,7 @@ class Ti64Column : public TStorage<i64> {
 public:
     Ti64Column() {}
     Ti64Column(std::vector<i64> data);
+    Ti64Column(i64 n, std::function<TColumnPtr()> func) : TStorage<i64>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -150,6 +169,7 @@ class Ti128Column : public TStorage<i128> {
 public:
     Ti128Column() {}
     Ti128Column(std::vector<i128> data);
+    Ti128Column(i64 n, std::function<TColumnPtr()> func) : TStorage<i128>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -167,6 +187,7 @@ class TStringColumn : public TStorage<JString> {
 public:
     TStringColumn() {}
     TStringColumn(std::vector<JString> data);
+    TStringColumn(i64 n, std::function<TColumnPtr()> func) : TStorage<JString>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -177,6 +198,7 @@ class TDoubleColumn : public TStorage<ld> {
 public:
     TDoubleColumn() {};
     TDoubleColumn(std::vector<ld> data);
+    TDoubleColumn(i64 n, std::function<TColumnPtr()> func) : TStorage<ld>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -213,6 +235,7 @@ class TDateColumn : public TStorage<TDate> {
 public:
     TDateColumn() {}
     TDateColumn(std::vector<TDate> data);
+    TDateColumn(i64 n, std::function<TColumnPtr()> func) : TStorage<TDate>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -256,6 +279,7 @@ class TTimestampColumn : public TStorage<TTimestamp> {
 public:
     TTimestampColumn() {}
     TTimestampColumn(std::vector<TTimestamp> data);
+    TTimestampColumn(i64 n, std::function<TColumnPtr()> func) : TStorage<TTimestamp>(n, func) {}
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -266,6 +290,7 @@ Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
 Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
+Expected<TColumnPtr> MakeColumnLazy(ui64 n, std::function<TColumnPtr()> data, EColumn type);
 
 Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type);
 

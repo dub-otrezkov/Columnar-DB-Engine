@@ -103,10 +103,11 @@ void TJfTableInput::LoadMeta() {
     if (!poses_of_cols_) {
         std::vector<ui64> p(scheme_.size());
         auto start = blocks_pos_[current_block_];
-        jf_in_->SetPos(start - sizeof(ui64) * cols_cnt_);
+        jf_in_->SetPos(start - sizeof(ui64) * cols_cnt_ - sizeof(i64));
         const char* raw = nullptr;
         jf_in_->Read(raw, sizeof(ui64) * cols_cnt_);
-        memcpy(p.data(), raw, sizeof(ui64) * cols_cnt_);
+        cols_cnt_ = ReadI64(jf_in_);
+        std::memcpy(p.data(), raw, sizeof(ui64) * cols_cnt_);
         p.push_back(start - sizeof(i64) * cols_cnt_);
         poses_of_cols_ = std::move(p);
     }
@@ -119,21 +120,31 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     jf_in_->SetPos(pos);
     ui64 len = pos_next - pos;
 
-    const char* raw = nullptr;
-    jf_in_->Read(raw, len);
-    std::span<const char> data(raw, len);
+    auto in_cp = jf_in_;
+    auto tp = scheme_[i].type_;
+    bool is_eof = (current_block_ + 1 == blocks_pos_.size());
 
-    auto col = MakeColumnJf(data, scheme_[i].type_);
+    TColumnPtr col;
 
-    if (col.HasError()) {
-        return col.GetError();
-    }
+    auto pref = [in_cp, pos, len, tp, is_eof, col]() mutable -> TColumnPtr {
+        if (col) {
+            return col;
+        }
+        const char* raw = nullptr;
+        in_cp->Read(raw, len);
+        std::span<const char> data(raw, len);
+
+        col = MakeColumnJf(data, tp).GetRes();
+
+        return col;
+    };
+
+    auto res = MakeColumnLazy(column_size_, pref, scheme_.at(i).type_).GetRes();
 
     Expected<TColumnPtr> ans(
-        col.GetRes(),
+        res,
         current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
     );
-
     return ans;
 }
 

@@ -260,6 +260,41 @@ Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type) {
     }
 }
 
+Expected<TColumnPtr> MakeColumnLazy(ui64 n, std::function<TColumnPtr()> data, EColumn type) {
+    switch (type) {
+        case kUnitialized: {
+            return MakeError<EError::UnimplementedErr>();
+        }
+        case ki8Column: {
+            return std::make_shared<Ti8Column>(n, data);
+        }
+        case ki16Column: {
+            return std::make_shared<Ti16Column>(n, data);
+        }
+        case ki32Column: {
+            return std::make_shared<Ti32Column>(n, data);
+        }
+        case ki64Column: {
+            return std::make_shared<Ti64Column>(n, data);
+        }
+        case kDoubleColumn: {
+            return std::make_shared<TDoubleColumn>(n, data);
+        }
+        case kDateColumn: {
+            return std::make_shared<TDateColumn>(n, data);
+        }
+        case kTimestampColumn: {
+            return std::make_shared<TTimestampColumn>(n, data);
+        }
+        case kStringColumn: {
+            return std::make_shared<TStringColumn>(n, data);
+        }
+        default: {
+            throw "wtf???";
+        }
+    }
+}
+
 template <typename TCol>
 static Expected<TColumnPtr> ExtractMinMaxTyped(std::span<const char> data) {
     using T = typename TCol::ElemType;
