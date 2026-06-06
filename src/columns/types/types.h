@@ -80,8 +80,30 @@ public:
     virtual Expected<void> Setup(std::vector<std::string>&& data) = 0;
     virtual Expected<void> Setup(const TVectorString2d& data, ui64 column_i) = 0;
 
+    void Materialize() {
+        if (load_data_) {
+            for (auto& f : *load_data_) {
+                f();
+            }
+            load_data_ = std::nullopt;
+        }
+    }
+    
+    void LoadFrom(TStorage<T>* other, ui64 i) {
+        if (other->load_data_) {
+            if (!load_data_) {
+                load_data_ = std::vector<std::function<void()>>{};
+            }
+            load_data_->push_back(other->load_data_->at(i));
+        } else {
+            cols_.push_back(other->cols_.at(i));
+        }
+    }
+
 protected:
     std::vector<T> cols_;
+
+    std::optional<std::vector<std::function<void()>>> load_data_;
 };
 
 class Ti8Column : public TStorage<i8> {
