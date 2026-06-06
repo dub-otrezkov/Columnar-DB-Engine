@@ -65,6 +65,7 @@ template <typename T>
 struct TLoaderSlot {
     std::function<std::vector<T>()> fn;
     std::vector<T> data;
+    ui64 n = 0;
     bool ready = false;
 
     std::vector<T>& Get() {
@@ -79,32 +80,21 @@ struct TLoaderSlot {
 template <typename T>
 class TColData {
 public:
-    static constexpr ui32 kNoBuild = static_cast<ui32>(-1);
-
     TColData() = default;
 
     TColData(std::vector<T> data) {
         auto slot = std::make_shared<TLoaderSlot<T>>();
         slot->ready = true;
+        slot->n = data.size();
         slot->data = std::move(data);
-        build_li_ = static_cast<ui32>(loaders_.size());
-        loaders_.push_back(slot);
-        ui64 n = loaders_.at(build_li_)->data.size();
-        idx_.reserve(n);
-        for (ui64 i = 0; i < n; i++) {
-            idx_.emplace_back(static_cast<ui32>(i), build_li_);
-        }
+        loaders_.push_back(std::move(slot));
     }
 
     TColData(ui64 n, std::function<std::vector<T>()> fn) {
         auto slot = std::make_shared<TLoaderSlot<T>>();
         slot->fn = std::move(fn);
-        ui32 li = static_cast<ui32>(loaders_.size());
-        loaders_.push_back(slot);
-        idx_.reserve(n);
-        for (ui64 i = 0; i < n; i++) {
-            idx_.emplace_back(static_cast<ui32>(i), li);
-        }
+        slot->n = n;
+        loaders_.push_back(std::move(slot));
     }
 
     TColData& operator=(std::vector<T> data) {
@@ -113,96 +103,108 @@ public:
     }
 
     ui64 size() const {
-        return idx_.size();
+        if (!idx_.empty()) {
+            return idx_.size();
+        }
+        return loaders_.empty() ? 0 : loaders_.front()->n;
     }
 
     bool empty() const {
-        return idx_.empty();
+        return size() == 0;
     }
 
     T& at(ui64 i) {
+        if (idx_.empty()) {
+            return loaders_.front()->Get().at(i);
+        }
         const auto& p = idx_.at(i);
         return loaders_.at(p.second)->Get().at(p.first);
     }
 
     const T& at(ui64 i) const {
+        if (idx_.empty()) {
+            return loaders_.front()->Get().at(i);
+        }
         const auto& p = idx_.at(i);
         return loaders_.at(p.second)->Get().at(p.first);
     }
 
     T& back() {
-        const auto& p = idx_.back();
-        return loaders_.at(p.second)->Get().at(p.first);
+        return at(size() - 1);
     }
 
     void reserve(ui64 n) {
-        EnsureBuildSlot().data.reserve(n);
-        idx_.reserve(n);
+        Build().data.reserve(n);
     }
 
     void push_back(const T& value) {
-        auto& slot = EnsureBuildSlot();
+        auto& slot = Build();
         slot.data.push_back(value);
-        idx_.emplace_back(static_cast<ui32>(slot.data.size() - 1), build_li_);
+        slot.n = slot.data.size();
     }
 
     template <typename... TArgs>
     void emplace_back(TArgs&&... args) {
-        auto& slot = EnsureBuildSlot();
+        auto& slot = Build();
         slot.data.emplace_back(std::forward<TArgs>(args)...);
-        idx_.emplace_back(static_cast<ui32>(slot.data.size() - 1), build_li_);
+        slot.n = slot.data.size();
+    }
+
+    void resize(ui64 n, const T& value) {
+        auto& slot = Build();
+        slot.data.resize(n, value);
+        slot.n = n;
     }
 
     void assign(ui64 n, const T& value) {
         *this = TColData();
-        auto& slot = EnsureBuildSlot();
+        auto& slot = Build();
         slot.data.push_back(value);
-        idx_.assign(n, std::make_pair(static_cast<ui32>(0), build_li_));
-    }
-
-    void resize(ui64 n, const T& value) {
-        if (n <= idx_.size()) {
-            idx_.resize(n);
-            return;
-        }
-        auto& slot = EnsureBuildSlot();
-        while (idx_.size() < n) {
-            slot.data.push_back(value);
-            idx_.emplace_back(static_cast<ui32>(slot.data.size() - 1), build_li_);
-        }
+        slot.n = 1;
+        idx_.assign(n, std::make_pair(static_cast<ui32>(0), static_cast<ui32>(0)));
     }
 
     void LoadFrom(TColData<T>& other, ui64 i) {
-        const auto& p = other.idx_.at(i);
-        ui32 li = AdoptLoader(other.loaders_.at(p.second));
-        idx_.emplace_back(p.first, li);
-    }
-
-    void Materialize() {
-        for (auto& slot : loaders_) {
-            slot->Get();
+        ui32 row;
+        ui32 src_li;
+        if (other.idx_.empty()) {
+            row = static_cast<ui32>(i);
+            src_li = 0;
+        } else {
+            row = other.idx_.at(i).first;
+            src_li = other.idx_.at(i).second;
         }
+        idx_.emplace_back(row, AdoptLoader(other.loaders_.at(src_li)));
     }
 
     T* data() {
-        Compact();
-        return loaders_.at(0)->data.data();
+        return Vec().data();
     }
 
     std::vector<T>& Vec() {
-        Compact();
-        return loaders_.at(0)->data;
+        if (loaders_.empty()) {
+            Build();
+        }
+        if (idx_.empty()) {
+            return loaders_.front()->Get();
+        }
+        std::vector<T> flat;
+        flat.reserve(idx_.size());
+        for (ui64 i = 0; i < idx_.size(); i++) {
+            flat.push_back(at(i));
+        }
+        *this = TColData(std::move(flat));
+        return loaders_.front()->Get();
     }
 
 private:
-    TLoaderSlot<T>& EnsureBuildSlot() {
-        if (build_li_ == kNoBuild) {
+    TLoaderSlot<T>& Build() {
+        if (loaders_.empty()) {
             auto slot = std::make_shared<TLoaderSlot<T>>();
             slot->ready = true;
-            build_li_ = static_cast<ui32>(loaders_.size());
-            loaders_.push_back(slot);
+            loaders_.push_back(std::move(slot));
         }
-        return *loaders_.at(build_li_);
+        return *loaders_.front();
     }
 
     ui32 AdoptLoader(const std::shared_ptr<TLoaderSlot<T>>& slot) {
@@ -215,30 +217,8 @@ private:
         return static_cast<ui32>(loaders_.size() - 1);
     }
 
-    void Compact() {
-        if (loaders_.size() == 1) {
-            auto& d = loaders_.at(0)->Get();
-            bool identity = (idx_.size() == d.size());
-            for (ui64 i = 0; identity && i < idx_.size(); i++) {
-                if (idx_.at(i).first != i || idx_.at(i).second != 0) {
-                    identity = false;
-                }
-            }
-            if (identity) {
-                return;
-            }
-        }
-        std::vector<T> flat;
-        flat.reserve(idx_.size());
-        for (ui64 i = 0; i < idx_.size(); i++) {
-            flat.push_back(at(i));
-        }
-        *this = TColData(std::move(flat));
-    }
-
     std::vector<std::shared_ptr<TLoaderSlot<T>>> loaders_;
     std::vector<std::pair<ui32, ui32>> idx_;
-    ui32 build_li_ = kNoBuild;
 };
 
 template <typename T>
@@ -270,10 +250,6 @@ public:
     };
     virtual Expected<void> Setup(std::vector<std::string>&& data) = 0;
     virtual Expected<void> Setup(const TVectorString2d& data, ui64 column_i) = 0;
-
-    void Materialize() {
-        cols_.Materialize();
-    }
 
     void LoadFrom(TStorage<T>* other, ui64 i) {
         cols_.LoadFrom(other->cols_, i);
