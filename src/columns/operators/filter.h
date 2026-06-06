@@ -168,7 +168,7 @@ struct OAndCheck {
         } catch (...) {
             return MakeError<EError::NotAnIntErr>();
         }
-        auto& data = col.GetData();
+        auto& data = col.GetData().Vec();
         const ui64 n = col.GetSize();
         switch (op) {
             case EFilterType::kEq: {
@@ -217,7 +217,7 @@ struct OAndCheck {
         if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
-        auto& data = col.GetData();
+        auto& data = col.GetData().Vec();
         const ui64 n = col.GetSize();
         switch (op) {
             case EFilterType::kEq: {
