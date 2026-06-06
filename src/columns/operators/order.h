@@ -81,24 +81,21 @@ struct OMergeSort {
 struct OApply2 {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, TColumnPtr other, const std::vector<i64>& ids) {
-        using T = typename TCol::ElemType;
         if (col.GetType() != other->GetType()) {
             return MakeError<EError::BadArgsErr>("cant merge different columns");
         }
-        std::vector<T> ans;
-        ans.reserve(ids.size());
+        auto& col2 = *static_cast<TCol*>(other.get());
 
-        auto& data1 = col.GetData();
-        auto& data2 = static_cast<TCol*>(other.get())->GetData();
+        auto res = std::make_shared<TCol>();
         for (auto& i : ids) {
             if (i >= 0) {
-                ans.push_back(data1.at(i));
+                res->LoadFrom(&col, i);
             } else {
-                ans.push_back(data2.at(-i - 1));
+                res->LoadFrom(&col2, -i - 1);
             }
         }
 
-        return std::make_shared<TCol>(std::move(ans));
+        return res;
     }
 };
 
