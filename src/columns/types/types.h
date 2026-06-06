@@ -68,11 +68,13 @@ public:
     TStorage() = default;
 
     TStorage(i64 n, std::function<TColumnPtr()> func) {
-        load_data_ = std::vector<std::function<void()>>{};
+        auto src = std::make_shared<std::function<TColumnPtr()>>(std::move(func));
+        load_data_ = std::vector<std::function<void(std::vector<T>&)>>{};
+        load_data_->reserve(n);
         for (i64 i = 0; i < n; i++) {
-            load_data_->emplace_back([this, func, i]() -> void {
-                auto t = func();
-                LoadFrom(static_cast<TStorage<T>*>(t.get()), i);
+            load_data_->emplace_back([src, i](std::vector<T>& out) -> void {
+                auto t = (*src)();
+                out.push_back(static_cast<TStorage<T>*>(t.get())->cols_.at(i));
             });
         }
     }
@@ -95,17 +97,18 @@ public:
 
     void Materialize() {
         if (load_data_) {
-            for (auto& f : *load_data_) {
-                f();
-            }
+            auto loaders = std::move(*load_data_);
             load_data_ = std::nullopt;
+            for (auto& f : loaders) {
+                f(cols_);
+            }
         }
     }
     
     void LoadFrom(TStorage<T>* other, ui64 i) {
         if (other->load_data_) {
             if (!load_data_) {
-                load_data_ = std::vector<std::function<void()>>{};
+                load_data_ = std::vector<std::function<void(std::vector<T>&)>>{};
             }
             load_data_->push_back(other->load_data_->at(i));
         } else {
@@ -116,7 +119,7 @@ public:
 protected:
     std::vector<T> cols_;
 
-    std::optional<std::vector<std::function<void()>>> load_data_;
+    std::optional<std::vector<std::function<void(std::vector<T>&)>>> load_data_;
 };
 
 class Ti8Column : public TStorage<i8> {
