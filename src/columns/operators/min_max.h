@@ -26,7 +26,7 @@ struct OMultipleMax {
                 v.emplace_back(col.GetData().at(0));
                 start = 1;
             }
-            auto& d = col.GetData();
+            auto& d = col.GetData().Vec();
             auto& acc = v.at(0);
             for (ui64 i = start; i < col.GetSize(); i++) {
                 acc = std::max(d.at(i), acc);
@@ -70,7 +70,7 @@ struct OMultipleMin {
                 v.emplace_back(col.GetData().at(0));
                 start = 1;
             }
-            auto& d = col.GetData();
+            auto& d = col.GetData().Vec();
             auto& acc = v.at(0);
             for (ui64 i = start; i < col.GetSize(); i++) {
                 acc = std::min(d.at(i), acc);

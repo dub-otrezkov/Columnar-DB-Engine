@@ -55,19 +55,21 @@ struct OMultipleDistinctCountDelta {
             if (v.empty()) {
                 v.resize(1, 0);
             }
-            for (ui64 i = 0; i < col1.GetSize(); i++) {
-                if (st.insert(col1.GetData().at(i)).second) {
+            auto& d = col1.GetData().Vec();
+            for (ui64 i = 0; i < d.size(); i++) {
+                if (st.insert(d.at(i)).second) {
                     v.at(0)++;
                 }
             }
             return EError::NoError;
         }
         auto& id = *idx;
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
+        auto& d = col1.GetData().Vec();
+        for (ui64 i = 0; i < d.size(); i++) {
             if (v.size() == id.at(i)) {
                 v.resize(id.at(i) + 1, 0);
             }
-            if (sts.GetSet<T>(id.at(i)).insert(col1.GetData().at(i)).second) {
+            if (sts.GetSet<T>(id.at(i)).insert(d.at(i)).second) {
                 v.at(id.at(i))++;
             }
         }

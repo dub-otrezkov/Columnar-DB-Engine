@@ -12,16 +12,18 @@ struct OSum {
     template <typename T>
     static inline Expected<TColumnPtr> Exec(T& col) {
         i128 res = 0;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += static_cast<i128>(col.GetData().at(i));
+        auto& d = col.GetData().Vec();
+        for (ui64 i = 0; i < d.size(); i++) {
+            res += static_cast<i128>(d.at(i));
         }
         return std::make_shared<Ti128Column>(std::vector<i128>{res});
     }
 
     static inline Expected<TColumnPtr> Exec(TDoubleColumn& col) {
         ld res = 0;
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            res += col.GetData().at(i);
+        auto& d = col.GetData().Vec();
+        for (ui64 i = 0; i < d.size(); i++) {
+            res += d.at(i);
         }
         return std::make_shared<TDoubleColumn>(std::vector<ld>{res});
     }
@@ -150,10 +152,11 @@ struct OMakeAvg {
             return MakeError<EError::BadArgsErr>("wrong size");
         }
         std::vector<i128> ans;
-        auto& cnt = static_cast<Ti64Column*>(col2.get())->GetData();
+        auto& cnt = static_cast<Ti64Column*>(col2.get())->GetData().Vec();
+        auto& d1 = col1.GetData().Vec();
         ans.reserve(cnt.size());
-        for (ui64 i = 0; i < col1.GetSize(); i++) {
-            ans.emplace_back(col1.GetData().at(i) / cnt.at(i));
+        for (ui64 i = 0; i < d1.size(); i++) {
+            ans.emplace_back(d1.at(i) / cnt.at(i));
         }
         return std::make_shared<Ti128Column>(ans);
     }
@@ -161,9 +164,10 @@ struct OMakeAvg {
 
 struct OLength {
     static inline Expected<TColumnPtr> Exec(TStringColumn& col) {
-        std::vector<i64> ans(col.GetSize());
-        for (ui64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = col.GetData().at(i).size();
+        auto& d = col.GetData().Vec();
+        std::vector<i64> ans(d.size());
+        for (ui64 i = 0; i < d.size(); i++) {
+            ans[i] = d.at(i).size();
         }
         return std::make_shared<Ti64Column>(std::move(ans));
     }
@@ -195,12 +199,13 @@ struct OAddConst {
         } catch (...) {
             return EError::BadArgsErr;
         }
-        auto res = std::static_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetRes());
-        res->GetData().reserve(col.GetData().size());
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            res->GetData().push_back(col.GetData().at(i) + add);
+        auto& src = col.GetData().Vec();
+        std::vector<typename TCol::ElemType> ans;
+        ans.reserve(src.size());
+        for (ui64 i = 0; i < src.size(); i++) {
+            ans.push_back(src.at(i) + add);
         }
-        return res;
+        return std::make_shared<TCol>(std::move(ans));
     }
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& s) {
@@ -222,9 +227,9 @@ struct OMultipleAdder {
             if (v.empty()) {
                 v.push_back(0);
             }
-            auto& d = col.GetData();
+            auto& d = col.GetData().Vec();
             auto& acc = v.at(0);
-            for (ui64 i = 0; i < col.GetSize(); i++) {
+            for (ui64 i = 0; i < d.size(); i++) {
                 acc += d.at(i);
             }
             return EError::NoError;
@@ -236,12 +241,13 @@ struct OMultipleAdder {
         ui64 sz = idx ? *std::max_element(idx->begin(), idx->end()) : 1;
         v.reserve(sz);
         auto& id = *idx;
+        auto& d = col.GetData().Vec();
         for (ui64 i = 0; i < id.size(); i++) {
             assert(id.at(i) <= v.size());
             if (id.at(i) == v.size()) {
-                v.emplace_back(col.GetData().at(i));
+                v.emplace_back(d.at(i));
             } else {
-                v.at(id.at(i)) += col.GetData().at(i);
+                v.at(id.at(i)) += d.at(i);
             }
         }
 
@@ -276,12 +282,13 @@ struct OSubConst {
         } catch (...) {
             return EError::BadArgsErr;
         }
-        auto res = std::dynamic_pointer_cast<TCol>(MakeEmptyColumn(col.GetType()).GetRes());
-        res->GetData().reserve(col.GetData().size());
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            res->GetData().push_back(col.GetData().at(i) - add);
+        auto& src = col.GetData().Vec();
+        std::vector<typename TCol::ElemType> ans;
+        ans.reserve(src.size());
+        for (ui64 i = 0; i < src.size(); i++) {
+            ans.push_back(src.at(i) - add);
         }
-        return res;
+        return std::make_shared<TCol>(std::move(ans));
     }
 };
 
