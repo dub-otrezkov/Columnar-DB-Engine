@@ -98,6 +98,19 @@ public:
         out.reserve(idx_.size());
         ui64 cur_block = static_cast<ui64>(-1);
         const std::vector<T>* data = nullptr;
+
+        if (idx_.back() % rgl == 0 && idx_.back() - idx_.at(0) + 1 == rgl && idx_.size() == rgl) {
+            ui64 block = idx_.at(0) / rgl;
+            ui64 len = 0;
+            const char* raw = JfColBytes(col_, block, len);
+            cols_ = Unserialize<T>(std::span<const char>(raw, len));
+            idx_.clear();
+            if (TQueryStats::instance) {
+                TQueryStats::instance->RecordDiskRead(len, 0);
+            }
+            return;
+        }
+
         for (ui64 g : idx_) {
             ui64 block = g / rgl;
             if (block != cur_block) {
