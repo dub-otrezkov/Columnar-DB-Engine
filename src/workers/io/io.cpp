@@ -13,7 +13,7 @@ namespace JfEngine {
 static TJfTableInput* g_jf = nullptr;
 
 ui64 JfRowGroupLen() {
-    return g_jf->GetRowGroupLen();
+    return kRowGroupLen;
 }
 
 const char* JfColBytes(ui64 col, ui64 block, ui64& len) {

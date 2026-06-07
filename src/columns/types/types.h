@@ -94,8 +94,7 @@ public:
         }
         ui64 rgl = JfRowGroupLen();
         std::unordered_map<ui64, std::vector<T>> blocks;
-        std::vector<T> out;
-        out.reserve(idx_.size());
+        cols_.reserve(idx_.size());
         ui64 cur_block = static_cast<ui64>(-1);
         const std::vector<T>* data = nullptr;
 
@@ -126,9 +125,8 @@ public:
                 }
                 data = &it->second;
             }
-            out.push_back((*data)[g % rgl]);
+            cols_.push_back(std::move((*data)[g % rgl]));
         }
-        cols_ = std::move(out);
         idx_.clear();
     }
 
