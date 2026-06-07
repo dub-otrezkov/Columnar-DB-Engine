@@ -5,6 +5,7 @@
 #include "utils/cint/int.h"
 #include "utils/errors/errors_templates.h"
 #include "utils/mmap_input/mmap_input.h"
+#include "utils/perf_stats/perf_stats.h"
 #include "utils/faster_vectors/vector_1d.h"
 #include "utils/faster_vectors/vector_string_2d.h"
 #include "utils/compress/bitpack.h"
@@ -16,6 +17,7 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace JfEngine {
@@ -57,7 +59,7 @@ public:
         return kUnitialized;
     }
 
-    virtual void SetLazy(ui64 pos, ui64 len, ui64 n) {}
+    virtual void SetLazy(ui64 col, ui64 start, ui64 n) {}
 };
 
 using TColumnPtr = std::shared_ptr<IColumn>;
@@ -78,12 +80,11 @@ public:
         return idx_.empty() ? cols_.size() : idx_.size();
     }
 
-    void SetLazy(ui64 pos, ui64 len, ui64 n) override {
-        pos_ = pos;
-        len_ = len;
+    void SetLazy(ui64 col, ui64 start, ui64 n) override {
+        col_ = col;
         idx_.resize(n);
         for (ui64 i = 0; i < n; i++) {
-            idx_[i] = i;
+            idx_[i] = start + i;
         }
     }
 
@@ -91,15 +92,22 @@ public:
         if (idx_.empty()) {
             return;
         }
-        IFileInput* in = GlobalJfInput();
-        in->SetPos(static_cast<i64>(pos_));
-        const char* raw = nullptr;
-        in->Read(raw, len_);
-        auto src = Unserialize<T>(std::span<const char>(raw, len_));
+        std::unordered_map<ui64, std::vector<T>> blocks;
         std::vector<T> out;
         out.reserve(idx_.size());
-        for (ui64 r : idx_) {
-            out.push_back(src[r]);
+        for (ui64 g : idx_) {
+            ui64 local = 0;
+            ui64 block = JfRowBlock(g, local);
+            auto it = blocks.find(block);
+            if (it == blocks.end()) {
+                ui64 len = 0;
+                const char* raw = JfColBytes(col_, block, len);
+                it = blocks.emplace(block, Unserialize<T>(std::span<const char>(raw, len))).first;
+                if (TQueryStats::instance) {
+                    TQueryStats::instance->RecordDiskRead(len, 0);
+                }
+            }
+            out.push_back(it->second[local]);
         }
         cols_ = std::move(out);
         idx_.clear();
@@ -109,8 +117,7 @@ public:
         if (other.idx_.empty()) {
             cols_.push_back(other.cols_[i]);
         } else {
-            pos_ = other.pos_;
-            len_ = other.len_;
+            col_ = other.col_;
             idx_.push_back(other.idx_[i]);
         }
     }
@@ -130,8 +137,7 @@ public:
 protected:
     std::vector<T> cols_;
     std::vector<ui64> idx_;
-    ui64 pos_ = 0;
-    ui64 len_ = 0;
+    ui64 col_ = 0;
 };
 
 class Ti8Column : public TStorage<i8> {

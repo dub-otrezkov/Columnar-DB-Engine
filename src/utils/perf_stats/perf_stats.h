@@ -47,6 +47,12 @@ public:
         stat.count++;
     }
 
+    void RecordDiskRead(uint64_t bytes, uint64_t ns) {
+        disk_read_count_++;
+        disk_read_bytes_userspace_ += bytes;
+        disk_read_ns_ += ns;
+    }
+
     void Print(std::ostream& out) const {
         std::vector<const TQueryStat*> sorted;
         for (const auto& [_, stat] : stats_) {
