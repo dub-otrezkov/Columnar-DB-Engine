@@ -92,22 +92,28 @@ public:
         if (idx_.empty()) {
             return;
         }
+        ui64 rgl = JfRowGroupLen();
         std::unordered_map<ui64, std::vector<T>> blocks;
         std::vector<T> out;
         out.reserve(idx_.size());
+        ui64 cur_block = static_cast<ui64>(-1);
+        const std::vector<T>* data = nullptr;
         for (ui64 g : idx_) {
-            ui64 local = 0;
-            ui64 block = JfRowBlock(g, local);
-            auto it = blocks.find(block);
-            if (it == blocks.end()) {
-                ui64 len = 0;
-                const char* raw = JfColBytes(col_, block, len);
-                it = blocks.emplace(block, Unserialize<T>(std::span<const char>(raw, len))).first;
-                if (TQueryStats::instance) {
-                    TQueryStats::instance->RecordDiskRead(len, 0);
+            ui64 block = g / rgl;
+            if (block != cur_block) {
+                cur_block = block;
+                auto it = blocks.find(block);
+                if (it == blocks.end()) {
+                    ui64 len = 0;
+                    const char* raw = JfColBytes(col_, block, len);
+                    it = blocks.emplace(block, Unserialize<T>(std::span<const char>(raw, len))).first;
+                    if (TQueryStats::instance) {
+                        TQueryStats::instance->RecordDiskRead(len, 0);
+                    }
                 }
+                data = &it->second;
             }
-            out.push_back(it->second[local]);
+            out.push_back((*data)[g % rgl]);
         }
         cols_ = std::move(out);
         idx_.clear();
@@ -299,7 +305,6 @@ public:
 Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
-Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
 
 Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type);
 

@@ -6,76 +6,8 @@
 
 namespace JfEngine {
 
-struct OSort {
-    template <typename TCol>
-    static inline std::vector<i64> Exec(TCol& col, bool rev = false) {
-        using T = typename TCol::ElemType;
-        std::vector<i64> ans(col.GetSize());
-        for (i64 i = 0; i < col.GetSize(); i++) {
-            ans[i] = i;
-        }
-        std::stable_sort(ans.begin(), ans.end(), [&col, rev](i64 i, i64 j) -> bool {
-            if (rev) {
-                return !(col.GetData().at(i) <= col.GetData().at(j));
-            }
-            return (col.GetData().at(i) < col.GetData().at(j));
-        });
-        return ans;
-    }
-};
-
 struct OMergeSort {
     static constexpr ui64 kUnlimited = -1;
-    template <typename TCol>
-    static inline Expected<std::vector<i64>> Exec(TCol& col, TColumnPtr other, ui64 limit = kUnlimited, bool rev = false) {
-        using T = typename TCol::ElemType;
-        if (col.GetType() != other->GetType()) {
-            return MakeError<EError::BadArgsErr>("cant merge columns of different type");
-        }
-        auto& col2 = *static_cast<TCol*>(other.get());
-
-        auto cmp = [&col, &col2, rev](const i64& i, const i64& j) -> bool {
-            if (rev) {
-                return !(col.GetData().at(i) <= col2.GetData().at(j));
-            }
-            return (col.GetData().at(i) < col2.GetData().at(j));
-        };
-
-        i64 i = 0;
-        i64 j = 0;
-        auto& data1 = col.GetData();
-        auto& data2 = col2.GetData();
-
-        auto order = OSort::Exec(col2, rev);
-        std::vector<i64> ans;
-
-        if (limit == kUnlimited) {
-            ans.reserve(data1.size() + data2.size());
-        } else {
-            ans.reserve(limit);
-        }
-
-        while (i < data1.size() || j < data2.size()) {
-            if (i == data1.size()) {
-                ans.push_back(-(order[j] + 1));
-                j++;
-            } else if (j == data2.size()) {
-                ans.push_back(i);
-                i++;
-            } else if (cmp(i, order[j])) {
-                ans.push_back(i);
-                i++;
-            } else {
-                ans.push_back(-(order[j] + 1));
-                j++;
-            }
-
-            if (ans.size() == limit) {
-                break;
-            }
-        }
-        return std::move(ans);
-    }
 };
 
 struct OApply2 {
