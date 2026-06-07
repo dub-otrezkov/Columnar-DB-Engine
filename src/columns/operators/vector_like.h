@@ -7,17 +7,6 @@
 
 namespace JfEngine {
 
-struct OPushBack {
-    template <typename TCol>
-    static inline void Exec(TCol& col, typename TCol::ElemTypeRo value) {
-        col.GetData().emplace_back(value);
-    }
-
-    static inline void Exec(TStringColumn& col, std::string_view value) {
-        col.GetData().emplace_back(value);
-    }
-};
-
 struct OSetColumnFrom {
     template <typename TCol>
     static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {

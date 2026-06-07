@@ -225,41 +225,6 @@ TTimestamp TimestampFromStr(const std::string& s) {
     };
 }
 
-Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type) {
-    switch (type) {
-        case kUnitialized: {
-            return MakeError<EError::UnimplementedErr>();
-        }
-        case ki8Column: {
-            return std::make_shared<Ti8Column>(Unserialize<i8>(data));
-        }
-        case ki16Column: {
-            return std::make_shared<Ti16Column>(Unserialize<i16>(data));
-        }
-        case ki32Column: {
-            return std::make_shared<Ti32Column>(Unserialize<i32>(data));
-        }
-        case ki64Column: {
-            return std::make_shared<Ti64Column>(Unserialize<i64>(data));
-        }
-        case kDoubleColumn: {
-            return std::make_shared<TDoubleColumn>(Unserialize<ld>(data));
-        }
-        case kDateColumn: {
-            return std::make_shared<TDateColumn>(Unserialize<TDate>(data));
-        }
-        case kTimestampColumn: {
-            return std::make_shared<TTimestampColumn>(Unserialize<TTimestamp>(data));
-        }
-        case kStringColumn: {
-            return std::make_shared<TStringColumn>(Unserialize<JString>(data));
-        }
-        default: {
-            throw "wtf???";
-        }
-    }
-}
-
 template <typename TCol>
 static Expected<TColumnPtr> ExtractMinMaxTyped(std::span<const char> data) {
     using T = typename TCol::ElemType;

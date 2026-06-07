@@ -52,7 +52,7 @@ public:
 using IFileInputPtr  = std::shared_ptr<IFileInput>;
 using IFileOutputPtr = std::shared_ptr<IFileOutput>;
 
-ui64 JfRowBlock(ui64 global_row, ui64& local);
+ui64 JfRowGroupLen();
 const char* JfColBytes(ui64 col, ui64 block, ui64& len);
 
 class TMMapFileInput final : public IFileInput {
