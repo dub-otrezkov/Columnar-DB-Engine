@@ -49,18 +49,14 @@ public:
         return "JfTableInput";
     }
 
-private:
-    void LoadMeta();
-
 protected:
 
     IFileInput* jf_in_;
 
-    std::optional<std::vector<ui64>> poses_of_cols_;
-
     ui64 cols_cnt_;
     ui64 meta_start_;
-    std::vector<ui64> blocks_pos_;
+    ui64 blocks_cnt_;
+    std::vector<std::vector<ui64>> col_poses_;
 
     ui64 current_block_ = 0;
 };

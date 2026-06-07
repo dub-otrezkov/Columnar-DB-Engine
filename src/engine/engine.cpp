@@ -50,27 +50,23 @@ Expected<void> TEngine::WriteDataToCsv(IFileOutput* out) {
 }
 
 Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
-    std::vector<i64> poses;
+    std::vector<std::vector<i64>> all_poses;
 
     ui64 cols_cnt = 0;
 
-    auto f = [&poses, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
+    auto f = [&all_poses, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         std::vector<i64> col_poses;
 
         for (ui64 j = 0; j < block.size(); j++) {
-            std::vector<std::string> row(block[0]->GetSize());
             col_poses.push_back(static_cast<i64>(out->TellPos()));
             auto bytes = Do<OJfPrintOpt>(block[j]);
             const char* p = bytes.data();
             out->Write(p, bytes.size());
         }
+        col_poses.push_back(static_cast<i64>(out->TellPos()));
 
         cols_cnt = block.size();
-
-        for (auto pos : col_poses) {
-            PutI64(out, pos);
-        }
-        poses.push_back(static_cast<i64>(out->TellPos()));
+        all_poses.push_back(std::move(col_poses));
 
         return nullptr;
     };
@@ -80,9 +76,11 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
     auto meta_start = static_cast<i64>(out->TellPos());
     PutI64(out, in_->GetRowGroupLen());
     PutI64(out, cols_cnt);
-    PutI64(out, poses.size());
-    for (auto i : poses) {
-        PutI64(out, i);
+    PutI64(out, static_cast<i64>(all_poses.size()));
+    for (const auto& col_poses : all_poses) {
+        for (auto pos : col_poses) {
+            PutI64(out, pos);
+        }
     }
     auto err = WriteSchemeToCsv(out);
 
