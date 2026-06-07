@@ -65,6 +65,9 @@ using TColumnPtr = std::shared_ptr<IColumn>;
 template <typename T>
 inline std::vector<T> Unserialize(std::span<const char> a);
 
+template <std::integral T>
+inline std::vector<T> Unserialize(std::span<const char> a);
+
 template <typename T>
 class TStorage : public IColumn {
 public:
