@@ -87,6 +87,10 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
             col_poses_[b][c] = ReadI64(jf_in_);
         }
     }
+    block_sizes_.resize(blocks_cnt_);
+    for (ui64 b = 0; b < blocks_cnt_; b++) {
+        block_sizes_[b] = ReadI64(jf_in_);
+    }
     scheme_.reserve(cols_cnt_);
     TCsvReader r(jf_in_);
     for (ui64 i = 0; i < cols_cnt_; i++) {
@@ -103,20 +107,16 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
+    GlobalJfInput() = jf_in_;
+
     ui64 pos = col_poses_[current_block_][i];
-    ui64 pos_next = col_poses_[current_block_][i + 1];
-    jf_in_->SetPos(pos);
-    ui64 len = pos_next - pos;
+    ui64 len = col_poses_[current_block_][i + 1] - pos;
 
-    const char* raw = nullptr;
-    jf_in_->Read(raw, len);
-    std::span<const char> data(raw, len);
-
-    auto col = MakeColumnJf(data, scheme_[i].type_);
-
+    auto col = MakeEmptyColumn(scheme_[i].type_);
     if (col.HasError()) {
         return col.GetError();
     }
+    col.GetRes()->SetLazy(pos, len, block_sizes_[current_block_]);
 
     Expected<TColumnPtr> ans(
         col.GetRes(),

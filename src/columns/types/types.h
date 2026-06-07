@@ -4,6 +4,7 @@
 #include "utils/cint/double.h"
 #include "utils/cint/int.h"
 #include "utils/errors/errors_templates.h"
+#include "utils/mmap_input/mmap_input.h"
 #include "utils/faster_vectors/vector_1d.h"
 #include "utils/faster_vectors/vector_string_2d.h"
 #include "utils/compress/bitpack.h"
@@ -55,9 +56,14 @@ public:
     virtual EColumn GetType() const {
         return kUnitialized;
     }
+
+    virtual void SetLazy(ui64 pos, ui64 len, ui64 n) {}
 };
 
 using TColumnPtr = std::shared_ptr<IColumn>;
+
+template <typename T>
+inline std::vector<T> Unserialize(std::span<const char> a);
 
 template <typename T>
 class TStorage : public IColumn {
@@ -66,10 +72,48 @@ public:
     using ElemTypeRo = T;
 
     ui64 GetSize() const override {
-        return cols_.size();
+        return idx_.empty() ? cols_.size() : idx_.size();
+    }
+
+    void SetLazy(ui64 pos, ui64 len, ui64 n) override {
+        pos_ = pos;
+        len_ = len;
+        idx_.resize(n);
+        for (ui64 i = 0; i < n; i++) {
+            idx_[i] = i;
+        }
+    }
+
+    void Materialize() {
+        if (idx_.empty()) {
+            return;
+        }
+        IFileInput* in = GlobalJfInput();
+        in->SetPos(static_cast<i64>(pos_));
+        const char* raw = nullptr;
+        in->Read(raw, len_);
+        auto src = Unserialize<T>(std::span<const char>(raw, len_));
+        std::vector<T> out;
+        out.reserve(idx_.size());
+        for (ui64 r : idx_) {
+            out.push_back(src[r]);
+        }
+        cols_ = std::move(out);
+        idx_.clear();
+    }
+
+    void LoadFrom(TStorage<T>& other, ui64 i) {
+        if (other.idx_.empty()) {
+            cols_.push_back(other.cols_[i]);
+        } else {
+            pos_ = other.pos_;
+            len_ = other.len_;
+            idx_.push_back(other.idx_[i]);
+        }
     }
 
     std::vector<T>& GetData() {
+        Materialize();
         return cols_;
     }
 
@@ -82,6 +126,9 @@ public:
 
 protected:
     std::vector<T> cols_;
+    std::vector<ui64> idx_;
+    ui64 pos_ = 0;
+    ui64 len_ = 0;
 };
 
 class Ti8Column : public TStorage<i8> {

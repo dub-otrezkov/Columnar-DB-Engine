@@ -51,10 +51,11 @@ Expected<void> TEngine::WriteDataToCsv(IFileOutput* out) {
 
 Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
     std::vector<std::vector<i64>> all_poses;
+    std::vector<i64> all_sizes;
 
     ui64 cols_cnt = 0;
 
-    auto f = [&all_poses, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
+    auto f = [&all_poses, &all_sizes, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
         std::vector<i64> col_poses;
 
         for (ui64 j = 0; j < block.size(); j++) {
@@ -67,6 +68,7 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
 
         cols_cnt = block.size();
         all_poses.push_back(std::move(col_poses));
+        all_sizes.push_back(static_cast<i64>(block[0]->GetSize()));
 
         return nullptr;
     };
@@ -81,6 +83,9 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
         for (auto pos : col_poses) {
             PutI64(out, pos);
         }
+    }
+    for (auto s : all_sizes) {
+        PutI64(out, s);
     }
     auto err = WriteSchemeToCsv(out);
 

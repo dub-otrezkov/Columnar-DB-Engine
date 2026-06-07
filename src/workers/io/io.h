@@ -57,6 +57,7 @@ protected:
     ui64 meta_start_;
     ui64 blocks_cnt_;
     std::vector<std::vector<ui64>> col_poses_;
+    std::vector<ui64> block_sizes_;
 
     ui64 current_block_ = 0;
 };

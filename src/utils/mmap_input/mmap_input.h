@@ -52,6 +52,11 @@ public:
 using IFileInputPtr  = std::shared_ptr<IFileInput>;
 using IFileOutputPtr = std::shared_ptr<IFileOutput>;
 
+inline IFileInput*& GlobalJfInput() {
+    static IFileInput* in = nullptr;
+    return in;
+}
+
 class TMMapFileInput final : public IFileInput {
 public:
     TMMapFileInput(const std::string& name) {
