@@ -49,6 +49,9 @@ public:
         return "JfTableInput";
     }
 
+    ui64 RowBlock(ui64 global_row, ui64& local);
+    const char* ColBytes(ui64 col, ui64 block, ui64& len);
+
 protected:
 
     IFileInput* jf_in_;
@@ -58,6 +61,7 @@ protected:
     ui64 blocks_cnt_;
     std::vector<std::vector<ui64>> col_poses_;
     std::vector<ui64> block_sizes_;
+    std::vector<ui64> block_start_;
 
     ui64 current_block_ = 0;
 };

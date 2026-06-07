@@ -10,6 +10,16 @@
 
 namespace JfEngine {
 
+static TJfTableInput* g_jf = nullptr;
+
+ui64 JfRowBlock(ui64 global_row, ui64& local) {
+    return g_jf->RowBlock(global_row, local);
+}
+
+const char* JfColBytes(ui64 col, ui64 block, ui64& len) {
+    return g_jf->ColBytes(col, block, len);
+}
+
 Expected<void> TCsvTableInput::SetupColumnsScheme() {
     if (!scheme_.empty()) {
         return nullptr;
@@ -91,6 +101,11 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
     for (ui64 b = 0; b < blocks_cnt_; b++) {
         block_sizes_[b] = ReadI64(jf_in_);
     }
+    block_start_.resize(blocks_cnt_ + 1);
+    block_start_[0] = 0;
+    for (ui64 b = 0; b < blocks_cnt_; b++) {
+        block_start_[b + 1] = block_start_[b] + block_sizes_[b];
+    }
     scheme_.reserve(cols_cnt_);
     TCsvReader r(jf_in_);
     for (ui64 i = 0; i < cols_cnt_; i++) {
@@ -107,16 +122,13 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
-    GlobalJfInput() = jf_in_;
-
-    ui64 pos = col_poses_[current_block_][i];
-    ui64 len = col_poses_[current_block_][i + 1] - pos;
+    g_jf = this;
 
     auto col = MakeEmptyColumn(scheme_[i].type_);
     if (col.HasError()) {
         return col.GetError();
     }
-    col.GetRes()->SetLazy(pos, len, block_sizes_[current_block_]);
+    col.GetRes()->SetLazy(i, block_start_[current_block_], block_sizes_[current_block_]);
 
     Expected<TColumnPtr> ans(
         col.GetRes(),
@@ -124,6 +136,30 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     );
 
     return ans;
+}
+
+ui64 TJfTableInput::RowBlock(ui64 global_row, ui64& local) {
+    ui64 lo = 0;
+    ui64 hi = blocks_cnt_;
+    while (lo + 1 < hi) {
+        ui64 mid = (lo + hi) / 2;
+        if (block_start_[mid] <= global_row) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    local = global_row - block_start_[lo];
+    return lo;
+}
+
+const char* TJfTableInput::ColBytes(ui64 col, ui64 block, ui64& len) {
+    ui64 pos = col_poses_[block][col];
+    len = col_poses_[block][col + 1] - pos;
+    jf_in_->SetPos(static_cast<i64>(pos));
+    const char* raw = nullptr;
+    jf_in_->Read(raw, len);
+    return raw;
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {
