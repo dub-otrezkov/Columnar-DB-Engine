@@ -55,9 +55,18 @@ public:
     virtual EColumn GetType() const {
         return kUnitialized;
     }
+
+    virtual void LoadFrom(const IColumn* src, const std::vector<ui64>& dst_idx) = 0;
+
+    virtual void Append(const IColumn* src, ui64 i) = 0;
 };
 
 using TColumnPtr = std::shared_ptr<IColumn>;
+
+enum class EColumnStatus {
+    kLazy,
+    kFinal
+};
 
 template <typename T>
 class TStorage : public IColumn {
@@ -70,7 +79,41 @@ public:
     }
 
     std::vector<T>& GetData() {
+        if (status_ == EColumnStatus::kLazy) {
+            // TODO
+        }
         return cols_;
+    }
+
+    void Clear() {
+        cols_.clear();
+        idxs_.clear();
+    }
+
+    void LoadFrom(const IColumn* src, const std::vector<ui64>& dst_idx) override {
+        const auto& s = static_cast<const TStorage<T>*>(src)->cols_;
+        Clear();
+        for (ui64 i = 0; i < dst_idx.size(); i++) {
+            Append(src, dst_idx[i]);
+        }
+    }
+
+    void Append(const IColumn* src, ui64 i) override {
+        auto other = static_cast<const TStorage<T>*>(src);
+        if (status_ == EColumnStatus::kLazy) {
+            idxs_.emplace_back(other->idxs_[i]);
+        } else {
+            cols_.emplace_back(other->cols_[i]);
+        }
+    }
+
+    Expected<void> Setup(ui64 start, ui64 len) {
+        idxs_.reserve(len);
+        status_ = EColumnStatus::kLazy;
+        for (ui64 i = start; i < start + len; i++) {
+            idxs_.emplace_back(i);
+        }
+        return EError::NoError;
     }
 
     Expected<void> Setup(std::vector<T> data) {
@@ -82,6 +125,10 @@ public:
 
 protected:
     std::vector<T> cols_;
+    std::vector<ui64> idxs_;
+
+private:
+    EColumnStatus status_ = EColumnStatus::kFinal;
 };
 
 class Ti8Column : public TStorage<i8> {

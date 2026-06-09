@@ -79,11 +79,17 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
 
     row_group_len_ = ReadI64(jf_in_);
     cols_cnt_ = ReadI64(jf_in_);
-    auto blocks_cnt = ReadI64(jf_in_);
-    blocks_pos_.resize(blocks_cnt);
-    for (ui64 i = 0; i < blocks_cnt; i++) {
-        blocks_pos_[i] = ReadI64(jf_in_);
+    auto blocks_cnt = static_cast<ui64>(ReadI64(jf_in_));
+
+    block_col_poses_.assign(blocks_cnt, std::vector<i64>(cols_cnt_));
+    block_col_sizes_.assign(blocks_cnt, std::vector<ui64>(cols_cnt_));
+    for (ui64 b = 0; b < blocks_cnt; b++) {
+        for (ui64 j = 0; j < cols_cnt_; j++) {
+            block_col_poses_[b][j] = ReadI64(jf_in_);
+            block_col_sizes_[b][j] = static_cast<ui64>(ReadI64(jf_in_));
+        }
     }
+
     scheme_.reserve(cols_cnt_);
     TCsvReader r(jf_in_);
     for (ui64 i = 0; i < cols_cnt_; i++) {
@@ -99,25 +105,20 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-void TJfTableInput::LoadMeta() {
-    if (!poses_of_cols_) {
-        std::vector<ui64> p(scheme_.size());
-        auto start = blocks_pos_[current_block_];
-        jf_in_->SetPos(start - sizeof(ui64) * cols_cnt_);
-        const char* raw = nullptr;
-        jf_in_->Read(raw, sizeof(ui64) * cols_cnt_);
-        memcpy(p.data(), raw, sizeof(ui64) * cols_cnt_);
-        p.push_back(start - sizeof(i64) * cols_cnt_);
-        poses_of_cols_ = std::move(p);
-    }
-}
-
 Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
-    LoadMeta();
-    ui64 pos = poses_of_cols_->at(i);
-    ui64 pos_next = poses_of_cols_->at(i + 1);
+    const ui64 b = current_block_;
+    i64 pos = block_col_poses_[b][i];
+    i64 pos_next;
+    if (static_cast<ui64>(i + 1) < cols_cnt_) {
+        pos_next = block_col_poses_[b][i + 1];
+    } else if (b + 1 < block_col_poses_.size()) {
+        pos_next = block_col_poses_[b + 1][0];
+    } else {
+        pos_next = meta_start_;
+    }
+
     jf_in_->SetPos(pos);
-    ui64 len = pos_next - pos;
+    ui64 len = static_cast<ui64>(pos_next - pos);
 
     const char* raw = nullptr;
     jf_in_->Read(raw, len);
@@ -131,19 +132,25 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
 
     Expected<TColumnPtr> ans(
         col.GetRes(),
-        current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
+        b + 1 == block_col_poses_.size() ? EError::EofErr : EError::NoError
     );
-
     return ans;
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {
-    LoadMeta();
+    const ui64 b = current_block_;
+    i64 pos = block_col_poses_[b][i];
+    i64 pos_next;
+    if (static_cast<ui64>(i + 1) < cols_cnt_) {
+        pos_next = block_col_poses_[b][i + 1];
+    } else if (b + 1 < block_col_poses_.size()) {
+        pos_next = block_col_poses_[b + 1][0];
+    } else {
+        pos_next = meta_start_;
+    }
 
-    ui64 pos = poses_of_cols_->at(i);
-    ui64 pos_next = poses_of_cols_->at(i + 1);
     jf_in_->SetPos(pos);
-    ui64 len = pos_next - pos;
+    ui64 len = static_cast<ui64>(pos_next - pos);
 
     const char* raw = nullptr;
     jf_in_->Read(raw, len);
@@ -157,14 +164,13 @@ Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {
 
     Expected<TColumnPtr> ans(
         col.GetRes(),
-        current_block_ + 1 == blocks_pos_.size() ? EError::EofErr : EError::NoError
+        b + 1 == block_col_poses_.size() ? EError::EofErr : EError::NoError
     );
     return ans;
-
 }
 
 Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
-    if (current_block_ >= blocks_pos_.size()) {
+    if (current_block_ >= block_col_poses_.size()) {
         return MakeError<EError::EofErr>();
     }
 
@@ -193,7 +199,6 @@ Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {
 void TJfTableInput::MoveCursor() {
     current_rg_.reset();
     current_rg_err_ = EError::NoError;
-    poses_of_cols_.reset();
     current_block_++;
 }
 
@@ -204,7 +209,7 @@ void TJfTableInput::Reset() {
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadColumn(const std::string& name) {
-    if (current_block_ >= blocks_pos_.size()) {
+    if (current_block_ >= block_col_poses_.size()) {
         return MakeError<EError::EofErr>();
     }
 

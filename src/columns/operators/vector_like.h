@@ -27,17 +27,9 @@ struct OSetColumnFrom {
         if (col.GetType() != ans->GetType()) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
-        auto& v = static_cast<TCol*>(ans.get())->GetData();
-        auto& id = *idx;
-        for (ui64 i = 0; i < id.size(); i++) {
-            assert(id.at(i) <= v.size());
-            if (id.at(i) == v.size()) {
-                v.emplace_back(col.GetData().at(i));
-            } else {
-                v.at(id.at(i)) = col.GetData().at(i);
-            }
+        for (ui64 i : *idx) {
+            ans->Append(&col, i);
         }
-
         return EError::NoError;
     }
 };

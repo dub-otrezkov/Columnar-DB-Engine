@@ -376,30 +376,16 @@ struct OAndCheck {
 struct OFilter {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, const boost::dynamic_bitset<>& mask) {
-        using T = typename TCol::ElemTypeRo;
-        std::vector<T> vals;
         if (col.GetData().size() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
+        auto res = std::make_shared<TCol>();
+        for (ui64 i = 0; i < col.GetSize(); i++) {
             if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
+                res->Append(&col, i);
             }
         }
-        return std::make_shared<TCol>(std::move(vals));
-    }
-
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const boost::dynamic_bitset<>& mask) {
-        std::vector<JString> vals;
-        if (col.GetData().size() != mask.size()) {
-            return MakeError<EError::BadArgsErr>();
-        }
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData().at(i));
-            }
-        }
-        return std::make_shared<TStringColumn>(std::move(vals));
+        return res;
     }
 };
 

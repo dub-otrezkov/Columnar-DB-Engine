@@ -481,6 +481,16 @@ void CheckVectorsEq(
     }
 }
 
+void CheckVectorsEq(
+    const std::vector<JString>& a,
+    const std::vector<std::string>& b
+) {
+    EXPECT_EQ(a.size(), b.size());
+    for (ui64 i = 0; i < a.size(); i++) {
+        EXPECT_EQ(a[i], std::string_view(b[i]));
+    }
+}
+
 TEST_F(OperatorsTest, FilterLikeTest) {
     {
         std::vector<std::string> data = {

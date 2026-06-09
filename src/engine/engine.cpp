@@ -50,28 +50,26 @@ Expected<void> TEngine::WriteDataToCsv(IFileOutput* out) {
 }
 
 Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
-    std::vector<i64> poses;
-
+    struct TBlockMeta {
+        std::vector<i64>  col_poses;
+        std::vector<ui64> col_sizes;
+    };
+    std::vector<TBlockMeta> all_blocks;
     ui64 cols_cnt = 0;
 
-    auto f = [&poses, out, &cols_cnt](std::vector<TColumnPtr> block) -> Expected<void> {
-        std::vector<i64> col_poses;
-
+    auto f = [&](std::vector<TColumnPtr> block) -> Expected<void> {
+        TBlockMeta bm;
+        bm.col_poses.reserve(block.size());
+        bm.col_sizes.reserve(block.size());
         for (ui64 j = 0; j < block.size(); j++) {
-            std::vector<std::string> row(block[0]->GetSize());
-            col_poses.push_back(static_cast<i64>(out->TellPos()));
+            bm.col_poses.push_back(static_cast<i64>(out->TellPos()));
+            bm.col_sizes.push_back(block[j]->GetSize());
             auto bytes = Do<OJfPrintOpt>(block[j]);
             const char* p = bytes.data();
             out->Write(p, bytes.size());
         }
-
         cols_cnt = block.size();
-
-        for (auto pos : col_poses) {
-            PutI64(out, pos);
-        }
-        poses.push_back(static_cast<i64>(out->TellPos()));
-
+        all_blocks.push_back(std::move(bm));
         return nullptr;
     };
 
@@ -80,14 +78,15 @@ Expected<void> TEngine::WriteTableToJf(IFileOutput* out) {
     auto meta_start = static_cast<i64>(out->TellPos());
     PutI64(out, in_->GetRowGroupLen());
     PutI64(out, cols_cnt);
-    PutI64(out, poses.size());
-    for (auto i : poses) {
-        PutI64(out, i);
+    PutI64(out, static_cast<i64>(all_blocks.size()));
+    for (const auto& bm : all_blocks) {
+        for (ui64 j = 0; j < cols_cnt; j++) {
+            PutI64(out, bm.col_poses[j]);
+            PutI64(out, static_cast<i64>(bm.col_sizes[j]));
+        }
     }
     auto err = WriteSchemeToCsv(out);
-
     PutI64(out, meta_start);
-
     return err;
 }
 

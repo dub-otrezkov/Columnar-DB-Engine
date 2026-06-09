@@ -1,4 +1,5 @@
 #include "utils/faster_vectors/vector_1d.h"
+#include "columns/types/types.h"
 
 #include <limits>
 #include <random>
@@ -6,8 +7,10 @@
 
 #include <gtest/gtest.h>
 
+using namespace JfEngine;
+
 template <typename T>
-void Roundtrip(const std::vector<T>& in) {
+void Roundtrip(std::vector<T> in) {
     auto bytes = Serialize<T>(in);
     auto out = Unserialize<T>(bytes);
     ASSERT_EQ(in.size(), out.size());
