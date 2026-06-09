@@ -19,7 +19,7 @@ Expected<TTableInputPtr> TFromToken::MakeWorker() {
             TIoFactory::RegisterFileInput(name, ETypeFile::kJfFile);
             io = TIoFactory::GetInput(name);
         }
-        return std::make_shared<TJfNeccessaryOnly>(io, referenced_columns_);
+        return TIoFactory::RegisterJfNeccessaryInput(kJfInput, io, referenced_columns_);
     } else if (args_.size() == 2) {
         auto scheme = static_cast<TNameToken*>(args_[0])->GetName();
         auto data = static_cast<TNameToken*>(args_[1])->GetName();

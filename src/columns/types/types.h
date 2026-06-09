@@ -9,6 +9,7 @@
 #include "utils/compress/bitpack.h"
 #include "utils/compress/dict.h"
 #include "utils/compress/delta.h"
+#include "utils/logger/logger.h"
 
 #include <bit>
 #include <memory>
@@ -81,6 +82,8 @@ public:
     std::vector<T>& GetData() {
         if (status_ == EColumnStatus::kLazy) {
             // TODO
+            JF_LOG(0, "MATERIALIZING");
+            status_ = EColumnStatus::kFinal;
         }
         return cols_;
     }
@@ -92,7 +95,7 @@ public:
 
     void LoadFrom(const IColumn* src, const std::vector<ui64>& dst_idx) override {
         const auto& s = static_cast<const TStorage<T>*>(src)->cols_;
-        Clear();
+        // Clear();
         for (ui64 i = 0; i < dst_idx.size(); i++) {
             Append(src, dst_idx[i]);
         }
@@ -100,6 +103,7 @@ public:
 
     void Append(const IColumn* src, ui64 i) override {
         auto other = static_cast<const TStorage<T>*>(src);
+        column_i_ = other->column_i_;
         if (status_ == EColumnStatus::kLazy) {
             idxs_.emplace_back(other->idxs_[i]);
         } else {
@@ -107,7 +111,8 @@ public:
         }
     }
 
-    Expected<void> Setup(ui64 start, ui64 len) {
+    Expected<void> Setup(ui64 start, ui64 len, ui64 column_i) {
+        column_i_ = column_i;
         idxs_.reserve(len);
         status_ = EColumnStatus::kLazy;
         for (ui64 i = start; i < start + len; i++) {
@@ -126,6 +131,7 @@ public:
 protected:
     std::vector<T> cols_;
     std::vector<ui64> idxs_;
+    ui64 column_i_ = 0;
 
 private:
     EColumnStatus status_ = EColumnStatus::kFinal;

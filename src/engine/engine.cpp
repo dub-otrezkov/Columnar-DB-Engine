@@ -2,6 +2,7 @@
 
 #include "columns/operators/operators.h"
 #include "csvio/csv_writer.h"
+#include "ios_factory/ios_factory.h"
 #include "utils/logger/logger.h"
 
 #include <cassert>
@@ -105,7 +106,7 @@ Expected<TEngine> MakeEngineFromCsv(
 
 Expected<TEngine> MakeEngineFromJf(IFileInput* jf) {
     TEngine eng;
-    auto err = eng.Setup(std::make_shared<TJfTableInput>(jf));
+    auto err = eng.Setup(TIoFactory::RegisterJfInput(kJfInput, jf));
     if (err.HasError()) {
         return err.GetError();
     }

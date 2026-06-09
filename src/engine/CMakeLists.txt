@@ -14,6 +14,7 @@ target_link_libraries(
     vectors_lib
     iworkers_lib
     io_worker_lib
+    ios_factory_lib
 )
 
 target_link_libraries (engine_test GTest::gtest GTest::gtest_main)

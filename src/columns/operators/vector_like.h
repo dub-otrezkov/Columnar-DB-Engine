@@ -27,8 +27,14 @@ struct OSetColumnFrom {
         if (col.GetType() != ans->GetType()) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
-        for (ui64 i : *idx) {
-            ans->Append(&col, i);
+        // idx maps each row -> its group id (ids handed out sequentially as new
+        // groups appear). Materialize one representative key value per group:
+        // append col[row] the first time a group's id reaches the current size.
+        for (ui64 row = 0; row < idx->size(); row++) {
+            ui64 g = (*idx)[row];
+            if (g == ans->GetSize()) {
+                ans->Append(&col, row);
+            }
         }
         return EError::NoError;
     }

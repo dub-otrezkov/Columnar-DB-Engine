@@ -1,5 +1,7 @@
 #include "ios_factory.h"
 
+#include "workers/io/io.h"
+
 #include <fstream>
 #include <sstream>
 
@@ -56,6 +58,24 @@ void TIoFactory::RegisterFileOutput(const std::string& alias, ETypeFile t) {
 void TIoFactory::RegisterTableInput(const std::string& alias, TTableInputPtr inp) {
     auto i = Instance();
     i->iotables_[alias] = inp;
+}
+
+TTableInputPtr TIoFactory::RegisterJfInput(const std::string& alias, IFileInput* jf_in) {
+    auto i = Instance();
+    auto inp = std::make_shared<TJfTableInput>(jf_in);
+    i->iotables_[alias] = inp;
+    return inp;
+}
+
+TTableInputPtr TIoFactory::RegisterJfNeccessaryInput(
+    const std::string& alias,
+    IFileInput* jf_in,
+    std::unordered_set<std::string> referenced
+) {
+    auto i = Instance();
+    auto inp = std::make_shared<TJfNeccessaryOnly>(jf_in, std::move(referenced));
+    i->iotables_[alias] = inp;
+    return inp;
 }
 
 IFileInput* TIoFactory::GetInput(const std::string& alias) {

@@ -45,6 +45,8 @@ auto Do(TColumnPtr col, Args&&... args) {
             return TOperator::Exec(*static_cast<TStringColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }
+        default:
+            break;
     }
     throw std::runtime_error("bad column type");
 }
