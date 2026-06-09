@@ -105,8 +105,7 @@ Expected<void> TJfTableInput::SetupColumnsScheme() {
     return nullptr;
 }
 
-Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
-    const ui64 b = current_block_;
+Expected<TColumnPtr> TJfTableInput::ReadColumnFromMem(ui64 i, ui64 b) {
     i64 pos = block_col_poses_[b][i];
     i64 pos_next;
     if (static_cast<ui64>(i + 1) < cols_cnt_) {
@@ -124,17 +123,35 @@ Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     jf_in_->Read(raw, len);
     std::span<const char> data(raw, len);
 
-    auto col = MakeColumnJf(data, scheme_[i].type_);
+    return MakeColumnJf(data, scheme_[i].type_);
+}
 
-    if (col.HasError()) {
-        return col.GetError();
+Expected<TColumnPtr> TJfTableInput::Finalize(ui64 column, const std::vector<ui64>& idxs) {
+    if (idxs.empty()) {
+        return MakeEmptyColumn(scheme_[column].type_);
     }
-
-    Expected<TColumnPtr> ans(
-        col.GetRes(),
-        b + 1 == block_col_poses_.size() ? EError::EofErr : EError::NoError
-    );
+    if (std::is_sorted(idxs.begin(), idxs.end()) && idxs.back() - idxs.front() + 1 == idxs.size() && idxs.front() % row_group_len_ == 0) {
+        return ReadColumnFromMem(column, idxs.front() / row_group_len_);
+    }
+    auto ans = MakeEmptyColumn(scheme_[column].type_).GetRes();
+    std::unordered_map<ui64, TColumnPtr> loaded;
+    for (ui64 i = 0; i < idxs.size(); i++) {
+        auto b = idxs[i] / row_group_len_;
+        if (loaded.count(b) == 0) {
+            loaded[b] = ReadColumnFromMem(column, b).GetRes();
+        }
+        ans->Append(loaded[b].get(), idxs[i] % row_group_len_);
+    }
     return ans;
+}
+
+// LAZY
+Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
+    // auto t = ReadColumnFromMem(i, current_block_).GetRes();
+    return Expected<TColumnPtr>(
+        MakeLazyColumn(current_block_ * row_group_len_, block_col_sizes_[current_block_][i], i, scheme_[i].type_).GetRes(),
+        current_block_ + 1 == block_col_poses_.size() ? EError::EofErr : EError::NoError
+    );
 }
 
 Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {

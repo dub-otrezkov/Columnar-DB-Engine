@@ -37,6 +37,7 @@ public:
         jf_in_ = jf_in;
     }
 
+    Expected<TColumnPtr> Finalize(ui64 column, const std::vector<ui64>& idxs);
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<TColumnPtr> ReadColumn(const std::string& name) override;
@@ -48,6 +49,9 @@ public:
     const char* GetTypeName() const override {
         return "JfTableInput";
     }
+
+private:
+    Expected<TColumnPtr> ReadColumnFromMem(ui64 column, ui64 rg_num);
 
 protected:
 

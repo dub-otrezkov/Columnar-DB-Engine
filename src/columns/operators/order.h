@@ -85,20 +85,21 @@ struct OApply2 {
         if (col.GetType() != other->GetType()) {
             return MakeError<EError::BadArgsErr>("cant merge different columns");
         }
-        std::vector<T> ans;
-        ans.reserve(ids.size());
+        auto ans = MakeEmptyColumn(col.GetType()).GetRes();
+        // std::vector<T> ans;
+        // ans.reserve(ids.size());
 
-        auto& data1 = col.GetData();
-        auto& data2 = static_cast<TCol*>(other.get())->GetData();
+        // auto& data1 = col.GetData();
+        // auto& data2 = static_cast<TCol*>(other.get())->GetData();
         for (auto& i : ids) {
             if (i >= 0) {
-                ans.push_back(data1.at(i));
+                ans->Append(&col, i);
             } else {
-                ans.push_back(data2.at(-i - 1));
+                ans->Append(other.get(), -i - 1);
             }
         }
 
-        return std::make_shared<TCol>(std::move(ans));
+        return std::move(ans);
     }
 };
 

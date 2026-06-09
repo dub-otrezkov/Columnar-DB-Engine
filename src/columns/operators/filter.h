@@ -376,7 +376,7 @@ struct OAndCheck {
 struct OFilter {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, const boost::dynamic_bitset<>& mask) {
-        if (col.GetData().size() != mask.size()) {
+        if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
         auto res = std::make_shared<TCol>();

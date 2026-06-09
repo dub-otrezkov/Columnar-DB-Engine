@@ -60,9 +60,18 @@ public:
     virtual void LoadFrom(const IColumn* src, const std::vector<ui64>& dst_idx) = 0;
 
     virtual void Append(const IColumn* src, ui64 i) = 0;
+
+    virtual void RobColumn(IColumn* src) = 0;
 };
 
 using TColumnPtr = std::shared_ptr<IColumn>;
+
+// Late-materialization hook: reads the actual rows `idxs` of source column
+// `column` from the JF input registered in TIoFactory (kJfInput) and returns a
+// fully materialized column. Declared here but DEFINED in ios_factory.cpp so
+// nodes_lib doesn't include/link ios_factory or workers/io (which would form a
+// cycle); the symbol is resolved when the final binary links those libs in.
+TColumnPtr LazyMaterialize(ui64 column, const std::vector<ui64>& idxs);
 
 enum class EColumnStatus {
     kLazy,
@@ -76,14 +85,20 @@ public:
     using ElemTypeRo = T;
 
     ui64 GetSize() const override {
+        if (status_ == EColumnStatus::kLazy) {
+            return idxs_.size();
+        }
         return cols_.size();
     }
 
     std::vector<T>& GetData() {
         if (status_ == EColumnStatus::kLazy) {
-            // TODO
-            JF_LOG(0, "MATERIALIZING");
+            // JF_LOG(0, "MATERIALIZING" << " column #" << column_i_ << " " << idxs_.size() << " rows");
+            // Mark final first so RobColumn moves cols_ (not idxs_).
             status_ = EColumnStatus::kFinal;
+            auto materialized = LazyMaterialize(column_i_, idxs_);
+            RobColumn(materialized.get());
+            idxs_.clear();
         }
         return cols_;
     }
@@ -94,7 +109,7 @@ public:
     }
 
     void LoadFrom(const IColumn* src, const std::vector<ui64>& dst_idx) override {
-        const auto& s = static_cast<const TStorage<T>*>(src)->cols_;
+        // const auto& s = static_cast<const TStorage<T>*>(src)->cols_;
         // Clear();
         for (ui64 i = 0; i < dst_idx.size(); i++) {
             Append(src, dst_idx[i]);
@@ -103,6 +118,7 @@ public:
 
     void Append(const IColumn* src, ui64 i) override {
         auto other = static_cast<const TStorage<T>*>(src);
+        status_ = other->status_;
         column_i_ = other->column_i_;
         if (status_ == EColumnStatus::kLazy) {
             idxs_.emplace_back(other->idxs_[i]);
@@ -111,7 +127,18 @@ public:
         }
     }
 
-    Expected<void> Setup(ui64 start, ui64 len, ui64 column_i) {
+    void RobColumn(IColumn* src) override {
+        auto other = static_cast<TStorage<T>*>(src);\
+        status_ = other->status_;
+        column_i_ = other->column_i_;
+        if (status_ == EColumnStatus::kLazy) {
+            idxs_.swap(other->idxs_);
+        } else {
+            cols_.swap(other->cols_);
+        }
+    }
+
+    Expected<void> LazySetup(ui64 start, ui64 len, ui64 column_i) {
         column_i_ = column_i;
         idxs_.reserve(len);
         status_ = EColumnStatus::kLazy;
@@ -141,6 +168,9 @@ class Ti8Column : public TStorage<i8> {
 public:
     Ti8Column() {}
     Ti8Column(std::vector<i8> data);
+    Ti8Column(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -151,6 +181,9 @@ class Ti16Column : public TStorage<i16> {
 public:
     Ti16Column() {}
     Ti16Column(std::vector<i16> data);
+    Ti16Column(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -161,6 +194,9 @@ class Ti32Column : public TStorage<i32> {
 public:
     Ti32Column() {}
     Ti32Column(std::vector<i32> data);
+    Ti32Column(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -171,6 +207,9 @@ class Ti64Column : public TStorage<i64> {
 public:
     Ti64Column() {}
     Ti64Column(std::vector<i64> data);
+    Ti64Column(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -181,6 +220,9 @@ class Ti128Column : public TStorage<i128> {
 public:
     Ti128Column() {}
     Ti128Column(std::vector<i128> data);
+    Ti128Column(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -198,6 +240,9 @@ class TStringColumn : public TStorage<JString> {
 public:
     TStringColumn() {}
     TStringColumn(std::vector<JString> data);
+    TStringColumn(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -208,6 +253,9 @@ class TDoubleColumn : public TStorage<ld> {
 public:
     TDoubleColumn() {};
     TDoubleColumn(std::vector<ld> data);
+    TDoubleColumn(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -244,6 +292,9 @@ class TDateColumn : public TStorage<TDate> {
 public:
     TDateColumn() {}
     TDateColumn(std::vector<TDate> data);
+    TDateColumn(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -287,6 +338,9 @@ class TTimestampColumn : public TStorage<TTimestamp> {
 public:
     TTimestampColumn() {}
     TTimestampColumn(std::vector<TTimestamp> data);
+    TTimestampColumn(ui64 start, ui64 len, ui64 column) {
+        LazySetup(start, len, column);
+    }
 
     EColumn GetType() const override;
     Expected<void> Setup(std::vector<std::string>&& data) override;
@@ -297,6 +351,7 @@ Expected<TColumnPtr> MakeEmptyColumn(EColumn type);
 Expected<TColumnPtr> MakeColumn(std::vector<std::string> data, EColumn type);
 Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 column_i, EColumn type);
 Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
+Expected<TColumnPtr> MakeLazyColumn(ui64 start, ui64 len, ui64 column, EColumn type);
 
 Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type);
 

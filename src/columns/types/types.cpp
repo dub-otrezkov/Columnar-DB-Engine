@@ -303,4 +303,36 @@ Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type) {
     }
 }
 
+Expected<TColumnPtr> MakeLazyColumn(ui64 start, ui64 len, ui64 column, EColumn type) {
+    switch (type) {
+        case ki8Column: {
+            return std::make_shared<Ti8Column>(start, len, column);
+        }
+        case ki16Column: {
+            return std::make_shared<Ti16Column>(start, len, column);
+        }
+        case ki32Column: {
+            return std::make_shared<Ti32Column>(start, len, column);
+        }
+        case ki64Column: {
+            return std::make_shared<Ti64Column>(start, len, column);
+        }
+        case kDoubleColumn: {
+            return std::make_shared<TDoubleColumn>(start, len, column);
+        }
+        case kDateColumn: {
+            return std::make_shared<TDateColumn>(start, len, column);
+        }
+        case kTimestampColumn: {
+            return std::make_shared<TTimestampColumn>(start, len, column);
+        }
+        case kStringColumn: {
+            return std::make_shared<TStringColumn>(start, len, column);
+        }
+        default: {
+            return MakeError<EError::UnimplementedErr>();
+        }
+    }
 }
+
+} // namespace JfEngine
