@@ -107,9 +107,6 @@ void TIoFactory::Clear() {
     i->iotables_.clear();
 }
 
-// Defined here (not in nodes_lib) so the column layer can trigger late
-// materialization through TIoFactory without depending on it directly.
-// Declared in columns/types/types.h.
 TColumnPtr LazyMaterialize(ui64 column, const std::vector<ui64>& idxs) {
     auto in = TIoFactory::GetTableIo(kJfInput);
     auto* jf = static_cast<TJfTableInput*>(in.get());

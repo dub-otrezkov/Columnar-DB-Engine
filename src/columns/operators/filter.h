@@ -374,12 +374,13 @@ struct OAndCheck {
 };
 
 struct OFilter {
-    template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const boost::dynamic_bitset<>& mask) {
+    static constexpr bool kNoDispatch = true;
+    static inline Expected<TColumnPtr> Exec(IColumn& col, const boost::dynamic_bitset<>& mask) {
         if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
-        auto res = std::make_shared<TCol>();
+        auto res = MakeEmptyColumn(col.GetType()).GetRes();
+        res->ReserveAs(&col, mask.count());
         for (ui64 i = 0; i < col.GetSize(); i++) {
             if (mask[i]) {
                 res->Append(&col, i);

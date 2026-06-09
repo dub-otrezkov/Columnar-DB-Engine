@@ -19,17 +19,14 @@ struct OPushBack {
 };
 
 struct OSetColumnFrom {
-    template <typename TCol>
-    static inline Expected<void> Exec(TCol& col, TColumnPtr& ans, std::vector<ui64>* idx) {
+    static constexpr bool kNoDispatch = true;
+    static inline Expected<void> Exec(IColumn& col, TColumnPtr& ans, std::vector<ui64>* idx) {
         if (!ans) {
             ans = MakeEmptyColumn(col.GetType()).GetRes();
         }
         if (col.GetType() != ans->GetType()) {
             return MakeError<EError::BadArgsErr>("types mismatch");
         }
-        // idx maps each row -> its group id (ids handed out sequentially as new
-        // groups appear). Materialize one representative key value per group:
-        // append col[row] the first time a group's id reaches the current size.
         for (ui64 row = 0; row < idx->size(); row++) {
             ui64 g = (*idx)[row];
             if (g == ans->GetSize()) {

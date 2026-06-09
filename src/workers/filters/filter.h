@@ -25,6 +25,9 @@ public:
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     void MoveCursor() override;
+    Expected<TColumnPtr> ReadMinMax(i64 i) override {
+        return jf_in_->ReadMinMax(i);
+    }
     const char* GetTypeName() const override {
         return "Filter";
     }

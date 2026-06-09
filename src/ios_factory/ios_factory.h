@@ -36,10 +36,6 @@ public:
 
     static void RegisterTableInput(const std::string& alias, TTableInputPtr inp);
 
-    // Construct a JF table input from a file input, register it under `alias`
-    // (retrievable via GetTableIo) and return it. The concrete TJf* types live
-    // in workers/io; only ios_factory.cpp includes that header, so this header
-    // stays free of a workers/io dependency and no include/link cycle forms.
     static TTableInputPtr RegisterJfInput(const std::string& alias, IFileInput* jf_in);
     static TTableInputPtr RegisterJfNeccessaryInput(
         const std::string& alias,

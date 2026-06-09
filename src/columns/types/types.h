@@ -62,15 +62,14 @@ public:
     virtual void Append(const IColumn* src, ui64 i) = 0;
 
     virtual void RobColumn(IColumn* src) = 0;
+
+    virtual void Reserve(ui64 n) = 0;
+
+    virtual void ReserveAs(const IColumn* like, ui64 n) = 0;
 };
 
 using TColumnPtr = std::shared_ptr<IColumn>;
 
-// Late-materialization hook: reads the actual rows `idxs` of source column
-// `column` from the JF input registered in TIoFactory (kJfInput) and returns a
-// fully materialized column. Declared here but DEFINED in ios_factory.cpp so
-// nodes_lib doesn't include/link ios_factory or workers/io (which would form a
-// cycle); the symbol is resolved when the final binary links those libs in.
 TColumnPtr LazyMaterialize(ui64 column, const std::vector<ui64>& idxs);
 
 enum class EColumnStatus {
@@ -94,7 +93,6 @@ public:
     std::vector<T>& GetData() {
         if (status_ == EColumnStatus::kLazy) {
             // JF_LOG(0, "MATERIALIZING" << " column #" << column_i_ << " " << idxs_.size() << " rows");
-            // Mark final first so RobColumn moves cols_ (not idxs_).
             status_ = EColumnStatus::kFinal;
             auto materialized = LazyMaterialize(column_i_, idxs_);
             RobColumn(materialized.get());
@@ -136,6 +134,19 @@ public:
         } else {
             cols_.swap(other->cols_);
         }
+    }
+
+    void Reserve(ui64 n) override {
+        if (status_ == EColumnStatus::kLazy) {
+            idxs_.reserve(n);
+        } else {
+            cols_.reserve(n);
+        }
+    }
+
+    void ReserveAs(const IColumn* like, ui64 n) override {
+        status_ = static_cast<const TStorage<T>*>(like)->status_;
+        Reserve(n);
     }
 
     Expected<void> LazySetup(ui64 start, ui64 len, ui64 column_i) {

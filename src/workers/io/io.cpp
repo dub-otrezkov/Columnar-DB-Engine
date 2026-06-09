@@ -134,6 +134,7 @@ Expected<TColumnPtr> TJfTableInput::Finalize(ui64 column, const std::vector<ui64
         return ReadColumnFromMem(column, idxs.front() / row_group_len_);
     }
     auto ans = MakeEmptyColumn(scheme_[column].type_).GetRes();
+    ans->Reserve(idxs.size());
     std::unordered_map<ui64, TColumnPtr> loaded;
     for (ui64 i = 0; i < idxs.size(); i++) {
         auto b = idxs[i] / row_group_len_;
