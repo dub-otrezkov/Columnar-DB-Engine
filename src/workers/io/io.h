@@ -75,6 +75,17 @@ public:
     std::vector<TRowScheme>& GetScheme() override;
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    Expected<TColumnPtr> ReadMinMax(i64 i) override {
+        return TJfTableInput::ReadMinMax(cols_.at(i));
+    }
+    Expected<TColumnPtr> ReadMinMax(const std::string& name) override {
+        for (ui64 j = 0; j < new_scheme_.size(); j++) {
+            if (new_scheme_[j].name_ == name) {
+                return ReadMinMax(static_cast<i64>(j));
+            }
+        }
+        return MakeError<EError::NoSuchColumnsErr>(name);
+    }
     const char* GetTypeName() const override {
         return "JfNeccessaryOnly";
     }
