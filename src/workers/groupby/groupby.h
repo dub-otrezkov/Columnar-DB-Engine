@@ -43,7 +43,7 @@ private:
         ui64 operator()(const std::vector<JString>& a) const {
             ui64 h = 0;
             for (ui64 i = 0; i < a.size(); i++) {
-                h = _mm_crc32_u64(h, hash_value(a.at(i)));
+                h = _mm_crc32_u64(h, hash_value(a[i]));
             }
             return h;
         }
@@ -55,8 +55,15 @@ private:
         VectorStringHasher
     >;
 
+    struct JStringMixHasher {
+        ui64 operator()(const JString& s) const noexcept {
+            return _mm_crc32_u64(0, hash_value(s));
+        }
+    };
+
     std::shared_ptr<IAoEngine> eng_;
     THashMap<ui64> groups_;
+    boost::unordered_flat_map<JString, ui64, JStringMixHasher> groups1_;
 };
 
 } // namespace JfEngine

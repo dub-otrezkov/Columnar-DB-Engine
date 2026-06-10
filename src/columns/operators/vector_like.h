@@ -4,6 +4,7 @@
 #include "operators.h"
 
 #include <boost/regex.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace JfEngine {
 
@@ -41,13 +42,9 @@ struct OOffset {
     template <typename TCol>
     static inline Expected<TColumnPtr> Exec(TCol& col, i64 offset) {
         using T = typename TCol::ElemType;
-        i64 safe_offset = std::min(offset, static_cast<i64>(col.GetData().size()));
-        std::vector<T> ans(col.GetData().size() - safe_offset);
-        std::memcpy(
-            reinterpret_cast<char*>(ans.data()),
-            reinterpret_cast<char*>(col.GetData().data() + safe_offset),
-            ans.size() * sizeof(T)
-        );
+        auto& data = col.GetData();
+        i64 safe_offset = std::min(offset, static_cast<i64>(data.size()));
+        std::vector<T> ans(data.begin() + safe_offset, data.end());
         return std::make_shared<TCol>(std::move(ans));
     }
 };
@@ -106,15 +103,27 @@ struct ORegexpReplace {
 
     static inline Expected<TColumnPtr> Exec(TStringColumn& col, const std::string& arg1, const std::string& arg2) {
         std::vector<JString> vals;
-        vals.reserve(col.GetData().size());
-        
+        vals.reserve(col.GetSize());
+
+        static boost::unordered_flat_map<
+            std::pair<std::string, std::string>,
+            boost::unordered_flat_map<JString, JString>
+        > gCache;
+        auto& stor = gCache[std::make_pair(arg1, arg2)];
+
         boost::regex re(arg1);
         std::string res;
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
+        for (ui64 i = 0; i < col.GetSize(); i++) {
             auto& t = col.GetData().at(i);
-            res.clear();
-            boost::regex_replace(std::back_inserter(res), t.begin(), t.end(), re, arg2);
-            vals.emplace_back(res.size(), res.data());
+            auto it = stor.find(t);
+            if (it != stor.end()) {
+                vals.push_back(it->second);
+            } else {
+                res.clear();
+                boost::regex_replace(std::back_inserter(res), t.begin(), t.end(), re, arg2);
+                vals.emplace_back(res.size(), res.data());
+                stor.emplace(t, vals.back());
+            }
         }
         return std::make_shared<TStringColumn>(std::move(vals));
     }

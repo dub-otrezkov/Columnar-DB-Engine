@@ -113,4 +113,10 @@ TColumnPtr LazyMaterialize(ui64 column, const std::vector<ui64>& idxs) {
     return jf->Finalize(column, idxs).GetRes();
 }
 
+TColumnPtr LazyMaterializeRange(ui64 column, ui64 start, ui64 len) {
+    auto in = TIoFactory::GetTableIo(kJfInput);
+    auto* jf = static_cast<TJfTableInput*>(in.get());
+    return jf->FinalizeRange(column, start, len).GetRes();
+}
+
 }

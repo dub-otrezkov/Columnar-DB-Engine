@@ -38,11 +38,13 @@ public:
     }
 
     Expected<TColumnPtr> Finalize(ui64 column, const std::vector<ui64>& idxs);
+    Expected<TColumnPtr> FinalizeRange(ui64 column, ui64 start, ui64 len);
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<TColumnPtr> ReadColumn(const std::string& name) override;
     Expected<TColumnPtr> ReadIthColumn(i64 i) override;
     Expected<TColumnPtr> ReadMinMax(i64 i) override;
+    Expected<TColumnPtr> ReadSum(i64 i) override;
 
     void MoveCursor() override;
     void Reset() override;
@@ -82,6 +84,17 @@ public:
         for (ui64 j = 0; j < new_scheme_.size(); j++) {
             if (new_scheme_[j].name_ == name) {
                 return ReadMinMax(static_cast<i64>(j));
+            }
+        }
+        return MakeError<EError::NoSuchColumnsErr>(name);
+    }
+    Expected<TColumnPtr> ReadSum(i64 i) override {
+        return TJfTableInput::ReadSum(cols_.at(i));
+    }
+    Expected<TColumnPtr> ReadSum(const std::string& name) override {
+        for (ui64 j = 0; j < new_scheme_.size(); j++) {
+            if (new_scheme_[j].name_ == name) {
+                return ReadSum(static_cast<i64>(j));
             }
         }
         return MakeError<EError::NoSuchColumnsErr>(name);

@@ -265,6 +265,7 @@ struct OAndCheck {
                 break;
             }
             case EFilterType::kLike: {
+                // boost::unordered_flat_map<JString, bool> hist;
                 if (std::count(value.begin(), value.end(), '%') == 2 && value.at(0) == '%'
                         && value.at(value.size() - 1) == '%') {
                     std::string_view needle(value.data() + 1, value.size() - 2);

@@ -80,6 +80,22 @@ Expected<TColumnPtr> ITableInput::ReadMinMax(i64 i) {
     return MakeError<EError::UnimplementedErr>();
 }
 
+Expected<TColumnPtr> ITableInput::ReadSum(const std::string& name) {
+    if (name_to_i_.empty()) {
+        for (const auto& [n, _] : scheme_) {
+            name_to_i_[n] = name_to_i_.size();
+        }
+    }
+    if (!name_to_i_.contains(name)) {
+        return MakeError<EError::NoSuchColumnsErr>(name);
+    }
+    return ReadSum(name_to_i_.at(name));
+}
+
+Expected<TColumnPtr> ITableInput::ReadSum(i64 i) {
+    return MakeError<EError::UnimplementedErr>();
+}
+
 i64 ITableInput::GetColumnInd(const std::string& name) {
     if (name == "*") {
         return 0;

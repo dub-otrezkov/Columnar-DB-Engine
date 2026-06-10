@@ -71,6 +71,7 @@ public:
 using TColumnPtr = std::shared_ptr<IColumn>;
 
 TColumnPtr LazyMaterialize(ui64 column, const std::vector<ui64>& idxs);
+TColumnPtr LazyMaterializeRange(ui64 column, ui64 start, ui64 len);
 
 enum class EColumnStatus {
     kLazy,
@@ -85,18 +86,20 @@ public:
 
     ui64 GetSize() const override {
         if (status_ == EColumnStatus::kLazy) {
-            return idxs_.size();
+            return lazy_range_ ? lazy_len_ : idxs_.size();
         }
         return cols_.size();
     }
 
     std::vector<T>& GetData() {
         if (status_ == EColumnStatus::kLazy) {
-            // JF_LOG(0, "MATERIALIZING" << " column #" << column_i_ << " " << idxs_.size() << " rows");
             status_ = EColumnStatus::kFinal;
-            auto materialized = LazyMaterialize(column_i_, idxs_);
+            auto materialized = lazy_range_
+                ? LazyMaterializeRange(column_i_, lazy_start_, lazy_len_)
+                : LazyMaterialize(column_i_, idxs_);
             RobColumn(materialized.get());
             idxs_.clear();
+            lazy_range_ = false;
         }
         return cols_;
     }
@@ -119,18 +122,24 @@ public:
         status_ = other->status_;
         column_i_ = other->column_i_;
         if (status_ == EColumnStatus::kLazy) {
-            idxs_.emplace_back(other->idxs_[i]);
+            idxs_.emplace_back(other->lazy_range_ ? other->lazy_start_ + i : other->idxs_[i]);
+            lazy_range_ = false;
         } else {
             cols_.emplace_back(other->cols_[i]);
         }
     }
 
     void RobColumn(IColumn* src) override {
-        auto other = static_cast<TStorage<T>*>(src);\
+        auto other = static_cast<TStorage<T>*>(src);
         status_ = other->status_;
         column_i_ = other->column_i_;
+        lazy_range_ = other->lazy_range_;
+        lazy_start_ = other->lazy_start_;
+        lazy_len_ = other->lazy_len_;
         if (status_ == EColumnStatus::kLazy) {
-            idxs_.swap(other->idxs_);
+            if (!lazy_range_) {
+                idxs_.swap(other->idxs_);
+            }
         } else {
             cols_.swap(other->cols_);
         }
@@ -151,11 +160,10 @@ public:
 
     Expected<void> LazySetup(ui64 start, ui64 len, ui64 column_i) {
         column_i_ = column_i;
-        idxs_.reserve(len);
+        lazy_start_ = start;
+        lazy_len_ = len;
+        lazy_range_ = true;
         status_ = EColumnStatus::kLazy;
-        for (ui64 i = start; i < start + len; i++) {
-            idxs_.emplace_back(i);
-        }
         return EError::NoError;
     }
 
@@ -170,6 +178,9 @@ protected:
     std::vector<T> cols_;
     std::vector<ui64> idxs_;
     ui64 column_i_ = 0;
+    ui64 lazy_start_ = 0;
+    ui64 lazy_len_ = 0;
+    bool lazy_range_ = false;
 
 private:
     EColumnStatus status_ = EColumnStatus::kFinal;
@@ -364,7 +375,10 @@ Expected<TColumnPtr> MakeColumnOptimized(const TVectorString2d& data, ui64 colum
 Expected<TColumnPtr> MakeColumnJf(std::span<const char> data, EColumn type);
 Expected<TColumnPtr> MakeLazyColumn(ui64 start, ui64 len, ui64 column, EColumn type);
 
+constexpr ui64 kColStatsTailMax = sizeof(i128) + 2 * sizeof(i64);
+
 Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type);
+Expected<TColumnPtr> ExtractSum(std::span<const char> data, EColumn type);
 
 template <typename T>
 Expected<TColumnPtr> SetupColumn(std::vector<std::string>&& data) {
@@ -412,17 +426,22 @@ template <std::integral T>
 inline std::vector<char> Serialize(std::vector<T>& a) {
     T mn{};
     T mx{};
+    i128 sum = 0;
     if (!a.empty()) {
         auto [mn_it, mx_it] = std::minmax_element(a.begin(), a.end());
         mn = *mn_it;
         mx = *mx_it;
+        for (T v : a) {
+            sum += static_cast<i128>(v);
+        }
     }
     auto packed = BitPack(a.size(), a.data());
     if (!a.empty()) {
         auto old = packed.size();
-        packed.resize(old + 2 * sizeof(T));
-        std::memcpy(packed.data() + old,              &mn, sizeof(T));
-        std::memcpy(packed.data() + old + sizeof(T),  &mx, sizeof(T));
+        packed.resize(old + sizeof(i128) + 2 * sizeof(T));
+        std::memcpy(packed.data() + old,                            &sum, sizeof(i128));
+        std::memcpy(packed.data() + old + sizeof(i128),             &mn,  sizeof(T));
+        std::memcpy(packed.data() + old + sizeof(i128) + sizeof(T), &mx,  sizeof(T));
     }
     return packed;
 }
@@ -498,8 +517,8 @@ inline std::vector<T> Unserialize(std::span<const char> a) {
 template <std::integral T>
 inline std::vector<T> Unserialize(std::span<const char> a) {
     std::vector<T> res;
-    const ui64 minmax_size = 2 * sizeof(T);
-    auto payload = a.size() >= minmax_size ? a.first(a.size() - minmax_size) : a;
+    const ui64 stats_size = sizeof(i128) + 2 * sizeof(T);
+    auto payload = a.size() >= stats_size ? a.first(a.size() - stats_size) : a;
     BitUnpack(payload.size(), payload.data(), res);
     return res;
 }

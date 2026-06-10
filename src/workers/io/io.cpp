@@ -146,6 +146,20 @@ Expected<TColumnPtr> TJfTableInput::Finalize(ui64 column, const std::vector<ui64
     return ans;
 }
 
+Expected<TColumnPtr> TJfTableInput::FinalizeRange(ui64 column, ui64 start, ui64 len) {
+    if (len == 0) {
+        return MakeEmptyColumn(scheme_[column].type_);
+    }
+    if (start % row_group_len_ == 0) {
+        return ReadColumnFromMem(column, start / row_group_len_);
+    }
+    std::vector<ui64> idxs(len);
+    for (ui64 i = 0; i < len; i++) {
+        idxs[i] = start + i;
+    }
+    return Finalize(column, idxs);
+}
+
 // LAZY
 Expected<TColumnPtr> TJfTableInput::ReadIthColumn(i64 i) {
     // auto t = ReadColumnFromMem(i, current_block_).GetRes();
@@ -167,24 +181,49 @@ Expected<TColumnPtr> TJfTableInput::ReadMinMax(i64 i) {
         pos_next = meta_start_;
     }
 
-    jf_in_->SetPos(pos);
-    ui64 len = static_cast<ui64>(pos_next - pos);
-
+    ui64 want = std::min<ui64>(static_cast<ui64>(pos_next - pos), kColStatsTailMax);
+    jf_in_->SetPos(pos_next - static_cast<i64>(want));
     const char* raw = nullptr;
-    jf_in_->Read(raw, len);
-    std::span<const char> data(raw, len);
+    jf_in_->Read(raw, want);
 
-    auto col = ExtractMinMax(data, scheme_[i].type_);
-
+    auto col = ExtractMinMax(std::span<const char>(raw, want), scheme_[i].type_);
     if (col.HasError()) {
         return col.GetError();
     }
-
-    Expected<TColumnPtr> ans(
+    return Expected<TColumnPtr>(
         col.GetRes(),
         b + 1 == block_col_poses_.size() ? EError::EofErr : EError::NoError
     );
-    return ans;
+}
+
+Expected<TColumnPtr> TJfTableInput::ReadSum(i64 i) {
+    const ui64 b = current_block_;
+    if (b >= block_col_poses_.size()) {
+        return MakeError<EError::EofErr>();
+    }
+    i64 pos = block_col_poses_[b][i];
+    i64 pos_next;
+    if (static_cast<ui64>(i + 1) < cols_cnt_) {
+        pos_next = block_col_poses_[b][i + 1];
+    } else if (b + 1 < block_col_poses_.size()) {
+        pos_next = block_col_poses_[b + 1][0];
+    } else {
+        pos_next = meta_start_;
+    }
+
+    ui64 want = std::min<ui64>(static_cast<ui64>(pos_next - pos), kColStatsTailMax);
+    jf_in_->SetPos(pos_next - static_cast<i64>(want));
+    const char* raw = nullptr;
+    jf_in_->Read(raw, want);
+
+    auto col = ExtractSum(std::span<const char>(raw, want), scheme_[i].type_);
+    if (col.HasError()) {
+        return col.GetError();
+    }
+    return Expected<TColumnPtr>(
+        col.GetRes(),
+        b + 1 == block_col_poses_.size() ? EError::EofErr : EError::NoError
+    );
 }
 
 Expected<std::vector<TColumnPtr>> TJfTableInput::LoadRowGroup() {

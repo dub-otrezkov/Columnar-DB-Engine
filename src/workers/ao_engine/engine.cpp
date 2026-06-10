@@ -94,6 +94,53 @@ std::vector<TColumnPtr> IAoEngine::ThrowRowGroup() {
     return ans;
 }
 
+Expected<std::vector<TColumnPtr>> IAoEngine::AgregateFromMeta(ITableInput*) {
+    return MakeError<EError::UnsupportedErr>();
+}
+
+Expected<std::vector<TColumnPtr>> TAgregationEngine::AgregateFromMeta(ITableInput* inp) {
+    std::vector<std::string> sum_cols;
+    for (auto& c : cols_) {
+        if (!c->is_final) {
+            continue;
+        }
+        auto* sa = dynamic_cast<TSumAgr*>(c.get());
+        if (!sa) {
+            return MakeError<EError::UnsupportedErr>();
+        }
+        auto* co = dynamic_cast<TColumnOp*>(sa->arg);
+        if (!co) {
+            return MakeError<EError::UnsupportedErr>();
+        }
+        sum_cols.push_back(co->GetColumn());
+    }
+    if (sum_cols.empty()) {
+        return MakeError<EError::UnsupportedErr>();
+    }
+
+    std::vector<i128> totals(sum_cols.size(), 0);
+    bool run = true;
+    for (; run; inp->MoveCursor()) {
+        for (ui64 k = 0; k < sum_cols.size(); k++) {
+            auto r = inp->ReadSum(sum_cols[k]);
+            if (r.HasError() && r.GetError() != EError::EofErr) {
+                return r.GetError();
+            }
+            totals[k] += static_cast<Ti128Column*>(r.GetRes().get())->GetData().at(0);
+            if (r.GetError() == EError::EofErr) {
+                run = false;
+            }
+        }
+    }
+
+    std::vector<TColumnPtr> ans;
+    ans.reserve(sum_cols.size());
+    for (auto t : totals) {
+        ans.push_back(std::make_shared<Ti128Column>(std::vector<i128>{t}));
+    }
+    return ans;
+}
+
 std::shared_ptr<IAoEngine> MakeAoEngine(TAoQuery q) {
     if (q.tp == EAoEngineType::kAgregation) {
         return std::make_shared<TAgregationEngine>(

@@ -272,6 +272,28 @@ static Expected<TColumnPtr> ExtractMinMaxTyped(std::span<const char> data) {
     return std::make_shared<TCol>(std::move(res));
 }
 
+template <CIntegralColumn TCol>
+static Expected<TColumnPtr> ExtractSumTyped(std::span<const char> data) {
+    using T = typename TCol::ElemType;
+    constexpr ui64 stats = sizeof(i128) + 2 * sizeof(T);
+    if (data.size() < stats) {
+        return MakeError<EError::IncorrectFileErr>("no sum in chunk");
+    }
+    i128 sum;
+    std::memcpy(&sum, data.data() + data.size() - stats, sizeof(i128));
+    return std::make_shared<Ti128Column>(std::vector<i128>{sum});
+}
+
+Expected<TColumnPtr> ExtractSum(std::span<const char> data, EColumn type) {
+    switch (type) {
+        case ki8Column:  return ExtractSumTyped<Ti8Column>(data);
+        case ki16Column: return ExtractSumTyped<Ti16Column>(data);
+        case ki32Column: return ExtractSumTyped<Ti32Column>(data);
+        case ki64Column: return ExtractSumTyped<Ti64Column>(data);
+        default:         return MakeError<EError::UnimplementedErr>("sum metadata only for integer columns");
+    }
+}
+
 Expected<TColumnPtr> ExtractMinMax(std::span<const char> data, EColumn type) {
     switch (type) {
         case ki8Column: {
