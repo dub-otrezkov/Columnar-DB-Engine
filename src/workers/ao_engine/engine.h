@@ -20,6 +20,8 @@ public:
     virtual Expected<void> ConsumeRowGroup(ITableInput* inp, std::vector<ui64>* i = nullptr);
     virtual std::vector<TColumnPtr> ThrowRowGroup();
 
+    virtual Expected<std::vector<TColumnPtr>> AgregateFromMeta(ITableInput* inp);
+
     virtual EAoEngineType GetType() const = 0;
 
     virtual std::vector<std::string>& GetNames();
@@ -86,6 +88,7 @@ public:
     );
 
     EAoEngineType GetType() const override;
+    Expected<std::vector<TColumnPtr>> AgregateFromMeta(ITableInput* inp) override;
 };
 
 } // namespace JfEngine

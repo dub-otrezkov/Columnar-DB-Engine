@@ -3,4 +3,4 @@ add_library(ios_factory_lib STATIC
     ios_factory.cpp
 )
 
-target_link_libraries(ios_factory_lib errors_lib mmap_input_lib)
+target_link_libraries(ios_factory_lib errors_lib mmap_input_lib io_worker_lib)

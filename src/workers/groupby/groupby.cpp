@@ -16,6 +16,7 @@ TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) 
     selects.tp = EAoEngineType::kAgregation;
     eng_ = MakeAoEngine(std::move(selects));
     groups_.reserve(kRowGroupLen * 100);
+    groups1_.reserve(kRowGroupLen * 100);
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
@@ -24,6 +25,7 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     }
     jf_in_->SetupColumnsScheme();
     groups_.clear();
+    groups1_.clear();
     for (auto name : eng_->GetNames()) {
         scheme_.emplace_back(name, EColumn::kUnitialized);
     }
@@ -66,23 +68,38 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             printer.push_back(Do<OToJStrings>(ag[idx]));
         }
 
-        std::vector<JString> key;
         std::vector<ui64> idcs(sz);
-        for (ui64 i = 0; i < sz; i++) {
-            key.resize(group_q_.cols.size());
-            for (ui64 j = 0; j < key.size(); j++) {
-                key[j] = printer[j](i);
-            }
-            auto it = groups_.find(key);
-
-            if (it == groups_.end()) {
-                if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
-                    continue;
+        if (printer.size() == 1) {
+            auto& p0 = printer[0];
+            for (ui64 i = 0; i < sz; i++) {
+                JString k = p0(i);
+                auto it = groups1_.find(k);
+                if (it == groups1_.end()) {
+                    if (group_q_.limit != kUnlimited && groups1_.size() >= group_q_.limit) {
+                        continue;
+                    }
+                    it = groups1_.emplace(k, groups1_.size()).first;
                 }
-                it = groups_.emplace(key, groups_.size()).first;
+                idcs[i] = it->second;
             }
+        } else {
+            std::vector<JString> key;
+            for (ui64 i = 0; i < sz; i++) {
+                key.resize(group_q_.cols.size());
+                for (ui64 j = 0; j < key.size(); j++) {
+                    key[j] = printer[j](i);
+                }
+                auto it = groups_.find(key);
 
-            idcs.at(i) = it->second;
+                if (it == groups_.end()) {
+                    if (group_q_.limit != kUnlimited && groups_.size() >= group_q_.limit) {
+                        continue;
+                    }
+                    it = groups_.emplace(key, groups_.size()).first;
+                }
+
+                idcs[i] = it->second;
+            }
         }
 
         eng_->ConsumeRowGroup(jf_in_.get(), &idcs);

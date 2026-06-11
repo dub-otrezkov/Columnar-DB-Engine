@@ -7,12 +7,14 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace JfEngine {
 
 static const std::string kCurTableInput = "CURRENT_TABLE_INPUT";
 static const std::string kResultScheme  = "RESULT_SCHEME";
 static const std::string kResultData    = "RESULT_DATA";
+static const std::string kJfInput       = "JF_INPUT";
 
 enum ETypeFile {
     kCsvFile,
@@ -33,6 +35,12 @@ public:
     static void RegisterFileOutput(const std::string& alias, ETypeFile t);
 
     static void RegisterTableInput(const std::string& alias, TTableInputPtr inp);
+
+    static TTableInputPtr RegisterJfInput(const std::string& alias, IFileInput* jf_in);
+    static TTableInputPtr RegisterJfNeccessaryInput(
+        const std::string& alias,
+        IFileInput* jf_in,
+        std::unordered_set<std::string> referenced);
 
     static IFileInput*  GetInput(const std::string& alias);
     static IFileOutput* GetOutput(const std::string& alias);

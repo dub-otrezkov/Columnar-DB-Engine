@@ -8,6 +8,9 @@ namespace JfEngine {
 
 template <typename TOperator, typename... Args>
 auto Do(TColumnPtr col, Args&&... args) {
+    if constexpr (requires { TOperator::kNoDispatch; }) {
+        return TOperator::Exec(*col, std::forward<Args>(args)...);
+    } else {
     switch (col->GetType()) {
         case ki8Column: {
             return TOperator::Exec(*static_cast<Ti8Column*>(col.get()), std::forward<Args>(args)...);
@@ -45,8 +48,11 @@ auto Do(TColumnPtr col, Args&&... args) {
             return TOperator::Exec(*static_cast<TStringColumn*>(col.get()), std::forward<Args>(args)...);
             break;
         }
+        default:
+            break;
     }
     throw std::runtime_error("bad column type");
+    }
 }
 
 } // namespace JfEngine

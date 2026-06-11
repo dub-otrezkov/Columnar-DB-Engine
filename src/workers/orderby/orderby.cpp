@@ -60,7 +60,7 @@ void TOrderBy::SortRowGroup(std::vector<TColumnPtr>& rg, std::vector<TColumnPtr>
             }
             return false;
         }
-        return true;
+        return false;
     };
     if (order_q_.limit == kUnlimited) {
         std::stable_sort(ids.begin(), ids.end(), cmp);

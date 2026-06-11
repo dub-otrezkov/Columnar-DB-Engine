@@ -1,5 +1,7 @@
 #include "ios_factory.h"
 
+#include "workers/io/io.h"
+
 #include <fstream>
 #include <sstream>
 
@@ -58,6 +60,24 @@ void TIoFactory::RegisterTableInput(const std::string& alias, TTableInputPtr inp
     i->iotables_[alias] = inp;
 }
 
+TTableInputPtr TIoFactory::RegisterJfInput(const std::string& alias, IFileInput* jf_in) {
+    auto i = Instance();
+    auto inp = std::make_shared<TJfTableInput>(jf_in);
+    i->iotables_[alias] = inp;
+    return inp;
+}
+
+TTableInputPtr TIoFactory::RegisterJfNeccessaryInput(
+    const std::string& alias,
+    IFileInput* jf_in,
+    std::unordered_set<std::string> referenced
+) {
+    auto i = Instance();
+    auto inp = std::make_shared<TJfNeccessaryOnly>(jf_in, std::move(referenced));
+    i->iotables_[alias] = inp;
+    return inp;
+}
+
 IFileInput* TIoFactory::GetInput(const std::string& alias) {
     auto i = Instance();
     if (auto it = i->inputs_.find(alias); it != i->inputs_.end()) {
@@ -85,6 +105,18 @@ TTableInputPtr TIoFactory::GetTableIo(const std::string& alias) {
 void TIoFactory::Clear() {
     auto i = Instance();
     i->iotables_.clear();
+}
+
+TColumnPtr LazyMaterialize(ui64 column, const std::vector<ui64>& idxs) {
+    auto in = TIoFactory::GetTableIo(kJfInput);
+    auto* jf = static_cast<TJfTableInput*>(in.get());
+    return jf->Finalize(column, idxs).GetRes();
+}
+
+TColumnPtr LazyMaterializeRange(ui64 column, ui64 start, ui64 len) {
+    auto in = TIoFactory::GetTableIo(kJfInput);
+    auto* jf = static_cast<TJfTableInput*>(in.get());
+    return jf->FinalizeRange(column, start, len).GetRes();
 }
 
 }

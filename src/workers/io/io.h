@@ -37,11 +37,14 @@ public:
         jf_in_ = jf_in;
     }
 
+    Expected<TColumnPtr> Finalize(ui64 column, const std::vector<ui64>& idxs);
+    Expected<TColumnPtr> FinalizeRange(ui64 column, ui64 start, ui64 len);
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
     Expected<TColumnPtr> ReadColumn(const std::string& name) override;
     Expected<TColumnPtr> ReadIthColumn(i64 i) override;
     Expected<TColumnPtr> ReadMinMax(i64 i) override;
+    Expected<TColumnPtr> ReadSum(i64 i) override;
 
     void MoveCursor() override;
     void Reset() override;
@@ -50,17 +53,19 @@ public:
     }
 
 private:
-    void LoadMeta();
+    Expected<TColumnPtr> ReadColumnFromMem(ui64 column, ui64 rg_num);
 
 protected:
 
     IFileInput* jf_in_;
 
-    std::optional<std::vector<ui64>> poses_of_cols_;
+    ui64 cols_cnt_ = 0;
+    i64  meta_start_ = 0;
 
-    ui64 cols_cnt_;
-    ui64 meta_start_;
-    std::vector<ui64> blocks_pos_;
+    // [block][col] → byte offset in file
+    std::vector<std::vector<i64>>  block_col_poses_;
+    // [block][col] → row count (for lazy materialization)
+    std::vector<std::vector<ui64>> block_col_sizes_;
 
     ui64 current_block_ = 0;
 };
@@ -72,6 +77,28 @@ public:
     std::vector<TRowScheme>& GetScheme() override;
     Expected<void> SetupColumnsScheme() override;
     Expected<std::vector<TColumnPtr>> LoadRowGroup() override;
+    Expected<TColumnPtr> ReadMinMax(i64 i) override {
+        return TJfTableInput::ReadMinMax(cols_.at(i));
+    }
+    Expected<TColumnPtr> ReadMinMax(const std::string& name) override {
+        for (ui64 j = 0; j < new_scheme_.size(); j++) {
+            if (new_scheme_[j].name_ == name) {
+                return ReadMinMax(static_cast<i64>(j));
+            }
+        }
+        return MakeError<EError::NoSuchColumnsErr>(name);
+    }
+    Expected<TColumnPtr> ReadSum(i64 i) override {
+        return TJfTableInput::ReadSum(cols_.at(i));
+    }
+    Expected<TColumnPtr> ReadSum(const std::string& name) override {
+        for (ui64 j = 0; j < new_scheme_.size(); j++) {
+            if (new_scheme_[j].name_ == name) {
+                return ReadSum(static_cast<i64>(j));
+            }
+        }
+        return MakeError<EError::NoSuchColumnsErr>(name);
+    }
     const char* GetTypeName() const override {
         return "JfNeccessaryOnly";
     }

@@ -265,6 +265,7 @@ struct OAndCheck {
                 break;
             }
             case EFilterType::kLike: {
+                // boost::unordered_flat_map<JString, bool> hist;
                 if (std::count(value.begin(), value.end(), '%') == 2 && value.at(0) == '%'
                         && value.at(value.size() - 1) == '%') {
                     std::string_view needle(value.data() + 1, value.size() - 2);
@@ -374,32 +375,19 @@ struct OAndCheck {
 };
 
 struct OFilter {
-    template <typename TCol>
-    static inline Expected<TColumnPtr> Exec(TCol& col, const boost::dynamic_bitset<>& mask) {
-        using T = typename TCol::ElemTypeRo;
-        std::vector<T> vals;
-        if (col.GetData().size() != mask.size()) {
+    static constexpr bool kNoDispatch = true;
+    static inline Expected<TColumnPtr> Exec(IColumn& col, const boost::dynamic_bitset<>& mask) {
+        if (col.GetSize() != mask.size()) {
             return MakeError<EError::BadArgsErr>();
         }
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
+        auto res = MakeEmptyColumn(col.GetType()).GetRes();
+        res->ReserveAs(&col, mask.count());
+        for (ui64 i = 0; i < col.GetSize(); i++) {
             if (mask[i]) {
-                vals.push_back(col.GetData()[i]);
+                res->Append(&col, i);
             }
         }
-        return std::make_shared<TCol>(std::move(vals));
-    }
-
-    static inline Expected<TColumnPtr> Exec(TStringColumn& col, const boost::dynamic_bitset<>& mask) {
-        std::vector<JString> vals;
-        if (col.GetData().size() != mask.size()) {
-            return MakeError<EError::BadArgsErr>();
-        }
-        for (ui64 i = 0; i < col.GetData().size(); i++) {
-            if (mask[i]) {
-                vals.push_back(col.GetData().at(i));
-            }
-        }
-        return std::make_shared<TStringColumn>(std::move(vals));
+        return res;
     }
 };
 

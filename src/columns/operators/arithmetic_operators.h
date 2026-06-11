@@ -52,6 +52,7 @@ struct OVerticalSum {
         }
         auto col2_i = static_cast<T*>(col2.get());
         std::vector<i128> ans;
+        ans.reserve(col1.GetSize());
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
         }
@@ -67,6 +68,7 @@ struct OVerticalSum {
         }
         auto col2_i = static_cast<TDoubleColumn*>(col2.get());
         std::vector<ld> ans;
+        ans.reserve(col1.GetSize());
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] + col2_i->GetData()[i]);
         }
@@ -97,6 +99,7 @@ struct OVerticalSub {
         }
         auto col2_i = static_cast<T*>(col2.get());
         std::vector<i64> ans;
+        ans.reserve(col1.GetSize());
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
         }
@@ -112,6 +115,7 @@ struct OVerticalSub {
         }
         auto col2_i = static_cast<TDoubleColumn*>(col2.get());
         std::vector<ld> ans;
+        ans.reserve(col1.GetSize());
         for (ui64 i = 0; i < col1.GetSize(); i++) {
             ans.push_back(col1.GetData()[i] - col2_i->GetData()[i]);
         }

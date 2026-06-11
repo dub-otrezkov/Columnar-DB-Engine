@@ -37,23 +37,34 @@ Expected<std::vector<TColumnPtr>> TAgregator::LoadRowGroup() {
     const char* eng_name = eng_->GetType() == EAoEngineType::kAgregation ? "AgregEngine" : "OperEngine";
 
     if (eng_->GetType() == EAoEngineType::kAgregation) {
-        bool run = true;
-        for (; run; jf_in_->MoveCursor()) {
-            TAoEngineTimer t(eng_name);
-            auto err = eng_->ConsumeRowGroup(jf_in_.get());
-            if (err.HasError()) {
-                if (err.GetError() == EError::EofErr) {
-                    run = false;
-                } else {
-                    return err.GetError();
-                }
-            }
-        }
+        Expected<std::vector<TColumnPtr>> meta = MakeError<EError::UnsupportedErr>();
         {
             TAoEngineTimer t(eng_name);
-            ans = eng_->ThrowRowGroup();
+            meta = eng_->AgregateFromMeta(jf_in_.get());
         }
-        is_eof = true;
+        if (!meta.HasError()) {
+            ans = meta.GetRes();
+            is_eof = true;
+        } else {
+            jf_in_->Reset();
+            bool run = true;
+            for (; run; jf_in_->MoveCursor()) {
+                TAoEngineTimer t(eng_name);
+                auto err = eng_->ConsumeRowGroup(jf_in_.get());
+                if (err.HasError()) {
+                    if (err.GetError() == EError::EofErr) {
+                        run = false;
+                    } else {
+                        return err.GetError();
+                    }
+                }
+            }
+            {
+                TAoEngineTimer t(eng_name);
+                ans = eng_->ThrowRowGroup();
+            }
+            is_eof = true;
+        }
     } else {
         {
             TAoEngineTimer t(eng_name);
