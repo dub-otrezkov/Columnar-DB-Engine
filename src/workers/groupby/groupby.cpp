@@ -71,14 +71,14 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
             col_idxs.push_back(idx);
         }
 
-        std::vector<TRawBytesGetter> raw_key;
+        std::vector<std::pair<const char*, ui64>> raw_key;
         raw_key.reserve(col_idxs.size());
         ui64 key_size = 0;
         bool use_raw_key = true;
         for (auto idx : col_idxs) {
             raw_key.push_back(Do<OToRawBytes>(ag[idx]));
-            key_size += raw_key.back().width;
-            if (raw_key.back().width == 0 || key_size > 16) {
+            key_size += raw_key.back().second;
+            if (raw_key.back().second == 0 || key_size > 16) {
                 use_raw_key = false;
                 break;
             }
@@ -95,13 +95,12 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
         std::vector<ui64> idcs(sz);
         if (use_raw_key) {
             for (ui64 i = 0; i < sz; i++) {
-                TInlineGroupKey key;
+                i128 key = 0;
                 ui64 offset = 0;
-                for (auto& getter : raw_key) {
-                    std::memcpy(key.bytes.data() + offset, getter(i), getter.width);
-                    offset += getter.width;
+                for (const auto& [data, width] : raw_key) {
+                    std::memcpy(reinterpret_cast<char*>(&key) + offset, data + i * width, width);
+                    offset += width;
                 }
-                key.size = key_size;
 
                 auto it = inline_groups_.find(key);
                 if (it == inline_groups_.end()) {

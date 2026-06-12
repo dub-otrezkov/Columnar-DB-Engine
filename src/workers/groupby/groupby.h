@@ -10,8 +10,6 @@
 #include <boost/unordered/unordered_set.hpp>
 #include <nmmintrin.h>
 
-#include <array>
-#include <cstring>
 #include <map>
 
 namespace JfEngine {
@@ -63,32 +61,10 @@ private:
         }
     };
 
-    struct TInlineGroupKey {
-        std::array<char, 16> bytes = {};
-        ui8 size = 0;
-
-        bool operator==(const TInlineGroupKey& other) const {
-            return size == other.size && std::memcmp(bytes.data(), other.bytes.data(), size) == 0;
-        }
-    };
-
-    struct TInlineGroupKeyHasher {
-        ui64 operator()(const TInlineGroupKey& key) const noexcept {
-            ui64 lo = 0;
-            ui64 hi = 0;
-            std::memcpy(&lo, key.bytes.data(), sizeof(lo));
-            std::memcpy(&hi, key.bytes.data() + sizeof(lo), sizeof(hi));
-
-            ui64 h = _mm_crc32_u64(0, key.size);
-            h = _mm_crc32_u64(h, lo);
-            return _mm_crc32_u64(h, hi);
-        }
-    };
-
     std::shared_ptr<IAoEngine> eng_;
     THashMap<ui64> groups_;
     boost::unordered_flat_map<JString, ui64, JStringMixHasher> groups1_;
-    boost::unordered_flat_map<TInlineGroupKey, ui64, TInlineGroupKeyHasher> inline_groups_;
+    boost::unordered_flat_map<i128, ui64> inline_groups_;
 };
 
 } // namespace JfEngine
