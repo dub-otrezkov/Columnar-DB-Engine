@@ -68,6 +68,29 @@ struct TJStringGetter {
     }
 };
 
+struct TRawBytesGetter {
+    const char* data = nullptr;
+    ui64 width = 0;
+
+    const char* operator()(ui64 i) const {
+        return data + i * width;
+    }
+};
+
+struct OToRawBytes {
+    template <typename TCol>
+    static inline TRawBytesGetter Exec(TCol& col) {
+        using T = typename TCol::ElemType;
+        return TRawBytesGetter{
+            reinterpret_cast<const char*>(col.GetData().data()),
+            sizeof(T)
+        };
+    }
+
+    static inline TRawBytesGetter Exec(TStringColumn& col) {
+        return {};
+    }
+};
 
 struct OToJStrings {
     template <typename TCol>

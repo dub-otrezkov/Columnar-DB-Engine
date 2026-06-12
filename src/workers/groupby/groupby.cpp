@@ -6,6 +6,7 @@
 #include "utils/logger/logger.h"
 
 #include <algorithm>
+#include <cstring>
 
 namespace JfEngine {
 
@@ -17,6 +18,7 @@ TGroupBy::TGroupBy(TTableInputPtr jf_in, TGroupByQuery query, TAoQuery selects) 
     eng_ = MakeAoEngine(std::move(selects));
     groups_.reserve(kRowGroupLen * 100);
     groups1_.reserve(kRowGroupLen * 100);
+    inline_groups_.reserve(kRowGroupLen * 100);
 }
 
 Expected<void> TGroupBy::SetupColumnsScheme() {
@@ -26,6 +28,7 @@ Expected<void> TGroupBy::SetupColumnsScheme() {
     jf_in_->SetupColumnsScheme();
     groups_.clear();
     groups1_.clear();
+    inline_groups_.clear();
     for (auto name : eng_->GetNames()) {
         scheme_.emplace_back(name, EColumn::kUnitialized);
     }
@@ -58,18 +61,58 @@ Expected<std::vector<TColumnPtr>> TGroupBy::LoadRowGroup() {
 
         const ui64 sz = ag[0]->GetSize();
 
-        std::vector<TJStringGetter> printer;
-        printer.reserve(group_q_.cols.size());
+        std::vector<i64> col_idxs;
+        col_idxs.reserve(group_q_.cols.size());
         for (auto& c : group_q_.cols) {
             auto idx = jf_in_->GetColumnInd(c);
             if (idx < 0 || static_cast<ui64>(idx) >= ag.size()) {
                 return MakeError<EError::NoSuchColumnsErr>(c);
             }
-            printer.push_back(Do<OToJStrings>(ag[idx]));
+            col_idxs.push_back(idx);
+        }
+
+        std::vector<TRawBytesGetter> raw_key;
+        raw_key.reserve(col_idxs.size());
+        ui64 key_size = 0;
+        bool use_raw_key = true;
+        for (auto idx : col_idxs) {
+            raw_key.push_back(Do<OToRawBytes>(ag[idx]));
+            key_size += raw_key.back().width;
+            if (raw_key.back().width == 0 || key_size > 16) {
+                use_raw_key = false;
+                break;
+            }
+        }
+
+        std::vector<TJStringGetter> printer;
+        if (!use_raw_key) {
+            printer.reserve(col_idxs.size());
+            for (auto idx : col_idxs) {
+                printer.push_back(Do<OToJStrings>(ag[idx]));
+            }
         }
 
         std::vector<ui64> idcs(sz);
-        if (printer.size() == 1) {
+        if (use_raw_key) {
+            for (ui64 i = 0; i < sz; i++) {
+                TInlineGroupKey key;
+                ui64 offset = 0;
+                for (auto& getter : raw_key) {
+                    std::memcpy(key.bytes.data() + offset, getter(i), getter.width);
+                    offset += getter.width;
+                }
+                key.size = key_size;
+
+                auto it = inline_groups_.find(key);
+                if (it == inline_groups_.end()) {
+                    if (group_q_.limit != kUnlimited && inline_groups_.size() >= group_q_.limit) {
+                        continue;
+                    }
+                    it = inline_groups_.emplace(key, inline_groups_.size()).first;
+                }
+                idcs[i] = it->second;
+            }
+        } else if (printer.size() == 1) {
             auto& p0 = printer[0];
             for (ui64 i = 0; i < sz; i++) {
                 JString k = p0(i);
