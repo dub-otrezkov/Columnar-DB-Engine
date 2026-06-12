@@ -1,0 +1,3 @@
+author,string
+song,string
+album,int64
